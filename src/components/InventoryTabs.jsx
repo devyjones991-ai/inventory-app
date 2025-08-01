@@ -1,4 +1,3 @@
-// src/components/InventoryTabs.jsx
 import React, { useState, useEffect } from 'react'
 import { supabase }         from '../supabaseClient'
 import HardwareCard         from './HardwareCard'
@@ -178,7 +177,54 @@ export default function InventoryTabs({ selected, onUpdateSelected }) {
                 <div className="modal-box relative w-full max-w-md">
                   <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={()=>setIsHWModalOpen(false)}>✕</button>
                   <h3 className="font-bold text-lg mb-4">{editingHW ? 'Редактировать' : 'Добавить'} оборудование</h3>
-                  {/* HW form fields omitted for brevity */}
+
+                  <div className="space-y-4">
+                    <div className="form-control">
+                      <label className="label"><span className="label-text">Название устройства</span></label>
+                      <input
+                        type="text"
+                        className="input input-bordered w-full"
+                        placeholder="Например, keenetic giga"
+                        value={hwForm.name}
+                        onChange={e=>setHWForm(f=>({...f,name:e.target.value}))}
+                      />
+                    </div>
+                    <div className="form-control">
+                      <label className="label"><span className="label-text">Местоположение</span></label>
+                      <input
+                        type="text"
+                        className="input input-bordered w-full"
+                        placeholder="Где стоит"
+                        value={hwForm.location}
+                        onChange={e=>setHWForm(f=>({...f,location:e.target.value}))}
+                      />
+                    </div>
+                    <div className="flex space-x-4">
+                      <div className="form-control flex-1">
+                        <label className="label"><span className="label-text">Статус покупки</span></label>
+                        <select
+                          className="select select-bordered w-full"
+                          value={hwForm.purchase_status}
+                          onChange={e=>setHWForm(f=>({...f,purchase_status:e.target.value}))}
+                        >
+                          <option value="не оплачен">Не оплачен</option>
+                          <option value="оплачен">Оплачен</option>
+                        </select>
+                      </div>
+                      <div className="form-control flex-1">
+                        <label className="label"><span className="label-text">Статус установки</span></label>
+                        <select
+                          className="select select-bordered w-full"
+                          value={hwForm.install_status}
+                          onChange={e=>setHWForm(f=>({...f,install_status:e.target.value}))}
+                        >
+                          <option value="не установлен">Не установлен</option>
+                          <option value="установлен">Установлен</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="modal-action flex space-x-2">
                     <button className="btn btn-primary" onClick={saveHardware}>Сохранить</button>
                     <button className="btn btn-ghost" onClick={()=>setIsHWModalOpen(false)}>Отмена</button>
@@ -198,9 +244,7 @@ export default function InventoryTabs({ selected, onUpdateSelected }) {
             </div>
             {loadingTasks ? <p>Загрузка...</p> : (
               <div className="space-y-2">
-                {tasks.map(t=>(
-                  <TaskCard key={t.id} item={t} onEdit={()=>openTaskModal(t)} onDelete={()=>deleteTask(t.id)} />
-                ))}
+                {tasks.map(t=><TaskCard key={t.id} item={t} onEdit={()=>openTaskModal(t)} onDelete={()=>deleteTask(t.id)}/>)}
               </div>
             )}
 
