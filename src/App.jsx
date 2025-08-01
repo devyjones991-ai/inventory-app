@@ -9,7 +9,10 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => { fetchObjects(); }, []);
+  // Загрузка списка объектов
+  useEffect(() => {
+    fetchObjects();
+  }, []);
 
   async function fetchObjects() {
     const { data, error } = await supabase
@@ -24,6 +27,7 @@ export default function App() {
     }
   }
 
+  // Добавление объекта
   async function addObject() {
     const name = prompt('Введите название нового объекта:');
     if (!name) return;
@@ -40,6 +44,7 @@ export default function App() {
     }
   }
 
+  // Удаление объекта
   async function deleteObject(id) {
     if (!confirm('Удалить объект?')) return;
     const { error } = await supabase
@@ -61,7 +66,9 @@ export default function App() {
 
   function handleUpdateSelected(updated) {
     setSelected(updated);
-    setObjects(prev => prev.map(o => (o.id === updated.id ? updated : o)));
+    setObjects(prev =>
+      prev.map(o => (o.id === updated.id ? updated : o))
+    );
   }
 
   function toggleSidebar() {
@@ -78,7 +85,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-white">
-      {/* Сайдбар */}
+      {/* Десктоп- и мобайл-сайдбар */}
       <aside className="hidden md:flex flex-col w-72 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
         <InventorySidebar
           objects={objects}
@@ -87,13 +94,19 @@ export default function App() {
           onDelete={deleteObject}
         />
       </aside>
-
-      {/* Мобильный дровер */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-10 flex">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={toggleSidebar} />
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50"
+            onClick={toggleSidebar}
+          />
           <aside className="relative z-20 w-72 bg-gray-50 p-4 shadow-lg overflow-y-auto">
-            <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={toggleSidebar}>✕</button>
+            <button
+              className="btn btn-sm btn-circle absolute right-2 top-2"
+              onClick={toggleSidebar}
+            >
+              ✕
+            </button>
             <InventorySidebar
               objects={objects}
               selected={selected}
@@ -106,16 +119,26 @@ export default function App() {
 
       {/* Основная часть */}
       <div className="flex-1 flex flex-col">
-        {/* Хэдер */}
+        {/* Хэдер с одной фиолетовой кнопкой */}
         <header className="flex items-center justify-between p-4 border-b bg-white">
           <div className="flex items-center gap-2">
-            <button className="md:hidden text-2xl" onClick={toggleSidebar}>☰</button>
-            <button className="btn btn-primary btn-sm" onClick={addObject}>➕ Добавить</button>
+            <button
+              className="md:hidden text-2xl"
+              onClick={toggleSidebar}
+            >
+              ☰
+            </button>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={addObject}
+            >
+              ➕ Добавить
+            </button>
           </div>
           <ThemeSwitcher />
         </header>
 
-        {/* Контент */}
+        {/* Контент табов */}
         <div className="flex-1 overflow-auto">
           <InventoryTabs
             selected={selected}
