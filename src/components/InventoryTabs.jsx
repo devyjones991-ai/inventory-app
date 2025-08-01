@@ -138,7 +138,7 @@ export default function InventoryTabs({ selected, onUpdateSelected }) {
         <button className={`tab ${tab==='desc'? 'tab-active':''}`} onClick={()=>setTab('desc')}>📝 Описание</button>
         <button className={`tab ${tab==='hw'? 'tab-active':''}`} onClick={()=>setTab('hw')}>🛠 Железо ({hardware.length})</button>
         <button className={`tab ${tab==='tasks'? 'tab-active':''}`} onClick={()=>setTab('tasks')}>✅ Задачи ({tasks.length})</button>
-        <button className={`tab ${tab==='chats'? 'tab-active':''}`} onClick={()=>setTab('chats')}>💬 Чаты ({chats.length})</button>
+        <button className={`tab ${tab==='chats'? 'tab-active':''}`} onClick={()=>setTab('chats')}>💬 Чат ({chats.length})</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -229,9 +229,9 @@ export default function InventoryTabs({ selected, onUpdateSelected }) {
                       value={taskForm.status}
                       onChange={e=>setTaskForm(f=>({...f,status:e.target.value}))}
                     >
-                      <option value="open">Открыта</option>
-                      <option value="in_progress">В работе</option>
-                      <option value="done">Выполнена</option>
+                      <option value="запланировано">Запланировано</option>
+                      <option value="в процессе">В процессе</option>
+                      <option value="завершено">Завершено</option>
                     </select>
                   </div>
                 </div>
