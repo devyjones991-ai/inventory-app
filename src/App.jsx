@@ -29,6 +29,23 @@ export default function App() {
     }
   }
 
+  async function addObject() {
+    const name = prompt('Введите название нового объекта:');
+    if (!name) return;
+    const payload = { name, description: '' };
+    const { data, error } = await supabase
+      .from('objects')
+      .insert([payload])
+      .select()
+      .single();
+    if (error) {
+      alert('Ошибка добавления объекта: ' + error.message);
+    } else {
+      setObjects(prev => [...prev, data]);
+      setSelected(data);
+    }
+  }
+
   function handleSelect(obj) {
     setSelected(obj);
     setIsSidebarOpen(false);
@@ -36,7 +53,7 @@ export default function App() {
 
   function handleUpdateSelected(updated) {
     setSelected(updated);
-    setObjects(prev => prev.map(o => o.id === updated.id ? updated : o));
+    setObjects(prev => prev.map(o => (o.id === updated.id ? updated : o)));
   }
 
   function toggleSidebar() {
@@ -56,15 +73,14 @@ export default function App() {
     <div className="flex h-screen bg-white">
       {/* Десктопный сайдбар */}
       <aside className="hidden md:flex flex-col w-64 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
-        <h2 className="text-lg font-bold mb-4">Объекты</h2>
         <InventorySidebar
           objects={objects}
           selected={selected}
           onSelect={handleSelect}
         />
         <button
-          className="mt-4 btn btn-primary btn-sm self-start"
-          onClick={() => {/* TODO: добавить логику */}}
+          className="mt-4 btn btn-primary btn-sm"
+          onClick={addObject}
         >
           ➕ Добавить
         </button>
@@ -84,15 +100,14 @@ export default function App() {
             >
               ✕
             </button>
-            <h2 className="text-lg font-bold mb-4">Объекты</h2>
             <InventorySidebar
               objects={objects}
               selected={selected}
               onSelect={handleSelect}
             />
             <button
-              className="mt-4 btn btn-primary btn-sm self-start"
-              onClick={() => {/* TODO: добавить логику */}}
+              className="mt-4 btn btn-primary btn-sm"
+              onClick={addObject}
             >
               ➕ Добавить
             </button>
