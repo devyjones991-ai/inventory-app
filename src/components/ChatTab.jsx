@@ -9,7 +9,7 @@ export default function ChatTab({ selected }) {
   const [uploading, setUploading] = useState(false)
   const scrollRef = useRef(null)
 
-  // Загрузка существующих сообщений и подписка на новые
+  // Загрузка и подписка на новые сообщения
   useEffect(() => {
     if (!selected) {
       setMessages([])
@@ -17,7 +17,7 @@ export default function ChatTab({ selected }) {
     }
     const objectId = selected.id
 
-    // initial fetch
+    // начальная загрузка
     supabase
       .from('chat_messages')
       .select('*')
@@ -28,15 +28,10 @@ export default function ChatTab({ selected }) {
         else setMessages(data)
       })
 
-    // realtime subscription via channel
+    // realtime подписка
     const channel = supabase
       .channel(`chat_messages_object_${objectId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'chat_messages',
-        filter: `object_id=eq.${objectId}`
-      }, payload => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `object_id=eq.${objectId}` }, payload => {
         setMessages(prev => [...prev, payload.new])
       })
       .subscribe()
@@ -46,7 +41,7 @@ export default function ChatTab({ selected }) {
     }
   }, [selected])
 
-  // автоскролл вниз при новых сообщениях
+  // автоскролл вниз
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -81,7 +76,6 @@ export default function ChatTab({ selected }) {
     setFile(null)
   }
 
-  // отправка по Enter
   const handleKeyDown = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -90,39 +84,45 @@ export default function ChatTab({ selected }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Список сообщений */}
-      <div className="flex-1 overflow-auto p-2 space-y-2 bg-gray-50">
+    <div className="flex flex-col h-full bg-white">
+      {/* Сообщения */}
+      <div className="flex-1 overflow-auto p-2 bg-gray-100">
         {messages.length === 0 && (
-          <div className="text-gray-500 text-center mt-10">
-            Нет сообщений. Начните диалог ниже.
+          <div className="text-gray-500 text-center mt-4">
+            Нет сообщений. Начните диалог.
           </div>
         )}
         {messages.map(msg => (
-          <div key={msg.id} className="bg-white p-3 rounded shadow">
-            <div className="text-xs text-gray-500 mb-1">
-              {new Date(msg.created_at).toLocaleString()}
+          <div
+            key={msg.id}
+            className={`flex mb-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-[80%] sm:max-w-[60%] break-words p-3 rounded-lg shadow
+                ${msg.sender === 'user' ? 'bg-blue-100 text-right' : 'bg-white text-left'}`.replace(/\s+/g, ' ')}
+            >
+              <div className="text-xs text-gray-500 mb-1">
+                {new Date(msg.created_at).toLocaleString()}
+              </div>
+              {msg.content && <div className="whitespace-pre-line mb-1">{msg.content}</div>}
+              {msg.file_url && (
+                <a
+                  href={msg.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline block"
+                >
+                  📎 Прикреплённый файл
+                </a>
+              )}
             </div>
-            {msg.content && (
-              <div className="mb-1 whitespace-pre-line">{msg.content}</div>
-            )}
-            {msg.file_url && (
-              <a
-                href={msg.file_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 underline"
-              >
-                📎 Прикрепленный файл
-              </a>
-            )}
           </div>
         ))}
         <div ref={scrollRef} />
       </div>
 
-      {/* Форма отправки */}
-      <div className="p-2 border-t flex flex-col bg-white">
+      {/* Форма ввода */}
+      <div className="p-2 border-t bg-white">
         <textarea
           className="w-full border p-2 rounded mb-2 resize-none"
           rows={2}
@@ -132,15 +132,18 @@ export default function ChatTab({ selected }) {
           onKeyDown={handleKeyDown}
         />
         <div className="flex items-center space-x-2">
-          <input
-            type="file"
-            onChange={e => setFile(e.target.files[0])}
-            className="text-sm"
-          />
+          <label className="bg-gray-200 p-2 rounded cursor-pointer text-sm">
+            Файл
+            <input
+              type="file"
+              onChange={e => setFile(e.target.files[0])}
+              className="hidden"
+            />
+          </label>
           <button
             onClick={sendMessage}
             disabled={uploading}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
           >
             {uploading ? 'Загрузка...' : 'Отправить'}
           </button>
