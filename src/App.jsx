@@ -72,7 +72,7 @@ export default function App() {
   return (
     <div className="flex h-screen bg-white">
       {/* Десктопный сайдбар */}
-      <aside className="hidden md:flex flex-col w-64 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
+      <aside className="hidden md:flex flex-col w-72 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
         <InventorySidebar
           objects={objects}
           selected={selected}
@@ -93,7 +93,7 @@ export default function App() {
             className="fixed inset-0 bg-black bg-opacity-50"
             onClick={toggleSidebar}
           />
-          <aside className="relative z-20 w-64 bg-gray-50 p-4 shadow-lg overflow-y-auto">
+          <aside className="relative z-20 w-72 bg-gray-50 p-4 shadow-lg overflow-y-auto">
             <button
               className="btn btn-sm btn-circle absolute right-2 top-2"
               onClick={toggleSidebar}
