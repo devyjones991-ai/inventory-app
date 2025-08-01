@@ -43,7 +43,7 @@ export default function App() {
     setIsSidebarOpen(prev => !prev);
   }
 
-  // Если ещё нет выбранного объекта
+  // Пока нет выбранного объекта
   if (!selected) {
     return (
       <div className="flex items-center justify-center h-screen text-gray-500">
@@ -53,14 +53,21 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-white">
       {/* Десктопный сайдбар */}
-      <aside className="hidden md:block w-64 border-r overflow-auto">
+      <aside className="hidden md:flex flex-col w-64 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
+        <h2 className="text-lg font-bold mb-4">Объекты</h2>
         <InventorySidebar
           objects={objects}
           selected={selected}
           onSelect={handleSelect}
         />
+        <button
+          className="mt-4 btn btn-primary btn-sm self-start"
+          onClick={() => {/* TODO: добавить логику */}}
+        >
+          ➕ Добавить
+        </button>
       </aside>
 
       {/* Мобильный дровер-сайдбар */}
@@ -70,18 +77,25 @@ export default function App() {
             className="fixed inset-0 bg-black bg-opacity-50"
             onClick={toggleSidebar}
           />
-          <aside className="relative z-20 w-64 bg-white p-4 overflow-auto">
+          <aside className="relative z-20 w-64 bg-gray-50 p-4 shadow-lg overflow-y-auto">
             <button
               className="btn btn-sm btn-circle absolute right-2 top-2"
               onClick={toggleSidebar}
             >
               ✕
             </button>
+            <h2 className="text-lg font-bold mb-4">Объекты</h2>
             <InventorySidebar
               objects={objects}
               selected={selected}
               onSelect={handleSelect}
             />
+            <button
+              className="mt-4 btn btn-primary btn-sm self-start"
+              onClick={() => {/* TODO: добавить логику */}}
+            >
+              ➕ Добавить
+            </button>
           </aside>
         </div>
       )}
@@ -89,8 +103,8 @@ export default function App() {
       {/* Основная область */}
       <div className="flex-1 flex flex-col">
         {/* Хэдер на мобилках */}
-        <header className="flex items-center justify-between p-4 md:hidden border-b">
-          <button onClick={toggleSidebar} className="text-xl">
+        <header className="flex items-center justify-between p-4 md:hidden border-b bg-white">
+          <button onClick={toggleSidebar} className="text-2xl">
             ☰
           </button>
           <ThemeSwitcher />
