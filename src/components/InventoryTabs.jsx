@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { supabase }         from '../supabaseClient'
-import HardwareCard         from './HardwareCard'
-import TaskCard             from './TaskCard'
-import ChatTab              from './ChatTab'
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
+import HardwareCard from './HardwareCard';
+import TaskCard from './TaskCard';
+import ChatTab from './ChatTab';
 
 export default function InventoryTabs({ selected, onUpdateSelected }) {
   // --- вкладки и описание ---

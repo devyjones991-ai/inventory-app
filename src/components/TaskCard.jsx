@@ -1,5 +1,5 @@
 // src/components/TaskCard.jsx
-import React from 'react'
+import React from 'react';
 
 const PencilIcon = () => (
   <svg
