@@ -4,7 +4,7 @@ import HardwareCard from './HardwareCard';
 import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
 
-export default function InventoryTabs({ selected, onUpdateSelected }) {
+export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   // --- вкладки и описание ---
   const [tab, setTab] = useState('desc')
   const [description, setDescription] = useState('')
@@ -287,7 +287,7 @@ export default function InventoryTabs({ selected, onUpdateSelected }) {
         )}
 
         {/* Чаты */}
-        {tab==='chats' && <ChatTab selected={selected} chats={chats} />}
+        {tab==='chats' && <ChatTab selected={selected} user={user} />}
       </div>
     </div>
   )
