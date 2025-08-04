@@ -59,6 +59,24 @@ export default function App() {
     }
   }
 
+  // Редактирование объекта
+  async function editObject(obj) {
+    const name = prompt('Введите новое название объекта:', obj.name);
+    if (!name) return;
+    const { data, error } = await supabase
+      .from('objects')
+      .update({ name })
+      .eq('id', obj.id)
+      .select()
+      .single();
+    if (error) {
+      alert('Ошибка редактирования: ' + error.message);
+    } else {
+      setObjects(prev => prev.map(o => (o.id === obj.id ? data : o)));
+      if (selected?.id === obj.id) setSelected(data);
+    }
+  }
+
   function handleSelect(obj) {
     setSelected(obj);
     setIsSidebarOpen(false);
@@ -91,6 +109,7 @@ export default function App() {
           objects={objects}
           selected={selected}
           onSelect={handleSelect}
+          onEdit={editObject}
           onDelete={deleteObject}
         />
       </aside>
@@ -111,6 +130,7 @@ export default function App() {
               objects={objects}
               selected={selected}
               onSelect={handleSelect}
+              onEdit={editObject}
               onDelete={deleteObject}
             />
           </aside>
