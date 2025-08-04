@@ -8,6 +8,7 @@ export default function ChatTab({ selected, user }) {
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
   const scrollRef = useRef(null)
+  const senderName = user.user_metadata?.username || user.email
 
   // Загрузка и подписка на новые сообщения
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function ChatTab({ selected, user }) {
     const { data: inserted, error: msgErr } = await supabase
       .from('chat_messages')
       .insert([
-        { object_id: selected.id, sender: user.email,  content: newMessage.trim(), file_url: fileUrl }
+        { object_id: selected.id, sender: senderName,  content: newMessage.trim(), file_url: fileUrl }
       ])
       .select()
       .single()
@@ -108,11 +109,11 @@ export default function ChatTab({ selected, user }) {
         {messages.map(msg => (
           <div
             key={msg.id}
-            className={`flex mb-2 ${msg.sender === user.email ? 'justify-end' : 'justify-start'}`}
+            className={`flex mb-2 ${msg.sender === senderName ? 'justify-end' : 'justify-start'}`}
           >
             <div
               className={`max-w-[80%] sm:max-w-[60%] break-words p-3 rounded-lg shadow ${
-                msg.sender === user.email ? 'bg-blue-100 text-right' : 'bg-white text-left'
+                msg.sender === senderName ? 'bg-blue-100 text-right' : 'bg-white text-left'
               }`.replace(/\s+/g, ' ')}
             >
               <div className="text-xs text-gray-500 mb-1">
