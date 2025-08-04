@@ -4,6 +4,7 @@ export default function InventorySidebar({
   objects,
   selected,
   onSelect,
+  onEdit,
   onDelete
 }) {
   return (
@@ -22,6 +23,13 @@ export default function InventorySidebar({
             }`}
           >
             {o.name}
+          </button>
+          <button
+            onClick={() => onEdit(o)}
+            className="ml-2 text-blue-500 hover:text-blue-700"
+            title="Редактировать объект"
+          >
+            ✎
           </button>
           <button
             onClick={() => onDelete(o.id)}

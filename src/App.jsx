@@ -16,7 +16,7 @@ export default function App() {
   // Загрузка списка объектов
   useEffect(() => {
     fetchObjects();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchObjects() {
     const { data, error } = await supabase
@@ -49,7 +49,7 @@ export default function App() {
     }
   }
 
-  // Удаление объекта с подтверждением
+  // Запрос на удаление с подтверждением
   function askDelete(id) {
     setDeleteCandidate(id);
   }
@@ -63,10 +63,34 @@ export default function App() {
     if (error) {
       toast.error('Ошибка удаления: ' + error.message);
     } else {
-      setObjects(prev => prev.filter(o => o.id !== id));
-      if (selected?.id === id) setSelected(objects[0] || null);
+      setObjects(prev => {
+        const updated = prev.filter(o => o.id !== id);
+        if (selected?.id === id) {
+          setSelected(updated[0] || null);
+        }
+        return updated;
+      });
+      setDeleteCandidate(null);
+      toast.success('Объект удалён');
     }
-    setDeleteCandidate(null);
+  }
+
+  // Редактирование объекта
+  async function editObject(obj) {
+    const name = prompt('Введите новое название объекта:', obj.name);
+    if (!name) return;
+    const { data, error } = await supabase
+      .from('objects')
+      .update({ name })
+      .eq('id', obj.id)
+      .select()
+      .single();
+    if (error) {
+      alert('Ошибка редактирования: ' + error.message);
+    } else {
+      setObjects(prev => prev.map(o => (o.id === obj.id ? data : o)));
+      if (selected?.id === obj.id) setSelected(data);
+    }
   }
 
   function handleSelect(obj) {
@@ -76,9 +100,7 @@ export default function App() {
 
   function handleUpdateSelected(updated) {
     setSelected(updated);
-    setObjects(prev =>
-      prev.map(o => (o.id === updated.id ? updated : o))
-    );
+    setObjects(prev => prev.map(o => (o.id === updated.id ? updated : o)));
   }
 
   function toggleSidebar() {
@@ -98,100 +120,105 @@ export default function App() {
       <div className="flex h-screen bg-white">
         <Toaster position="top-right" />
         {/* Десктоп- и мобайл-сайдбар */}
-      <aside className="hidden md:flex flex-col w-72 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
-        <InventorySidebar
-          objects={objects}
-          selected={selected}
-          onSelect={handleSelect}
-          onDelete={askDelete}
-        />
-      </aside>
-      {isSidebarOpen && (
-        <div className="fixed inset-0 z-10 flex">
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50"
-            onClick={toggleSidebar}
-          />
-          <aside className="relative z-20 w-72 bg-gray-50 p-4 shadow-lg overflow-y-auto">
-            <button
-              className="btn btn-sm btn-circle absolute right-2 top-2"
-              onClick={toggleSidebar}
-            >
-              ✕
-            </button>
-            <InventorySidebar
-              objects={objects}
-              selected={selected}
-              onSelect={handleSelect}
-              onDelete={askDelete}
-            />
-          </aside>
-        </div>
-      )}
-
-      {/* Основная часть */}
-      <div className="flex-1 flex flex-col">
-        {/* Хэдер с одной фиолетовой кнопкой */}
-        <header className="flex items-center justify-between p-4 border-b bg-white">
-          <div className="flex items-center gap-2">
-            <button
-              className="md:hidden text-2xl"
-              onClick={toggleSidebar}
-            >
-              ☰
-            </button>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              ➕ Добавить
-            </button>
-          </div>
-          <ThemeSwitcher />
-        </header>
-
-        {/* Контент табов */}
-        <div className="flex-1 overflow-auto">
-          <InventoryTabs
+        <aside className="hidden md:flex flex-col w-72 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
+          <InventorySidebar
+            objects={objects}
             selected={selected}
-            onUpdateSelected={handleUpdateSelected}
+            onSelect={handleSelect}
+            onEdit={editObject}
+            onDelete={askDelete}
           />
-        </div>
-      </div>
-
-      {isAddModalOpen && (
-        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="modal-box relative w-full max-w-md">
-            <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={() => setIsAddModalOpen(false)}>✕</button>
-            <h3 className="font-bold text-lg mb-4">Добавить объект</h3>
-            <div className="space-y-4">
-              <input
-                type="text"
-                className="input input-bordered w-full"
-                placeholder="Название"
-                value={newObjectName}
-                onChange={e => setNewObjectName(e.target.value)}
+        </aside>
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-10 flex">
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50"
+              onClick={toggleSidebar}
+            />
+            <aside className="relative z-20 w-72 bg-gray-50 p-4 shadow-lg overflow-y-auto">
+              <button
+                className="btn btn-sm btn-circle absolute right-2 top-2"
+                onClick={toggleSidebar}
+              >
+                ✕
+              </button>
+              <InventorySidebar
+                objects={objects}
+                selected={selected}
+                onSelect={handleSelect}
+                onEdit={editObject}
+                onDelete={askDelete}
               />
-            </div>
-            <div className="modal-action flex space-x-2">
-              <button className="btn btn-primary" onClick={saveNewObject}>Сохранить</button>
-              <button className="btn btn-ghost" onClick={() => setIsAddModalOpen(false)}>Отмена</button>
-            </div>
+            </aside>
           </div>
-        </div>
-      )}
+        )}
 
-      {deleteCandidate && (
-        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="modal-box relative w-full max-w-sm">
-            <h3 className="font-bold text-lg mb-4">Удалить объект?</h3>
-            <div className="modal-action flex space-x-2">
-              <button className="btn btn-error" onClick={confirmDelete}>Удалить</button>
-              <button className="btn" onClick={() => setDeleteCandidate(null)}>Отмена</button>
+        {/* Основная часть */}
+        <div className="flex-1 flex flex-col">
+          {/* Хэдер с одной фиолетовой кнопкой */}
+          <header className="flex items-center justify-between p-4 border-b bg-white">
+            <div className="flex items-center gap-2">
+              <button
+                className="md:hidden text-2xl"
+                onClick={toggleSidebar}
+              >
+                ☰
+              </button>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => setIsAddModalOpen(true)}
+              >
+                ➕ Добавить
+              </button>
             </div>
+            <ThemeSwitcher />
+          </header>
+
+          {/* Контент табов */}
+          <div className="flex-1 overflow-auto">
+            <InventoryTabs
+              selected={selected}
+              onUpdateSelected={handleUpdateSelected}
+            />
           </div>
         </div>
-      )}
+
+        {/* Модальное добавление объекта */}
+        {isAddModalOpen && (
+          <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="modal-box relative w-full max-w-md">
+              <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={() => setIsAddModalOpen(false)}>✕</button>
+              <h3 className="font-bold text-lg mb-4">Добавить объект</h3>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="Название"
+                  value={newObjectName}
+                  onChange={e => setNewObjectName(e.target.value)}
+                />
+              </div>
+              <div className="modal-action flex space-x-2">
+                <button className="btn btn-primary" onClick={saveNewObject}>Сохранить</button>
+                <button className="btn btn-ghost" onClick={() => setIsAddModalOpen(false)}>Отмена</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Модальное подтверждение удаления */}
+        {deleteCandidate && (
+          <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="modal-box relative w-full max-w-sm">
+              <h3 className="font-bold text-lg mb-4">Удалить объект?</h3>
+              <div className="modal-action flex space-x-2">
+                <button className="btn btn-error" onClick={confirmDelete}>Удалить</button>
+                <button className="btn" onClick={() => setDeleteCandidate(null)}>Отмена</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 }

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { supabase } from '../supabaseClient'
-import { v4 as uuidv4 } from 'uuid'
+import React, { useEffect, useState, useRef } from 'react';
+import { supabase } from '../supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function ChatTab({ selected }) {
   const [messages, setMessages] = useState([])
