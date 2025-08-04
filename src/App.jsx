@@ -1,17 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import ThemeSwitcher from './components/ThemeSwitcher';
 import InventorySidebar from './components/InventorySidebar';
 import InventoryTabs from './components/InventoryTabs';
+import Auth from './components/Auth';
 import { Toaster, toast } from 'react-hot-toast';
 
 export default function App() {
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newObjectName, setNewObjectName] = useState('');
   const [deleteCandidate, setDeleteCandidate] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   // Загрузка списка объектов
   useEffect(() => {
@@ -95,7 +106,6 @@ export default function App() {
 
   function handleSelect(obj) {
     setSelected(obj);
-    setIsSidebarOpen(false);
   }
 
   function handleUpdateSelected(updated) {
@@ -106,6 +116,8 @@ export default function App() {
   function toggleSidebar() {
     setIsSidebarOpen(prev => !prev);
   }
+
+  if (!user) return <Auth />;
 
   if (!selected) {
     return (
@@ -171,7 +183,7 @@ export default function App() {
                 ➕ Добавить
               </button>
             </div>
-            <ThemeSwitcher />
+            <button className="btn btn-sm" onClick={() => supabase.auth.signOut()}>Выйти</button>
           </header>
 
           {/* Контент табов */}
@@ -179,6 +191,7 @@ export default function App() {
             <InventoryTabs
               selected={selected}
               onUpdateSelected={handleUpdateSelected}
+              user={user}
             />
           </div>
         </div>

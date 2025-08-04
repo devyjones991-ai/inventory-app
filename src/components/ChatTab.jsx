@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
-export default function ChatTab({ selected }) {
+export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [file, setFile] = useState(null)
@@ -77,7 +77,7 @@ export default function ChatTab({ selected }) {
     const { data: inserted, error: msgErr } = await supabase
       .from('chat_messages')
       .insert([
-        { object_id: selected.id, sender: 'user', content: newMessage.trim(), file_url: fileUrl }
+        { object_id: selected.id, sender: user.email,  content: newMessage.trim(), file_url: fileUrl }
       ])
       .select()
       .single()
@@ -108,15 +108,15 @@ export default function ChatTab({ selected }) {
         {messages.map(msg => (
           <div
             key={msg.id}
-            className={`flex mb-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex mb-2 ${msg.sender === user.email ? 'justify-end' : 'justify-start'}`}
           >
             <div
               className={`max-w-[80%] sm:max-w-[60%] break-words p-3 rounded-lg shadow ${
-                msg.sender === 'user' ? 'bg-blue-100 text-right' : 'bg-white text-left'
+                msg.sender === user.email ? 'bg-blue-100 text-right' : 'bg-white text-left'
               }`.replace(/\s+/g, ' ')}
             >
               <div className="text-xs text-gray-500 mb-1">
-                {new Date(msg.created_at).toLocaleString()}
+                {msg.sender} • {new Date(msg.created_at).toLocaleString()}
               </div>
               {msg.content && <div className="whitespace-pre-line mb-1">{msg.content}</div>}
               {msg.file_url && (

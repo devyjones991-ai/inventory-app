@@ -1,0 +1,58 @@
+import React, { useState } from 'react'
+import { supabase } from '../supabaseClient'
+
+export default function Auth() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isRegister, setIsRegister] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError(null)
+    let res
+    if (isRegister) {
+      res = await supabase.auth.signUp({ email, password })
+    } else {
+      res = await supabase.auth.signInWithPassword({ email, password })
+    }
+    if (res.error) setError(res.error.message)
+  }
+
+  return (
+    <div className="flex items-center justify-center h-screen bg-gray-50">
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4">
+        <h2 className="text-lg font-bold text-center">
+          {isRegister ? 'Регистрация' : 'Вход'}
+        </h2>
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+        <input
+          type="email"
+          className="input input-bordered w-full"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          className="input input-bordered w-full"
+          placeholder="Пароль"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" className="btn btn-primary w-full">
+          {isRegister ? 'Зарегистрироваться' : 'Войти'}
+        </button>
+        <button
+          type="button"
+          className="btn btn-link w-full"
+          onClick={() => setIsRegister(!isRegister)}
+        >
+          {isRegister ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Регистрация'}
+        </button>
+      </form>
+    </div>
+  )
+}
