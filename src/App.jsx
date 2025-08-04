@@ -54,8 +54,13 @@ export default function App() {
     if (error) {
       alert('Ошибка удаления: ' + error.message);
     } else {
-      setObjects(prev => prev.filter(o => o.id !== id));
-      if (selected?.id === id) setSelected(objects[0] || null);
+      setObjects(prev => {
+        const updated = prev.filter(o => o.id !== id);
+        if (selected?.id === id) {
+          setSelected(updated[0] || null);
+        }
+        return updated;
+      });
     }
   }
 
