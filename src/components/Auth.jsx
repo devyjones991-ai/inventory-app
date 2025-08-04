@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient'
 export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState(null)
 
@@ -12,7 +13,7 @@ export default function Auth() {
     setError(null)
     let res
     if (isRegister) {
-      res = await supabase.auth.signUp({ email, password })
+      res = await supabase.auth.signUp({ email, password, options: { data: { username } } })
     } else {
       res = await supabase.auth.signInWithPassword({ email, password })
     }
@@ -34,6 +35,16 @@ export default function Auth() {
           onChange={e => setEmail(e.target.value)}
           required
         />
+        {isRegister && (
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            placeholder="Имя пользователя"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            required
+          />
+        )}
         <input
           type="password"
           className="input input-bordered w-full"

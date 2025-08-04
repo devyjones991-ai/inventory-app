@@ -106,6 +106,8 @@ export default function App() {
 
   function handleSelect(obj) {
     setSelected(obj);
+    // закрываем сайдбар на мобильных устройствах после выбора объекта
+    setIsSidebarOpen(false);
   }
 
   function handleUpdateSelected(updated) {
