@@ -1,12 +1,24 @@
-# React + Vite
+# Inventory App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Простое приложение на React для ведения учёта объектов, оборудования и задач. Данные хранятся в [Supabase](https://supabase.com/).
 
-Currently, two official plugins are available:
+## Структура таблиц
+- **objects**: `id`, `name`, `description`, `created_at`
+- **hardware**: `id`, `object_id`, `name`, `location`, `purchase_status`, `install_status`, `created_at`
+- **tasks**: `id`, `object_id`, `title`, `status`, `created_at`
+- **chat_messages**: `id`, `object_id`, `content`, `created_at`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Запуск
+1. Установите зависимости: `npm install`
+2. Создайте файл `.env` и добавьте ключи Supabase `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`
+3. Старт разработки: `npm run dev`
+4. Запуск тестов: `npm test`
 
-## Expanding the ESLint configuration
+## Сборка
+- Сборка: `npm run build`
+- Предпросмотр: `npm run preview`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Особенности
+- Переключение тем интерфейса
+- Работа с оборудованием и задачами через модальные окна
+- Пример чата для каждого объекта
