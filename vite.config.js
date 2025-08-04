@@ -9,4 +9,9 @@ export default defineConfig({
     port: 5173,       // или любой порт, который вам удобнее
     strictPort: true, // если порт занят — сразу выйдет с ошибкой
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './tests/setup.js'
+  }
 })

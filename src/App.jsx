@@ -3,11 +3,15 @@ import { supabase } from './supabaseClient';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import InventorySidebar from './components/InventorySidebar';
 import InventoryTabs from './components/InventoryTabs';
+import { Toaster, toast } from 'react-hot-toast';
 
 export default function App() {
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newObjectName, setNewObjectName] = useState('');
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
 
   // Загрузка списка объектов
   useEffect(() => {
@@ -27,36 +31,42 @@ export default function App() {
     }
   }
 
-  // Добавление объекта
-  async function addObject() {
-    const name = prompt('Введите название нового объекта:');
-    if (!name) return;
+  // Добавление объекта через модальное окно
+  async function saveNewObject() {
+    if (!newObjectName.trim()) return;
     const { data, error } = await supabase
       .from('objects')
-      .insert([{ name, description: '' }])
+      .insert([{ name: newObjectName, description: '' }])
       .select()
       .single();
     if (error) {
-      alert('Ошибка добавления: ' + error.message);
+      toast.error('Ошибка добавления: ' + error.message);
     } else {
       setObjects(prev => [...prev, data]);
       setSelected(data);
+      setNewObjectName('');
+      setIsAddModalOpen(false);
     }
   }
 
-  // Удаление объекта
-  async function deleteObject(id) {
-    if (!confirm('Удалить объект?')) return;
+  // Удаление объекта с подтверждением
+  function askDelete(id) {
+    setDeleteCandidate(id);
+  }
+
+  async function confirmDelete() {
+    const id = deleteCandidate;
     const { error } = await supabase
       .from('objects')
       .delete()
       .eq('id', id);
     if (error) {
-      alert('Ошибка удаления: ' + error.message);
+      toast.error('Ошибка удаления: ' + error.message);
     } else {
       setObjects(prev => prev.filter(o => o.id !== id));
       if (selected?.id === id) setSelected(objects[0] || null);
     }
+    setDeleteCandidate(null);
   }
 
   function handleSelect(obj) {
@@ -84,14 +94,16 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-white">
-      {/* Десктоп- и мобайл-сайдбар */}
+    <>
+      <div className="flex h-screen bg-white">
+        <Toaster position="top-right" />
+        {/* Десктоп- и мобайл-сайдбар */}
       <aside className="hidden md:flex flex-col w-72 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
         <InventorySidebar
           objects={objects}
           selected={selected}
           onSelect={handleSelect}
-          onDelete={deleteObject}
+          onDelete={askDelete}
         />
       </aside>
       {isSidebarOpen && (
@@ -111,7 +123,7 @@ export default function App() {
               objects={objects}
               selected={selected}
               onSelect={handleSelect}
-              onDelete={deleteObject}
+              onDelete={askDelete}
             />
           </aside>
         </div>
@@ -130,7 +142,7 @@ export default function App() {
             </button>
             <button
               className="btn btn-primary btn-sm"
-              onClick={addObject}
+              onClick={() => setIsAddModalOpen(true)}
             >
               ➕ Добавить
             </button>
@@ -146,6 +158,40 @@ export default function App() {
           />
         </div>
       </div>
-    </div>
+
+      {isAddModalOpen && (
+        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="modal-box relative w-full max-w-md">
+            <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={() => setIsAddModalOpen(false)}>✕</button>
+            <h3 className="font-bold text-lg mb-4">Добавить объект</h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                placeholder="Название"
+                value={newObjectName}
+                onChange={e => setNewObjectName(e.target.value)}
+              />
+            </div>
+            <div className="modal-action flex space-x-2">
+              <button className="btn btn-primary" onClick={saveNewObject}>Сохранить</button>
+              <button className="btn btn-ghost" onClick={() => setIsAddModalOpen(false)}>Отмена</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteCandidate && (
+        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="modal-box relative w-full max-w-sm">
+            <h3 className="font-bold text-lg mb-4">Удалить объект?</h3>
+            <div className="modal-action flex space-x-2">
+              <button className="btn btn-error" onClick={confirmDelete}>Удалить</button>
+              <button className="btn" onClick={() => setDeleteCandidate(null)}>Отмена</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
