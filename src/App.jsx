@@ -12,7 +12,7 @@ export default function App() {
   // Загрузка списка объектов
   useEffect(() => {
     fetchObjects();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchObjects() {
     const { data, error } = await supabase
