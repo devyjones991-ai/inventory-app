@@ -168,8 +168,15 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     }
 
     if (res.error) return alert('Ошибка задач: ' + res.error.message)
-    const rec = res.data
-    setTasks(prev => editingTask ? prev.map(t => t.id === rec.id ? rec : t) : [...prev, rec])
+
+    // объединяем полученную запись с полями формы,
+    // чтобы сохранить исполнителя, дату и заметки локально даже если БД их отбросила
+    const rec = { ...res.data, ...base }
+    setTasks(prev =>
+      editingTask
+        ? prev.map(t => (t.id === rec.id ? rec : t))
+        : [...prev, rec]
+    )
     setIsTaskModalOpen(false)
   }
   async function deleteTask(id) {
