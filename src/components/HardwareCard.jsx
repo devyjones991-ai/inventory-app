@@ -1,7 +1,7 @@
 // src/components/HardwareCard.jsx
 import React from 'react';
 import Card from './Card';
-import { Pencil, Trash2 } from 'lucide-react';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function HardwareCard({ item, onEdit, onDelete }) {
   return (
@@ -16,11 +16,11 @@ export default function HardwareCard({ item, onEdit, onDelete }) {
       </div>
       <div className="flex space-x-2">
         <button onClick={onEdit} className="btn btn-sm btn-outline flex items-center gap-1">
-          <Pencil className="w-4 h-4" />
+          <PencilIcon className="w-4 h-4" />
           Изменить
         </button>
         <button onClick={onDelete} className="btn btn-sm btn-error flex items-center gap-1">
-          <Trash2 className="w-4 h-4" />
+          <TrashIcon className="w-4 h-4" />
           Удалить
         </button>
       </div>

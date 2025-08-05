@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from './Card';
-import { Pencil, Trash2 } from 'lucide-react';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 /**
  * Format date string into locale friendly format.
@@ -50,7 +50,7 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
             onEdit();
           }}
         >
-          <Pencil className="w-4 h-4" />
+          <PencilIcon className="w-4 h-4" />
         </button>
         <button
           className="btn btn-sm btn-ghost"
@@ -62,7 +62,7 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
             }
           }}
         >
-          <Trash2 className="w-4 h-4" />
+          <TrashIcon className="w-4 h-4" />
         </button>
       </div>
     </Card>

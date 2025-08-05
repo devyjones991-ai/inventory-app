@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import HardwareCard from './HardwareCard';
 import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
-import { Plus, MessageSquare } from 'lucide-react';
+import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 
@@ -258,7 +258,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           className={`px-4 py-2 hover:bg-primary/10 flex items-center gap-1 ${tab==='chat' ? 'border-b-2 border-primary' : ''}`}
           onClick={() => setTab('chat')}
         >
-          <MessageSquare className="w-4 h-4" /> Чат ({chatMessages.length})
+          <ChatBubbleOvalLeftIcon className="w-4 h-4" /> Чат ({chatMessages.length})
         </button>
       </div>
 
@@ -297,7 +297,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Оборудование</h3>
               <button className="btn btn-sm btn-primary flex items-center gap-1" onClick={() => openHWModal()}>
-                <Plus className="w-4 h-4" /> Добавить
+                <PlusIcon className="w-4 h-4" /> Добавить
               </button>
             </div>
             {loadingHW ? <p>Загрузка...</p> : (
@@ -377,7 +377,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Задачи</h3>
               <button className="btn btn-sm btn-primary flex items-center gap-1" onClick={() => openTaskModal()}>
-                <Plus className="w-4 h-4" /> Добавить задачу
+                <PlusIcon className="w-4 h-4" /> Добавить задачу
               </button>
             </div>
             {loadingTasks ? <p>Загрузка...</p> : (
