@@ -118,13 +118,29 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     setIsTaskModalOpen(true)
   }
   async function saveTask() {
-    const payload = { object_id: selected.id, ...taskForm }
+    // формируем полезную нагрузку без полей, которых может не быть в схеме
+    const base = { title: taskForm.title, status: taskForm.status }
+    if (taskForm.due_date) base.due_date = taskForm.due_date
+    if (taskForm.assignee) base.assignee = taskForm.assignee
+    let payload = { object_id: selected.id, ...base }
+
     let res
     if (editingTask) {
       res = await supabase.from('tasks').update(payload).eq('id', editingTask.id).select().single()
     } else {
       res = await supabase.from('tasks').insert([payload]).select().single()
     }
+
+    // если БД не знает о дополнительных полях, повторяем без них
+    if (res.error && /(assignee|due_date)/.test(res.error.message)) {
+      const { assignee, due_date, ...baseWithoutExtras } = payload
+      if (editingTask) {
+        res = await supabase.from('tasks').update(baseWithoutExtras).eq('id', editingTask.id).select().single()
+      } else {
+        res = await supabase.from('tasks').insert([baseWithoutExtras]).select().single()
+      }
+    }
+
     if (res.error) return alert('Ошибка задач: ' + res.error.message)
     const rec = res.data
     setTasks(prev => editingTask ? prev.map(t => t.id === rec.id ? rec : t) : [...prev, rec])
