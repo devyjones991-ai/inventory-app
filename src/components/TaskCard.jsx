@@ -27,7 +27,7 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
 
   return (
     <Card
-      className="flex justify-between items-center cursor-pointer hover:bg-base-200 transition"
+      className="flex justify-between items-center cursor-pointer hover:bg-base-200 transition animate-fade-in"
       onClick={onView}
     >
       <div className="flex-1">

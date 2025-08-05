@@ -7,6 +7,23 @@ import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 
+// локальное хранилище для дополнительных полей задач
+const TASK_EXTRAS_KEY = 'taskExtras';
+
+function getTaskExtras() {
+  if (typeof localStorage === 'undefined') return {};
+  try {
+    return JSON.parse(localStorage.getItem(TASK_EXTRAS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function setTaskExtras(extras) {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(TASK_EXTRAS_KEY, JSON.stringify(extras));
+}
+
 // форматирование даты для отображения в русской локали
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -66,7 +83,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       }, payload => {
         setTasks(prev => {
           if (prev.some(t => t.id === payload.new.id)) return prev
-          return [...prev, payload.new]
+          const extras = getTaskExtras()
+          const rec = extras[payload.new.id] ? { ...payload.new, ...extras[payload.new.id] } : payload.new
+          return [...prev, rec]
         })
         if (tab !== 'tasks') toast.success(`Добавлена задача: ${payload.new.title}`)
       })
@@ -155,7 +174,11 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     setLoadingTasks(true)
     const { data, error } = await supabase
       .from('tasks').select('*').eq('object_id', objectId).order('created_at')
-    if (!error) setTasks(data)
+    if (!error) {
+      const extras = getTaskExtras()
+      const merged = (data || []).map(t => extras[t.id] ? { ...t, ...extras[t.id] } : t)
+      setTasks(merged)
+    }
     setLoadingTasks(false)
   }
   function openTaskModal(item = null) {
@@ -218,10 +241,26 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     // объединяем полученную запись с полями формы,
     // чтобы сохранить исполнителя, дату и заметки локально даже если БД их отбросила
     const rec = { ...res.data, ...base }
+
+    // сохраняем дополнительные поля локально
+    const extras = getTaskExtras()
+    const extraData = {
+      assignee: base.assignee || '',
+      due_date: base.due_date || '',
+      notes: base.notes || ''
+    }
+    if (extraData.assignee || extraData.due_date || extraData.notes) {
+      extras[rec.id] = extraData
+    } else {
+      delete extras[rec.id]
+    }
+    setTaskExtras(extras)
+    const recWithExtras = extras[rec.id] ? { ...rec, ...extras[rec.id] } : rec
+
     setTasks(prev =>
       editingTask
-        ? prev.map(t => (t.id === rec.id ? rec : t))
-        : [...prev, rec]
+        ? prev.map(t => (t.id === recWithExtras.id ? recWithExtras : t))
+        : [...prev, recWithExtras]
     )
     setIsTaskModalOpen(false)
   }
@@ -230,6 +269,11 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     const { error } = await supabase.from('tasks').delete().eq('id', id)
     if (error) return alert('Ошибка удаления')
     setTasks(prev => prev.filter(t => t.id !== id))
+    const extras = getTaskExtras()
+    if (extras[id]) {
+      delete extras[id]
+      setTaskExtras(extras)
+    }
   }
 
   return (
@@ -310,7 +354,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
 
             {isHWModalOpen && (
               <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="modal-box relative w-full max-w-md">
+                <div className="modal-box relative w-full max-w-md animate-fade-in">
                   <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={()=>setIsHWModalOpen(false)}>✕</button>
                   <h3 className="font-bold text-lg mb-4">{editingHW ? 'Редактировать' : 'Добавить'} оборудование</h3>
 
@@ -396,7 +440,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
 
             {isTaskModalOpen && (
               <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="modal-box relative w-full max-w-md">
+                <div className="modal-box relative w-full max-w-md animate-fade-in">
                   <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={()=>setIsTaskModalOpen(false)}>✕</button>
                   <h3 className="font-bold text-lg mb-4">{editingTask ? 'Редактировать' : 'Добавить'} задачу</h3>
                   <div className="space-y-4">
@@ -463,7 +507,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
 
             {viewingTask && (
               <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="modal-box relative w-full max-w-md">
+                <div className="modal-box relative w-full max-w-md animate-fade-in">
                   <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={()=>setViewingTask(null)}>✕</button>
                   <h3 className="font-bold text-lg mb-4">{viewingTask.title}</h3>
                   <div className="space-y-2">
