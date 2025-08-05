@@ -5,6 +5,7 @@ import InventoryTabs from './components/InventoryTabs';
 import Auth from './components/Auth';
 import AccountModal from './components/AccountModal';
 import { Toaster, toast } from 'react-hot-toast';
+import { Plus, Trash2 } from 'lucide-react';
 
 export default function App() {
   const [objects, setObjects] = useState([]);
@@ -185,10 +186,10 @@ export default function App() {
                 ☰
               </button>
               <button
-                className="btn btn-primary btn-sm"
+                className="btn btn-primary btn-sm flex items-center gap-1"
                 onClick={() => setIsAddModalOpen(true)}
               >
-                ➕ Добавить
+                <Plus className="w-4 h-4" /> Добавить
               </button>
             </div>
               <div className="flex items-center gap-2">
@@ -238,7 +239,9 @@ export default function App() {
             <div className="modal-box relative w-full max-w-sm">
               <h3 className="font-bold text-lg mb-4">Удалить объект?</h3>
               <div className="modal-action flex space-x-2">
-                <button className="btn btn-error" onClick={confirmDelete}>Удалить</button>
+                <button className="btn btn-error flex items-center gap-1" onClick={confirmDelete}>
+                  <Trash2 className="w-4 h-4" /> Удалить
+                </button>
                 <button className="btn" onClick={() => setDeleteCandidate(null)}>Отмена</button>
               </div>
             </div>

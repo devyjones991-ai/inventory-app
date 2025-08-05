@@ -2,40 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
-
-const PaperClipIcon = ({ className = 'w-6 h-6' }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <path
-      d="M18.375 12.739L10.682 20.432C8.92462 22.1893 6.07538 22.1893 4.31802 20.432C2.56066 18.6746 2.56066 15.8254 4.31802 14.068L15.2573 3.12868C16.4289 1.95711 18.3283 1.95711 19.4999 3.12868C20.6715 4.30025 20.6715 6.19975 19.4999 7.37132L8.55158 18.3197M8.56066 18.3107C8.55764 18.3137 8.55462 18.3167 8.55158 18.3197M14.2498 8.37865L6.43934 16.1893C5.85355 16.7751 5.85355 17.7249 6.43934 18.3107C7.02211 18.8934 7.9651 18.8964 8.55158 18.3197"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-const PaperAirplaneIcon = ({ className = 'w-5 h-5' }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <path
-      d="M5.99972 12L3.2688 3.12451C9.88393 5.04617 16.0276 8.07601 21.4855 11.9997C16.0276 15.9235 9.884 18.9535 3.26889 20.8752L5.99972 12ZM5.99972 12L13.5 12"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
+import { Paperclip, Send } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
@@ -144,8 +112,10 @@ export default function ChatTab({ selected, user }) {
           {messages.map(msg => {
             const isOwn = msg.sender === senderName;
             return (
-              <div
+              <motion.div
                 key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 className={`flex mb-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
               >
                 <div
@@ -175,7 +145,7 @@ export default function ChatTab({ selected, user }) {
                     </a>
                   )}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         <div ref={scrollRef} />
@@ -185,7 +155,7 @@ export default function ChatTab({ selected, user }) {
       <div className="p-2 border-t bg-white">
         <div className="flex items-end space-x-2">
           <label className="p-2 cursor-pointer text-gray-500 hover:text-gray-700">
-            <PaperClipIcon />
+            <Paperclip className="w-6 h-6" />
             <input
               type="file"
               onChange={e => setFile(e.target.files[0])}
@@ -211,7 +181,7 @@ export default function ChatTab({ selected, user }) {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
               </svg>
             ) : (
-              <PaperAirplaneIcon />
+              <Send className="w-5 h-5" />
             )}
           </button>
         </div>
