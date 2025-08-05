@@ -5,6 +5,7 @@ import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
 import WhatsAppIcon from './WhatsAppIcon';
 import { linkifyText } from '../utils/linkify';
+import { toast } from 'react-hot-toast';
 
 // форматирование даты для отображения в русской локали
 function formatDate(dateStr) {
@@ -51,6 +52,50 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     supabase.from('chat_messages').select('*').eq('object_id', selected.id)
       .then(({ data }) => setChatMessages(data || []))
   }, [selected])
+
+  // realtime уведомления по задачам и чату
+  useEffect(() => {
+    if (!selected) return
+    const taskChannel = supabase
+      .channel(`tasks_object_${selected.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'tasks',
+        filter: `object_id=eq.${selected.id}`
+      }, payload => {
+        setTasks(prev => {
+          if (prev.some(t => t.id === payload.new.id)) return prev
+          return [...prev, payload.new]
+        })
+        if (tab !== 'tasks') toast.success(`Добавлена задача: ${payload.new.title}`)
+      })
+      .subscribe()
+
+    const chatChannel = supabase
+      .channel(`chat_messages_object_${selected.id}_tabs`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `object_id=eq.${selected.id}`
+      }, payload => {
+        setChatMessages(prev => {
+          if (prev.some(m => m.id === payload.new.id)) return prev
+          return [...prev, payload.new]
+        })
+        const sender = user.user_metadata?.username || user.email
+        if (tab !== 'chat' && payload.new.sender !== sender) {
+          toast.success('Новое сообщение в чате')
+        }
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(taskChannel)
+      supabase.removeChannel(chatChannel)
+    }
+  }, [selected, tab, user])
 
   // --- CRUD Описание ---
   async function saveDescription() {
