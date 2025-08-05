@@ -182,7 +182,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
             ) : (
               description ? (
                 <p
-                  className="mt-2 whitespace-pre-line break-words"
+                  className="mt-2 whitespace-pre-wrap break-words"
                   dangerouslySetInnerHTML={{ __html: linkifyText(description) }}
                 />
               ) : (

@@ -1,6 +1,19 @@
 // src/components/TaskCard.jsx
 import React from 'react';
 
+/**
+ * Format date string into locale friendly format.
+ * Falls back to original value on parse errors.
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  try {
+    return new Date(dateStr).toLocaleDateString('ru-RU')
+  } catch {
+    return dateStr
+  }
+}
+
 const PencilIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -50,12 +63,12 @@ export default function TaskCard({ item, onEdit, onDelete }) {
   return (
     <div className="flex justify-between items-center p-3 border rounded-lg hover:bg-base-200 transition">
       <div className="flex-1">
-        <p className="break-words">{item.title}</p>
+        <p className="break-words whitespace-pre-wrap">{item.title}</p>
         {(item.assignee || item.due_date) && (
           <p className="text-sm text-gray-500">
             {item.assignee && <span>👤 {item.assignee}</span>}
             {item.assignee && item.due_date && ' • '}
-            {item.due_date && <span>📅 {item.due_date}</span>}
+            {item.due_date && <span>📅 {formatDate(item.due_date)}</span>}
           </p>
         )}
       </div>
