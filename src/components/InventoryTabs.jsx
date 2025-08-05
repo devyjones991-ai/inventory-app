@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import HardwareCard from './HardwareCard';
 import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
+import { linkifyText } from '../utils/linkify';
 
 export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   // --- вкладки и описание ---
@@ -22,7 +23,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [loadingTasks, setLoadingTasks] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask]   = useState(null)
-  const [taskForm, setTaskForm]         = useState({ title: '', status: 'запланировано' })
+  const [taskForm, setTaskForm]         = useState({ title: '', status: 'запланировано', assignee: '', due_date: '' })
+  const [showDatePicker, setShowDatePicker] = useState(false)
 
   // --- чаты ---
   const [chats, setChats]               = useState([])
@@ -102,21 +104,43 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   function openTaskModal(item = null) {
     if (item) {
       setEditingTask(item)
-      setTaskForm({ title: item.title, status: item.status })
+      setTaskForm({
+        title: item.title,
+        status: item.status,
+        assignee: item.assignee || '',
+        due_date: item.due_date || ''
+      })
     } else {
       setEditingTask(null)
-      setTaskForm({ title: '', status: 'запланировано' })
+      setTaskForm({ title: '', status: 'запланировано', assignee: '', due_date: '' })
     }
+    setShowDatePicker(false)
     setIsTaskModalOpen(true)
   }
   async function saveTask() {
-    const payload = { object_id: selected.id, ...taskForm }
+    // формируем полезную нагрузку без полей, которых может не быть в схеме
+    const base = { title: taskForm.title, status: taskForm.status }
+    if (taskForm.due_date) base.due_date = taskForm.due_date
+    if (taskForm.assignee) base.assignee = taskForm.assignee
+    let payload = { object_id: selected.id, ...base }
+
     let res
     if (editingTask) {
       res = await supabase.from('tasks').update(payload).eq('id', editingTask.id).select().single()
     } else {
       res = await supabase.from('tasks').insert([payload]).select().single()
     }
+
+    // если БД не знает о дополнительных полях, повторяем без них
+    if (res.error && /(assignee|due_date)/.test(res.error.message)) {
+      const { assignee, due_date, ...baseWithoutExtras } = payload
+      if (editingTask) {
+        res = await supabase.from('tasks').update(baseWithoutExtras).eq('id', editingTask.id).select().single()
+      } else {
+        res = await supabase.from('tasks').insert([baseWithoutExtras]).select().single()
+      }
+    }
+
     if (res.error) return alert('Ошибка задач: ' + res.error.message)
     const rec = res.data
     setTasks(prev => editingTask ? prev.map(t => t.id === rec.id ? rec : t) : [...prev, rec])
@@ -156,7 +180,14 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                 </div>
               </>
             ) : (
-              <p className="mt-2 whitespace-pre-line">{description || 'Нет описания'}</p>
+              description ? (
+                <p
+                  className="mt-2 whitespace-pre-line break-words"
+                  dangerouslySetInnerHTML={{ __html: linkifyText(description) }}
+                />
+              ) : (
+                <p className="mt-2">Нет описания</p>
+              )
             )}
           </div>
         )}
@@ -262,6 +293,28 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                         value={taskForm.title}
                         onChange={e=>setTaskForm(f=>({...f,title:e.target.value}))}
                       />
+                    </div>
+                    <div className="form-control">
+                      <label className="label"><span className="label-text">Исполнитель</span></label>
+                      <input
+                        type="text"
+                        className="input input-bordered w-full"
+                        value={taskForm.assignee}
+                        onChange={e=>setTaskForm(f=>({...f,assignee:e.target.value}))}
+                      />
+                    </div>
+                    <div className="form-control">
+                      <label className="label flex items-center"><span className="label-text">Дата</span>
+                        <button type="button" className="ml-2 btn btn-ghost btn-xs" onClick={()=>setShowDatePicker(s=>!s)}>📅</button>
+                      </label>
+                      {showDatePicker && (
+                        <input
+                          type="date"
+                          className="input input-bordered w-full"
+                          value={taskForm.due_date}
+                          onChange={e=>setTaskForm(f=>({...f,due_date:e.target.value}))}
+                        />
+                      )}
                     </div>
                     <div className="form-control">
                       <label className="label"><span className="label-text">Статус</span></label>

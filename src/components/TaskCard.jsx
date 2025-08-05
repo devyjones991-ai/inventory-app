@@ -51,6 +51,13 @@ export default function TaskCard({ item, onEdit, onDelete }) {
     <div className="flex justify-between items-center p-3 border rounded-lg hover:bg-base-200 transition">
       <div className="flex-1">
         <p className="break-words">{item.title}</p>
+        {(item.assignee || item.due_date) && (
+          <p className="text-sm text-gray-500">
+            {item.assignee && <span>👤 {item.assignee}</span>}
+            {item.assignee && item.due_date && ' • '}
+            {item.due_date && <span>📅 {item.due_date}</span>}
+          </p>
+        )}
       </div>
       <div className="flex items-center space-x-2">
         <span className={`badge ${badgeClass}`}>{item.status}</span>

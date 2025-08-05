@@ -3,6 +3,7 @@ import { supabase } from './supabaseClient';
 import InventorySidebar from './components/InventorySidebar';
 import InventoryTabs from './components/InventoryTabs';
 import Auth from './components/Auth';
+import AccountModal from './components/AccountModal';
 import { Toaster, toast } from 'react-hot-toast';
 
 export default function App() {
@@ -12,7 +13,8 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newObjectName, setNewObjectName] = useState('');
-  const [deleteCandidate, setDeleteCandidate] = useState(null);
+    const [deleteCandidate, setDeleteCandidate] = useState(null);
+    const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -119,6 +121,10 @@ export default function App() {
     setIsSidebarOpen(prev => !prev);
   }
 
+  function handleUserUpdated(updated) {
+    setUser(updated);
+  }
+
   if (!user) return <Auth />;
 
   if (!selected) {
@@ -185,8 +191,13 @@ export default function App() {
                 ➕ Добавить
               </button>
             </div>
-            <button className="btn btn-sm" onClick={() => supabase.auth.signOut()}>Выйти</button>
-          </header>
+              <div className="flex items-center gap-2">
+                <button className="btn btn-sm" onClick={() => setIsAccountModalOpen(true)}>
+                  {user.user_metadata?.username || 'Аккаунт'}
+                </button>
+                <button className="btn btn-sm" onClick={() => supabase.auth.signOut()}>Выйти</button>
+              </div>
+            </header>
 
           {/* Контент табов */}
           <div className="flex-1 overflow-auto">
@@ -232,6 +243,14 @@ export default function App() {
               </div>
             </div>
           </div>
+        )}
+
+        {isAccountModalOpen && (
+          <AccountModal
+            user={user}
+            onClose={() => setIsAccountModalOpen(false)}
+            onUpdated={handleUserUpdated}
+          />
         )}
       </div>
     </>

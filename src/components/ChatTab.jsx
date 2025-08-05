@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
+import { linkifyText } from '../utils/linkify';
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
@@ -106,33 +107,43 @@ export default function ChatTab({ selected, user }) {
             Нет сообщений. Начните диалог.
           </div>
         )}
-        {messages.map(msg => (
-          <div
-            key={msg.id}
-            className={`flex mb-2 ${msg.sender === senderName ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] sm:max-w-[60%] break-words p-3 rounded-lg shadow ${
-                msg.sender === senderName ? 'bg-blue-100 text-right' : 'bg-white text-left'
-              }`.replace(/\s+/g, ' ')}
-            >
-              <div className="text-xs text-gray-500 mb-1">
-                {msg.sender} • {new Date(msg.created_at).toLocaleString()}
-              </div>
-              {msg.content && <div className="whitespace-pre-line mb-1">{msg.content}</div>}
-              {msg.file_url && (
-                <a
-                  href={msg.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 underline block"
+          {messages.map(msg => {
+            const isOwn = msg.sender === senderName;
+            return (
+              <div
+                key={msg.id}
+                className={`flex mb-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[80%] sm:max-w-[60%] break-words p-3 shadow ${
+                    isOwn
+                      ? 'bg-green-100 text-right rounded-l-lg rounded-t-lg rounded-br-none'
+                      : 'bg-white text-left rounded-r-lg rounded-t-lg rounded-bl-none'
+                  }`.replace(/\s+/g, ' ')}
                 >
-                  📎 Прикреплённый файл
-                </a>
-              )}
-            </div>
-          </div>
-        ))}
+                  <div className="text-xs text-gray-500 mb-1">
+                    {msg.sender} • {new Date(msg.created_at).toLocaleString()}
+                  </div>
+                  {msg.content && (
+                    <div
+                      className="whitespace-pre-line break-words mb-1"
+                      dangerouslySetInnerHTML={{ __html: linkifyText(msg.content) }}
+                    />
+                  )}
+                  {msg.file_url && (
+                    <a
+                      href={msg.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline block"
+                    >
+                      📎 Прикреплённый файл
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         <div ref={scrollRef} />
       </div>
 
