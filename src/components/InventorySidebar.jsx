@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from './Card';
-import { Pencil, Trash2 } from 'lucide-react';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function InventorySidebar({
   objects,
@@ -26,14 +26,14 @@ export default function InventorySidebar({
             className="ml-2 text-primary hover:text-primary/70"
             title="Редактировать объект"
           >
-            <Pencil className="w-4 h-4" />
+            <PencilIcon className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(o.id)}
             className="ml-2 text-red-500 hover:text-red-700"
             title="Удалить объект"
           >
-            <Trash2 className="w-4 h-4" />
+            <TrashIcon className="w-4 h-4" />
           </button>
         </Card>
       ))}

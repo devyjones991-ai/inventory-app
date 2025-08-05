@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
-import { Paperclip, Send } from 'lucide-react';
+import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
 export default function ChatTab({ selected, user }) {
@@ -155,7 +155,7 @@ export default function ChatTab({ selected, user }) {
       <div className="p-2 border-t bg-white">
         <div className="flex items-end space-x-2">
           <label className="p-2 cursor-pointer text-gray-500 hover:text-gray-700">
-            <Paperclip className="w-6 h-6" />
+            <PaperClipIcon className="w-6 h-6" />
             <input
               type="file"
               onChange={e => setFile(e.target.files[0])}
@@ -181,7 +181,7 @@ export default function ChatTab({ selected, user }) {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
               </svg>
             ) : (
-              <Send className="w-5 h-5" />
+              <PaperAirplaneIcon className="w-5 h-5" />
             )}
           </button>
         </div>
