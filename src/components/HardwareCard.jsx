@@ -1,9 +1,11 @@
 // src/components/HardwareCard.jsx
 import React from 'react';
+import Card from './Card';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function HardwareCard({ item, onEdit, onDelete }) {
   return (
-    <div className="card bg-base-100 shadow p-4 flex justify-between items-center">
+    <Card className="flex justify-between items-center">
       <div>
         <div className="font-medium text-lg">{item.name}</div>
         <div className="text-sm text-gray-500">{item.location}</div>
@@ -13,9 +15,15 @@ export default function HardwareCard({ item, onEdit, onDelete }) {
         </div>
       </div>
       <div className="flex space-x-2">
-        <button onClick={onEdit}   className="btn btn-sm btn-outline">Изменить</button>
-        <button onClick={onDelete} className="btn btn-sm btn-error">Удалить</button>
+        <button onClick={onEdit} className="btn btn-sm btn-outline flex items-center gap-1">
+          <Pencil className="w-4 h-4" />
+          Изменить
+        </button>
+        <button onClick={onDelete} className="btn btn-sm btn-error flex items-center gap-1">
+          <Trash2 className="w-4 h-4" />
+          Удалить
+        </button>
       </div>
-    </div>
+    </Card>
   );
 }

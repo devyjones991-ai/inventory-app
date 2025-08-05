@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import HardwareCard from './HardwareCard';
 import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
-import WhatsAppIcon from './WhatsAppIcon';
+import { Plus, MessageSquare } from 'lucide-react';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 
@@ -235,11 +235,31 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   return (
     <div className="flex flex-col h-full">
       {/* Вкладки */}
-      <div className="tabs tabs-boxed">
-        <button className={`tab ${tab==='desc'? 'tab-active':''}`} onClick={()=>setTab('desc')}>📝 Описание</button>
-        <button className={`tab ${tab==='hw'? 'tab-active':''}`} onClick={()=>setTab('hw')}>🛠 Железо ({hardware.length})</button>
-        <button className={`tab ${tab==='tasks'? 'tab-active':''}`} onClick={()=>setTab('tasks')}>✅ Задачи ({tasks.length})</button>
-        <button className={`tab ${tab==='chat'? 'tab-active':''}`} onClick={()=>setTab('chat')}><WhatsAppIcon className="inline w-4 h-4 mr-1" /> Чат ({chatMessages.length})</button>
+      <div className="flex mb-4 border-b">
+        <button
+          className={`px-4 py-2 hover:bg-primary/10 ${tab==='desc' ? 'border-b-2 border-primary' : ''}`}
+          onClick={() => setTab('desc')}
+        >
+          Описание
+        </button>
+        <button
+          className={`px-4 py-2 hover:bg-primary/10 ${tab==='hw' ? 'border-b-2 border-primary' : ''}`}
+          onClick={() => setTab('hw')}
+        >
+          Железо ({hardware.length})
+        </button>
+        <button
+          className={`px-4 py-2 hover:bg-primary/10 ${tab==='tasks' ? 'border-b-2 border-primary' : ''}`}
+          onClick={() => setTab('tasks')}
+        >
+          Задачи ({tasks.length})
+        </button>
+        <button
+          className={`px-4 py-2 hover:bg-primary/10 flex items-center gap-1 ${tab==='chat' ? 'border-b-2 border-primary' : ''}`}
+          onClick={() => setTab('chat')}
+        >
+          <MessageSquare className="w-4 h-4" /> Чат ({chatMessages.length})
+        </button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -276,10 +296,16 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           <div>
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Оборудование</h3>
-              <button className="btn btn-sm btn-primary" onClick={()=>openHWModal()}>➕ Добавить</button>
+              <button className="btn btn-sm btn-primary flex items-center gap-1" onClick={() => openHWModal()}>
+                <Plus className="w-4 h-4" /> Добавить
+              </button>
             </div>
             {loadingHW ? <p>Загрузка...</p> : (
-              <div className="space-y-2">{hardware.map(h=><HardwareCard key={h.id} item={h} onEdit={()=>openHWModal(h)} onDelete={()=>deleteHardware(h.id)}/>)}</div>
+              <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {hardware.map(h => (
+                  <HardwareCard key={h.id} item={h} onEdit={() => openHWModal(h)} onDelete={() => deleteHardware(h.id)} />
+                ))}
+              </div>
             )}
 
             {isHWModalOpen && (
@@ -350,11 +376,21 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           <div>
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Задачи</h3>
-              <button className="btn btn-sm btn-primary" onClick={()=>openTaskModal()}>➕ Добавить задачу</button>
+              <button className="btn btn-sm btn-primary flex items-center gap-1" onClick={() => openTaskModal()}>
+                <Plus className="w-4 h-4" /> Добавить задачу
+              </button>
             </div>
             {loadingTasks ? <p>Загрузка...</p> : (
-              <div className="space-y-2">
-                {tasks.map(t=><TaskCard key={t.id} item={t} onView={()=>openTaskView(t)} onEdit={()=>openTaskModal(t)} onDelete={()=>deleteTask(t.id)}/>)}
+              <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {tasks.map(t => (
+                  <TaskCard
+                    key={t.id}
+                    item={t}
+                    onView={() => openTaskView(t)}
+                    onEdit={() => openTaskModal(t)}
+                    onDelete={() => deleteTask(t.id)}
+                  />
+                ))}
               </div>
             )}
 
