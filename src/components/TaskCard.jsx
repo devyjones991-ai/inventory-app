@@ -48,7 +48,7 @@ const TrashIcon = () => (
   </svg>
 );
 
-export default function TaskCard({ item, onEdit, onDelete }) {
+export default function TaskCard({ item, onEdit, onDelete, onView }) {
   const badgeClass = {
     'запланировано': 'badge-info',
     'в процессе':    'badge-warning',
@@ -59,7 +59,10 @@ export default function TaskCard({ item, onEdit, onDelete }) {
   const dueDate  = item.due_date || item.planned_date || item.plan_date;
 
   return (
-    <div className="flex justify-between items-center p-3 border rounded-lg hover:bg-base-200 transition">
+    <div
+      className="flex justify-between items-center p-3 border rounded-lg hover:bg-base-200 transition cursor-pointer"
+      onClick={onView}
+    >
       <div className="flex-1">
         <p className="break-words whitespace-pre-wrap">{item.title}</p>
         {(assignee || dueDate) && (
@@ -72,13 +75,21 @@ export default function TaskCard({ item, onEdit, onDelete }) {
       </div>
       <div className="flex items-center space-x-2">
         <span className={`badge ${badgeClass}`}>{item.status}</span>
-        <button className="btn btn-sm btn-ghost" title="Редактировать" onClick={onEdit}>
+        <button
+          className="btn btn-sm btn-ghost"
+          title="Редактировать"
+          onClick={e => {
+            e.stopPropagation();
+            onEdit();
+          }}
+        >
           <PencilIcon />
         </button>
         <button
           className="btn btn-sm btn-ghost"
           title="Удалить"
-          onClick={() => {
+          onClick={e => {
+            e.stopPropagation();
             if (window.confirm('Удалить задачу?')) {
               onDelete();
             }

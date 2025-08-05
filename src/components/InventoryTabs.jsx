@@ -5,6 +5,16 @@ import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
 import { linkifyText } from '../utils/linkify';
 
+// форматирование даты для отображения в русской локали
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    return new Date(dateStr).toLocaleDateString('ru-RU');
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   // --- вкладки и описание ---
   const [tab, setTab] = useState('desc')
@@ -23,8 +33,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [loadingTasks, setLoadingTasks] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask]   = useState(null)
-  const [taskForm, setTaskForm]         = useState({ title: '', status: 'запланировано', assignee: '', due_date: '' })
+  const [taskForm, setTaskForm]         = useState({ title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' })
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [viewingTask, setViewingTask]   = useState(null)
 
   // --- чаты ---
   const [chats, setChats]               = useState([])
@@ -108,14 +119,19 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
         title: item.title,
         status: item.status,
         assignee: item.assignee || item.executor || '',
-        due_date: item.due_date || item.planned_date || item.plan_date || ''
+        due_date: item.due_date || item.planned_date || item.plan_date || '',
+        notes: item.notes || ''
       })
     } else {
       setEditingTask(null)
-      setTaskForm({ title: '', status: 'запланировано', assignee: '', due_date: '' })
+      setTaskForm({ title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' })
     }
     setShowDatePicker(false)
     setIsTaskModalOpen(true)
+  }
+
+  function openTaskView(item) {
+    setViewingTask(item)
   }
   async function saveTask() {
     // формируем полезную нагрузку без полей, которых может не быть в схеме
@@ -129,6 +145,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       base.assignee = taskForm.assignee
       base.executor = taskForm.assignee
     }
+    if (taskForm.notes) {
+      base.notes = taskForm.notes
+    }
     let payload = { object_id: selected.id, ...base }
 
     let res
@@ -139,8 +158,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     }
 
     // если БД не знает о дополнительных полях, повторяем без них
-    if (res.error && /(assignee|executor|due_date|planned_date|plan_date)/.test(res.error.message)) {
-      const { assignee, executor, due_date, planned_date, plan_date, ...baseWithoutExtras } = payload
+    if (res.error && /(assignee|executor|due_date|planned_date|plan_date|notes)/.test(res.error.message)) {
+      const { assignee, executor, due_date, planned_date, plan_date, notes, ...baseWithoutExtras } = payload
       if (editingTask) {
         res = await supabase.from('tasks').update(baseWithoutExtras).eq('id', editingTask.id).select().single()
       } else {
@@ -149,8 +168,15 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     }
 
     if (res.error) return alert('Ошибка задач: ' + res.error.message)
-    const rec = res.data
-    setTasks(prev => editingTask ? prev.map(t => t.id === rec.id ? rec : t) : [...prev, rec])
+
+    // объединяем полученную запись с полями формы,
+    // чтобы сохранить исполнителя, дату и заметки локально даже если БД их отбросила
+    const rec = { ...res.data, ...base }
+    setTasks(prev =>
+      editingTask
+        ? prev.map(t => (t.id === rec.id ? rec : t))
+        : [...prev, rec]
+    )
     setIsTaskModalOpen(false)
   }
   async function deleteTask(id) {
@@ -282,7 +308,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
             </div>
             {loadingTasks ? <p>Загрузка...</p> : (
               <div className="space-y-2">
-                {tasks.map(t=><TaskCard key={t.id} item={t} onEdit={()=>openTaskModal(t)} onDelete={()=>deleteTask(t.id)}/>)}
+                {tasks.map(t=><TaskCard key={t.id} item={t} onView={()=>openTaskView(t)} onEdit={()=>openTaskModal(t)} onDelete={()=>deleteTask(t.id)}/>)}
               </div>
             )}
 
@@ -335,10 +361,40 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                         <option value="завершено">Завершено</option>
                       </select>
                     </div>
+                    <div className="form-control">
+                      <label className="label"><span className="label-text">Заметки</span></label>
+                      <textarea
+                        className="textarea textarea-bordered w-full"
+                        rows={3}
+                        value={taskForm.notes}
+                        onChange={e=>setTaskForm(f=>({...f,notes:e.target.value}))}
+                      />
+                    </div>
                   </div>
                   <div className="modal-action flex space-x-2">
                     <button className="btn btn-primary" onClick={saveTask}>Сохранить</button>
                     <button className="btn btn-ghost" onClick={()=>setIsTaskModalOpen(false)}>Отмена</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {viewingTask && (
+              <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="modal-box relative w-full max-w-md">
+                  <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={()=>setViewingTask(null)}>✕</button>
+                  <h3 className="font-bold text-lg mb-4">{viewingTask.title}</h3>
+                  <div className="space-y-2">
+                    {(viewingTask.assignee || viewingTask.executor) && (
+                      <p><strong>Исполнитель:</strong> {viewingTask.assignee || viewingTask.executor}</p>
+                    )}
+                    {(viewingTask.due_date || viewingTask.planned_date || viewingTask.plan_date) && (
+                      <p><strong>Дата:</strong> {formatDate(viewingTask.due_date || viewingTask.planned_date || viewingTask.plan_date)}</p>
+                    )}
+                    <p><strong>Статус:</strong> {viewingTask.status}</p>
+                    {viewingTask.notes && (
+                      <p className="whitespace-pre-wrap break-words"><strong>Заметки:</strong> {viewingTask.notes}</p>
+                    )}
                   </div>
                 </div>
               </div>
