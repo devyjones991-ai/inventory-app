@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import HardwareCard from './HardwareCard';
 import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
+import WhatsAppIcon from './WhatsAppIcon';
 import { linkifyText } from '../utils/linkify';
 
 // форматирование даты для отображения в русской локали
@@ -37,8 +38,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask]   = useState(null)
 
-  // --- чаты ---
-  const [chats, setChats]               = useState([])
+  // --- чат ---
+  const [chatMessages, setChatMessages] = useState([])
 
   // загрузка данных при смене объекта
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     fetchHardware(selected.id)
     fetchTasks(selected.id)
     supabase.from('chat_messages').select('*').eq('object_id', selected.id)
-      .then(({ data }) => setChats(data || []))
+      .then(({ data }) => setChatMessages(data || []))
   }, [selected])
 
   // --- CRUD Описание ---
@@ -193,7 +194,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
         <button className={`tab ${tab==='desc'? 'tab-active':''}`} onClick={()=>setTab('desc')}>📝 Описание</button>
         <button className={`tab ${tab==='hw'? 'tab-active':''}`} onClick={()=>setTab('hw')}>🛠 Железо ({hardware.length})</button>
         <button className={`tab ${tab==='tasks'? 'tab-active':''}`} onClick={()=>setTab('tasks')}>✅ Задачи ({tasks.length})</button>
-        <button className={`tab ${tab==='chats'? 'tab-active':''}`} onClick={()=>setTab('chats')}>💬 Чаты ({chats.length})</button>
+        <button className={`tab ${tab==='chat'? 'tab-active':''}`} onClick={()=>setTab('chat')}><WhatsAppIcon className="inline w-4 h-4 mr-1" /> Чат ({chatMessages.length})</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -402,8 +403,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           </div>
         )}
 
-        {/* Чаты */}
-        {tab==='chats' && <ChatTab selected={selected} user={user} />}
+        {/* Чат */}
+        {tab==='chat' && <ChatTab selected={selected} user={user} />}
       </div>
     </div>
   )
