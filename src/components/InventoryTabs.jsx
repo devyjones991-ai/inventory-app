@@ -3,7 +3,9 @@ import { supabase } from '../supabaseClient';
 import HardwareCard from './HardwareCard';
 import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
+import WhatsAppIcon from './WhatsAppIcon';
 import { linkifyText } from '../utils/linkify';
+import { toast } from 'react-hot-toast';
 
 // форматирование даты для отображения в русской локали
 function formatDate(dateStr) {
@@ -37,8 +39,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask]   = useState(null)
 
-  // --- чаты ---
-  const [chats, setChats]               = useState([])
+  // --- чат ---
+  const [chatMessages, setChatMessages] = useState([])
 
   // загрузка данных при смене объекта
   useEffect(() => {
@@ -48,8 +50,52 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     fetchHardware(selected.id)
     fetchTasks(selected.id)
     supabase.from('chat_messages').select('*').eq('object_id', selected.id)
-      .then(({ data }) => setChats(data || []))
+      .then(({ data }) => setChatMessages(data || []))
   }, [selected])
+
+  // realtime уведомления по задачам и чату
+  useEffect(() => {
+    if (!selected) return
+    const taskChannel = supabase
+      .channel(`tasks_object_${selected.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'tasks',
+        filter: `object_id=eq.${selected.id}`
+      }, payload => {
+        setTasks(prev => {
+          if (prev.some(t => t.id === payload.new.id)) return prev
+          return [...prev, payload.new]
+        })
+        if (tab !== 'tasks') toast.success(`Добавлена задача: ${payload.new.title}`)
+      })
+      .subscribe()
+
+    const chatChannel = supabase
+      .channel(`chat_messages_object_${selected.id}_tabs`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `object_id=eq.${selected.id}`
+      }, payload => {
+        setChatMessages(prev => {
+          if (prev.some(m => m.id === payload.new.id)) return prev
+          return [...prev, payload.new]
+        })
+        const sender = user.user_metadata?.username || user.email
+        if (tab !== 'chat' && payload.new.sender !== sender) {
+          toast.success('Новое сообщение в чате')
+        }
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(taskChannel)
+      supabase.removeChannel(chatChannel)
+    }
+  }, [selected, tab, user])
 
   // --- CRUD Описание ---
   async function saveDescription() {
@@ -193,7 +239,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
         <button className={`tab ${tab==='desc'? 'tab-active':''}`} onClick={()=>setTab('desc')}>📝 Описание</button>
         <button className={`tab ${tab==='hw'? 'tab-active':''}`} onClick={()=>setTab('hw')}>🛠 Железо ({hardware.length})</button>
         <button className={`tab ${tab==='tasks'? 'tab-active':''}`} onClick={()=>setTab('tasks')}>✅ Задачи ({tasks.length})</button>
-        <button className={`tab ${tab==='chats'? 'tab-active':''}`} onClick={()=>setTab('chats')}>💬 Чаты ({chats.length})</button>
+        <button className={`tab ${tab==='chat'? 'tab-active':''}`} onClick={()=>setTab('chat')}><WhatsAppIcon className="inline w-4 h-4 mr-1" /> Чат ({chatMessages.length})</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -402,8 +448,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           </div>
         )}
 
-        {/* Чаты */}
-        {tab==='chats' && <ChatTab selected={selected} user={user} />}
+        {/* Чат */}
+        {tab==='chat' && <ChatTab selected={selected} user={user} />}
       </div>
     </div>
   )
