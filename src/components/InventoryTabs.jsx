@@ -107,8 +107,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       setTaskForm({
         title: item.title,
         status: item.status,
-        assignee: item.assignee || '',
-        due_date: item.due_date || ''
+        assignee: item.assignee || item.executor || '',
+        due_date: item.due_date || item.planned_date || item.plan_date || ''
       })
     } else {
       setEditingTask(null)
@@ -120,8 +120,15 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   async function saveTask() {
     // формируем полезную нагрузку без полей, которых может не быть в схеме
     const base = { title: taskForm.title, status: taskForm.status }
-    if (taskForm.due_date) base.due_date = taskForm.due_date
-    if (taskForm.assignee) base.assignee = taskForm.assignee
+    if (taskForm.due_date) {
+      base.due_date = taskForm.due_date
+      base.planned_date = taskForm.due_date
+      base.plan_date = taskForm.due_date
+    }
+    if (taskForm.assignee) {
+      base.assignee = taskForm.assignee
+      base.executor = taskForm.assignee
+    }
     let payload = { object_id: selected.id, ...base }
 
     let res
@@ -132,8 +139,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     }
 
     // если БД не знает о дополнительных полях, повторяем без них
-    if (res.error && /(assignee|due_date)/.test(res.error.message)) {
-      const { assignee, due_date, ...baseWithoutExtras } = payload
+    if (res.error && /(assignee|executor|due_date|planned_date|plan_date)/.test(res.error.message)) {
+      const { assignee, executor, due_date, planned_date, plan_date, ...baseWithoutExtras } = payload
       if (editingTask) {
         res = await supabase.from('tasks').update(baseWithoutExtras).eq('id', editingTask.id).select().single()
       } else {
@@ -182,7 +189,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
             ) : (
               description ? (
                 <p
-                  className="mt-2 whitespace-pre-line break-words"
+                  className="mt-2 whitespace-pre-wrap break-all"
                   dangerouslySetInnerHTML={{ __html: linkifyText(description) }}
                 />
               ) : (

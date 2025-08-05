@@ -1,6 +1,19 @@
 // src/components/TaskCard.jsx
 import React from 'react';
 
+/**
+ * Format date string into locale friendly format.
+ * Falls back to original value on parse errors.
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  try {
+    return new Date(dateStr).toLocaleDateString('ru-RU')
+  } catch {
+    return dateStr
+  }
+}
+
 const PencilIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -47,15 +60,18 @@ export default function TaskCard({ item, onEdit, onDelete }) {
     'завершено':     'badge-success'
   }[item.status] || 'badge'
 
+  const assignee = item.assignee || item.executor
+  const dueDate  = item.due_date || item.planned_date || item.plan_date
+
   return (
     <div className="flex justify-between items-center p-3 border rounded-lg hover:bg-base-200 transition">
       <div className="flex-1">
-        <p className="break-words">{item.title}</p>
-        {(item.assignee || item.due_date) && (
+        <p className="break-words whitespace-pre-wrap">{item.title}</p>
+        {(assignee || dueDate) && (
           <p className="text-sm text-gray-500">
-            {item.assignee && <span>👤 {item.assignee}</span>}
-            {item.assignee && item.due_date && ' • '}
-            {item.due_date && <span>📅 {item.due_date}</span>}
+            {assignee && <span>👤 {assignee}</span>}
+            {assignee && dueDate && ' • '}
+            {dueDate && <span>📅 {formatDate(dueDate)}</span>}
           </p>
         )}
       </div>
