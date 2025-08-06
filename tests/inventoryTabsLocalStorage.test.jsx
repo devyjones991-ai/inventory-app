@@ -48,7 +48,7 @@ describe('InventoryTabs localStorage recovery', () => {
     localStorage.setItem(taskModalKey, 'true')
     localStorage.setItem(tabKey, 'hw')
 
-    render(<InventoryTabs selected={selected} onUpdateSelected={() => {}} user={user} />)
+    render(<InventoryTabs selected={selected} onUpdateSelected={() => {}} user={user} onTabChange={() => {}} />)
 
     await waitFor(() => {
       expect(localStorage.getItem(hwFormKey)).toBe(JSON.stringify(defaultHWForm))
