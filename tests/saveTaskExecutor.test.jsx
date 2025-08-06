@@ -30,13 +30,13 @@ import InventoryTabs from '../src/components/InventoryTabs';
 
 const user = { user_metadata: { username: 'tester' }, email: 'test@example.com' };
 
-describe('saveTask uses executor column', () => {
+describe('saveTask uses assignee column', () => {
   beforeEach(() => {
     localStorage.clear();
     insertSpy.mockClear();
   });
 
-  it('sends executor and omits due_date', async () => {
+  it('sends assignee and omits due_date', async () => {
     render(<InventoryTabs selected={{ id: 1, name: 'Obj', description: '' }} onUpdateSelected={() => {}} user={user} />);
     fireEvent.click(screen.getByText('Задачи (0)'));
     fireEvent.click(screen.getByRole('button', { name: /Добавить задачу/ }));
@@ -46,7 +46,7 @@ describe('saveTask uses executor column', () => {
     fireEvent.click(screen.getByText('Сохранить'));
     await waitFor(() => expect(insertSpy).toHaveBeenCalled());
     const payload = insertSpy.mock.calls[0][0][0];
-    expect(payload.executor).toBe('Bob');
+    expect(payload.assignee).toBe('Bob');
     expect(payload.due_date).toBeUndefined();
   });
 });
