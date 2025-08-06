@@ -6,6 +6,7 @@ import ChatTab from './ChatTab';
 import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
+import ConfirmModal from './ConfirmModal';
 import { pushNotification } from '../utils/notifications';
 
 const TAB_KEY = objectId => `tab_${objectId}`;
@@ -37,6 +38,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [editingHW, setEditingHW]       = useState(null)
   const defaultHWForm = { name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' }
   const [hwForm, setHWForm]             = useState(defaultHWForm)
+  const [hwDeleteId, setHwDeleteId]     = useState(null)
 
   // --- задачи ---
   const [tasks, setTasks]               = useState([])
@@ -47,6 +49,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [taskForm, setTaskForm]         = useState(defaultTaskForm)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask]   = useState(null)
+  const [taskDeleteId, setTaskDeleteId] = useState(null)
 
   // --- чат ---
   const [chatMessages, setChatMessages] = useState([])
@@ -158,7 +161,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     if (!error) {
       onUpdateSelected({ ...selected, description: data[0].description })
       setIsEditingDesc(false)
-    } else alert('Ошибка сохранения описания')
+    } else toast.error('Ошибка сохранения описания')
   }
 
   // --- CRUD Оборудование ---
@@ -192,18 +195,22 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     } else {
       res = await supabase.from('hardware').insert([payload]).select().single()
     }
-    if (res.error) return alert('Ошибка оборудования: ' + res.error.message)
+    if (res.error) return toast.error('Ошибка оборудования: ' + res.error.message)
     const rec = res.data
     setHardware(prev => editingHW ? prev.map(h => h.id === rec.id ? rec : h) : [...prev, rec])
     setIsHWModalOpen(false)
     setEditingHW(null)
     setHWForm({ ...defaultHWForm })
   }
-  async function deleteHardware(id) {
-    if (!confirm('Удалить оборудование?')) return
+  function askDeleteHardware(id) {
+    setHwDeleteId(id)
+  }
+  async function confirmDeleteHardware() {
+    const id = hwDeleteId
     const { error } = await supabase.from('hardware').delete().eq('id', id)
-    if (error) return alert('Ошибка удаления')
+    if (error) return toast.error('Ошибка удаления')
     setHardware(prev => prev.filter(h => h.id !== id))
+    setHwDeleteId(null)
   }
 
   // --- CRUD Задачи ---
@@ -255,7 +262,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     } else {
       res = await supabase.from('tasks').insert([payload]).select().single()
     }
-    if (res.error) return alert('Ошибка задач: ' + res.error.message)
+    if (res.error) return toast.error('Ошибка задач: ' + res.error.message)
     const rec = res.data
     setTasks(prev =>
       editingTask
@@ -267,11 +274,15 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     setTaskForm({ ...defaultTaskForm })
     toast.success('Задача сохранена')
   }
-  async function deleteTask(id) {
-    if (!confirm('Удалить задачу?')) return
+  function askDeleteTask(id) {
+    setTaskDeleteId(id)
+  }
+  async function confirmDeleteTask() {
+    const id = taskDeleteId
     const { error } = await supabase.from('tasks').delete().eq('id', id)
-    if (error) return alert('Ошибка удаления')
+    if (error) return toast.error('Ошибка удаления')
     setTasks(prev => prev.filter(t => t.id !== id))
+    setTaskDeleteId(null)
   }
 
   return (
@@ -344,7 +355,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
             {loadingHW ? <p>Загрузка...</p> : (
               <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {hardware.map(h => (
-                  <HardwareCard key={h.id} item={h} onEdit={() => openHWModal(h)} onDelete={() => deleteHardware(h.id)} />
+                  <HardwareCard key={h.id} item={h} onEdit={() => openHWModal(h)} onDelete={() => askDeleteHardware(h.id)} />
                 ))}
               </div>
             )}
@@ -409,6 +420,13 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                 </div>
               </div>
             )}
+
+            <ConfirmModal
+              open={!!hwDeleteId}
+              title="Удалить оборудование?"
+              onConfirm={confirmDeleteHardware}
+              onCancel={() => setHwDeleteId(null)}
+            />
           </div>
         )}
 
@@ -429,7 +447,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                     item={t}
                     onView={() => openTaskView(t)}
                     onEdit={() => openTaskModal(t)}
-                    onDelete={() => deleteTask(t.id)}
+                    onDelete={() => askDeleteTask(t.id)}
                   />
                 ))}
               </div>
@@ -522,6 +540,13 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                 </div>
               </div>
             )}
+
+            <ConfirmModal
+              open={!!taskDeleteId}
+              title="Удалить задачу?"
+              onConfirm={confirmDeleteTask}
+              onCancel={() => setTaskDeleteId(null)}
+            />
           </div>
         )}
 
