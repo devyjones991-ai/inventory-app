@@ -155,6 +155,54 @@ export default function ChatTab({ selected, user }) {
                       {linkifyText(msg.content)}
                     </div>
                   )}
+codex/add-file-buttons-for-non-image-files
+                  {msg.file_url && (() => {
+                    const url = msg.file_url;
+                    const isImage = /\.(png|jpe?g|gif|bmp|webp)$/i.test(url);
+                    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+                    if (isImage) {
+                      return (
+                        <img
+                          src={url}
+                          alt="attachment"
+                          className="max-w-full h-auto mt-1"
+                        />
+                      );
+                    }
+                    if (isVideo) {
+                      return (
+                        <video
+                          src={url}
+                          controls
+                          className="max-w-full h-auto mt-1"
+                        />
+                      );
+                    }
+                    const fileName = url.split('/').pop();
+                    return (
+                      <div className="mt-1">
+                        <div className="break-words mb-1">{fileName}</div>
+                        <div className="flex space-x-2">
+                          <a
+                            href={url}
+                            download
+                            className="text-blue-500 underline"
+                          >
+                            Скачать
+                          </a>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 underline"
+                          >
+                            Открыть
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {msg.file_url && (
                   codex/add-video-file-handling-in-attachmentpreview
                     <AttachmentPreview url={msg.file_url} />
@@ -162,6 +210,7 @@ export default function ChatTab({ selected, user }) {
                     <AttachmentPreview url={msg.file_url} onImageClick={setModalImage} />
 main
                   )}
+main
                 </div>
               </motion.div>
             );

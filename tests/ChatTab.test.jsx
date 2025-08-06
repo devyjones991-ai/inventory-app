@@ -6,8 +6,12 @@ codex/expand-supabase-mocks-in-tests
 import ChatTab from '../src/components/ChatTab';
 
 const insertMock = vi.fn();
+codex/add-file-buttons-for-non-image-files
+let selectData = [];
+
 codex/add-video-file-handling-in-attachmentpreview
 let mockMessages = [];
+main
 
 codex/add-attachment-preview-component-to-chattab
 const mockMessages = [];
@@ -41,12 +45,16 @@ codex/expand-supabase-mocks-in-tests
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
+codex/add-file-buttons-for-non-image-files
+            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: selectData }) })
+
 codex/add-video-file-handling-in-attachmentpreview
             order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: mockMessages }) })
 
             order: vi.fn().mockReturnValue({
               then: (cb) => cb({ data: mockMessages })
             })
+main
 main
           })
         }),
@@ -99,10 +107,14 @@ codex/expand-supabase-mocks-in-tests
     });
 
     insertMock.mockClear();
+codex/add-file-buttons-for-non-image-files
+    selectData = [];
+
 codex/add-video-file-handling-in-attachmentpreview
     mockMessages = [];
 
     mockMessages.length = 0;
+main
 main
 main
   });
@@ -129,6 +141,21 @@ main
     fireEvent.click(sendBtn);
     expect(insertMock).not.toHaveBeenCalled();
   });
+
+codex/add-file-buttons-for-non-image-files
+  it('shows download and open buttons for non-media files', () => {
+    selectData = [
+      { id: 99, sender: 'User', created_at: '2024-01-01', content: '', file_url: 'https://example.com/file.txt' }
+    ];
+    render(<ChatTab selected={selected} user={user} />);
+    const downloadLink = screen.getByText('Скачать');
+    const openLink = screen.getByText('Открыть');
+    expect(downloadLink).toBeInTheDocument();
+    expect(openLink).toBeInTheDocument();
+    expect(downloadLink).toHaveAttribute('href', 'https://example.com/file.txt');
+    expect(downloadLink).toHaveAttribute('download');
+    expect(openLink).toHaveAttribute('href', 'https://example.com/file.txt');
+    expect(openLink).toHaveAttribute('target', '_blank');
 
 codex/expand-supabase-mocks-in-tests
   it('shows image attachment after upload', async () => {
@@ -262,6 +289,7 @@ it('adds a message on external INSERT event', async () => {
     });
 
     expect(screen.getByText('External message')).toBeInTheDocument();
+main
 main
 main
 main
