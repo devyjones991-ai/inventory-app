@@ -3,7 +3,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import InventoryTabs from '../src/components/InventoryTabs'
 
-vi.mock('../src/supabaseClient', () => {
+vi.mock('../src/supabaseClient.js', () => {
   const createQuery = () => {
     const query = {}
     query.select = vi.fn(() => query)
