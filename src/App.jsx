@@ -8,6 +8,8 @@ import { Toaster, toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { requestNotificationPermission } from './utils/notifications';
 
+const SELECTED_OBJECT_KEY = 'selectedObjectId';
+
 export default function App() {
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -43,7 +45,14 @@ export default function App() {
       console.error('Ошибка загрузки объектов:', error);
     } else {
       setObjects(data);
-      if (!selected && data.length) setSelected(data[0]);
+      const savedId = typeof localStorage !== 'undefined' ? localStorage.getItem(SELECTED_OBJECT_KEY) : null;
+      if (savedId) {
+        const saved = data.find(o => o.id === Number(savedId));
+        if (saved) setSelected(saved);
+        else if (!selected && data.length) setSelected(data[0]);
+      } else if (!selected && data.length) {
+        setSelected(data[0]);
+      }
     }
   }
 
@@ -60,6 +69,9 @@ export default function App() {
     } else {
       setObjects(prev => [...prev, data]);
       setSelected(data);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(SELECTED_OBJECT_KEY, data.id);
+      }
       setNewObjectName('');
       setIsAddModalOpen(false);
     }
@@ -82,7 +94,12 @@ export default function App() {
       setObjects(prev => {
         const updated = prev.filter(o => o.id !== id);
         if (selected?.id === id) {
-          setSelected(updated[0] || null);
+          const next = updated[0] || null;
+          setSelected(next);
+          if (typeof localStorage !== 'undefined') {
+            if (next) localStorage.setItem(SELECTED_OBJECT_KEY, next.id);
+            else localStorage.removeItem(SELECTED_OBJECT_KEY);
+          }
         }
         return updated;
       });
@@ -111,12 +128,18 @@ export default function App() {
 
   function handleSelect(obj) {
     setSelected(obj);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(SELECTED_OBJECT_KEY, obj.id);
+    }
     // закрываем сайдбар на мобильных устройствах после выбора объекта
     setIsSidebarOpen(false);
   }
 
   function handleUpdateSelected(updated) {
     setSelected(updated);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(SELECTED_OBJECT_KEY, updated.id);
+    }
     setObjects(prev => prev.map(o => (o.id === updated.id ? updated : o)));
   }
 
