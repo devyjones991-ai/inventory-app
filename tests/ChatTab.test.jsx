@@ -3,7 +3,10 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const insertMock = vi.fn();
+codex/add-attachment-preview-component-to-chattab
+const mockMessages = [];
 let realtimeHandler;
+main
 
 vi.mock('../src/supabaseClient', () => {
   const from = vi.fn((table) => {
@@ -11,7 +14,9 @@ vi.mock('../src/supabaseClient', () => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: [] }) })
+            order: vi.fn().mockReturnValue({
+              then: (cb) => cb({ data: mockMessages })
+            })
           })
         }),
         insert: insertMock.mockReturnValue({
@@ -53,6 +58,7 @@ describe('ChatTab', () => {
   });
   beforeEach(() => {
     insertMock.mockClear();
+    mockMessages.length = 0;
   });
 
   it('renders empty state when no messages', () => {
@@ -78,7 +84,28 @@ describe('ChatTab', () => {
     expect(insertMock).not.toHaveBeenCalled();
   });
 
-  it('adds a message on external INSERT event', async () => {
+codex/add-attachment-preview-component-to-chattab
+  it('renders image attachment and opens modal on click', async () => {
+    mockMessages.push({
+      id: 2,
+      sender: 'Other',
+      content: '',
+      file_url: 'http://example.com/test.png',
+      created_at: '2024-01-01'
+    });
+
+    render(<ChatTab selected={selected} user={user} />);
+
+    const img = await screen.findByAltText('attachment');
+    expect(img).toBeInTheDocument();
+
+    fireEvent.click(img);
+    expect(screen.getByAltText('preview')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Close'));
+    expect(screen.queryByAltText('preview')).not.toBeInTheDocument();
+  
+it('adds a message on external INSERT event', async () => {
     render(<ChatTab selected={selected} user={user} />);
 
     await waitFor(() => expect(realtimeHandler).toBeDefined());
@@ -95,5 +122,6 @@ describe('ChatTab', () => {
     });
 
     expect(screen.getByText('External message')).toBeInTheDocument();
+main
   });
 });
