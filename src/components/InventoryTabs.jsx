@@ -7,7 +7,6 @@ import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
-import { pushNotification } from '../utils/notifications';
 
 const TAB_KEY = objectId => `tab_${objectId}`;
 const HW_MODAL_KEY = objectId => `hwModal_${objectId}`;
@@ -25,7 +24,7 @@ function formatDate(dateStr) {
   }
 }
 
-export default function InventoryTabs({ selected, onUpdateSelected, user }) {
+export default function InventoryTabs({ selected, onUpdateSelected, user, onTabChange = () => {} }) {
   // --- вкладки и описание ---
   const [tab, setTab] = useState('desc')
   const [description, setDescription] = useState('')
@@ -99,6 +98,10 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   }, [selected])
 
   useEffect(() => {
+    onTabChange(tab)
+  }, [tab, onTabChange])
+
+  useEffect(() => {
     if (!selected) return
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(TAB_KEY(selected.id), tab)
@@ -129,7 +132,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     }
   }, [isTaskModalOpen, taskForm, selected])
 
-  // realtime уведомления по задачам и чату
+  // realtime обновление задач и чата
   useEffect(() => {
     if (!selected) return
     const taskChannel = supabase
@@ -144,10 +147,6 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           if (prev.some(t => t.id === payload.new.id)) return prev
           return [...prev, payload.new]
         })
-        if (tab !== 'tasks') {
-          toast.success(`Добавлена задача: ${payload.new.title}`)
-          pushNotification('Новая задача', payload.new.title)
-        }
       })
       .subscribe()
 
@@ -163,12 +162,6 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           if (prev.some(m => m.id === payload.new.id)) return prev
           return [...prev, payload.new]
         })
-        const sender = user.user_metadata?.username || user.email
-        if (tab !== 'chat' && payload.new.sender !== sender) {
-          toast.success('Новое сообщение в чате')
-          const body = payload.new.content || '📎 Файл'
-          pushNotification('Новое сообщение', `${payload.new.sender}: ${body}`)
-        }
       })
       .subscribe()
 
@@ -176,7 +169,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       supabase.removeChannel(taskChannel)
       supabase.removeChannel(chatChannel)
     }
-  }, [selected, tab, user])
+  }, [selected])
 
   // --- CRUD Описание ---
   async function saveDescription() {

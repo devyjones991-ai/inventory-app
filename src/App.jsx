@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import InventorySidebar from './components/InventorySidebar';
 import InventoryTabs from './components/InventoryTabs';
@@ -7,20 +7,43 @@ import AccountModal from './components/AccountModal';
 import ConfirmModal from './components/ConfirmModal';
 import { Toaster, toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { requestNotificationPermission } from './utils/notifications';
+import { requestNotificationPermission, pushNotification, playTaskSound, playMessageSound } from './utils/notifications';
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId';
+const NOTIF_KEY = 'objectNotifications';
 
 export default function App() {
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
   const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('desc');
+  const [notifications, setNotifications] = useState(() => {
+    if (typeof localStorage === 'undefined') return {};
+    try {
+      return JSON.parse(localStorage.getItem(NOTIF_KEY)) || {};
+    } catch {
+      return {};
+    }
+  });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isObjectModalOpen, setIsObjectModalOpen] = useState(false);
   const [objectName, setObjectName] = useState('');
   const [editingObject, setEditingObject] = useState(null);
   const [deleteCandidate, setDeleteCandidate] = useState(null);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+
+  const selectedRef = useRef(null);
+  const tabRef = useRef('desc');
+  const userRef = useRef(null);
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+  useEffect(() => { tabRef.current = activeTab; }, [activeTab]);
+  useEffect(() => { userRef.current = user; }, [user]);
+
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications));
+    }
+  }, [notifications]);
 
   useEffect(() => {
     requestNotificationPermission();
@@ -32,6 +55,52 @@ export default function App() {
     })
     return () => subscription.unsubscribe()
   }, [])
+
+  // глобальные уведомления по задачам и сообщениям
+  useEffect(() => {
+    const tasksChannel = supabase
+      .channel('tasks_all')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, payload => {
+        const objId = payload.new.object_id;
+        const isCurrent = selectedRef.current?.id === objId && tabRef.current === 'tasks';
+        setNotifications(prev => {
+          if (isCurrent) return prev;
+          return { ...prev, [objId]: (prev[objId] || 0) + 1 };
+        });
+        if (!isCurrent) {
+          toast.success(`Добавлена задача: ${payload.new.title}`);
+          pushNotification('Новая задача', payload.new.title);
+          playTaskSound();
+        }
+      })
+      .subscribe();
+
+    const chatChannel = supabase
+      .channel('chat_all')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+        const objId = payload.new.object_id;
+        const sender = payload.new.sender;
+        const currentUser = userRef.current?.user_metadata?.username || userRef.current?.email;
+        if (sender === currentUser) return;
+        const isCurrent = selectedRef.current?.id === objId && tabRef.current === 'chat';
+        setNotifications(prev => {
+          if (isCurrent) return prev;
+          return { ...prev, [objId]: (prev[objId] || 0) + 1 };
+        });
+        if (!isCurrent) {
+          toast.success('Новое сообщение в чате');
+          const body = payload.new.content || '📎 Файл';
+          pushNotification('Новое сообщение', `${payload.new.sender}: ${body}`);
+          playMessageSound();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(tasksChannel);
+      supabase.removeChannel(chatChannel);
+    };
+  }, []);
 
   // Загрузка списка объектов
   useEffect(() => {
@@ -137,6 +206,8 @@ export default function App() {
 
   function handleSelect(obj) {
     setSelected(obj);
+    clearNotifications(obj.id);
+    setActiveTab('desc');
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(SELECTED_OBJECT_KEY, obj.id);
     }
@@ -146,6 +217,7 @@ export default function App() {
 
   function handleUpdateSelected(updated) {
     setSelected(updated);
+    clearNotifications(updated.id);
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(SELECTED_OBJECT_KEY, updated.id);
     }
@@ -158,6 +230,22 @@ export default function App() {
 
   function handleUserUpdated(updated) {
     setUser(updated);
+  }
+
+  function handleTabChange(tab) {
+    setActiveTab(tab);
+    if ((tab === 'tasks' || tab === 'chat') && selected) {
+      clearNotifications(selected.id);
+    }
+  }
+
+  function clearNotifications(objectId) {
+    setNotifications(prev => {
+      if (!prev[objectId]) return prev;
+      const updated = { ...prev };
+      delete updated[objectId];
+      return updated;
+    });
   }
 
   if (!user) return <Auth />;
@@ -182,6 +270,7 @@ export default function App() {
             onSelect={handleSelect}
             onEdit={editObject}
             onDelete={askDelete}
+            notifications={notifications}
           />
         </aside>
         {isSidebarOpen && (
@@ -203,6 +292,7 @@ export default function App() {
                 onSelect={handleSelect}
                 onEdit={editObject}
                 onDelete={askDelete}
+                notifications={notifications}
               />
             </aside>
           </div>
@@ -244,6 +334,7 @@ export default function App() {
               selected={selected}
               onUpdateSelected={handleUpdateSelected}
               user={user}
+              onTabChange={handleTabChange}
             />
           </div>
         </div>

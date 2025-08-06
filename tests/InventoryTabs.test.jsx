@@ -12,7 +12,7 @@ vi.mock('../src/supabaseClient', () => {
     }
   };
 });
-vi.mock('../src/utils/notifications', () => ({ pushNotification: vi.fn() }));
+vi.mock('../src/utils/notifications', () => ({ pushNotification: vi.fn(), playTaskSound: vi.fn(), playMessageSound: vi.fn() }));
 vi.mock('react-hot-toast', () => ({ toast: { success: vi.fn() } }));
 vi.mock('../src/components/ChatTab', () => ({ default: () => <div data-testid="chat-tab">ChatMock</div> }));
 
@@ -20,7 +20,9 @@ import InventoryTabs from '../src/components/InventoryTabs';
 
 const user = { user_metadata: { username: 'User' }, email: 'user@example.com' };
 
-const renderComponent = (selected) => render(<InventoryTabs selected={selected} onUpdateSelected={() => {}} user={user} />);
+const renderComponent = (selected) => render(
+  <InventoryTabs selected={selected} onUpdateSelected={() => {}} user={user} onTabChange={() => {}} />
+);
 
 describe('InventoryTabs', () => {
   beforeEach(() => {
