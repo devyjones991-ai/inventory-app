@@ -1,10 +1,14 @@
-codex/add-video-file-handling-in-attachmentpreview
 import React, { useState } from 'react';
 
 export default function AttachmentPreview({ url }) {
   const [open, setOpen] = useState(false);
 
-  const extension = url.split('?')[0].split('#')[0].split('.').pop().toLowerCase();
+  const extension = url
+    .split('?')[0]
+    .split('#')[0]
+    .split('.')
+    .pop()
+    .toLowerCase();
   const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
   const videoExt = ['mp4', 'webm', 'ogg', 'mov'];
 
@@ -71,39 +75,23 @@ export default function AttachmentPreview({ url }) {
           </div>
         )}
       </>
-
-import React from 'react';
-
-export default function AttachmentPreview({ url, onImageClick }) {
-  if (!url) return null;
-
-  const cleanUrl = url.split('?')[0];
-  const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(cleanUrl);
-
-  if (isImage) {
-    return (
-      <img
-        src={url}
-        alt="attachment"
-        className="max-w-full mt-1 cursor-pointer"
-        onClick={() => onImageClick?.(url)}
-      />
-main
     );
   }
 
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-500 underline block"
-codex/add-video-file-handling-in-attachmentpreview
-      data-testid="attachment-link"
-
-main
-    >
-      📎 Прикреплённый файл
-    </a>
+    <div className="mt-1 space-x-2">
+      <a href={url} download className="text-blue-500 underline">
+        Скачать
+      </a>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-500 underline"
+      >
+        Открыть
+      </a>
+    </div>
   );
 }
+
