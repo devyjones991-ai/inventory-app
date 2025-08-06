@@ -36,11 +36,7 @@ describe('saveTask uses executor column', () => {
     insertSpy.mockClear();
   });
 
-5omqfh-codex/fix-schema-cache-error-for-tasks
   it('sends executor and omits assignee and due_date', async () => {
-
-  it('sends executor and omits assignee', async () => {
- main
     render(<InventoryTabs selected={{ id: 1, name: 'Obj', description: '' }} onUpdateSelected={() => {}} user={user} />);
     fireEvent.click(screen.getByText('Задачи (0)'));
     fireEvent.click(screen.getByRole('button', { name: /Добавить задачу/ }));
@@ -52,9 +48,7 @@ describe('saveTask uses executor column', () => {
     const payload = insertSpy.mock.calls[0][0][0];
     expect(payload.executor).toBe('Bob');
     expect(payload.assignee).toBeUndefined();
- 5omqfh-codex/fix-schema-cache-error-for-tasks
     expect(payload.due_date).toBeUndefined();
-
- main
   });
 });
+

@@ -45,7 +45,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [loadingTasks, setLoadingTasks] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask]   = useState(null)
-  const defaultTaskForm = { title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' }
+  const defaultTaskForm = { title: '', status: 'запланировано', executor: '', due_date: '', notes: '' }
   const [taskForm, setTaskForm]         = useState(defaultTaskForm)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask]   = useState(null)
@@ -249,7 +249,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       setTaskForm({
         title: item.title,
         status: item.status,
-        assignee: item.assignee || item.executor || '',
+        executor: item.executor || item.assignee || '',
         due_date: item.due_date || item.planned_date || item.plan_date || '',
         notes: item.notes || ''
       })
@@ -269,7 +269,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       object_id: selected.id,
       title: taskForm.title,
       status: taskForm.status,
-      executor: taskForm.assignee || null,
+      executor: taskForm.executor || null,
       planned_date: taskForm.due_date || null,
       plan_date: taskForm.due_date || null,
       notes: taskForm.notes || null
@@ -491,8 +491,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                       <input
                         type="text"
                         className="input input-bordered w-full"
-                        value={taskForm.assignee}
-                        onChange={e=>setTaskForm(f=>({...f,assignee:e.target.value}))}
+                        value={taskForm.executor}
+                        onChange={e=>setTaskForm(f=>({...f,executor:e.target.value}))}
                       />
                     </div>
                     <div className="form-control">
@@ -544,8 +544,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                   <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={()=>setViewingTask(null)}>✕</button>
                   <h3 className="font-bold text-lg mb-4">{viewingTask.title}</h3>
                   <div className="space-y-2">
-                    {(viewingTask.assignee || viewingTask.executor) && (
-                      <p><strong>Исполнитель:</strong> {viewingTask.assignee || viewingTask.executor}</p>
+                    {(viewingTask.executor || viewingTask.assignee) && (
+                      <p><strong>Исполнитель:</strong> {viewingTask.executor || viewingTask.assignee}</p>
                     )}
                     {(viewingTask.due_date || viewingTask.planned_date || viewingTask.plan_date) && (
                       <p><strong>Дата:</strong> {formatDate(viewingTask.due_date || viewingTask.planned_date || viewingTask.plan_date)}</p>

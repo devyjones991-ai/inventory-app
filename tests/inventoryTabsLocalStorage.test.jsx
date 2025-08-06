@@ -39,7 +39,7 @@ describe('InventoryTabs localStorage recovery', () => {
   })
 
   const defaultHWForm = { name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' }
-  const defaultTaskForm = { title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' }
+  const defaultTaskForm = { title: '', status: 'запланировано', executor: '', due_date: '', notes: '' }
 
   it('resets forms and clears storage on malformed JSON', async () => {
     localStorage.setItem(hwFormKey, '{bad json')
