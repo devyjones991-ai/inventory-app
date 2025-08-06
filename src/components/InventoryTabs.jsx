@@ -270,7 +270,6 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       title: taskForm.title,
       status: taskForm.status,
       executor: taskForm.assignee || null,
-      due_date: taskForm.due_date || null,
       planned_date: taskForm.due_date || null,
       plan_date: taskForm.due_date || null,
       notes: taskForm.notes || null
