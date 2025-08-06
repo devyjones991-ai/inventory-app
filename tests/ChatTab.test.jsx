@@ -1,9 +1,16 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const insertMock = vi.fn();
+codex/add-video-file-handling-in-attachmentpreview
 let mockMessages = [];
+
+codex/add-attachment-preview-component-to-chattab
+const mockMessages = [];
+let realtimeHandler;
+main
+main
 
 vi.mock('../src/supabaseClient', () => {
   const from = vi.fn((table) => {
@@ -11,7 +18,13 @@ vi.mock('../src/supabaseClient', () => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
+codex/add-video-file-handling-in-attachmentpreview
             order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: mockMessages }) })
+
+            order: vi.fn().mockReturnValue({
+              then: (cb) => cb({ data: mockMessages })
+            })
+main
           })
         }),
         insert: insertMock.mockReturnValue({
@@ -23,10 +36,18 @@ vi.mock('../src/supabaseClient', () => {
     }
     return {};
   });
+  const channel = {
+    on: vi.fn((event, filter, handler) => {
+      realtimeHandler = handler;
+      return channel;
+    }),
+    subscribe: vi.fn()
+  };
+
   return {
     supabase: {
       from,
-      channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
+      channel: vi.fn(() => channel),
       removeChannel: vi.fn(),
       storage: { from: vi.fn(() => ({ upload: vi.fn(), getPublicUrl: vi.fn() })) }
     }
@@ -45,7 +66,11 @@ describe('ChatTab', () => {
   });
   beforeEach(() => {
     insertMock.mockClear();
+codex/add-video-file-handling-in-attachmentpreview
     mockMessages = [];
+
+    mockMessages.length = 0;
+main
   });
 
   it('renders empty state when no messages', () => {
@@ -71,6 +96,7 @@ describe('ChatTab', () => {
     expect(insertMock).not.toHaveBeenCalled();
   });
 
+codex/add-video-file-handling-in-attachmentpreview
   it('renders video attachment and toggles fullscreen', async () => {
     mockMessages = [
       {
@@ -94,5 +120,46 @@ describe('ChatTab', () => {
     await waitFor(() =>
       expect(screen.queryByTestId('video-modal')).not.toBeInTheDocument()
     );
+
+codex/add-attachment-preview-component-to-chattab
+  it('renders image attachment and opens modal on click', async () => {
+    mockMessages.push({
+      id: 2,
+      sender: 'Other',
+      content: '',
+      file_url: 'http://example.com/test.png',
+      created_at: '2024-01-01'
+    });
+
+    render(<ChatTab selected={selected} user={user} />);
+
+    const img = await screen.findByAltText('attachment');
+    expect(img).toBeInTheDocument();
+
+    fireEvent.click(img);
+    expect(screen.getByAltText('preview')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Close'));
+    expect(screen.queryByAltText('preview')).not.toBeInTheDocument();
+  
+it('adds a message on external INSERT event', async () => {
+    render(<ChatTab selected={selected} user={user} />);
+
+    await waitFor(() => expect(realtimeHandler).toBeDefined());
+
+    act(() => {
+      realtimeHandler({
+        new: {
+          id: 2,
+          sender: 'User',
+          content: 'External message',
+          created_at: '2024-01-02'
+        }
+      });
+    });
+
+    expect(screen.getByText('External message')).toBeInTheDocument();
+main
+main
   });
 });
