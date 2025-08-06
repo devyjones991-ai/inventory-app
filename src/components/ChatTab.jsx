@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
+import { toast } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
@@ -65,15 +66,22 @@ export default function ChatTab({ selected, user }) {
     if (file) {
       setUploading(true)
       const filePath = `${selected.id}/${uuidv4()}_${file.name}`
-      const { error: upErr } = await supabase.storage
-        .from('chat-files')
-        .upload(filePath, file)
-      if (upErr) console.error('Upload error:', upErr)
-      else {
+      try {
+        const { error: upErr } = await supabase.storage
+          .from('chat-files')
+          .upload(filePath, file)
+
+        if (upErr) throw upErr
+
         const { data } = supabase.storage
           .from('chat-files')
           .getPublicUrl(filePath)
         fileUrl = data.publicUrl
+      } catch (err) {
+        console.error('Upload error:', err)
+        toast.error('Ошибка загрузки файла')
+        setUploading(false)
+        return
       }
       setUploading(false)
     }
