@@ -1,9 +1,12 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const insertMock = vi.fn();
+codex/add-attachment-preview-component-to-chattab
 const mockMessages = [];
+let realtimeHandler;
+main
 
 vi.mock('../src/supabaseClient', () => {
   const from = vi.fn((table) => {
@@ -25,10 +28,18 @@ vi.mock('../src/supabaseClient', () => {
     }
     return {};
   });
+  const channel = {
+    on: vi.fn((event, filter, handler) => {
+      realtimeHandler = handler;
+      return channel;
+    }),
+    subscribe: vi.fn()
+  };
+
   return {
     supabase: {
       from,
-      channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
+      channel: vi.fn(() => channel),
       removeChannel: vi.fn(),
       storage: { from: vi.fn(() => ({ upload: vi.fn(), getPublicUrl: vi.fn() })) }
     }
@@ -73,6 +84,7 @@ describe('ChatTab', () => {
     expect(insertMock).not.toHaveBeenCalled();
   });
 
+codex/add-attachment-preview-component-to-chattab
   it('renders image attachment and opens modal on click', async () => {
     mockMessages.push({
       id: 2,
@@ -92,5 +104,24 @@ describe('ChatTab', () => {
 
     fireEvent.click(screen.getByLabelText('Close'));
     expect(screen.queryByAltText('preview')).not.toBeInTheDocument();
+  
+it('adds a message on external INSERT event', async () => {
+    render(<ChatTab selected={selected} user={user} />);
+
+    await waitFor(() => expect(realtimeHandler).toBeDefined());
+
+    act(() => {
+      realtimeHandler({
+        new: {
+          id: 2,
+          sender: 'User',
+          content: 'External message',
+          created_at: '2024-01-02'
+        }
+      });
+    });
+
+    expect(screen.getByText('External message')).toBeInTheDocument();
+main
   });
 });
