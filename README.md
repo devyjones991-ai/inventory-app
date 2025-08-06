@@ -5,8 +5,8 @@
 ## Структура таблиц
 - **objects**: `id`, `name`, `description`, `created_at`
 - **hardware**: `id`, `object_id`, `name`, `location`, `purchase_status`, `install_status`, `created_at`
-- **tasks**: `id`, `object_id`, `title`, `status`, `created_at`
-- **chat_messages**: `id`, `object_id`, `content`, `created_at`
+- **tasks**: `id`, `object_id`, `title`, `status`, `assignee`, `due_date`, `notes`, `created_at`
+- **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`
 
 ## Запуск
 1. Установите зависимости: `npm install`
