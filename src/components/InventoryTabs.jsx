@@ -249,7 +249,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       setTaskForm({
         title: item.title,
         status: item.status,
-        executor: item.executor || item.assignee || '',
+        executor: item.executor || '',
         due_date: item.due_date || item.planned_date || item.plan_date || '',
         notes: item.notes || ''
       })
@@ -544,8 +544,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
                   <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={()=>setViewingTask(null)}>✕</button>
                   <h3 className="font-bold text-lg mb-4">{viewingTask.title}</h3>
                   <div className="space-y-2">
-                    {(viewingTask.executor || viewingTask.assignee) && (
-                      <p><strong>Исполнитель:</strong> {viewingTask.executor || viewingTask.assignee}</p>
+                    {viewingTask.executor && (
+                      <p><strong>Исполнитель:</strong> {viewingTask.executor}</p>
                     )}
                     {(viewingTask.due_date || viewingTask.planned_date || viewingTask.plan_date) && (
                       <p><strong>Дата:</strong> {formatDate(viewingTask.due_date || viewingTask.planned_date || viewingTask.plan_date)}</p>
