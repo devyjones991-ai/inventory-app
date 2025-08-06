@@ -3,9 +3,13 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const insertMock = vi.fn();
+codex/add-video-file-handling-in-attachmentpreview
+let mockMessages = [];
+
 codex/add-attachment-preview-component-to-chattab
 const mockMessages = [];
 let realtimeHandler;
+main
 main
 
 vi.mock('../src/supabaseClient', () => {
@@ -14,9 +18,13 @@ vi.mock('../src/supabaseClient', () => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
+codex/add-video-file-handling-in-attachmentpreview
+            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: mockMessages }) })
+
             order: vi.fn().mockReturnValue({
               then: (cb) => cb({ data: mockMessages })
             })
+main
           })
         }),
         insert: insertMock.mockReturnValue({
@@ -58,7 +66,11 @@ describe('ChatTab', () => {
   });
   beforeEach(() => {
     insertMock.mockClear();
+codex/add-video-file-handling-in-attachmentpreview
+    mockMessages = [];
+
     mockMessages.length = 0;
+main
   });
 
   it('renders empty state when no messages', () => {
@@ -83,6 +95,31 @@ describe('ChatTab', () => {
     fireEvent.click(sendBtn);
     expect(insertMock).not.toHaveBeenCalled();
   });
+
+codex/add-video-file-handling-in-attachmentpreview
+  it('renders video attachment and toggles fullscreen', async () => {
+    mockMessages = [
+      {
+        id: 1,
+        sender: 'User',
+        content: '',
+        file_url: 'http://example.com/video.mp4',
+        created_at: '2024-01-01'
+      }
+    ];
+    render(<ChatTab selected={selected} user={user} />);
+
+    const video = await screen.findByTestId('attachment-video');
+    expect(video).toBeInTheDocument();
+
+    fireEvent.click(video);
+    const modal = await screen.findByTestId('video-modal');
+    expect(modal).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Закрыть'));
+    await waitFor(() =>
+      expect(screen.queryByTestId('video-modal')).not.toBeInTheDocument()
+    );
 
 codex/add-attachment-preview-component-to-chattab
   it('renders image attachment and opens modal on click', async () => {
@@ -122,6 +159,7 @@ it('adds a message on external INSERT event', async () => {
     });
 
     expect(screen.getByText('External message')).toBeInTheDocument();
+main
 main
   });
 });

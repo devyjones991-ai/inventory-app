@@ -144,7 +144,11 @@ export default function ChatTab({ selected, user }) {
                     </div>
                   )}
                   {msg.file_url && (
+                  codex/add-video-file-handling-in-attachmentpreview
+                    <AttachmentPreview url={msg.file_url} />
+
                     <AttachmentPreview url={msg.file_url} onImageClick={setModalImage} />
+main
                   )}
                 </div>
               </motion.div>
