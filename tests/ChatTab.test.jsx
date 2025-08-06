@@ -1,8 +1,20 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
+codex/expand-supabase-mocks-in-tests
 import ChatTab from '../src/components/ChatTab';
+
+const insertMock = vi.fn();
+codex/add-video-file-handling-in-attachmentpreview
+let mockMessages = [];
+
+codex/add-attachment-preview-component-to-chattab
+const mockMessages = [];
+let realtimeHandler;
+main
+main
+main
 
 const { uploadMock, getPublicUrlMock, insertMock, supabaseMock } = vi.hoisted(() => {
   const uploadMock = vi.fn();
@@ -15,6 +27,7 @@ const { uploadMock, getPublicUrlMock, insertMock, supabaseMock } = vi.hoisted(()
   }));
   const fromMock = vi.fn(table => {
     if (table === 'chat_messages') {
+codex/expand-supabase-mocks-in-tests
       return { select: selectMock, insert: insertMock };
     }
     return {};
@@ -24,6 +37,44 @@ const { uploadMock, getPublicUrlMock, insertMock, supabaseMock } = vi.hoisted(()
     channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
     removeChannel: vi.fn(),
     storage: { from: vi.fn(() => ({ upload: uploadMock, getPublicUrl: getPublicUrlMock })) }
+
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+codex/add-video-file-handling-in-attachmentpreview
+            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: mockMessages }) })
+
+            order: vi.fn().mockReturnValue({
+              then: (cb) => cb({ data: mockMessages })
+            })
+main
+          })
+        }),
+        insert: insertMock.mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: { id: 1, sender: 'User', content: 'hi', created_at: '2024-01-01' } })
+          })
+        })
+      };
+    }
+    return {};
+  });
+  const channel = {
+    on: vi.fn((event, filter, handler) => {
+      realtimeHandler = handler;
+      return channel;
+    }),
+    subscribe: vi.fn()
+  };
+
+  return {
+    supabase: {
+      from,
+      channel: vi.fn(() => channel),
+      removeChannel: vi.fn(),
+      storage: { from: vi.fn(() => ({ upload: vi.fn(), getPublicUrl: vi.fn() })) }
+    }
+main
   };
   return { uploadMock, getPublicUrlMock, insertMock, supabaseMock };
 });
@@ -39,12 +90,21 @@ describe('ChatTab', () => {
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
   });
   beforeEach(() => {
+codex/expand-supabase-mocks-in-tests
     vi.clearAllMocks();
     insertMock.mockReturnValue({
       select: vi.fn().mockReturnValue({
         single: vi.fn().mockResolvedValue({ data: { id: 1, sender: 'User', content: 'hi', file_url: null, created_at: '2024-01-01' } })
       })
     });
+
+    insertMock.mockClear();
+codex/add-video-file-handling-in-attachmentpreview
+    mockMessages = [];
+
+    mockMessages.length = 0;
+main
+main
   });
 
   it('renders empty state when no messages', () => {
@@ -70,6 +130,7 @@ describe('ChatTab', () => {
     expect(insertMock).not.toHaveBeenCalled();
   });
 
+codex/expand-supabase-mocks-in-tests
   it('shows image attachment after upload', async () => {
     uploadMock.mockResolvedValue({ data: {}, error: null });
     const url = 'https://example.com/test.png';
@@ -137,5 +198,72 @@ describe('ChatTab', () => {
     await waitFor(() => expect(uploadMock).toHaveBeenCalled());
     const link = await screen.findByText('📎 Прикреплённый файл');
     expect(link.closest('a')).toHaveAttribute('href', url);
+
+codex/add-video-file-handling-in-attachmentpreview
+  it('renders video attachment and toggles fullscreen', async () => {
+    mockMessages = [
+      {
+        id: 1,
+        sender: 'User',
+        content: '',
+        file_url: 'http://example.com/video.mp4',
+        created_at: '2024-01-01'
+      }
+    ];
+    render(<ChatTab selected={selected} user={user} />);
+
+    const video = await screen.findByTestId('attachment-video');
+    expect(video).toBeInTheDocument();
+
+    fireEvent.click(video);
+    const modal = await screen.findByTestId('video-modal');
+    expect(modal).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Закрыть'));
+    await waitFor(() =>
+      expect(screen.queryByTestId('video-modal')).not.toBeInTheDocument()
+    );
+
+codex/add-attachment-preview-component-to-chattab
+  it('renders image attachment and opens modal on click', async () => {
+    mockMessages.push({
+      id: 2,
+      sender: 'Other',
+      content: '',
+      file_url: 'http://example.com/test.png',
+      created_at: '2024-01-01'
+    });
+
+    render(<ChatTab selected={selected} user={user} />);
+
+    const img = await screen.findByAltText('attachment');
+    expect(img).toBeInTheDocument();
+
+    fireEvent.click(img);
+    expect(screen.getByAltText('preview')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Close'));
+    expect(screen.queryByAltText('preview')).not.toBeInTheDocument();
+  
+it('adds a message on external INSERT event', async () => {
+    render(<ChatTab selected={selected} user={user} />);
+
+    await waitFor(() => expect(realtimeHandler).toBeDefined());
+
+    act(() => {
+      realtimeHandler({
+        new: {
+          id: 2,
+          sender: 'User',
+          content: 'External message',
+          created_at: '2024-01-02'
+        }
+      });
+    });
+
+    expect(screen.getByText('External message')).toBeInTheDocument();
+main
+main
+main
   });
 });
