@@ -38,19 +38,31 @@ export default function ChatTab({ selected, user }) {
     // realtime подписка
     const channel = supabase
       .channel(`chat_messages_object_${objectId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'chat_messages',
-        filter: `object_id=eq.${objectId}`
-      }, payload => {
-        setMessages(prev => {
-          // избегаем дублей
-          if (prev.some(m => m.id === payload.new.id)) return prev
-          return [...prev, payload.new]
-        })
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `object_id=eq.${objectId}`
+        },
+        payload => {
+          setMessages(prev => {
+            // избегаем дублей
+            if (prev.some(m => m.id === payload.new.id)) return prev
+            return [...prev, payload.new]
+          })
+        }
+      )
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Chat realtime channel subscribed')
+        }
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Chat realtime channel error:', status)
+          toast.error('Не удалось подключиться к real-time каналу')
+        }
       })
-      .subscribe()
 
     return () => supabase.removeChannel(channel)
   }, [selected])
