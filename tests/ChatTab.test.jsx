@@ -2,37 +2,33 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
-const insertMock = vi.fn();
+import ChatTab from '../src/components/ChatTab';
 
-vi.mock('../src/supabaseClient', () => {
-  const from = vi.fn((table) => {
+const { uploadMock, getPublicUrlMock, insertMock, supabaseMock } = vi.hoisted(() => {
+  const uploadMock = vi.fn();
+  const getPublicUrlMock = vi.fn();
+  const insertMock = vi.fn();
+  const selectMock = vi.fn(() => ({
+    eq: vi.fn(() => ({
+      order: vi.fn(() => ({ then: cb => { cb({ data: [] }); } }))
+    }))
+  }));
+  const fromMock = vi.fn(table => {
     if (table === 'chat_messages') {
-      return {
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: [] }) })
-          })
-        }),
-        insert: insertMock.mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: { id: 1, sender: 'User', content: 'hi', created_at: '2024-01-01' } })
-          })
-        })
-      };
+      return { select: selectMock, insert: insertMock };
     }
     return {};
   });
-  return {
-    supabase: {
-      from,
-      channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
-      removeChannel: vi.fn(),
-      storage: { from: vi.fn(() => ({ upload: vi.fn(), getPublicUrl: vi.fn() })) }
-    }
+  const supabaseMock = {
+    from: fromMock,
+    channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
+    removeChannel: vi.fn(),
+    storage: { from: vi.fn(() => ({ upload: uploadMock, getPublicUrl: getPublicUrlMock })) }
   };
+  return { uploadMock, getPublicUrlMock, insertMock, supabaseMock };
 });
 
-import ChatTab from '../src/components/ChatTab';
+vi.mock('../src/supabaseClient', () => ({ supabase: supabaseMock }));
 
 const selected = { id: 1 };
 const user = { user_metadata: { username: 'User' }, email: 'user@example.com' };
@@ -43,7 +39,12 @@ describe('ChatTab', () => {
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
   });
   beforeEach(() => {
-    insertMock.mockClear();
+    vi.clearAllMocks();
+    insertMock.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: { id: 1, sender: 'User', content: 'hi', file_url: null, created_at: '2024-01-01' } })
+      })
+    });
   });
 
   it('renders empty state when no messages', () => {
@@ -67,5 +68,74 @@ describe('ChatTab', () => {
     const sendBtn = screen.getByRole('button');
     fireEvent.click(sendBtn);
     expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('shows image attachment after upload', async () => {
+    uploadMock.mockResolvedValue({ data: {}, error: null });
+    const url = 'https://example.com/test.png';
+    getPublicUrlMock.mockReturnValue({ data: { publicUrl: url } });
+    insertMock.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: { id: 1, sender: 'User', content: '', file_url: url, created_at: '2024-01-01' } })
+      })
+    });
+
+    const { container } = render(<ChatTab selected={selected} user={user} />);
+    const fileInput = container.querySelector('input[type="file"]');
+    const file = new File(['img'], 'test.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    const sendBtn = screen.getByRole('button');
+    fireEvent.click(sendBtn);
+
+    await waitFor(() => expect(uploadMock).toHaveBeenCalled());
+    const link = await screen.findByText('📎 Прикреплённый файл');
+    expect(link.closest('a')).toHaveAttribute('href', url);
+  });
+
+  it('shows video attachment after upload', async () => {
+    uploadMock.mockResolvedValue({ data: {}, error: null });
+    const url = 'https://example.com/test.mp4';
+    getPublicUrlMock.mockReturnValue({ data: { publicUrl: url } });
+    insertMock.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: { id: 1, sender: 'User', content: '', file_url: url, created_at: '2024-01-01' } })
+      })
+    });
+
+    const { container } = render(<ChatTab selected={selected} user={user} />);
+    const fileInput = container.querySelector('input[type="file"]');
+    const file = new File(['vid'], 'test.mp4', { type: 'video/mp4' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    const sendBtn = screen.getByRole('button');
+    fireEvent.click(sendBtn);
+
+    await waitFor(() => expect(uploadMock).toHaveBeenCalled());
+    const link = await screen.findByText('📎 Прикреплённый файл');
+    expect(link.closest('a')).toHaveAttribute('href', url);
+  });
+
+  it('shows document attachment after upload', async () => {
+    uploadMock.mockResolvedValue({ data: {}, error: null });
+    const url = 'https://example.com/test.pdf';
+    getPublicUrlMock.mockReturnValue({ data: { publicUrl: url } });
+    insertMock.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: { id: 1, sender: 'User', content: '', file_url: url, created_at: '2024-01-01' } })
+      })
+    });
+
+    const { container } = render(<ChatTab selected={selected} user={user} />);
+    const fileInput = container.querySelector('input[type="file"]');
+    const file = new File(['doc'], 'test.pdf', { type: 'application/pdf' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    const sendBtn = screen.getByRole('button');
+    fireEvent.click(sendBtn);
+
+    await waitFor(() => expect(uploadMock).toHaveBeenCalled());
+    const link = await screen.findByText('📎 Прикреплённый файл');
+    expect(link.closest('a')).toHaveAttribute('href', url);
   });
 });
