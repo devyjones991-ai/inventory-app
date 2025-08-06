@@ -1,0 +1,22 @@
+name: Supabase Migrate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Push migrations
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          project_ref=$(echo "$SUPABASE_URL" | sed -e 's#https://##' -e 's#.supabase.co##')
+          supabase db push --project-ref "$project_ref" --password "$SUPABASE_SERVICE_KEY"
