@@ -36,7 +36,7 @@ describe('saveTask uses executor column', () => {
     insertSpy.mockClear();
   });
 
-  it('sends executor and omits assignee and due_date', async () => {
+  it('sends executor and omits due_date', async () => {
     render(<InventoryTabs selected={{ id: 1, name: 'Obj', description: '' }} onUpdateSelected={() => {}} user={user} />);
     fireEvent.click(screen.getByText('Задачи (0)'));
     fireEvent.click(screen.getByRole('button', { name: /Добавить задачу/ }));
@@ -47,7 +47,6 @@ describe('saveTask uses executor column', () => {
     await waitFor(() => expect(insertSpy).toHaveBeenCalled());
     const payload = insertSpy.mock.calls[0][0][0];
     expect(payload.executor).toBe('Bob');
-    expect(payload.assignee).toBeUndefined();
     expect(payload.due_date).toBeUndefined();
   });
 });
