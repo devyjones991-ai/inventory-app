@@ -8,7 +8,7 @@ const insertSpy = vi.fn(() => ({
   }))
 }));
 
-vi.mock('../src/supabaseClient', () => {
+vi.mock('../src/supabaseClient.js', () => {
   const createQuery = () => ({
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),

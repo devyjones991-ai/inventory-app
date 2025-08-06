@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../src/supabaseClient', () => {
+vi.mock('../src/supabaseClient.js', () => {
   const chain = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), then: vi.fn(cb => cb({ data: [] })) };
   return {
     supabase: {

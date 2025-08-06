@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../src/supabaseClient', () => {
+vi.mock('../src/supabaseClient.js', () => {
   return {
     supabase: {
       auth: {
@@ -13,7 +13,7 @@ vi.mock('../src/supabaseClient', () => {
   };
 });
 
-import { supabase } from '../src/supabaseClient';
+import { supabase } from '../src/supabaseClient.js';
 import Auth from '../src/components/Auth';
 
 describe('Auth', () => {
