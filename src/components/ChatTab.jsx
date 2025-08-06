@@ -129,10 +129,9 @@ export default function ChatTab({ selected, user }) {
                     {msg.sender} • {new Date(msg.created_at).toLocaleString()}
                   </div>
                   {msg.content && (
-                    <div
-                      className="whitespace-pre-line break-words mb-1"
-                      dangerouslySetInnerHTML={{ __html: linkifyText(msg.content) }}
-                    />
+                    <div className="whitespace-pre-line break-words mb-1">
+                      {linkifyText(msg.content)}
+                    </div>
                   )}
                   {msg.file_url && (
                     <a
