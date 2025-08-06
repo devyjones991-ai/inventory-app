@@ -155,11 +155,17 @@ export default function ChatTab({ selected, user }) {
                       {linkifyText(msg.content)}
                     </div>
                   )}
+ codex/refactor-tests-for-chattab
                   {msg.file_url && (
                     <AttachmentPreview
                       url={msg.file_url}
                       onImageClick={setModalImage}
                     />
+
+
+                  {msg.file_url && (
+                    <AttachmentPreview url={msg.file_url} onImageClick={setModalImage} />
+main
                   )}
                 </div>
               </motion.div>

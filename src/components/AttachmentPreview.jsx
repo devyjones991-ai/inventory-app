@@ -3,9 +3,18 @@ import React, { useState } from 'react';
 export default function AttachmentPreview({ url, onImageClick }) {
   const [open, setOpen] = useState(false);
 
+codex/refactor-tests-for-chattab
   const cleanUrl = url?.split('?')[0].split('#')[0] || '';
   const extension = cleanUrl.split('.').pop().toLowerCase();
 
+
+  const extension = url
+    .split('?')[0]
+    .split('#')[0]
+    .split('.')
+    .pop()
+    .toLowerCase();
+main
   const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
   const videoExt = ['mp4', 'webm', 'ogg', 'mov'];
 
@@ -83,6 +92,7 @@ export default function AttachmentPreview({ url, onImageClick }) {
   }
 
   return (
+codex/refactor-tests-for-chattab
     <a
       href={url}
       target="_blank"
@@ -92,6 +102,21 @@ export default function AttachmentPreview({ url, onImageClick }) {
     >
       📎 Прикреплённый файл
     </a>
+
+    <div className="mt-1 space-x-2">
+      <a href={url} download className="text-blue-500 underline">
+        Скачать
+      </a>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-500 underline"
+      >
+        Открыть
+      </a>
+    </div>
+main
   );
 }
 
