@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const insertMock = vi.fn();
+let selectData = [];
 
 vi.mock('../src/supabaseClient', () => {
   const from = vi.fn((table) => {
@@ -10,7 +11,7 @@ vi.mock('../src/supabaseClient', () => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: [] }) })
+            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: selectData }) })
           })
         }),
         insert: insertMock.mockReturnValue({
@@ -44,6 +45,7 @@ describe('ChatTab', () => {
   });
   beforeEach(() => {
     insertMock.mockClear();
+    selectData = [];
   });
 
   it('renders empty state when no messages', () => {
@@ -67,5 +69,20 @@ describe('ChatTab', () => {
     const sendBtn = screen.getByRole('button');
     fireEvent.click(sendBtn);
     expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('shows download and open buttons for non-media files', () => {
+    selectData = [
+      { id: 99, sender: 'User', created_at: '2024-01-01', content: '', file_url: 'https://example.com/file.txt' }
+    ];
+    render(<ChatTab selected={selected} user={user} />);
+    const downloadLink = screen.getByText('Скачать');
+    const openLink = screen.getByText('Открыть');
+    expect(downloadLink).toBeInTheDocument();
+    expect(openLink).toBeInTheDocument();
+    expect(downloadLink).toHaveAttribute('href', 'https://example.com/file.txt');
+    expect(downloadLink).toHaveAttribute('download');
+    expect(openLink).toHaveAttribute('href', 'https://example.com/file.txt');
+    expect(openLink).toHaveAttribute('target', '_blank');
   });
 });
