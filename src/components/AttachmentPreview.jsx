@@ -3,18 +3,9 @@ import React, { useState } from 'react';
 export default function AttachmentPreview({ url, onImageClick }) {
   const [open, setOpen] = useState(false);
 
-codex/refactor-tests-for-chattab
   const cleanUrl = url?.split('?')[0].split('#')[0] || '';
   const extension = cleanUrl.split('.').pop().toLowerCase();
 
-
-  const extension = url
-    .split('?')[0]
-    .split('#')[0]
-    .split('.')
-    .pop()
-    .toLowerCase();
-main
   const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
   const videoExt = ['mp4', 'webm', 'ogg', 'mov'];
 
@@ -92,31 +83,31 @@ main
   }
 
   return (
-codex/refactor-tests-for-chattab
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-500 underline block"
-      data-testid="attachment-link"
-    >
-      📎 Прикреплённый файл
-    </a>
-
-    <div className="mt-1 space-x-2">
-      <a href={url} download className="text-blue-500 underline">
-        Скачать
-      </a>
+    <>
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-blue-500 underline"
+        className="text-blue-500 underline block"
+        data-testid="attachment-link"
       >
-        Открыть
+        📎 Прикреплённый файл
       </a>
-    </div>
-main
+
+      <div className="mt-1 space-x-2">
+        <a href={url} download className="text-blue-500 underline">
+          Скачать
+        </a>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 underline"
+        >
+          Открыть
+        </a>
+      </div>
+    </>
   );
 }
 
