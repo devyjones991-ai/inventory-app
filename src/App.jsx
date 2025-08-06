@@ -4,6 +4,7 @@ import InventorySidebar from './components/InventorySidebar';
 import InventoryTabs from './components/InventoryTabs';
 import Auth from './components/Auth';
 import AccountModal from './components/AccountModal';
+import ConfirmModal from './components/ConfirmModal';
 import { Toaster, toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { requestNotificationPermission } from './utils/notifications';
@@ -15,10 +16,11 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newObjectName, setNewObjectName] = useState('');
-    const [deleteCandidate, setDeleteCandidate] = useState(null);
-    const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isObjectModalOpen, setIsObjectModalOpen] = useState(false);
+  const [objectName, setObjectName] = useState('');
+  const [editingObject, setEditingObject] = useState(null);
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   useEffect(() => {
     requestNotificationPermission();
@@ -56,24 +58,42 @@ export default function App() {
     }
   }
 
-  // Добавление объекта через модальное окно
-  async function saveNewObject() {
-    if (!newObjectName.trim()) return;
-    const { data, error } = await supabase
-      .from('objects')
-      .insert([{ name: newObjectName, description: '' }])
-      .select()
-      .single();
-    if (error) {
-      toast.error('Ошибка добавления: ' + error.message);
-    } else {
-      setObjects(prev => [...prev, data]);
-      setSelected(data);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(SELECTED_OBJECT_KEY, data.id);
+  // Добавление/редактирование объекта через модальное окно
+  async function saveObject() {
+    if (!objectName.trim()) return;
+    if (editingObject) {
+      const { data, error } = await supabase
+        .from('objects')
+        .update({ name: objectName })
+        .eq('id', editingObject.id)
+        .select()
+        .single();
+      if (error) {
+        toast.error('Ошибка редактирования: ' + error.message);
+      } else {
+        setObjects(prev => prev.map(o => (o.id === editingObject.id ? data : o)));
+        if (selected?.id === editingObject.id) setSelected(data);
+        setEditingObject(null);
+        setObjectName('');
+        setIsObjectModalOpen(false);
       }
-      setNewObjectName('');
-      setIsAddModalOpen(false);
+    } else {
+      const { data, error } = await supabase
+        .from('objects')
+        .insert([{ name: objectName, description: '' }])
+        .select()
+        .single();
+      if (error) {
+        toast.error('Ошибка добавления: ' + error.message);
+      } else {
+        setObjects(prev => [...prev, data]);
+        setSelected(data);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(SELECTED_OBJECT_KEY, data.id);
+        }
+        setObjectName('');
+        setIsObjectModalOpen(false);
+      }
     }
   }
 
@@ -108,22 +128,11 @@ export default function App() {
     }
   }
 
-  // Редактирование объекта
-  async function editObject(obj) {
-    const name = prompt('Введите новое название объекта:', obj.name);
-    if (!name) return;
-    const { data, error } = await supabase
-      .from('objects')
-      .update({ name })
-      .eq('id', obj.id)
-      .select()
-      .single();
-    if (error) {
-      alert('Ошибка редактирования: ' + error.message);
-    } else {
-      setObjects(prev => prev.map(o => (o.id === obj.id ? data : o)));
-      if (selected?.id === obj.id) setSelected(data);
-    }
+  // Открытие модального окна для редактирования объекта
+  function editObject(obj) {
+    setEditingObject(obj);
+    setObjectName(obj.name);
+    setIsObjectModalOpen(true);
   }
 
   function handleSelect(obj) {
@@ -212,7 +221,11 @@ export default function App() {
               </button>
               <button
                 className="btn btn-primary btn-sm flex items-center gap-1"
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => {
+                  setEditingObject(null);
+                  setObjectName('');
+                  setIsObjectModalOpen(true);
+                }}
               >
                 <PlusIcon className="w-4 h-4" /> Добавить
               </button>
@@ -235,43 +248,43 @@ export default function App() {
           </div>
         </div>
 
-        {/* Модальное добавление объекта */}
-        {isAddModalOpen && (
+        {/* Модальное добавление/редактирование объекта */}
+        {isObjectModalOpen && (
           <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="modal-box relative w-full max-w-md">
-              <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={() => setIsAddModalOpen(false)}>✕</button>
-              <h3 className="font-bold text-lg mb-4">Добавить объект</h3>
+              <button
+                className="btn btn-sm btn-circle absolute right-2 top-2"
+                onClick={() => setIsObjectModalOpen(false)}
+              >
+                ✕
+              </button>
+              <h3 className="font-bold text-lg mb-4">
+                {editingObject ? 'Редактировать объект' : 'Добавить объект'}
+              </h3>
               <div className="space-y-4">
                 <input
                   type="text"
                   className="input input-bordered w-full"
                   placeholder="Название"
-                  value={newObjectName}
-                  onChange={e => setNewObjectName(e.target.value)}
+                  value={objectName}
+                  onChange={e => setObjectName(e.target.value)}
                 />
               </div>
               <div className="modal-action flex space-x-2">
-                <button className="btn btn-primary" onClick={saveNewObject}>Сохранить</button>
-                <button className="btn btn-ghost" onClick={() => setIsAddModalOpen(false)}>Отмена</button>
+                <button className="btn btn-primary" onClick={saveObject}>Сохранить</button>
+                <button className="btn btn-ghost" onClick={() => setIsObjectModalOpen(false)}>Отмена</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Модальное подтверждение удаления */}
-        {deleteCandidate && (
-          <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="modal-box relative w-full max-w-sm">
-              <h3 className="font-bold text-lg mb-4">Удалить объект?</h3>
-              <div className="modal-action flex space-x-2">
-                <button className="btn btn-error flex items-center gap-1" onClick={confirmDelete}>
-                  <TrashIcon className="w-4 h-4" /> Удалить
-                </button>
-                <button className="btn" onClick={() => setDeleteCandidate(null)}>Отмена</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ConfirmModal
+          open={!!deleteCandidate}
+          title="Удалить объект?"
+          confirmLabel={<><TrashIcon className="w-4 h-4" /> Удалить</>}
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteCandidate(null)}
+        />
 
         {isAccountModalOpen && (
           <AccountModal

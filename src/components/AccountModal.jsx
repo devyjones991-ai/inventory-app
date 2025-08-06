@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { toast } from 'react-hot-toast';
 
 export default function AccountModal({ user, onClose, onUpdated }) {
   const [username, setUsername] = useState(user.user_metadata?.username || '');
@@ -10,7 +11,7 @@ export default function AccountModal({ user, onClose, onUpdated }) {
     const { data, error } = await supabase.auth.updateUser({ data: { username } });
     setSaving(false);
     if (error) {
-      alert('Ошибка обновления: ' + error.message);
+      toast.error('Ошибка обновления: ' + error.message);
     } else {
       onUpdated(data.user);
       onClose();

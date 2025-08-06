@@ -57,9 +57,7 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
           title="Удалить"
           onClick={e => {
             e.stopPropagation();
-            if (window.confirm('Удалить задачу?')) {
-              onDelete();
-            }
+            onDelete();
           }}
         >
           <TrashIcon className="w-4 h-4" />
