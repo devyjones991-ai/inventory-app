@@ -58,11 +58,31 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     setTab(savedTab || 'desc')
     const savedHWForm = typeof localStorage !== 'undefined' ? localStorage.getItem(HW_FORM_KEY(selected.id)) : null
     const savedHWOpen = typeof localStorage !== 'undefined' ? localStorage.getItem(HW_MODAL_KEY(selected.id)) === 'true' : false
-    setHWForm(savedHWForm ? JSON.parse(savedHWForm) : defaultHWForm)
+    let parsedHWForm = defaultHWForm
+    if (savedHWForm) {
+      try {
+        parsedHWForm = JSON.parse(savedHWForm)
+      } catch {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(HW_FORM_KEY(selected.id))
+        }
+      }
+    }
+    setHWForm(parsedHWForm)
     setIsHWModalOpen(savedHWOpen)
     const savedTaskForm = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_FORM_KEY(selected.id)) : null
     const savedTaskOpen = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true' : false
-    setTaskForm(savedTaskForm ? JSON.parse(savedTaskForm) : defaultTaskForm)
+    let parsedTaskForm = defaultTaskForm
+    if (savedTaskForm) {
+      try {
+        parsedTaskForm = JSON.parse(savedTaskForm)
+      } catch {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(TASK_FORM_KEY(selected.id))
+        }
+      }
+    }
+    setTaskForm(parsedTaskForm)
     setIsTaskModalOpen(savedTaskOpen)
     setDescription(selected.description || '')
     fetchHardware(selected.id)
