@@ -6,6 +6,7 @@ import ChatTab from './ChatTab';
 import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
+import { pushNotification } from '../utils/notifications';
 
 // локальное хранилище для дополнительных полей задач
 const TASK_EXTRAS_KEY = 'taskExtras';
@@ -87,7 +88,10 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
           const rec = extras[payload.new.id] ? { ...payload.new, ...extras[payload.new.id] } : payload.new
           return [...prev, rec]
         })
-        if (tab !== 'tasks') toast.success(`Добавлена задача: ${payload.new.title}`)
+        if (tab !== 'tasks') {
+          toast.success(`Добавлена задача: ${payload.new.title}`)
+          pushNotification('Новая задача', payload.new.title)
+        }
       })
       .subscribe()
 
@@ -106,6 +110,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
         const sender = user.user_metadata?.username || user.email
         if (tab !== 'chat' && payload.new.sender !== sender) {
           toast.success('Новое сообщение в чате')
+          const body = payload.new.content || '📎 Файл'
+          pushNotification('Новое сообщение', `${payload.new.sender}: ${body}`)
         }
       })
       .subscribe()
