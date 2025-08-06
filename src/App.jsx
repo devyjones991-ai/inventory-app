@@ -6,6 +6,7 @@ import Auth from './components/Auth';
 import AccountModal from './components/AccountModal';
 import { Toaster, toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { requestNotificationPermission } from './utils/notifications';
 
 export default function App() {
   const [objects, setObjects] = useState([]);
@@ -18,6 +19,7 @@ export default function App() {
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   useEffect(() => {
+    requestNotificationPermission();
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null)
     })
