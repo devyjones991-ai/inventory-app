@@ -7,22 +7,11 @@ import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 
-// локальное хранилище для дополнительных полей задач
-const TASK_EXTRAS_KEY = 'taskExtras';
-
-function getTaskExtras() {
-  if (typeof localStorage === 'undefined') return {};
-  try {
-    return JSON.parse(localStorage.getItem(TASK_EXTRAS_KEY)) || {};
-  } catch {
-    return {};
-  }
-}
-
-function setTaskExtras(extras) {
-  if (typeof localStorage === 'undefined') return;
-  localStorage.setItem(TASK_EXTRAS_KEY, JSON.stringify(extras));
-}
+const TAB_KEY = objectId => `tab_${objectId}`;
+const HW_MODAL_KEY = objectId => `hwModal_${objectId}`;
+const HW_FORM_KEY = objectId => `hwForm_${objectId}`;
+const TASK_MODAL_KEY = objectId => `taskModal_${objectId}`;
+const TASK_FORM_KEY = objectId => `taskForm_${objectId}`;
 
 // форматирование даты для отображения в русской локали
 function formatDate(dateStr) {
@@ -45,30 +34,72 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
   const [loadingHW, setLoadingHW]       = useState(false)
   const [isHWModalOpen, setIsHWModalOpen] = useState(false)
   const [editingHW, setEditingHW]       = useState(null)
-  const [hwForm, setHWForm]             = useState({ name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' })
+  const defaultHWForm = { name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' }
+  const [hwForm, setHWForm]             = useState(defaultHWForm)
 
   // --- задачи ---
   const [tasks, setTasks]               = useState([])
   const [loadingTasks, setLoadingTasks] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask]   = useState(null)
-  const [taskForm, setTaskForm]         = useState({ title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' })
+  const defaultTaskForm = { title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' }
+  const [taskForm, setTaskForm]         = useState(defaultTaskForm)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask]   = useState(null)
 
   // --- чат ---
   const [chatMessages, setChatMessages] = useState([])
 
-  // загрузка данных при смене объекта
+  // загрузка данных при смене объекта и восстановление состояния UI
   useEffect(() => {
     if (!selected) return
-    setTab('desc')
+    const savedTab = typeof localStorage !== 'undefined' ? localStorage.getItem(TAB_KEY(selected.id)) : null
+    setTab(savedTab || 'desc')
+    const savedHWForm = typeof localStorage !== 'undefined' ? localStorage.getItem(HW_FORM_KEY(selected.id)) : null
+    const savedHWOpen = typeof localStorage !== 'undefined' ? localStorage.getItem(HW_MODAL_KEY(selected.id)) === 'true' : false
+    setHWForm(savedHWForm ? JSON.parse(savedHWForm) : defaultHWForm)
+    setIsHWModalOpen(savedHWOpen)
+    const savedTaskForm = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_FORM_KEY(selected.id)) : null
+    const savedTaskOpen = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true' : false
+    setTaskForm(savedTaskForm ? JSON.parse(savedTaskForm) : defaultTaskForm)
+    setIsTaskModalOpen(savedTaskOpen)
     setDescription(selected.description || '')
     fetchHardware(selected.id)
     fetchTasks(selected.id)
     supabase.from('chat_messages').select('*').eq('object_id', selected.id)
       .then(({ data }) => setChatMessages(data || []))
   }, [selected])
+
+  useEffect(() => {
+    if (!selected) return
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(TAB_KEY(selected.id), tab)
+    }
+  }, [tab, selected])
+
+  useEffect(() => {
+    if (!selected) return
+    if (typeof localStorage !== 'undefined') {
+      if (!isHWModalOpen) {
+        localStorage.removeItem(HW_FORM_KEY(selected.id))
+      } else {
+        localStorage.setItem(HW_FORM_KEY(selected.id), JSON.stringify(hwForm))
+      }
+      localStorage.setItem(HW_MODAL_KEY(selected.id), isHWModalOpen)
+    }
+  }, [isHWModalOpen, hwForm, selected])
+
+  useEffect(() => {
+    if (!selected) return
+    if (typeof localStorage !== 'undefined') {
+      if (!isTaskModalOpen) {
+        localStorage.removeItem(TASK_FORM_KEY(selected.id))
+      } else {
+        localStorage.setItem(TASK_FORM_KEY(selected.id), JSON.stringify(taskForm))
+      }
+      localStorage.setItem(TASK_MODAL_KEY(selected.id), isTaskModalOpen)
+    }
+  }, [isTaskModalOpen, taskForm, selected])
 
   // realtime уведомления по задачам и чату
   useEffect(() => {
@@ -83,9 +114,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       }, payload => {
         setTasks(prev => {
           if (prev.some(t => t.id === payload.new.id)) return prev
-          const extras = getTaskExtras()
-          const rec = extras[payload.new.id] ? { ...payload.new, ...extras[payload.new.id] } : payload.new
-          return [...prev, rec]
+          return [...prev, payload.new]
         })
         if (tab !== 'tasks') toast.success(`Добавлена задача: ${payload.new.title}`)
       })
@@ -145,7 +174,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       })
     } else {
       setEditingHW(null)
-      setHWForm({ name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' })
+      setHWForm({ ...defaultHWForm })
     }
     setIsHWModalOpen(true)
   }
@@ -161,6 +190,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     const rec = res.data
     setHardware(prev => editingHW ? prev.map(h => h.id === rec.id ? rec : h) : [...prev, rec])
     setIsHWModalOpen(false)
+    setEditingHW(null)
+    setHWForm({ ...defaultHWForm })
   }
   async function deleteHardware(id) {
     if (!confirm('Удалить оборудование?')) return
@@ -175,9 +206,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     const { data, error } = await supabase
       .from('tasks').select('*').eq('object_id', objectId).order('created_at')
     if (!error) {
-      const extras = getTaskExtras()
-      const merged = (data || []).map(t => extras[t.id] ? { ...t, ...extras[t.id] } : t)
-      setTasks(merged)
+      setTasks(data || [])
     }
     setLoadingTasks(false)
   }
@@ -193,7 +222,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
       })
     } else {
       setEditingTask(null)
-      setTaskForm({ title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' })
+      setTaskForm({ ...defaultTaskForm })
     }
     setShowDatePicker(false)
     setIsTaskModalOpen(true)
@@ -203,77 +232,40 @@ export default function InventoryTabs({ selected, onUpdateSelected, user }) {
     setViewingTask(item)
   }
   async function saveTask() {
-    // формируем полезную нагрузку без полей, которых может не быть в схеме
-    const base = { title: taskForm.title, status: taskForm.status }
-    if (taskForm.due_date) {
-      base.due_date = taskForm.due_date
-      base.planned_date = taskForm.due_date
-      base.plan_date = taskForm.due_date
+    const payload = {
+      object_id: selected.id,
+      title: taskForm.title,
+      status: taskForm.status,
+      assignee: taskForm.assignee || null,
+      executor: taskForm.assignee || null,
+      due_date: taskForm.due_date || null,
+      planned_date: taskForm.due_date || null,
+      plan_date: taskForm.due_date || null,
+      notes: taskForm.notes || null
     }
-    if (taskForm.assignee) {
-      base.assignee = taskForm.assignee
-      base.executor = taskForm.assignee
-    }
-    if (taskForm.notes) {
-      base.notes = taskForm.notes
-    }
-    let payload = { object_id: selected.id, ...base }
-
     let res
     if (editingTask) {
       res = await supabase.from('tasks').update(payload).eq('id', editingTask.id).select().single()
     } else {
       res = await supabase.from('tasks').insert([payload]).select().single()
     }
-
-    // если БД не знает о дополнительных полях, повторяем без них
-    if (res.error && /(assignee|executor|due_date|planned_date|plan_date|notes)/.test(res.error.message)) {
-      const { assignee, executor, due_date, planned_date, plan_date, notes, ...baseWithoutExtras } = payload
-      if (editingTask) {
-        res = await supabase.from('tasks').update(baseWithoutExtras).eq('id', editingTask.id).select().single()
-      } else {
-        res = await supabase.from('tasks').insert([baseWithoutExtras]).select().single()
-      }
-    }
-
     if (res.error) return alert('Ошибка задач: ' + res.error.message)
-
-    // объединяем полученную запись с полями формы,
-    // чтобы сохранить исполнителя, дату и заметки локально даже если БД их отбросила
-    const rec = { ...res.data, ...base }
-
-    // сохраняем дополнительные поля локально
-    const extras = getTaskExtras()
-    const extraData = {
-      assignee: base.assignee || '',
-      due_date: base.due_date || '',
-      notes: base.notes || ''
-    }
-    if (extraData.assignee || extraData.due_date || extraData.notes) {
-      extras[rec.id] = extraData
-    } else {
-      delete extras[rec.id]
-    }
-    setTaskExtras(extras)
-    const recWithExtras = extras[rec.id] ? { ...rec, ...extras[rec.id] } : rec
-
+    const rec = res.data
     setTasks(prev =>
       editingTask
-        ? prev.map(t => (t.id === recWithExtras.id ? recWithExtras : t))
-        : [...prev, recWithExtras]
+        ? prev.map(t => (t.id === rec.id ? rec : t))
+        : [...prev, rec]
     )
     setIsTaskModalOpen(false)
+    setEditingTask(null)
+    setTaskForm({ ...defaultTaskForm })
+    toast.success('Задача сохранена')
   }
   async function deleteTask(id) {
     if (!confirm('Удалить задачу?')) return
     const { error } = await supabase.from('tasks').delete().eq('id', id)
     if (error) return alert('Ошибка удаления')
     setTasks(prev => prev.filter(t => t.id !== id))
-    const extras = getTaskExtras()
-    if (extras[id]) {
-      delete extras[id]
-      setTaskExtras(extras)
-    }
   }
 
   return (
