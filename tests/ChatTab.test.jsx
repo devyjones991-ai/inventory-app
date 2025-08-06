@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const insertMock = vi.fn();
+const mockMessages = [];
 
 vi.mock('../src/supabaseClient', () => {
   const from = vi.fn((table) => {
@@ -10,7 +11,9 @@ vi.mock('../src/supabaseClient', () => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: [] }) })
+            order: vi.fn().mockReturnValue({
+              then: (cb) => cb({ data: mockMessages })
+            })
           })
         }),
         insert: insertMock.mockReturnValue({
@@ -44,6 +47,7 @@ describe('ChatTab', () => {
   });
   beforeEach(() => {
     insertMock.mockClear();
+    mockMessages.length = 0;
   });
 
   it('renders empty state when no messages', () => {
@@ -67,5 +71,26 @@ describe('ChatTab', () => {
     const sendBtn = screen.getByRole('button');
     fireEvent.click(sendBtn);
     expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('renders image attachment and opens modal on click', async () => {
+    mockMessages.push({
+      id: 2,
+      sender: 'Other',
+      content: '',
+      file_url: 'http://example.com/test.png',
+      created_at: '2024-01-01'
+    });
+
+    render(<ChatTab selected={selected} user={user} />);
+
+    const img = await screen.findByAltText('attachment');
+    expect(img).toBeInTheDocument();
+
+    fireEvent.click(img);
+    expect(screen.getByAltText('preview')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Close'));
+    expect(screen.queryByAltText('preview')).not.toBeInTheDocument();
   });
 });

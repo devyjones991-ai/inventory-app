@@ -5,12 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import AttachmentPreview from './AttachmentPreview';
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [modalImage, setModalImage] = useState(null)
   const scrollRef = useRef(null)
   const senderName = user.user_metadata?.username || user.email
 
@@ -142,14 +144,7 @@ export default function ChatTab({ selected, user }) {
                     </div>
                   )}
                   {msg.file_url && (
-                    <a
-                      href={msg.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline block"
-                    >
-                      📎 Прикреплённый файл
-                    </a>
+                    <AttachmentPreview url={msg.file_url} onImageClick={setModalImage} />
                   )}
                 </div>
               </motion.div>
@@ -193,6 +188,19 @@ export default function ChatTab({ selected, user }) {
           </button>
         </div>
       </div>
+
+      {modalImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <button
+            aria-label="Close"
+            className="absolute top-4 right-4 text-white text-2xl"
+            onClick={() => setModalImage(null)}
+          >
+            ×
+          </button>
+          <img src={modalImage} alt="preview" className="max-h-full max-w-full" />
+        </div>
+      )}
     </div>
   )
 }
