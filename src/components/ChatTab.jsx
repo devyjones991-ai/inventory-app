@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import AttachmentPreview from './AttachmentPreview';
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
@@ -142,14 +143,7 @@ export default function ChatTab({ selected, user }) {
                     </div>
                   )}
                   {msg.file_url && (
-                    <a
-                      href={msg.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline block"
-                    >
-                      📎 Прикреплённый файл
-                    </a>
+                    <AttachmentPreview url={msg.file_url} />
                   )}
                 </div>
               </motion.div>

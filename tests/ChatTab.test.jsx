@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const insertMock = vi.fn();
+let mockMessages = [];
 
 vi.mock('../src/supabaseClient', () => {
   const from = vi.fn((table) => {
@@ -10,7 +11,7 @@ vi.mock('../src/supabaseClient', () => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: [] }) })
+            order: vi.fn().mockReturnValue({ then: (cb) => cb({ data: mockMessages }) })
           })
         }),
         insert: insertMock.mockReturnValue({
@@ -44,6 +45,7 @@ describe('ChatTab', () => {
   });
   beforeEach(() => {
     insertMock.mockClear();
+    mockMessages = [];
   });
 
   it('renders empty state when no messages', () => {
@@ -67,5 +69,30 @@ describe('ChatTab', () => {
     const sendBtn = screen.getByRole('button');
     fireEvent.click(sendBtn);
     expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('renders video attachment and toggles fullscreen', async () => {
+    mockMessages = [
+      {
+        id: 1,
+        sender: 'User',
+        content: '',
+        file_url: 'http://example.com/video.mp4',
+        created_at: '2024-01-01'
+      }
+    ];
+    render(<ChatTab selected={selected} user={user} />);
+
+    const video = await screen.findByTestId('attachment-video');
+    expect(video).toBeInTheDocument();
+
+    fireEvent.click(video);
+    const modal = await screen.findByTestId('video-modal');
+    expect(modal).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Закрыть'));
+    await waitFor(() =>
+      expect(screen.queryByTestId('video-modal')).not.toBeInTheDocument()
+    );
   });
 });
