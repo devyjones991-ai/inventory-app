@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { supabase } from '../supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
