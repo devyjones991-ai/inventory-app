@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { supabase } from '../supabaseClient'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 
@@ -45,14 +44,7 @@ export default function AuthPage() {
       } else if (data.user && data.user.confirmed_at === null) {
         setInfo('Проверьте почту для подтверждения аккаунта')
       } else {
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({ id: data.user.id, username })
-        if (insertError) {
-          setError(insertError.message)
-        } else {
-          navigate('/')
-        }
+        navigate('/')
       }
     } else {
       const { error } = await signIn(email, password)

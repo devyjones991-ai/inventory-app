@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 
-const insertMock = vi.fn().mockResolvedValue({ error: null })
+const fromMock = vi.fn()
 const signUpMock = vi
   .fn()
   .mockResolvedValue({ data: { user: { id: 'user-id' } }, error: null })
@@ -20,13 +20,13 @@ vi.mock('@/supabaseClient.js', () => ({
       getSession: getSessionMock,
       onAuthStateChange: onAuthStateChangeMock,
     },
-    from: vi.fn(() => ({ insert: insertMock })),
+    from: fromMock,
   },
   isSupabaseConfigured: true,
 }))
 
 describe('AuthPage', () => {
-  it('создает профиль при успешной регистрации', async () => {
+  it('регистрирует пользователя без создания профиля', async () => {
     const AuthPage = (await import('@/pages/AuthPage.jsx')).default
     render(
       <MemoryRouter>
@@ -50,10 +50,7 @@ describe('AuthPage', () => {
 
     await waitFor(() => {
       expect(signUpMock).toHaveBeenCalled()
-      expect(insertMock).toHaveBeenCalledWith({
-        id: 'user-id',
-        username: 'testuser',
-      })
+      expect(fromMock).not.toHaveBeenCalled()
     })
   })
 })
