@@ -8,6 +8,13 @@ let tasksDataMock = [];
 let chatDataMock = [];
 
 vi.mock('../src/supabaseClient.js', () => {
+
+  const order = vi.fn(() => Promise.resolve({ data: [], error: null }));
+  const chain = { select: vi.fn(() => chain), eq: vi.fn(() => chain), order };
+  return {
+    supabase: {
+      from: vi.fn(() => chain),
+
   const from = vi.fn((table) => {
     const dataMap = {
       hardware: hardwareDataMock,
@@ -31,6 +38,7 @@ vi.mock('../src/supabaseClient.js', () => {
   return {
     supabase: {
       from,
+
       channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
 
 vi.mock("@/supabaseClient.js", () => {

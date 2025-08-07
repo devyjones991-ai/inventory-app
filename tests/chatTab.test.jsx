@@ -11,6 +11,7 @@ const { uploadMock, insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() =
   const singleMock = vi.fn().mockResolvedValue({ data: { id: '1' }, error: null });
   const selectAfterInsertMock = vi.fn(() => ({ single: singleMock }));
   const insertMock = vi.fn(() => ({ select: selectAfterInsertMock }));
+  const orderMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
   const rangeMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
   const orderMock = vi.fn(() => ({ range: rangeMock }));
   const eqMock = vi.fn(() => ({ order: orderMock }));
@@ -27,7 +28,7 @@ const { uploadMock, insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() =
   const toastErrorMock = vi.fn();
   return { uploadMock, insertMock, supabaseMock, toastErrorMock };
 });
-=======
+
 const { uploadMock, insertMock, supabaseMock, toastErrorMock } = vi.hoisted(
   () => {
     const uploadMock = vi.fn();

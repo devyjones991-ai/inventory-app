@@ -11,10 +11,14 @@ import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
+import { useSupabaseQuery } from '../utils/useSupabaseQuery';
+import Spinner from './Spinner';
+import ErrorMessage from './ErrorMessage';
 import { useHardware } from '../hooks/useHardware';
 import { useTasks } from '../hooks/useTasks';
 import { useChatMessages } from '../hooks/useChatMessages';
 import { useObjects } from '../hooks/useObjects';
+
 
 const TAB_KEY = objectId => `tab_${objectId}`;
 const HW_MODAL_KEY = objectId => `hwModal_${objectId}`;
@@ -41,7 +45,6 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
 
   // --- оборудование ---
   const [hardware, setHardware]         = useState([])
-  const [loadingHW, setLoadingHW]       = useState(false)
   const [isHWModalOpen, setIsHWModalOpen] = useState(false)
   const [editingHW, setEditingHW]       = useState(null)
   const defaultHWForm = { name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' }
@@ -70,7 +73,6 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
 
   // --- задачи ---
   const [tasks, setTasks]               = useState([])
-  const [loadingTasks, setLoadingTasks] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask]   = useState(null)
   const defaultTaskForm = { title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' }
@@ -106,6 +108,41 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const { fetchTasks: fetchTasksApi, insertTask, updateTask, deleteTask, subscribeToTasks } = useTasks()
   const { fetchMessages, subscribeToMessages } = useChatMessages()
   const { updateObject } = useObjects()
+
+  const { data: fetchedHardware, isLoading: loadingHW, isError: hwError } = useSupabaseQuery(
+    client => {
+      if (!selected) return Promise.resolve({ data: [] })
+      return client
+        .from('hardware')
+        .select('*')
+        .eq('object_id', selected.id)
+        .order('created_at')
+    },
+    [selected]
+  )
+  useEffect(() => { setHardware(fetchedHardware || []) }, [fetchedHardware])
+
+  const { data: fetchedTasks, isLoading: loadingTasks, isError: tasksError } = useSupabaseQuery(
+    client => {
+      if (!selected) return Promise.resolve({ data: [] })
+      return client
+        .from('tasks')
+        .select('*')
+        .eq('object_id', selected.id)
+        .order('created_at')
+    },
+    [selected]
+  )
+  useEffect(() => { setTasks(fetchedTasks || []) }, [fetchedTasks])
+
+  const { data: fetchedChats } = useSupabaseQuery(
+    client => {
+      if (!selected) return Promise.resolve({ data: [] })
+      return client.from('chat_messages').select('*').eq('object_id', selected.id)
+    },
+    [selected]
+  )
+  useEffect(() => { setChatMessages(fetchedChats || []) }, [fetchedChats])
 
   // загрузка данных при смене объекта и восстановление состояния UI
   useEffect(() => {
@@ -153,6 +190,11 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     setDescription(selected.description || '')
 
     setHardware([])
+    setTasks([])
+    setChatMessages([])
+
+
+    setHardware([])
     setHardwarePage(0)
     setHardwareHasMore(true)
     setHardwareError(null)
@@ -168,6 +210,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     fetchHardware(selected.id)
     fetchTasks(selected.id)
     fetchMessages(selected.id).then(({ data }) => setChatMessages(data || []))
+
 
   }, [selected])
 
@@ -263,6 +306,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   }
 
   // --- CRUD Оборудование ---
+
   async function fetchHardware(objectId, page = hardwarePage) {
     setLoadingHW(true)
 
@@ -291,6 +335,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
 
     setLoadingHW(false)
   }
+
   function openHWModal(item = null) {
     if (item) {
       setEditingHW(item)
@@ -333,6 +378,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   }
 
   // --- CRUD Задачи ---
+
   async function fetchTasks(objectId, page = tasksPage) {
     setLoadingTasks(true)
 
@@ -363,6 +409,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     }
     setLoadingTasks(false)
   }
+
   function openTaskModal(item = null) {
     if (item) {
       setEditingTask(item)
@@ -490,7 +537,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                 <PlusIcon className="w-4 h-4" /> Добавить
               </button>
             </div>
-            {loadingHW ? <p>Загрузка...</p> : (
+            {loadingHW && <Spinner />}
+            {hwError && <ErrorMessage message="Ошибка загрузки оборудования" />}
+            {!loadingHW && !hwError && (
               <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {hardware.map(h => (
                   <HardwareCard key={h.id} item={h} onEdit={() => openHWModal(h)} onDelete={() => askDeleteHardware(h.id)} />
@@ -583,7 +632,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                 <PlusIcon className="w-4 h-4" /> Добавить задачу
               </button>
             </div>
-            {loadingTasks ? <p>Загрузка...</p> : (
+            {loadingTasks && <Spinner />}
+            {tasksError && <ErrorMessage message="Ошибка загрузки задач" />}
+            {!loadingTasks && !tasksError && (
               <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {tasks.map(t => (
                   <TaskCard
