@@ -1,9 +1,14 @@
-# Inventory App
+# Inventory App 
+Inventory App — приложение на React, которое помогает командам вести единый учёт объектов, оборудования, задач и переписки.
+
 [![Build](https://github.com/devyjones991-ai/inventory-app/actions/workflows/supabase-migrate.yml/badge.svg)](https://github.com/devyjones991-ai/inventory-app/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/devyjones991-ai/inventory-app)](https://codecov.io/gh/devyjones991-ai/inventory-app)
 [![License](https://img.shields.io/github/license/devyjones991-ai/inventory-app)](LICENSE)
 
-Простое приложение на React для ведения учёта объектов, оборудования и задач. Данные хранятся в [Supabase](https://supabase.com/).
+
+Все данные хранятся в [Supabase](https://supabase.com/), что обеспечивает удобный доступ и совместную работу без необходимости управлять собственной инфраструктурой.
+
+Приложение ориентировано на небольшие команды и организации, которым нужен единый инструмент учёта.
 
 ## Структура таблиц
 - **objects**: `id`, `name`, `description`, `created_at`
