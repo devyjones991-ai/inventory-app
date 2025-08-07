@@ -35,15 +35,23 @@ export default function AuthPage() {
   async function onSubmit({ email, password, username }) {
     setError(null)
     if (isRegister) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { username } },
-      })
-      if (error) {
-        setError(error.message)
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
+        })
+      if (signUpError) {
+        setError(signUpError.message)
       } else {
-        navigate('/')
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: signUpData.user.id, username })
+        if (insertError) {
+          setError(insertError.message)
+        } else {
+          navigate('/')
+        }
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
