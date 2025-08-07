@@ -1,15 +1,36 @@
 import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { supabase } from '../supabaseClient'
 
 export default function Auth() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [username, setUsername] = useState('')
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState(null)
 
-  async function handleSubmit(e) {
-    e.preventDefault()
+  const authSchema = z
+    .object({
+      email: z.string().email('Некорректный email'),
+      password: z.string().min(6, 'Пароль должен быть минимум 6 символов'),
+      username: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (isRegister && !data.username) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Имя обязательно',
+          path: ['username'],
+        })
+      }
+    })
+
+  const {
+    register,
+    handleSubmit: formSubmit,
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(authSchema) })
+
+  async function handleSubmit({ email, password, username }) {
     setError(null)
     let res
     if (isRegister) {
@@ -22,37 +43,46 @@ export default function Auth() {
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4">
+      <form onSubmit={formSubmit(handleSubmit)} className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4">
         <h2 className="text-lg font-bold text-center">
           {isRegister ? 'Регистрация' : 'Вход'}
         </h2>
         {error && <div className="text-red-500 text-sm">{error}</div>}
-        <input
-          type="email"
-          className="input input-bordered w-full"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        />
-        {isRegister && (
+        <div>
           <input
-            type="text"
+            type="email"
             className="input input-bordered w-full"
-            placeholder="Имя пользователя"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
+            placeholder="Email"
+            {...register('email')}
           />
+          {errors.email && (
+            <div className="text-red-500 text-sm">{errors.email.message}</div>
+          )}
+        </div>
+        {isRegister && (
+          <div>
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              placeholder="Имя пользователя"
+              {...register('username')}
+            />
+            {errors.username && (
+              <div className="text-red-500 text-sm">{errors.username.message}</div>
+            )}
+          </div>
         )}
-        <input
-          type="password"
-          className="input input-bordered w-full"
-          placeholder="Пароль"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
+        <div>
+          <input
+            type="password"
+            className="input input-bordered w-full"
+            placeholder="Пароль"
+            {...register('password')}
+          />
+          {errors.password && (
+            <div className="text-red-500 text-sm">{errors.password.message}</div>
+          )}
+        </div>
         <button type="submit" className="btn btn-primary w-full">
           {isRegister ? 'Зарегистрироваться' : 'Войти'}
         </button>

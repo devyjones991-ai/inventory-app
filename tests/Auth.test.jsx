@@ -59,4 +59,15 @@ describe('Auth', () => {
       options: { data: { username: 'tester' } },
     });
   });
+
+  it('requires username on registration', async () => {
+    render(<Auth />);
+    fireEvent.click(screen.getByText('Нет аккаунта? Регистрация'));
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'a@b.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Пароль'), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Зарегистрироваться' }));
+
+    await screen.findByText('Имя обязательно');
+    expect(supabase.auth.signUp).not.toHaveBeenCalled();
+  });
 });
