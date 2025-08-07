@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -8,12 +8,15 @@ export default function Auth() {
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
 
+  const { signUp, signIn } = useAuth()
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
     setMessage(null)
     let res
     if (isRegister) {
+codex/refactor-auth-component-for-otp
       res = await supabase.auth.signUp({ email, options: { data: { username } } })
     } else {
       res = await supabase.auth.signInWithOtp({ email })
@@ -22,6 +25,11 @@ export default function Auth() {
       setError(res.error.message)
     } else {
       setMessage('Письмо отправлено. Проверьте почту.')
+
+      res = await signUp(email, password, username)
+    } else {
+      res = await signIn(email, password)
+main
     }
   }
 
