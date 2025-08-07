@@ -13,6 +13,7 @@ import {
   playMessageSound,
 } from '../utils/notifications';
 import { Navigate } from 'react-router-dom';
+import Spinner from '../components/Spinner';
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId';
 const NOTIF_KEY = 'objectNotifications';
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
   const [user, setUser] = useState(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [activeTab, setActiveTab] = useState('desc');
   const [notifications, setNotifications] = useState(() => {
     if (typeof localStorage === 'undefined') return {};
@@ -52,9 +54,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     requestNotificationPermission();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null)
-    })
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user || null);
+      })
+      .finally(() => setIsLoadingUser(false));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null)
     })
@@ -253,7 +258,15 @@ export default function DashboardPage() {
     });
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isLoadingUser && !user) return <Navigate to="/auth" replace />;
 
   if (!selected) {
     return (
