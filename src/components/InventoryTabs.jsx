@@ -167,7 +167,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     }
     setIsHWModalOpen(savedHWOpen)
     const savedTaskForm = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_FORM_KEY(selected.id)) : null
-    const savedTaskOpen = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true' : false
+    const savedTaskOpen = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true' : false;
     let parsedTaskForm = defaultTaskForm
     if (savedTaskForm) {
       try {
