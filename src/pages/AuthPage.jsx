@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase } from '../supabaseClient';
+import React, { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { supabase } from '../supabaseClient'
+import { useNavigate } from 'react-router-dom'
 
 export default function AuthPage() {
-  const [isRegister, setIsRegister] = useState(false);
-  const [error, setError] = useState(null);
+  const [isRegister, setIsRegister] = useState(false)
+  const [error, setError] = useState(null)
+  const navigate = useNavigate()
 
   const schema = z
     .object({
@@ -20,55 +22,113 @@ export default function AuthPage() {
           code: z.ZodIssueCode.custom,
           message: 'Имя обязательно',
           path: ['username'],
-        });
+        })
       }
-    });
+    })
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(schema) });
+  } = useForm({ resolver: zodResolver(schema) })
 
   async function onSubmit({ email, password, username }) {
-    setError(null);
+    setError(null)
     if (isRegister) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { username } },
-      });
-      if (error) setError(error.message);
+      })
+      if (error) {
+        setError(error.message)
+      } else {
+        navigate('/')
+      }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
-      });
-      if (error) setError(error.message);
+      })
+      if (error) {
+        setError(error.message)
+      } else {
+        navigate('/')
+      }
     }
   }
 
+  useEffect(() => {
+    let isMounted = true
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && isMounted) {
+        navigate('/')
+      }
+    })
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        navigate('/')
+      }
+    })
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [navigate])
+
   return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4">
-        <h2 className="text-lg font-bold text-center">{isRegister ? 'Регистрация' : 'Вход'}</h2>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4"
+      >
+        <h2 className="text-lg font-bold text-center">
+          {isRegister ? 'Регистрация' : 'Вход'}
+        </h2>
         {error && <div className="text-red-500 text-sm">{error}</div>}
 
         <div>
-          <input type="email" className="input input-bordered w-full" placeholder="Email" {...register('email')} />
-          {errors.email && <div className="text-red-500 text-sm">{errors.email.message}</div>}
+          <input
+            type="email"
+            className="input input-bordered w-full"
+            placeholder="Email"
+            {...register('email')}
+          />
+          {errors.email && (
+            <div className="text-red-500 text-sm">{errors.email.message}</div>
+          )}
         </div>
 
         {isRegister && (
           <div>
-            <input type="text" className="input input-bordered w-full" placeholder="Имя пользователя" {...register('username')} />
-            {errors.username && <div className="text-red-500 text-sm">{errors.username.message}</div>}
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              placeholder="Имя пользователя"
+              {...register('username')}
+            />
+            {errors.username && (
+              <div className="text-red-500 text-sm">
+                {errors.username.message}
+              </div>
+            )}
           </div>
         )}
 
         <div>
-          <input type="password" className="input input-bordered w-full" placeholder="Пароль" {...register('password')} />
-          {errors.password && <div className="text-red-500 text-sm">{errors.password.message}</div>}
+          <input
+            type="password"
+            className="input input-bordered w-full"
+            placeholder="Пароль"
+            {...register('password')}
+          />
+          {errors.password && (
+            <div className="text-red-500 text-sm">
+              {errors.password.message}
+            </div>
+          )}
         </div>
 
         <button type="submit" className="btn btn-primary w-full">
@@ -83,5 +143,5 @@ export default function AuthPage() {
         </button>
       </form>
     </div>
-  );
+  )
 }
