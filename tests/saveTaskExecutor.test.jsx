@@ -12,8 +12,14 @@ vi.mock("@/supabaseClient.js", () => {
   const createQuery = () => ({
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+
+    order: vi.fn().mockReturnThis(),
+    range: vi.fn().mockReturnThis(),
+    then: vi.fn(cb => cb({ data: [] })),
+
     order: vi.fn(() => Promise.resolve({ data: [] })),
     then: vi.fn((cb) => cb({ data: [] })),
+
     insert: insertSpy,
     update: vi.fn(() => ({
       select: vi.fn(() => ({

@@ -5,6 +5,16 @@ import InventoryTabs from "@/components/InventoryTabs";
 
 vi.mock("@/supabaseClient.js", () => {
   const createQuery = () => {
+
+    const query = {}
+    query.select = vi.fn(() => query)
+    query.eq = vi.fn(() => query)
+    query.order = vi.fn(() => query)
+    query.range = vi.fn(() => query)
+    query.then = vi.fn((resolve) => Promise.resolve({ data: [] }).then(resolve))
+    return query
+  }
+
     const query = {};
     query.select = vi.fn(() => query);
     query.eq = vi.fn(() => query);
@@ -14,6 +24,7 @@ vi.mock("@/supabaseClient.js", () => {
     );
     return query;
   };
+
   return {
     supabase: {
       from: vi.fn(() => createQuery()),
