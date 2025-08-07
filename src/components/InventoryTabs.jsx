@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,12 +11,17 @@ import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
+import { useHardware } from '../hooks/useHardware';
+import { useTasks } from '../hooks/useTasks';
+import { useChatMessages } from '../hooks/useChatMessages';
+import { useObjects } from '../hooks/useObjects';
 
 const TAB_KEY = objectId => `tab_${objectId}`;
 const HW_MODAL_KEY = objectId => `hwModal_${objectId}`;
 const HW_FORM_KEY = objectId => `hwForm_${objectId}`;
 const TASK_MODAL_KEY = objectId => `taskModal_${objectId}`;
 const TASK_FORM_KEY = objectId => `taskForm_${objectId}`;
+const PAGE_SIZE = 20;
 
 // форматирование даты для отображения в русской локали
 function formatDate(dateStr) {
@@ -57,6 +63,10 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   })
   const [hwDeleteId, setHwDeleteId]     = useState(null)
   const hwEffectRan = React.useRef(false)
+  const [hardwareError, setHardwareError] = useState(null)
+  const [hardwarePage, setHardwarePage]   = useState(0)
+  const [hardwareHasMore, setHardwareHasMore] = useState(true)
+
 
   // --- задачи ---
   const [tasks, setTasks]               = useState([])
@@ -85,9 +95,17 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const [viewingTask, setViewingTask]   = useState(null)
   const [taskDeleteId, setTaskDeleteId] = useState(null)
   const taskEffectRan = React.useRef(false)
+  const [tasksError, setTasksError]     = useState(null)
+  const [tasksPage, setTasksPage]       = useState(0)
+  const [tasksHasMore, setTasksHasMore] = useState(true)
+
 
   // --- чат ---
   const [chatMessages, setChatMessages] = useState([])
+  const { fetchHardware: fetchHardwareApi, insertHardware, updateHardware, deleteHardware } = useHardware()
+  const { fetchTasks: fetchTasksApi, insertTask, updateTask, deleteTask, subscribeToTasks } = useTasks()
+  const { fetchMessages, subscribeToMessages } = useChatMessages()
+  const { updateObject } = useObjects()
 
   // загрузка данных при смене объекта и восстановление состояния UI
   useEffect(() => {
@@ -133,10 +151,24 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     }
     setIsTaskModalOpen(savedTaskOpen)
     setDescription(selected.description || '')
-    fetchHardware(selected.id)
-    fetchTasks(selected.id)
+
+    setHardware([])
+    setHardwarePage(0)
+    setHardwareHasMore(true)
+    setHardwareError(null)
+    setTasks([])
+    setTasksPage(0)
+    setTasksHasMore(true)
+    setTasksError(null)
+    fetchHardware(selected.id, 0)
+    fetchTasks(selected.id, 0)
     supabase.from('chat_messages').select('*').eq('object_id', selected.id)
       .then(({ data }) => setChatMessages(data || []))
+
+    fetchHardware(selected.id)
+    fetchTasks(selected.id)
+    fetchMessages(selected.id).then(({ data }) => setChatMessages(data || []))
+
   }, [selected])
 
   useEffect(() => {
@@ -201,46 +233,29 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   // realtime обновление задач и чата
   useEffect(() => {
     if (!selected) return
-    const taskChannel = supabase
-      .channel(`tasks_object_${selected.id}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'tasks',
-        filter: `object_id=eq.${selected.id}`
-      }, payload => {
-        setTasks(prev => {
-          if (prev.some(t => t.id === payload.new.id)) return prev
-          return [...prev, payload.new]
-        })
+    const unsubscribeTasks = subscribeToTasks(selected.id, payload => {
+      setTasks(prev => {
+        if (prev.some(t => t.id === payload.new.id)) return prev
+        return [...prev, payload.new]
       })
-      .subscribe()
+    })
 
-    const chatChannel = supabase
-      .channel(`chat_messages_object_${selected.id}_tabs`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'chat_messages',
-        filter: `object_id=eq.${selected.id}`
-      }, payload => {
-        setChatMessages(prev => {
-          if (prev.some(m => m.id === payload.new.id)) return prev
-          return [...prev, payload.new]
-        })
+    const unsubscribeChat = subscribeToMessages(selected.id, payload => {
+      setChatMessages(prev => {
+        if (prev.some(m => m.id === payload.new.id)) return prev
+        return [...prev, payload.new]
       })
-      .subscribe()
+    })
 
     return () => {
-      supabase.removeChannel(taskChannel)
-      supabase.removeChannel(chatChannel)
+      unsubscribeTasks()
+      unsubscribeChat()
     }
   }, [selected])
 
   // --- CRUD Описание ---
   async function saveDescription() {
-    const { data, error } = await supabase
-      .from('objects').update({ description }).eq('id', selected.id).select()
+    const { data, error } = await updateObject(selected.id, { description })
     if (!error) {
       onUpdateSelected({ ...selected, description: data[0].description })
       setIsEditingDesc(false)
@@ -248,11 +263,32 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   }
 
   // --- CRUD Оборудование ---
-  async function fetchHardware(objectId) {
+  async function fetchHardware(objectId, page = hardwarePage) {
     setLoadingHW(true)
+
+    setHardwareError(null)
+    const from = page * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
-      .from('hardware').select('*').eq('object_id', objectId).order('created_at')
-    if (!error) setHardware(data)
+      .from('hardware')
+      .select('*')
+      .eq('object_id', objectId)
+      .order('created_at')
+      .range(from, to)
+    if (error) {
+      setHardwareError(error.message)
+      toast.error('Ошибка загрузки оборудования')
+    } else {
+      setHardware(prev => [...prev, ...(data || [])])
+      if (!data || data.length < PAGE_SIZE) {
+        setHardwareHasMore(false)
+      } else {
+        setHardwarePage(page + 1)
+      }
+    }
+    const { data, error } = await fetchHardwareApi(objectId)
+    if (!error) setHardware(data || [])
+
     setLoadingHW(false)
   }
   function openHWModal(item = null) {
@@ -274,9 +310,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     const payload = { object_id: selected.id, ...data }
     let res
     if (editingHW) {
-      res = await supabase.from('hardware').update(payload).eq('id', editingHW.id).select().single()
+      res = await updateHardware(editingHW.id, payload)
     } else {
-      res = await supabase.from('hardware').insert([payload]).select().single()
+      res = await insertHardware(payload)
     }
     if (res.error) return toast.error('Ошибка оборудования: ' + res.error.message)
     const rec = res.data
@@ -290,19 +326,40 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   }
   async function confirmDeleteHardware() {
     const id = hwDeleteId
-    const { error } = await supabase.from('hardware').delete().eq('id', id)
+    const { error } = await deleteHardware(id)
     if (error) return toast.error('Ошибка удаления')
     setHardware(prev => prev.filter(h => h.id !== id))
     setHwDeleteId(null)
   }
 
   // --- CRUD Задачи ---
-  async function fetchTasks(objectId) {
+  async function fetchTasks(objectId, page = tasksPage) {
     setLoadingTasks(true)
+
+    setTasksError(null)
+    const from = page * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
-      .from('tasks').select('*').eq('object_id', objectId).order('created_at')
+      .from('tasks')
+      .select('*')
+      .eq('object_id', objectId)
+      .order('created_at')
+      .range(from, to)
+    if (error) {
+      setTasksError(error.message)
+      toast.error('Ошибка загрузки задач')
+    } else {
+      setTasks(prev => [...prev, ...(data || [])])
+      if (!data || data.length < PAGE_SIZE) {
+        setTasksHasMore(false)
+      } else {
+        setTasksPage(page + 1)
+      }
+
+    const { data, error } = await fetchTasksApi(objectId)
     if (!error) {
       setTasks(data || [])
+
     }
     setLoadingTasks(false)
   }
@@ -339,9 +396,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     }
     let res
     if (editingTask) {
-      res = await supabase.from('tasks').update(payload).eq('id', editingTask.id).select().single()
+      res = await updateTask(editingTask.id, payload)
     } else {
-      res = await supabase.from('tasks').insert([payload]).select().single()
+      res = await insertTask(payload)
     }
     if (res.error) return toast.error('Ошибка задач: ' + res.error.message)
     const rec = res.data
@@ -360,7 +417,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   }
   async function confirmDeleteTask() {
     const id = taskDeleteId
-    const { error } = await supabase.from('tasks').delete().eq('id', id)
+    const { error } = await deleteTask(id)
     if (error) return toast.error('Ошибка удаления')
     setTasks(prev => prev.filter(t => t.id !== id))
     setTaskDeleteId(null)
@@ -439,6 +496,12 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                   <HardwareCard key={h.id} item={h} onEdit={() => openHWModal(h)} onDelete={() => askDeleteHardware(h.id)} />
                 ))}
               </div>
+            )}
+            {hardwareError && <p className="text-error mt-2">{hardwareError}</p>}
+            {hardwareHasMore && !loadingHW && (
+              <button className="btn btn-outline btn-sm mt-2" onClick={() => fetchHardware(selected.id, hardwarePage)}>
+                Загрузить ещё
+              </button>
             )}
 
             {isHWModalOpen && (
@@ -532,6 +595,12 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                   />
                 ))}
               </div>
+            )}
+            {tasksError && <p className="text-error mt-2">{tasksError}</p>}
+            {tasksHasMore && !loadingTasks && (
+              <button className="btn btn-outline btn-sm mt-2" onClick={() => fetchTasks(selected.id, tasksPage)}>
+                Загрузить ещё
+              </button>
             )}
 
             {isTaskModalOpen && (
