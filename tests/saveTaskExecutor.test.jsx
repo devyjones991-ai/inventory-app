@@ -1,3 +1,10 @@
+
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { supabase } from '../src/supabaseClient.js';
+import InventoryTabs from '../src/components/InventoryTabs';
+
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -41,6 +48,7 @@ vi.mock("@/supabaseClient.js", () => {
 
 import InventoryTabs from "@/components/InventoryTabs";
 
+
 const user = {
   user_metadata: { username: "tester" },
   email: "test@example.com",
@@ -49,8 +57,32 @@ const user = {
 describe("saveTask uses assignee column", () => {
   beforeEach(() => {
     localStorage.clear();
-    insertSpy.mockClear();
+    vi.restoreAllMocks();
   });
+
+
+  it('sends assignee and omits due_date', async () => {
+    const insertSpy = vi.fn(() => ({
+      select: () => ({
+        single: () => Promise.resolve({ data: { id: 1 }, error: null })
+      })
+    }));
+    vi.spyOn(supabase, 'from').mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn(() => Promise.resolve({ data: [] })),
+      then: vi.fn(cb => { cb({ data: [] }); }),
+      insert: insertSpy,
+      update: vi.fn(() => ({ select: () => ({ single: () => Promise.resolve({ data: { id: 1 }, error: null }) }) }))
+    });
+
+    render(<InventoryTabs selected={{ id: 1, name: 'Obj', description: '' }} onUpdateSelected={() => {}} user={user} />);
+    fireEvent.click(screen.getByText('Задачи (0)'));
+    fireEvent.click(screen.getByRole('button', { name: /Добавить задачу/ }));
+    const inputs = screen.getAllByRole('textbox');
+    fireEvent.change(inputs[0], { target: { value: 'Test task' } });
+    fireEvent.change(inputs[1], { target: { value: 'Bob' } });
+    fireEvent.click(screen.getByText('Сохранить'));
 
   it("sends assignee and omits due_date", async () => {
     render(
@@ -66,6 +98,7 @@ describe("saveTask uses assignee column", () => {
     fireEvent.change(inputs[0], { target: { value: "Test task" } });
     fireEvent.change(inputs[1], { target: { value: "Bob" } });
     fireEvent.click(screen.getByText("Сохранить"));
+
     await waitFor(() => expect(insertSpy).toHaveBeenCalled());
     const payload = insertSpy.mock.calls[0][0][0];
     expect(payload.assignee).toBe("Bob");

@@ -1,3 +1,10 @@
+
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import ChatTab from '../src/components/ChatTab.jsx';
+import { toast } from 'react-hot-toast';
+import { supabase } from '../src/supabaseClient';
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -81,6 +88,7 @@ vi.mock("react-hot-toast", () => ({
   toast: { error: toastErrorMock },
 }));
 
+
 const user = {
   user_metadata: { username: "Tester" },
   email: "test@example.com",
@@ -89,13 +97,32 @@ const selected = { id: "object1" };
 
 describe("ChatTab file upload", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    // jsdom doesn't implement scrollIntoView
+    vi.restoreAllMocks();
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
   });
 
+
+  it('sends message when upload succeeds', async () => {
+    const uploadMock = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const getPublicUrlMock = vi.fn(() => ({ data: { publicUrl: 'public-url' } }));
+    vi.spyOn(supabase.storage, 'from').mockReturnValue({ upload: uploadMock, getPublicUrl: getPublicUrlMock });
+    const insertMock = vi.fn(() => ({ select: () => ({ single: () => Promise.resolve({ data: { id: '1' }, error: null }) }) }));
+    const selectMock = vi.fn(() => ({
+      eq: vi.fn(() => ({
+        order: vi.fn(() => ({
+          then: vi.fn(cb => {
+            cb({ data: [], error: null });
+            return Promise.resolve({ data: [], error: null });
+          })
+        }))
+      }))
+    }));
+    vi.spyOn(supabase, 'from').mockReturnValue({ select: selectMock, insert: insertMock });
+    vi.spyOn(toast, 'error').mockImplementation(() => {});
+
   it("sends message when upload succeeds", async () => {
     uploadMock.mockResolvedValue({ data: {}, error: null });
+
 
 
     const { container, getByPlaceholderText, getByLabelText } = render(<ChatTab selected={selected} user={user} />);
@@ -112,21 +139,44 @@ describe("ChatTab file upload", () => {
     const file = new File(["content"], "test.txt", { type: "text/plain" });
     fireEvent.change(fileInput, { target: { files: [file] } });
 
+    const sendButton = container.querySelector('button');
+
+
 
     const sendButton = getByLabelText('Send');
 
     const sendButton = container.querySelector("button");
 
-    await fireEvent.click(sendButton);
 
+    await fireEvent.click(sendButton);
     await waitFor(() => expect(uploadMock).toHaveBeenCalled());
     expect(insertMock).toHaveBeenCalled();
     expect(toast.error).not.toHaveBeenCalled();
     expect(fileInput.value).toBe("");
   });
 
+
+  it('shows error and blocks message on upload failure', async () => {
+    const uploadMock = vi.fn().mockResolvedValue({ data: null, error: new Error('fail') });
+    const getPublicUrlMock = vi.fn(() => ({ data: { publicUrl: 'public-url' } }));
+    vi.spyOn(supabase.storage, 'from').mockReturnValue({ upload: uploadMock, getPublicUrl: getPublicUrlMock });
+    const insertMock = vi.fn(() => ({ select: () => ({ single: () => Promise.resolve({ data: { id: '1' }, error: null }) }) }));
+    const selectMock = vi.fn(() => ({
+      eq: vi.fn(() => ({
+        order: vi.fn(() => ({
+          then: vi.fn(cb => {
+            cb({ data: [], error: null });
+            return Promise.resolve({ data: [], error: null });
+          })
+        }))
+      }))
+    }));
+    vi.spyOn(supabase, 'from').mockReturnValue({ select: selectMock, insert: insertMock });
+    const toastErrorMock = vi.spyOn(toast, 'error').mockImplementation(() => {});
+
   it("shows error and blocks message on upload failure", async () => {
     uploadMock.mockResolvedValue({ data: null, error: new Error("fail") });
+
 
 
     const { container, getByPlaceholderText, getByLabelText } = render(<ChatTab selected={selected} user={user} />);
@@ -143,13 +193,16 @@ describe("ChatTab file upload", () => {
     const file = new File(["content"], "test.txt", { type: "text/plain" });
     fireEvent.change(fileInput, { target: { files: [file] } });
 
+    const sendButton = container.querySelector('button');
+
+
 
     const sendButton = getByLabelText('Send');
 
     const sendButton = container.querySelector("button");
 
-    await fireEvent.click(sendButton);
 
+    await fireEvent.click(sendButton);
     await waitFor(() => expect(uploadMock).toHaveBeenCalled());
     expect(toastErrorMock).toHaveBeenCalled();
     expect(insertMock).not.toHaveBeenCalled();

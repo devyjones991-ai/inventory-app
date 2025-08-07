@@ -2,6 +2,9 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
+
+vi.mock('../src/utils/notifications', () => ({
+
 vi.mock("@/supabaseClient.js", () => {
   const channelMock = { on: vi.fn().mockReturnThis(), subscribe: vi.fn() };
   return {
@@ -23,6 +26,7 @@ vi.mock("@/supabaseClient.js", () => {
 });
 
 vi.mock("@/utils/notifications", () => ({
+
   requestNotificationPermission: vi.fn(),
   pushNotification: vi.fn(),
   playTaskSound: vi.fn(),

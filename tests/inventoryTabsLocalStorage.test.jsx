@@ -1,3 +1,19 @@
+
+import React from 'react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
+import InventoryTabs from '../src/components/InventoryTabs'
+
+describe('InventoryTabs localStorage recovery', () => {
+  const objectId = 1
+  const selected = { id: objectId, name: 'Test', description: '' }
+  const user = { user_metadata: { username: 'tester' }, email: 'test@example.com' }
+  const hwFormKey = `hwForm_${objectId}`
+  const hwModalKey = `hwModal_${objectId}`
+  const taskFormKey = `taskForm_${objectId}`
+  const taskModalKey = `taskModal_${objectId}`
+  const tabKey = `tab_${objectId}`
+
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -49,6 +65,7 @@ describe("InventoryTabs localStorage recovery", () => {
   const taskFormKey = `taskForm_${objectId}`;
   const taskModalKey = `taskModal_${objectId}`;
   const tabKey = `tab_${objectId}`;
+
 
   beforeEach(() => {
     localStorage.clear();

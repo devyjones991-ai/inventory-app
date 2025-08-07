@@ -2,6 +2,9 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { supabase } from '../src/supabaseClient.js';
+import Auth from '../src/components/Auth';
+
 
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
@@ -21,10 +24,15 @@ vi.mock("@/supabaseClient.js", () => {
 import { supabase } from "@/supabaseClient.js";
 import Auth from "@/components/Auth";
 
+
 describe("Auth", () => {
   beforeEach(() => {
+
+    vi.clearAllMocks();
+
     supabase.auth.signUp.mockReset();
     supabase.auth.signInWithOtp.mockReset();
+
   });
 
   it("renders login form and toggles to registration", () => {
@@ -39,7 +47,11 @@ describe("Auth", () => {
 
 
   it('submits login and shows errors', async () => {
+
+    vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValue({ error: { message: 'Invalid credentials' } });
+
     supabase.auth.signInWithOtp.mockResolvedValue({ error: { message: 'Invalid email' } });
+
     render(<Auth />);
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'a@b.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
@@ -48,8 +60,13 @@ describe("Auth", () => {
     expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({ email: 'a@b.com' });
   });
 
+
+  it('submits registration data', async () => {
+    vi.spyOn(supabase.auth, 'signUp').mockResolvedValue({ error: null });
+
   it('submits registration data and shows success', async () => {
     supabase.auth.signUp.mockResolvedValue({ error: null });
+
     render(<Auth />);
     fireEvent.click(screen.getByText('Нет аккаунта? Регистрация'));
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'a@b.com' } });

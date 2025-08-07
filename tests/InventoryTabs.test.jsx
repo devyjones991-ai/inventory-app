@@ -7,6 +7,7 @@ let hardwareDataMock = [];
 let tasksDataMock = [];
 let chatDataMock = [];
 
+
 vi.mock('../src/supabaseClient.js', () => {
 
   const order = vi.fn(() => Promise.resolve({ data: [], error: null }));
@@ -60,6 +61,7 @@ vi.mock("@/supabaseClient.js", () => {
     },
   };
 });
+
 
 vi.mock('../src/utils/notifications', () => ({ pushNotification: vi.fn(), playTaskSound: vi.fn(), playMessageSound: vi.fn() }));
 vi.mock('react-hot-toast', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
