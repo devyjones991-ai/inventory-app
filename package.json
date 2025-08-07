@@ -7,7 +7,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+codex/add-deploy-script-to-package.json
+    "deploy": "npm run build && vite preview --host"
+
     "prepare": "husky install"
+ main
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
