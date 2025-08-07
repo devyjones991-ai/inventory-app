@@ -3,23 +3,34 @@ import { useAuth } from '../hooks/useAuth'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState(null)
+  const [message, setMessage] = useState(null)
 
   const { signUp, signIn } = useAuth()
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    setMessage(null)
     let res
     if (isRegister) {
+codex/refactor-auth-component-for-otp
+      res = await supabase.auth.signUp({ email, options: { data: { username } } })
+    } else {
+      res = await supabase.auth.signInWithOtp({ email })
+    }
+    if (res.error) {
+      setError(res.error.message)
+    } else {
+      setMessage('Письмо отправлено. Проверьте почту.')
+
       res = await signUp(email, password, username)
     } else {
       res = await signIn(email, password)
+main
     }
-    if (res.error) setError(res.error.message)
   }
 
   return (
@@ -29,6 +40,7 @@ export default function Auth() {
           {isRegister ? 'Регистрация' : 'Вход'}
         </h2>
         {error && <div className="text-red-500 text-sm">{error}</div>}
+        {message && <div className="text-green-500 text-sm">{message}</div>}
         <input
           type="email"
           className="input input-bordered w-full"
@@ -47,14 +59,6 @@ export default function Auth() {
             required
           />
         )}
-        <input
-          type="password"
-          className="input input-bordered w-full"
-          placeholder="Пароль"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
         <button type="submit" className="btn btn-primary w-full">
           {isRegister ? 'Зарегистрироваться' : 'Войти'}
         </button>
