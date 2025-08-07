@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import InventorySidebar from './InventorySidebar';
-import InventoryTabs from './InventoryTabs';
-import AccountModal from './AccountModal';
-import ConfirmModal from './ConfirmModal';
+import InventorySidebar from '../components/InventorySidebar';
+import InventoryTabs from '../components/InventoryTabs';
+import AccountModal from '../components/AccountModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import {
@@ -17,7 +17,7 @@ import { Navigate } from 'react-router-dom';
 const SELECTED_OBJECT_KEY = 'selectedObjectId';
 const NOTIF_KEY = 'objectNotifications';
 
-export default function RootLayout() {
+export default function DashboardPage() {
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
   const [user, setUser] = useState(null);
