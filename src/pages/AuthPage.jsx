@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { supabase } from '../supabaseClient'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 
@@ -36,27 +37,17 @@ export default function AuthPage() {
 
   async function onSubmit({ email, password, username }) {
     setError(null)
+    setInfo(null)
     if (isRegister) {
-codex/add-confirmation-notification-for-signup
       const { data, error } = await signUp(email, password, username)
       if (error) {
         setError(error.message)
-      } else if (data.user && !data.user.confirmed_at) {
+      } else if (data.user && data.user.confirmed_at === null) {
         setInfo('Проверьте почту для подтверждения аккаунта')
-
-      const { data: signUpData, error: signUpError } =
-        await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { username } },
-        })
-      if (signUpError) {
-        setError(signUpError.message)
-main
       } else {
         const { error: insertError } = await supabase
           .from('profiles')
-          .insert({ id: signUpData.user.id, username })
+          .insert({ id: data.user.id, username })
         if (insertError) {
           setError(insertError.message)
         } else {
