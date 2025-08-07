@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { supabase } from '../supabaseClient';
 import HardwareCard from './HardwareCard';
 import TaskCard from './TaskCard';
 import ChatTab from './ChatTab';
@@ -40,11 +45,28 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const [isHWModalOpen, setIsHWModalOpen] = useState(false)
   const [editingHW, setEditingHW]       = useState(null)
   const defaultHWForm = { name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' }
-  const [hwForm, setHWForm]             = useState(defaultHWForm)
+  const hardwareSchema = z.object({
+    name: z.string().min(1, 'Введите название'),
+    location: z.string().optional(),
+    purchase_status: z.enum(['не оплачен', 'оплачен'], { message: 'Недопустимый статус покупки' }),
+    install_status: z.enum(['не установлен', 'установлен'], { message: 'Недопустимый статус установки' })
+  })
+  const {
+    register: registerHW,
+    handleSubmit: handleSubmitHW,
+    reset: resetHW,
+    watch: watchHW,
+    formState: { errors: hwErrors }
+  } = useForm({
+    resolver: zodResolver(hardwareSchema),
+    defaultValues: defaultHWForm
+  })
   const [hwDeleteId, setHwDeleteId]     = useState(null)
+  const hwEffectRan = React.useRef(false)
   const [hardwareError, setHardwareError] = useState(null)
   const [hardwarePage, setHardwarePage]   = useState(0)
   const [hardwareHasMore, setHardwareHasMore] = useState(true)
+
 
   // --- задачи ---
   const [tasks, setTasks]               = useState([])
@@ -52,17 +74,34 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask]   = useState(null)
   const defaultTaskForm = { title: '', status: 'запланировано', assignee: '', due_date: '', notes: '' }
-  const [taskForm, setTaskForm]         = useState(defaultTaskForm)
+  const taskSchema = z.object({
+    title: z.string().min(1, 'Введите название'),
+    status: z.enum(['запланировано', 'в процессе', 'завершено'], { message: 'Выберите статус' }),
+    assignee: z.string().optional(),
+    due_date: z.string().optional(),
+    notes: z.string().optional()
+  })
+  const {
+    register: registerTask,
+    handleSubmit: handleSubmitTask,
+    reset: resetTask,
+    watch: watchTask,
+    formState: { errors: taskErrors }
+  } = useForm({
+    resolver: zodResolver(taskSchema),
+    defaultValues: defaultTaskForm
+  })
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask]   = useState(null)
   const [taskDeleteId, setTaskDeleteId] = useState(null)
+  const taskEffectRan = React.useRef(false)
   const [tasksError, setTasksError]     = useState(null)
   const [tasksPage, setTasksPage]       = useState(0)
   const [tasksHasMore, setTasksHasMore] = useState(true)
 
+
   // --- чат ---
   const [chatMessages, setChatMessages] = useState([])
-
   const { fetchHardware: fetchHardwareApi, insertHardware, updateHardware, deleteHardware } = useHardware()
   const { fetchTasks: fetchTasksApi, insertTask, updateTask, deleteTask, subscribeToTasks } = useTasks()
   const { fetchMessages, subscribeToMessages } = useChatMessages()
@@ -85,7 +124,10 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
         }
       }
     }
-    setHWForm(parsedHWForm)
+    resetHW(parsedHWForm)
+    if (savedHWOpen && typeof localStorage !== 'undefined') {
+      localStorage.setItem(HW_FORM_KEY(selected.id), JSON.stringify(parsedHWForm))
+    }
     setIsHWModalOpen(savedHWOpen)
     const savedTaskForm = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_FORM_KEY(selected.id)) : null
     const savedTaskOpen = typeof localStorage !== 'undefined' ? localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true' : false
@@ -103,7 +145,10 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
         }
       }
     }
-    setTaskForm(parsedTaskForm)
+    resetTask(parsedTaskForm)
+    if (savedTaskOpen && typeof localStorage !== 'undefined') {
+      localStorage.setItem(TASK_FORM_KEY(selected.id), JSON.stringify(parsedTaskForm))
+    }
     setIsTaskModalOpen(savedTaskOpen)
     setDescription(selected.description || '')
 
@@ -139,27 +184,51 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
 
   useEffect(() => {
     if (!selected) return
-    if (typeof localStorage !== 'undefined') {
-      if (!isHWModalOpen) {
-        localStorage.removeItem(HW_FORM_KEY(selected.id))
-      } else {
-        localStorage.setItem(HW_FORM_KEY(selected.id), JSON.stringify(hwForm))
+    if (hwEffectRan.current) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(HW_MODAL_KEY(selected.id), isHWModalOpen)
+        if (!isHWModalOpen) {
+          localStorage.removeItem(HW_FORM_KEY(selected.id))
+        }
       }
-      localStorage.setItem(HW_MODAL_KEY(selected.id), isHWModalOpen)
+    } else {
+      hwEffectRan.current = true
     }
-  }, [isHWModalOpen, hwForm, selected])
+  }, [isHWModalOpen, selected])
+
+  useEffect(() => {
+    if (!selected || !isHWModalOpen) return
+    const sub = watchHW(value => {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(HW_FORM_KEY(selected.id), JSON.stringify(value))
+      }
+    })
+    return () => sub.unsubscribe()
+  }, [watchHW, selected, isHWModalOpen])
 
   useEffect(() => {
     if (!selected) return
-    if (typeof localStorage !== 'undefined') {
-      if (!isTaskModalOpen) {
-        localStorage.removeItem(TASK_FORM_KEY(selected.id))
-      } else {
-        localStorage.setItem(TASK_FORM_KEY(selected.id), JSON.stringify(taskForm))
+    if (taskEffectRan.current) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(TASK_MODAL_KEY(selected.id), isTaskModalOpen)
+        if (!isTaskModalOpen) {
+          localStorage.removeItem(TASK_FORM_KEY(selected.id))
+        }
       }
-      localStorage.setItem(TASK_MODAL_KEY(selected.id), isTaskModalOpen)
+    } else {
+      taskEffectRan.current = true
     }
-  }, [isTaskModalOpen, taskForm, selected])
+  }, [isTaskModalOpen, selected])
+
+  useEffect(() => {
+    if (!selected || !isTaskModalOpen) return
+    const sub = watchTask(value => {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(TASK_FORM_KEY(selected.id), JSON.stringify(value))
+      }
+    })
+    return () => sub.unsubscribe()
+  }, [watchTask, selected, isTaskModalOpen])
 
   // realtime обновление задач и чата
   useEffect(() => {
@@ -225,7 +294,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   function openHWModal(item = null) {
     if (item) {
       setEditingHW(item)
-      setHWForm({
+      resetHW({
         name: item.name,
         location: item.location,
         purchase_status: item.purchase_status,
@@ -233,12 +302,12 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
       })
     } else {
       setEditingHW(null)
-      setHWForm({ ...defaultHWForm })
+      resetHW({ ...defaultHWForm })
     }
     setIsHWModalOpen(true)
   }
-  async function saveHardware() {
-    const payload = { object_id: selected.id, ...hwForm }
+  async function saveHardware(data) {
+    const payload = { object_id: selected.id, ...data }
     let res
     if (editingHW) {
       res = await updateHardware(editingHW.id, payload)
@@ -250,7 +319,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     setHardware(prev => editingHW ? prev.map(h => h.id === rec.id ? rec : h) : [...prev, rec])
     setIsHWModalOpen(false)
     setEditingHW(null)
-    setHWForm({ ...defaultHWForm })
+    resetHW({ ...defaultHWForm })
   }
   function askDeleteHardware(id) {
     setHwDeleteId(id)
@@ -297,7 +366,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   function openTaskModal(item = null) {
     if (item) {
       setEditingTask(item)
-      setTaskForm({
+      resetTask({
         title: item.title,
         status: item.status,
         assignee: item.assignee || item.executor || '',
@@ -306,7 +375,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
       })
     } else {
       setEditingTask(null)
-      setTaskForm({ ...defaultTaskForm })
+      resetTask({ ...defaultTaskForm })
     }
     setShowDatePicker(false)
     setIsTaskModalOpen(true)
@@ -315,21 +384,15 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   function openTaskView(item) {
     setViewingTask(item)
   }
-  async function saveTask() {
-    if (!taskForm.title.trim()) {
-      return toast.error('Название задачи обязательно')
-    }
-    if (!taskForm.status) {
-      return toast.error('Укажите статус задачи')
-    }
+  async function saveTask(data) {
     const payload = {
       object_id: selected.id,
-      title: taskForm.title,
-      status: taskForm.status,
-      assignee: taskForm.assignee || null,
-      planned_date: taskForm.due_date || null,
-      plan_date: taskForm.due_date || null,
-      notes: taskForm.notes || null
+      title: data.title,
+      status: data.status,
+      assignee: data.assignee || null,
+      planned_date: data.due_date || null,
+      plan_date: data.due_date || null,
+      notes: data.notes || null
     }
     let res
     if (editingTask) {
@@ -346,7 +409,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     )
     setIsTaskModalOpen(false)
     setEditingTask(null)
-    setTaskForm({ ...defaultTaskForm })
+    resetTask({ ...defaultTaskForm })
     toast.success('Задача сохранена')
   }
   function askDeleteTask(id) {
@@ -454,9 +517,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                         type="text"
                         className="input input-bordered w-full"
                         placeholder="Например, keenetic giga"
-                        value={hwForm.name}
-                        onChange={e=>setHWForm(f=>({...f,name:e.target.value}))}
+                        {...registerHW('name')}
                       />
+                      {hwErrors.name && <p className="text-red-500 text-sm mt-1">{hwErrors.name.message}</p>}
                     </div>
                     <div className="form-control">
                       <label className="label"><span className="label-text">Местоположение</span></label>
@@ -464,38 +527,38 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                         type="text"
                         className="input input-bordered w-full"
                         placeholder="Где стоит"
-                        value={hwForm.location}
-                        onChange={e=>setHWForm(f=>({...f,location:e.target.value}))}
+                        {...registerHW('location')}
                       />
+                      {hwErrors.location && <p className="text-red-500 text-sm mt-1">{hwErrors.location.message}</p>}
                     </div>
                     <div className="flex space-x-4">
                       <div className="form-control flex-1">
                         <label className="label"><span className="label-text">Статус покупки</span></label>
                         <select
                           className="select select-bordered w-full"
-                          value={hwForm.purchase_status}
-                          onChange={e=>setHWForm(f=>({...f,purchase_status:e.target.value}))}
+                          {...registerHW('purchase_status')}
                         >
                           <option value="не оплачен">Не оплачен</option>
                           <option value="оплачен">Оплачен</option>
                         </select>
+                        {hwErrors.purchase_status && <p className="text-red-500 text-sm mt-1">{hwErrors.purchase_status.message}</p>}
                       </div>
                       <div className="form-control flex-1">
                         <label className="label"><span className="label-text">Статус установки</span></label>
                         <select
                           className="select select-bordered w-full"
-                          value={hwForm.install_status}
-                          onChange={e=>setHWForm(f=>({...f,install_status:e.target.value}))}
+                          {...registerHW('install_status')}
                         >
                           <option value="не установлен">Не установлен</option>
                           <option value="установлен">Установлен</option>
                         </select>
+                        {hwErrors.install_status && <p className="text-red-500 text-sm mt-1">{hwErrors.install_status.message}</p>}
                       </div>
                     </div>
                   </div>
 
                   <div className="modal-action flex space-x-2">
-                    <button className="btn btn-primary" onClick={saveHardware}>Сохранить</button>
+                    <button className="btn btn-primary" onClick={handleSubmitHW(saveHardware)}>Сохранить</button>
                     <button className="btn btn-ghost" onClick={()=>setIsHWModalOpen(false)}>Отмена</button>
                   </div>
                 </div>
@@ -551,18 +614,18 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                       <input
                         type="text"
                         className="input input-bordered w-full"
-                        value={taskForm.title}
-                        onChange={e=>setTaskForm(f=>({...f,title:e.target.value}))}
+                        {...registerTask('title')}
                       />
+                      {taskErrors.title && <p className="text-red-500 text-sm mt-1">{taskErrors.title.message}</p>}
                     </div>
                     <div className="form-control">
                       <label className="label"><span className="label-text">Исполнитель</span></label>
                       <input
                         type="text"
                         className="input input-bordered w-full"
-                        value={taskForm.assignee}
-                        onChange={e=>setTaskForm(f=>({...f,assignee:e.target.value}))}
+                        {...registerTask('assignee')}
                       />
+                      {taskErrors.assignee && <p className="text-red-500 text-sm mt-1">{taskErrors.assignee.message}</p>}
                     </div>
                     <div className="form-control">
                       <label className="label flex items-center"><span className="label-text">Дата</span>
@@ -572,8 +635,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                         <input
                           type="date"
                           className="input input-bordered w-full"
-                          value={taskForm.due_date}
-                          onChange={e=>setTaskForm(f=>({...f,due_date:e.target.value}))}
+                          {...registerTask('due_date')}
                         />
                       )}
                     </div>
@@ -581,26 +643,26 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                       <label className="label"><span className="label-text">Статус</span></label>
                       <select
                         className="select select-bordered w-full"
-                        value={taskForm.status}
-                        onChange={e=>setTaskForm(f=>({...f,status:e.target.value}))}
+                        {...registerTask('status')}
                       >
                         <option value="запланировано">Запланировано</option>
                         <option value="в процессе">В процессе</option>
                         <option value="завершено">Завершено</option>
                       </select>
+                      {taskErrors.status && <p className="text-red-500 text-sm mt-1">{taskErrors.status.message}</p>}
                     </div>
                     <div className="form-control">
                       <label className="label"><span className="label-text">Заметки</span></label>
                       <textarea
                         className="textarea textarea-bordered w-full"
                         rows={3}
-                        value={taskForm.notes}
-                        onChange={e=>setTaskForm(f=>({...f,notes:e.target.value}))}
+                        {...registerTask('notes')}
                       />
+                      {taskErrors.notes && <p className="text-red-500 text-sm mt-1">{taskErrors.notes.message}</p>}
                     </div>
                   </div>
                   <div className="modal-action flex space-x-2">
-                    <button className="btn btn-primary" onClick={saveTask}>Сохранить</button>
+                    <button className="btn btn-primary" onClick={handleSubmitTask(saveTask)}>Сохранить</button>
                     <button className="btn btn-ghost" onClick={()=>setIsTaskModalOpen(false)}>Отмена</button>
                   </div>
                 </div>

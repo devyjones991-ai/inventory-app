@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() => {
+const { insertMock, supabaseMock } = vi.hoisted(() => {
   const insertMock = vi.fn((records) => ({
     select: vi.fn(() => ({
       single: vi.fn(() =>
@@ -31,14 +31,16 @@ const { insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() => {
     })),
     removeChannel: vi.fn(),
   };
-  const toastErrorMock = vi.fn();
-  return { insertMock, supabaseMock, toastErrorMock };
+  return { insertMock, supabaseMock };
 });
 
 vi.mock("@/supabaseClient.js", () => ({
   supabase: supabaseMock,
 }));
 
+
+vi.mock('react-hot-toast', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
 vi.mock("react-hot-toast", () => ({
   toast: { error: toastErrorMock, success: vi.fn() },
 }));
@@ -56,6 +58,15 @@ describe("task form validation", () => {
     vi.clearAllMocks();
   });
 
+
+  it('shows error and blocks empty task', async () => {
+    render(<InventoryTabs selected={{ id: 1, name: 'Obj', description: '' }} onUpdateSelected={() => {}} user={user} />);
+    fireEvent.click(screen.getByText('Задачи (0)'));
+    fireEvent.click(screen.getByRole('button', { name: /Добавить задачу/ }));
+    fireEvent.click(screen.getByText('Сохранить'));
+    await waitFor(() => {
+      expect(screen.getByText('Введите название')).toBeInTheDocument();
+    });
   it("shows error and blocks empty task", async () => {
     render(
       <InventoryTabs
