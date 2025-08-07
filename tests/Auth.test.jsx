@@ -14,7 +14,8 @@ vi.mock('../src/supabaseClient.js', () => {
 });
 
 import { supabase } from '../src/supabaseClient.js';
-import Auth from '../src/components/Auth';
+import AuthPage from '../src/pages/AuthPage';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('Auth', () => {
   beforeEach(() => {
@@ -23,7 +24,7 @@ describe('Auth', () => {
   });
 
   it('renders login form and toggles to registration', () => {
-    render(<Auth />);
+    render(<AuthPage />, { wrapper: MemoryRouter });
     expect(screen.getByText('Вход')).toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Имя пользователя')).toBeNull();
 
@@ -34,7 +35,7 @@ describe('Auth', () => {
 
   it('submits login and shows errors', async () => {
     supabase.auth.signInWithPassword.mockResolvedValue({ error: { message: 'Invalid credentials' } });
-    render(<Auth />);
+    render(<AuthPage />, { wrapper: MemoryRouter });
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'a@b.com' } });
     fireEvent.change(screen.getByPlaceholderText('Пароль'), { target: { value: '123456' } });
     fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
@@ -45,7 +46,7 @@ describe('Auth', () => {
 
   it('submits registration data', async () => {
     supabase.auth.signUp.mockResolvedValue({ error: null });
-    render(<Auth />);
+    render(<AuthPage />, { wrapper: MemoryRouter });
     fireEvent.click(screen.getByText('Нет аккаунта? Регистрация'));
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'a@b.com' } });
     fireEvent.change(screen.getByPlaceholderText('Имя пользователя'), { target: { value: 'tester' } });
