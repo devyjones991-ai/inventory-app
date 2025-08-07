@@ -12,8 +12,14 @@ import {
   playTaskSound,
   playMessageSound,
 } from '../utils/notifications'
+codex/handle-errors-and-display-in-toast
+import { Navigate } from 'react-router-dom'
+import Spinner from '../components/Spinner'
+import ErrorMessage from '../components/ErrorMessage'
+
 import { Navigate, useNavigate } from 'react-router-dom'
 import Spinner from '../components/Spinner'
+main
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'
@@ -38,8 +44,12 @@ export default function DashboardPage() {
   const [editingObject, setEditingObject] = useState(null)
   const [deleteCandidate, setDeleteCandidate] = useState(null)
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
+codex/handle-errors-and-display-in-toast
+  const [objectsError, setObjectsError] = useState(null)
+
   const [fetchError, setFetchError] = useState(null)
   const navigate = useNavigate()
+ main
 
   const selectedRef = useRef(null)
   const tabRef = useRef('desc')
@@ -147,6 +157,12 @@ export default function DashboardPage() {
       .select('*')
       .order('created_at', { ascending: true })
     if (error) {
+codex/handle-errors-and-display-in-toast
+      setObjectsError(error)
+      toast.error('Ошибка загрузки объектов: ' + error.message)
+    } else {
+      setObjectsError(null)
+
       if (error.status === 401 || error.status === 403) {
         await supabase.auth.signOut()
         navigate('/auth')
@@ -155,6 +171,7 @@ export default function DashboardPage() {
       console.error('Ошибка загрузки объектов:', error)
       setFetchError('Ошибка загрузки объектов: ' + error.message)
     } else {
+ main
       setObjects(data)
       const savedId =
         typeof localStorage !== 'undefined'
@@ -300,10 +317,17 @@ export default function DashboardPage() {
 
   if (!isLoadingUser && !user) return <Navigate to="/auth" replace />
 
+ codex/handle-errors-and-display-in-toast
+  if (objectsError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <ErrorMessage error={objectsError} message="Ошибка загрузки объектов" />
+
   if (fetchError) {
     return (
       <div className="flex items-center justify-center h-screen text-red-500">
         {fetchError}
+ main
       </div>
     )
   }
