@@ -70,7 +70,11 @@ export default function ChatTab({ selected, user }) {
 
   // автоскролл вниз
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const timer = setTimeout(() => {
+      const container = scrollRef.current?.parentElement;
+      if (container) container.scrollTop = container.scrollHeight;
+    }, 0);
+    return () => clearTimeout(timer);
   }, [messages])
 
   // отправка сообщения и файла
