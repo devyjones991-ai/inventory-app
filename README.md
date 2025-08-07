@@ -22,6 +22,11 @@ Inventory App — приложение на React, которое помогае
 3. Скопируйте `URL` проекта и `anon`-ключ.
 4. Скопируйте файл `.env.example` в `.env` и заполните `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`.
 5. Установите зависимости: `npm install`.
+
+### Инициализация базы данных
+
+- Откройте Supabase SQL Editor и выполните `supabase/migrations/*.sql` (или готовый `init.sql`).
+- Либо установите и авторизуйте Supabase CLI, затем выполните `supabase db push` из корня проекта.
 6. Старт разработки: `npm run dev`.
 7. Запуск тестов: `npm test`.
 
