@@ -37,13 +37,31 @@ export default function AuthPage() {
   async function onSubmit({ email, password, username }) {
     setError(null)
     if (isRegister) {
+codex/add-confirmation-notification-for-signup
       const { data, error } = await signUp(email, password, username)
       if (error) {
         setError(error.message)
       } else if (data.user && !data.user.confirmed_at) {
         setInfo('Проверьте почту для подтверждения аккаунта')
+
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
+        })
+      if (signUpError) {
+        setError(signUpError.message)
+main
       } else {
-        navigate('/')
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: signUpData.user.id, username })
+        if (insertError) {
+          setError(insertError.message)
+        } else {
+          navigate('/')
+        }
       }
     } else {
       const { error } = await signIn(email, password)
