@@ -2,16 +2,6 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../src/supabaseClient.js', () => {
-  const chain = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), then: vi.fn(cb => cb({ data: [] })) };
-  return {
-    supabase: {
-      from: vi.fn(() => ({ ...chain })),
-      channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
-      removeChannel: vi.fn(),
-    }
-  };
-});
 vi.mock('../src/utils/notifications', () => ({ pushNotification: vi.fn(), playTaskSound: vi.fn(), playMessageSound: vi.fn() }));
 vi.mock('react-hot-toast', () => ({ toast: { success: vi.fn() } }));
 vi.mock('../src/components/ChatTab', () => ({ default: () => <div data-testid="chat-tab">ChatMock</div> }));

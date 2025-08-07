@@ -1,25 +1,12 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-vi.mock('../src/supabaseClient.js', () => {
-  return {
-    supabase: {
-      auth: {
-        signUp: vi.fn(),
-        signInWithPassword: vi.fn(),
-      },
-    },
-  };
-});
-
 import { supabase } from '../src/supabaseClient.js';
 import Auth from '../src/components/Auth';
 
 describe('Auth', () => {
   beforeEach(() => {
-    supabase.auth.signUp.mockReset();
-    supabase.auth.signInWithPassword.mockReset();
+    vi.clearAllMocks();
   });
 
   it('renders login form and toggles to registration', () => {
@@ -33,7 +20,7 @@ describe('Auth', () => {
   });
 
   it('submits login and shows errors', async () => {
-    supabase.auth.signInWithPassword.mockResolvedValue({ error: { message: 'Invalid credentials' } });
+    vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValue({ error: { message: 'Invalid credentials' } });
     render(<Auth />);
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'a@b.com' } });
     fireEvent.change(screen.getByPlaceholderText('Пароль'), { target: { value: '123456' } });
@@ -44,7 +31,7 @@ describe('Auth', () => {
   });
 
   it('submits registration data', async () => {
-    supabase.auth.signUp.mockResolvedValue({ error: null });
+    vi.spyOn(supabase.auth, 'signUp').mockResolvedValue({ error: null });
     render(<Auth />);
     fireEvent.click(screen.getByText('Нет аккаунта? Регистрация'));
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'a@b.com' } });

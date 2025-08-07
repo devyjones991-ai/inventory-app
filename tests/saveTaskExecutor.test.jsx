@@ -1,31 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-const insertSpy = vi.fn(() => ({
-  select: vi.fn(() => ({
-    single: vi.fn(() => Promise.resolve({ data: { id: 1 }, error: null }))
-  }))
-}));
-
-vi.mock('../src/supabaseClient.js', () => {
-  const createQuery = () => ({
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    order: vi.fn(() => Promise.resolve({ data: [] })),
-    then: vi.fn(cb => cb({ data: [] })),
-    insert: insertSpy,
-    update: vi.fn(() => ({ select: vi.fn(() => ({ single: vi.fn(() => Promise.resolve({ data: { id: 1 }, error: null })) })) }))
-  });
-  return {
-    supabase: {
-      from: vi.fn(() => createQuery()),
-      channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
-      removeChannel: vi.fn(),
-    }
-  };
-});
-
+import { supabase } from '../src/supabaseClient.js';
 import InventoryTabs from '../src/components/InventoryTabs';
 
 const user = { user_metadata: { username: 'tester' }, email: 'test@example.com' };
@@ -33,10 +9,24 @@ const user = { user_metadata: { username: 'tester' }, email: 'test@example.com' 
 describe('saveTask uses assignee column', () => {
   beforeEach(() => {
     localStorage.clear();
-    insertSpy.mockClear();
+    vi.restoreAllMocks();
   });
 
   it('sends assignee and omits due_date', async () => {
+    const insertSpy = vi.fn(() => ({
+      select: () => ({
+        single: () => Promise.resolve({ data: { id: 1 }, error: null })
+      })
+    }));
+    vi.spyOn(supabase, 'from').mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn(() => Promise.resolve({ data: [] })),
+      then: vi.fn(cb => { cb({ data: [] }); }),
+      insert: insertSpy,
+      update: vi.fn(() => ({ select: () => ({ single: () => Promise.resolve({ data: { id: 1 }, error: null }) }) }))
+    });
+
     render(<InventoryTabs selected={{ id: 1, name: 'Obj', description: '' }} onUpdateSelected={() => {}} user={user} />);
     fireEvent.click(screen.getByText('Задачи (0)'));
     fireEvent.click(screen.getByRole('button', { name: /Добавить задачу/ }));
@@ -50,4 +40,3 @@ describe('saveTask uses assignee column', () => {
     expect(payload.due_date).toBeUndefined();
   });
 });
-
