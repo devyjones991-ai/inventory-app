@@ -3,21 +3,26 @@ import { supabase } from '../supabaseClient'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState(null)
+  const [message, setMessage] = useState(null)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    setMessage(null)
     let res
     if (isRegister) {
-      res = await supabase.auth.signUp({ email, password, options: { data: { username } } })
+      res = await supabase.auth.signUp({ email, options: { data: { username } } })
     } else {
-      res = await supabase.auth.signInWithPassword({ email, password })
+      res = await supabase.auth.signInWithOtp({ email })
     }
-    if (res.error) setError(res.error.message)
+    if (res.error) {
+      setError(res.error.message)
+    } else {
+      setMessage('Письмо отправлено. Проверьте почту.')
+    }
   }
 
   return (
@@ -27,6 +32,7 @@ export default function Auth() {
           {isRegister ? 'Регистрация' : 'Вход'}
         </h2>
         {error && <div className="text-red-500 text-sm">{error}</div>}
+        {message && <div className="text-green-500 text-sm">{message}</div>}
         <input
           type="email"
           className="input input-bordered w-full"
@@ -45,14 +51,6 @@ export default function Auth() {
             required
           />
         )}
-        <input
-          type="password"
-          className="input input-bordered w-full"
-          placeholder="Пароль"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
         <button type="submit" className="btn btn-primary w-full">
           {isRegister ? 'Зарегистрироваться' : 'Войти'}
         </button>
