@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { supabase } from '../supabaseClient'
+import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState(null)
+  const [info, setInfo] = useState(null)
   const navigate = useNavigate()
+  const { getSession, onAuthStateChange, signUp, signIn } = useAuth()
 
   const schema = z
     .object({
@@ -35,21 +37,34 @@ export default function AuthPage() {
   async function onSubmit({ email, password, username }) {
     setError(null)
     if (isRegister) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { username } },
-      })
+codex/add-confirmation-notification-for-signup
+      const { data, error } = await signUp(email, password, username)
       if (error) {
         setError(error.message)
+      } else if (data.user && !data.user.confirmed_at) {
+        setInfo('Проверьте почту для подтверждения аккаунта')
+
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
+        })
+      if (signUpError) {
+        setError(signUpError.message)
+main
       } else {
-        navigate('/')
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: signUpData.user.id, username })
+        if (insertError) {
+          setError(insertError.message)
+        } else {
+          navigate('/')
+        }
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const { error } = await signIn(email, password)
       if (error) {
         setError(error.message)
       } else {
@@ -60,14 +75,14 @@ export default function AuthPage() {
 
   useEffect(() => {
     let isMounted = true
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    getSession().then(({ data: { session } }) => {
       if (session && isMounted) {
         navigate('/')
       }
     })
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = onAuthStateChange((_event, session) => {
       if (session) {
         navigate('/')
       }
@@ -88,6 +103,7 @@ export default function AuthPage() {
           {isRegister ? 'Регистрация' : 'Вход'}
         </h2>
         {error && <div className="text-red-500 text-sm">{error}</div>}
+        {info && <div className="text-blue-500 text-sm">{info}</div>}
 
         <div>
           <input
