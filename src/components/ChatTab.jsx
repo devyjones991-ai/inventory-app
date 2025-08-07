@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { supabase } from '../supabaseClient';
 import { toast } from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import AttachmentPreview from './AttachmentPreview';
+import { useChatMessages } from '../hooks/useChatMessages';
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
@@ -16,6 +15,7 @@ export default function ChatTab({ selected, user }) {
   const scrollRef = useRef(null)
   const fileInputRef = useRef(null)
   const senderName = user.user_metadata?.username || user.email
+  const { fetchMessages, subscribeToMessages, sendMessage: sendChatMessage } = useChatMessages()
 
   // Загрузка и подписка на новые сообщения
   useEffect(() => {
@@ -25,47 +25,19 @@ export default function ChatTab({ selected, user }) {
     }
     const objectId = selected.id
 
-    // начальная загрузка
-    supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('object_id', objectId)
-      .order('created_at', { ascending: true })
-      .then(({ data, error }) => {
-        if (error) console.error('Fetch messages error:', error)
-        else setMessages(data)
-      })
+    fetchMessages(objectId).then(({ data, error }) => {
+      if (error) console.error('Fetch messages error:', error)
+      else setMessages(data || [])
+    })
 
-    // realtime подписка
-    const channel = supabase
-      .channel(`chat_messages_object_${objectId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `object_id=eq.${objectId}`
-        },
-        payload => {
-          setMessages(prev => {
-            // избегаем дублей
-            if (prev.some(m => m.id === payload.new.id)) return prev
-            return [...prev, payload.new]
-          })
-        }
-      )
-      .subscribe(status => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Chat realtime channel subscribed')
-        }
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Chat realtime channel error:', status)
-          toast.error('Не удалось подключиться к real-time каналу')
-        }
+    const unsubscribe = subscribeToMessages(objectId, payload => {
+      setMessages(prev => {
+        if (prev.some(m => m.id === payload.new.id)) return prev
+        return [...prev, payload.new]
       })
+    })
 
-    return () => supabase.removeChannel(channel)
+    return () => unsubscribe()
   }, [selected])
 
   // автоскролл вниз
@@ -80,44 +52,20 @@ export default function ChatTab({ selected, user }) {
   // отправка сообщения и файла
   const sendMessage = async () => {
     if (!newMessage.trim() && !file) return
-
-    let fileUrl = null
-    if (file) {
-      setUploading(true)
-      const filePath = `${selected.id}/${uuidv4()}_${file.name}`
-      try {
-        const { error: upErr } = await supabase.storage
-          .from('chat-files')
-          .upload(filePath, file)
-
-        if (upErr) throw upErr
-
-        const { data } = supabase.storage
-          .from('chat-files')
-          .getPublicUrl(filePath)
-        fileUrl = data.publicUrl
-      } catch (err) {
-        console.error('Upload error:', err)
-        toast.error('Ошибка загрузки файла')
-        setUploading(false)
-        setFile(null)
-        if (fileInputRef.current) fileInputRef.current.value = ''
-        return
-      }
-      setUploading(false)
+    setUploading(true)
+    const { data: inserted, error } = await sendChatMessage({
+      objectId: selected.id,
+      sender: senderName,
+      content: newMessage.trim(),
+      file
+    })
+    setUploading(false)
+    if (error) {
+      console.error('Insert message error:', error)
+      toast.error('Ошибка отправки сообщения')
+    } else if (inserted) {
+      setMessages(prev => [...prev, inserted])
     }
-
-    const { data: inserted, error: msgErr } = await supabase
-      .from('chat_messages')
-      .insert([
-        { object_id: selected.id, sender: senderName,  content: newMessage.trim(), file_url: fileUrl }
-      ])
-      .select()
-      .single()
-
-    if (msgErr) console.error('Insert message error:', msgErr)
-    else if (inserted) setMessages(prev => [...prev, inserted])
-
     setNewMessage('')
     setFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''

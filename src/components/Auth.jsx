@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -8,14 +8,16 @@ export default function Auth() {
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState(null)
 
+  const { signUp, signIn } = useAuth()
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
     let res
     if (isRegister) {
-      res = await supabase.auth.signUp({ email, password, options: { data: { username } } })
+      res = await signUp(email, password, username)
     } else {
-      res = await supabase.auth.signInWithPassword({ email, password })
+      res = await signIn(email, password)
     }
     if (res.error) setError(res.error.message)
   }
