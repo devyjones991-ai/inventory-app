@@ -17,10 +17,13 @@ Inventory App — приложение на React, которое помогае
 - **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`
 
 ## Запуск
-1. Установите зависимости: `npm install`
-2. Создайте файл `.env` и добавьте ключи Supabase `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`
-3. Старт разработки: `npm run dev`
-4. Запуск тестов: `npm test`
+1. Зарегистрируйтесь на [Supabase](https://supabase.com) и создайте проект.
+2. В настройках проекта откройте `Settings → API`.
+3. Скопируйте `URL` проекта и `anon`-ключ.
+4. Скопируйте файл `.env.example` в `.env` и заполните `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`.
+5. Установите зависимости: `npm install`.
+6. Старт разработки: `npm run dev`.
+7. Запуск тестов: `npm test`.
 
 ## Сборка
 - Сборка: `npm run build`
