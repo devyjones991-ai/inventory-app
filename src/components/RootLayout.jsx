@@ -1,38 +1,23 @@
-
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import InventoryPage from './pages/InventoryPage';
-import AuthPage from './pages/AuthPage';
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <Toaster position="top-right" />
-      <Routes>
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/*" element={<InventoryPage />} />
-      </Routes>
-    </BrowserRouter>
-
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from './hooks/useAuth';
-import { useObjects } from './hooks/useObjects';
-import { useTasks } from './hooks/useTasks';
-import { useChatMessages } from './hooks/useChatMessages';
-import InventorySidebar from './components/InventorySidebar';
-import InventoryTabs from './components/InventoryTabs';
-import Auth from './components/Auth';
-import AccountModal from './components/AccountModal';
-import ConfirmModal from './components/ConfirmModal';
-import { Toaster, toast } from 'react-hot-toast';
+import { supabase } from '../supabaseClient';
+import InventorySidebar from './InventorySidebar';
+import InventoryTabs from './InventoryTabs';
+import AccountModal from './AccountModal';
+import ConfirmModal from './ConfirmModal';
+import { toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { requestNotificationPermission, pushNotification, playTaskSound, playMessageSound } from './utils/notifications';
+import {
+  requestNotificationPermission,
+  pushNotification,
+  playTaskSound,
+  playMessageSound,
+} from '../utils/notifications';
+import { Navigate } from 'react-router-dom';
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId';
 const NOTIF_KEY = 'objectNotifications';
 
-export default function App() {
+export default function RootLayout() {
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
   const [user, setUser] = useState(null);
@@ -52,11 +37,6 @@ export default function App() {
   const [deleteCandidate, setDeleteCandidate] = useState(null);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
-  const { getSession, onAuthStateChange, signOut } = useAuth();
-  const { fetchObjects: fetchObjectsApi, insertObject, updateObject, deleteObject } = useObjects();
-  const { subscribeToAllTasks } = useTasks();
-  const { subscribeToAllMessages } = useChatMessages();
-
   const selectedRef = useRef(null);
   const tabRef = useRef('desc');
   const userRef = useRef(null);
@@ -72,10 +52,10 @@ export default function App() {
 
   useEffect(() => {
     requestNotificationPermission();
-    getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null)
     })
-    const { data: { subscription } } = onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null)
     })
     return () => subscription.unsubscribe()
@@ -83,7 +63,9 @@ export default function App() {
 
   // глобальные уведомления по задачам и сообщениям
   useEffect(() => {
-    const unsubTasks = subscribeToAllTasks(payload => {
+    const tasksChannel = supabase
+      .channel('tasks_all')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, payload => {
         const objId = payload.new.object_id;
         const isCurrent = selectedRef.current?.id === objId && tabRef.current === 'tasks';
         setNotifications(prev => {
@@ -95,9 +77,12 @@ export default function App() {
           pushNotification('Новая задача', payload.new.title);
           playTaskSound();
         }
-      });
+      })
+      .subscribe();
 
-    const unsubChat = subscribeToAllMessages(payload => {
+    const chatChannel = supabase
+      .channel('chat_all')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
         const objId = payload.new.object_id;
         const sender = payload.new.sender;
         const currentUser = userRef.current?.user_metadata?.username || userRef.current?.email;
@@ -113,11 +98,12 @@ export default function App() {
           pushNotification('Новое сообщение', `${payload.new.sender}: ${body}`);
           playMessageSound();
         }
-      });
+      })
+      .subscribe();
 
     return () => {
-      unsubTasks();
-      unsubChat();
+      supabase.removeChannel(tasksChannel);
+      supabase.removeChannel(chatChannel);
     };
   }, []);
 
@@ -127,7 +113,10 @@ export default function App() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchObjects() {
-    const { data, error } = await fetchObjectsApi();
+    const { data, error } = await supabase
+      .from('objects')
+      .select('*')
+      .order('created_at', { ascending: true });
     if (error) {
       console.error('Ошибка загрузки объектов:', error);
     } else {
@@ -147,7 +136,12 @@ export default function App() {
   async function saveObject() {
     if (!objectName.trim()) return;
     if (editingObject) {
-      const { data, error } = await updateObject(editingObject.id, { name: objectName });
+      const { data, error } = await supabase
+        .from('objects')
+        .update({ name: objectName })
+        .eq('id', editingObject.id)
+        .select()
+        .single();
       if (error) {
         toast.error('Ошибка редактирования: ' + error.message);
       } else {
@@ -158,7 +152,11 @@ export default function App() {
         setIsObjectModalOpen(false);
       }
     } else {
-      const { data, error } = await insertObject(objectName);
+      const { data, error } = await supabase
+        .from('objects')
+        .insert([{ name: objectName, description: '' }])
+        .select()
+        .single();
       if (error) {
         toast.error('Ошибка добавления: ' + error.message);
       } else {
@@ -180,7 +178,10 @@ export default function App() {
 
   async function confirmDelete() {
     const id = deleteCandidate;
-    const { error } = await deleteObject(id);
+    const { error } = await supabase
+      .from('objects')
+      .delete()
+      .eq('id', id);
     if (error) {
       toast.error('Ошибка удаления: ' + error.message);
     } else {
@@ -252,7 +253,7 @@ export default function App() {
     });
   }
 
-  if (!user) return <Auth />;
+  if (!user) return <Navigate to="/auth" replace />;
 
   if (!selected) {
     return (
@@ -265,7 +266,6 @@ export default function App() {
   return (
     <>
       <div className="flex h-screen bg-white">
-        <Toaster position="top-right" />
         {/* Десктоп- и мобайл-сайдбар */}
         <aside className="hidden md:flex flex-col w-72 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
           <InventorySidebar
@@ -328,7 +328,7 @@ export default function App() {
                 <button className="btn btn-sm" onClick={() => setIsAccountModalOpen(true)}>
                   {user.user_metadata?.username || 'Аккаунт'}
                 </button>
-                <button className="btn btn-sm" onClick={signOut}>Выйти</button>
+                <button className="btn btn-sm" onClick={() => supabase.auth.signOut()}>Выйти</button>
               </div>
             </header>
 
@@ -390,6 +390,5 @@ export default function App() {
         )}
       </div>
     </>
-
   );
 }
