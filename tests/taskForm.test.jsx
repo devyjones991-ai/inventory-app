@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() => {
+const { insertMock, supabaseMock } = vi.hoisted(() => {
   const insertMock = vi.fn((records) => ({
     select: vi.fn(() => ({
       single: vi.fn(() => Promise.resolve({ data: { id: 1, ...records[0] }, error: null }))
@@ -20,8 +20,7 @@ const { insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() => {
     channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
     removeChannel: vi.fn(),
   };
-  const toastErrorMock = vi.fn();
-  return { insertMock, supabaseMock, toastErrorMock };
+  return { insertMock, supabaseMock };
 });
 
 vi.mock('../src/supabaseClient.js', () => ({
@@ -29,7 +28,7 @@ vi.mock('../src/supabaseClient.js', () => ({
 }));
 
 vi.mock('react-hot-toast', () => ({
-  toast: { error: toastErrorMock, success: vi.fn() },
+  toast: { error: vi.fn(), success: vi.fn() },
 }));
 
 import InventoryTabs from '../src/components/InventoryTabs';
@@ -47,7 +46,9 @@ describe('task form validation', () => {
     fireEvent.click(screen.getByText('Задачи (0)'));
     fireEvent.click(screen.getByRole('button', { name: /Добавить задачу/ }));
     fireEvent.click(screen.getByText('Сохранить'));
-    await waitFor(() => expect(toastErrorMock).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(screen.getByText('Введите название')).toBeInTheDocument();
+    });
     expect(insertMock).not.toHaveBeenCalled();
   });
 
