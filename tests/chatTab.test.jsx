@@ -10,16 +10,9 @@ const { uploadMock, insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() =
   const singleMock = vi.fn().mockResolvedValue({ data: { id: '1' }, error: null });
   const selectAfterInsertMock = vi.fn(() => ({ single: singleMock }));
   const insertMock = vi.fn(() => ({ select: selectAfterInsertMock }));
-  const selectMock = vi.fn(() => ({
-    eq: vi.fn(() => ({
-      order: vi.fn(() => ({
-        then: vi.fn(cb => {
-          cb({ data: [], error: null });
-          return Promise.resolve({ data: [], error: null });
-        })
-      }))
-    }))
-  }));
+  const orderMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
+  const eqMock = vi.fn(() => ({ order: orderMock }));
+  const selectMock = vi.fn(() => ({ eq: eqMock }));
   const fromMock = vi.fn(() => ({ select: selectMock, insert: insertMock }));
   const channelMock = vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() }));
   const removeChannelMock = vi.fn();

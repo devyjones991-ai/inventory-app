@@ -6,6 +6,9 @@ import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import AttachmentPreview from './AttachmentPreview';
+import { useSupabaseQuery } from '../utils/useSupabaseQuery';
+import Spinner from './Spinner';
+import ErrorMessage from './ErrorMessage';
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
@@ -17,7 +20,24 @@ export default function ChatTab({ selected, user }) {
   const fileInputRef = useRef(null)
   const senderName = user.user_metadata?.username || user.email
 
-  // Загрузка и подписка на новые сообщения
+  const { data: fetchedMessages, isLoading, isError } = useSupabaseQuery(
+    client => {
+      if (!selected) return Promise.resolve({ data: [] })
+      return client
+        .from('chat_messages')
+        .select('*')
+        .eq('object_id', selected.id)
+        .order('created_at', { ascending: true })
+    },
+    [selected]
+  )
+
+  useEffect(() => {
+    if (fetchedMessages) setMessages(fetchedMessages)
+    else setMessages([])
+  }, [fetchedMessages])
+
+  // подписка на новые сообщения
   useEffect(() => {
     if (!selected) {
       setMessages([])
@@ -25,18 +45,6 @@ export default function ChatTab({ selected, user }) {
     }
     const objectId = selected.id
 
-    // начальная загрузка
-    supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('object_id', objectId)
-      .order('created_at', { ascending: true })
-      .then(({ data, error }) => {
-        if (error) console.error('Fetch messages error:', error)
-        else setMessages(data)
-      })
-
-    // realtime подписка
     const channel = supabase
       .channel(`chat_messages_object_${objectId}`)
       .on(
@@ -49,16 +57,12 @@ export default function ChatTab({ selected, user }) {
         },
         payload => {
           setMessages(prev => {
-            // избегаем дублей
             if (prev.some(m => m.id === payload.new.id)) return prev
             return [...prev, payload.new]
           })
         }
       )
       .subscribe(status => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Chat realtime channel subscribed')
-        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Chat realtime channel error:', status)
           toast.error('Не удалось подключиться к real-time каналу')
@@ -134,42 +138,44 @@ export default function ChatTab({ selected, user }) {
     <div className="flex flex-col h-full bg-white">
       {/* Сообщения */}
       <div className="flex-1 overflow-auto p-2 bg-gray-100">
-        {messages.length === 0 && (
+        {isLoading && <Spinner />}
+        {isError && <ErrorMessage message="Ошибка загрузки сообщений" />}
+        {!isLoading && !isError && messages.length === 0 && (
           <div className="text-gray-500 text-center mt-4">
             Нет сообщений. Начните диалог.
           </div>
         )}
-          {messages.map(msg => {
-            const isOwn = msg.sender === senderName;
-            return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex mb-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
+        {!isLoading && !isError && messages.map(msg => {
+          const isOwn = msg.sender === senderName;
+          return (
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`flex mb-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[80%] sm:max-w-[60%] break-words p-3 shadow ${
+                  isOwn
+                    ? 'bg-green-100 text-right rounded-l-lg rounded-t-lg rounded-br-none'
+                    : 'bg-white text-left rounded-r-lg rounded-t-lg rounded-bl-none'
+                }`.replace(/\s+/g, ' ')}
               >
-                <div
-                  className={`max-w-[80%] sm:max-w-[60%] break-words p-3 shadow ${
-                    isOwn
-                      ? 'bg-green-100 text-right rounded-l-lg rounded-t-lg rounded-br-none'
-                      : 'bg-white text-left rounded-r-lg rounded-t-lg rounded-bl-none'
-                  }`.replace(/\s+/g, ' ')}
-                >
-                  <div className="text-xs text-gray-500 mb-1">
-                    {msg.sender} • {new Date(msg.created_at).toLocaleString()}
-                  </div>
-                  {msg.content && (
-                    <div className="whitespace-pre-line break-words mb-1">
-                      {linkifyText(msg.content)}
-                    </div>
-                  )}
-                  {msg.file_url && (
-                    <AttachmentPreview url={msg.file_url} onImageClick={setModalImage} />
-                  )}
+                <div className="text-xs text-gray-500 mb-1">
+                  {msg.sender} • {new Date(msg.created_at).toLocaleString()}
                 </div>
-              </motion.div>
-            );
-          })}
+                {msg.content && (
+                  <div className="whitespace-pre-line break-words mb-1">
+                    {linkifyText(msg.content)}
+                  </div>
+                )}
+                {msg.file_url && (
+                  <AttachmentPreview url={msg.file_url} onImageClick={setModalImage} />
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
         <div ref={scrollRef} />
       </div>
 

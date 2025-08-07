@@ -3,10 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('../src/supabaseClient.js', () => {
-  const chain = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), then: vi.fn(cb => cb({ data: [] })) };
+  const order = vi.fn(() => Promise.resolve({ data: [], error: null }));
+  const chain = { select: vi.fn(() => chain), eq: vi.fn(() => chain), order };
   return {
     supabase: {
-      from: vi.fn(() => ({ ...chain })),
+      from: vi.fn(() => chain),
       channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
       removeChannel: vi.fn(),
     }
