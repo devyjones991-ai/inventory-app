@@ -262,6 +262,12 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     setViewingTask(item)
   }
   async function saveTask() {
+    if (!taskForm.title.trim()) {
+      return toast.error('Название задачи обязательно')
+    }
+    if (!taskForm.status) {
+      return toast.error('Укажите статус задачи')
+    }
     const payload = {
       object_id: selected.id,
       title: taskForm.title,
