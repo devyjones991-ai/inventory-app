@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { supabase } from '../supabaseClient';
 import { toast } from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import AttachmentPreview from './AttachmentPreview';
+import { useChatMessages } from '../hooks/useChatMessages';
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
@@ -22,6 +21,7 @@ export default function ChatTab({ selected, user }) {
   const scrollRef = useRef(null)
   const fileInputRef = useRef(null)
   const senderName = user.user_metadata?.username || user.email
+
   const PAGE_SIZE = 20
 
   // загрузка сообщений
@@ -49,6 +49,9 @@ export default function ChatTab({ selected, user }) {
     setIsLoadingMessages(false)
   }
 
+  const { fetchMessages, subscribeToMessages, sendMessage: sendChatMessage } = useChatMessages()
+
+
   // Загрузка и подписка на новые сообщения
   useEffect(() => {
     if (!selected) {
@@ -60,6 +63,7 @@ export default function ChatTab({ selected, user }) {
     setHasMoreMessages(false)
     setIsErrorMessages(null)
     loadMessages(false)
+
 
     const objectId = selected.id
     const channel = supabase
@@ -88,9 +92,21 @@ export default function ChatTab({ selected, user }) {
           console.error('Chat realtime channel error:', status)
           toast.error('Не удалось подключиться к real-time каналу')
         }
-      })
 
-    return () => supabase.removeChannel(channel)
+    fetchMessages(objectId).then(({ data, error }) => {
+      if (error) console.error('Fetch messages error:', error)
+      else setMessages(data || [])
+    })
+
+    const unsubscribe = subscribeToMessages(objectId, payload => {
+      setMessages(prev => {
+        if (prev.some(m => m.id === payload.new.id)) return prev
+        return [...prev, payload.new]
+
+      })
+    })
+
+    return () => unsubscribe()
   }, [selected])
 
   // автоскролл вниз
@@ -105,6 +121,7 @@ export default function ChatTab({ selected, user }) {
   // отправка сообщения и файла
   const sendMessage = async () => {
     if (!newMessage.trim() && !file) return
+
 
     setSendError(null)
     setIsSending(true)
@@ -153,6 +170,22 @@ export default function ChatTab({ selected, user }) {
     }
 
     setIsSending(false)
+
+    setUploading(true)
+    const { data: inserted, error } = await sendChatMessage({
+      objectId: selected.id,
+      sender: senderName,
+      content: newMessage.trim(),
+      file
+    })
+    setUploading(false)
+    if (error) {
+      console.error('Insert message error:', error)
+      toast.error('Ошибка отправки сообщения')
+    } else if (inserted) {
+      setMessages(prev => [...prev, inserted])
+    }
+
     setNewMessage('')
     setFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
