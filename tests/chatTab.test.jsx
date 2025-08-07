@@ -67,6 +67,7 @@ describe('ChatTab file upload', () => {
     await waitFor(() => expect(uploadMock).toHaveBeenCalled());
     expect(insertMock).toHaveBeenCalled();
     expect(toast.error).not.toHaveBeenCalled();
+    expect(fileInput.value).toBe('');
   });
 
   it('shows error and blocks message on upload failure', async () => {
@@ -85,5 +86,6 @@ describe('ChatTab file upload', () => {
     await waitFor(() => expect(uploadMock).toHaveBeenCalled());
     expect(toastErrorMock).toHaveBeenCalled();
     expect(insertMock).not.toHaveBeenCalled();
+    expect(fileInput.value).toBe('');
   });
 });

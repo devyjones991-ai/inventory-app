@@ -14,6 +14,7 @@ export default function ChatTab({ selected, user }) {
   const [uploading, setUploading] = useState(false)
   const [modalImage, setModalImage] = useState(null)
   const scrollRef = useRef(null)
+  const fileInputRef = useRef(null)
   const senderName = user.user_metadata?.username || user.email
 
   // Загрузка и подписка на новые сообщения
@@ -95,6 +96,8 @@ export default function ChatTab({ selected, user }) {
         console.error('Upload error:', err)
         toast.error('Ошибка загрузки файла')
         setUploading(false)
+        setFile(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
         return
       }
       setUploading(false)
@@ -113,6 +116,7 @@ export default function ChatTab({ selected, user }) {
 
     setNewMessage('')
     setFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleKeyDown = e => {
@@ -172,6 +176,7 @@ export default function ChatTab({ selected, user }) {
             <PaperClipIcon className="w-6 h-6" />
             <input
               type="file"
+              ref={fileInputRef}
               onChange={e => setFile(e.target.files[0])}
               className="hidden"
             />
