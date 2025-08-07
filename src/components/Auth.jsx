@@ -3,10 +3,16 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { supabase } from '../supabaseClient'
-
 export default function Auth() {
+import { useAuth } from '../hooks/useAuth'
+export default function Auth() {
+  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState(null)
+  const [message, setMessage] = useState(null)
+
+  const { signUp, signIn } = useAuth()
 
   const authSchema = z
     .object({
@@ -32,13 +38,24 @@ export default function Auth() {
 
   async function handleSubmit({ email, password, username }) {
     setError(null)
+    setMessage(null)
     let res
     if (isRegister) {
-      res = await supabase.auth.signUp({ email, password, options: { data: { username } } })
+codex/refactor-auth-component-for-otp
+      res = await supabase.auth.signUp({ email, options: { data: { username } } })
     } else {
-      res = await supabase.auth.signInWithPassword({ email, password })
+      res = await supabase.auth.signInWithOtp({ email })
     }
-    if (res.error) setError(res.error.message)
+    if (res.error) {
+      setError(res.error.message)
+    } else {
+      setMessage('Письмо отправлено. Проверьте почту.')
+
+      res = await signUp(email, password, username)
+    } else {
+      res = await signIn(email, password)
+main
+    }
   }
 
   return (
@@ -48,7 +65,19 @@ export default function Auth() {
           {isRegister ? 'Регистрация' : 'Вход'}
         </h2>
         {error && <div className="text-red-500 text-sm">{error}</div>}
+
         <div>
+        {message && <div className="text-green-500 text-sm">{message}</div>}
+        <input
+          type="email"
+          className="input input-bordered w-full"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        {isRegister && (
+
           <input
             type="email"
             className="input input-bordered w-full"
@@ -72,6 +101,7 @@ export default function Auth() {
             )}
           </div>
         )}
+
         <div>
           <input
             type="password"
@@ -83,6 +113,7 @@ export default function Auth() {
             <div className="text-red-500 text-sm">{errors.password.message}</div>
           )}
         </div>
+
         <button type="submit" className="btn btn-primary w-full">
           {isRegister ? 'Зарегистрироваться' : 'Войти'}
         </button>
