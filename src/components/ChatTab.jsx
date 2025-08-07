@@ -149,46 +149,20 @@ export default function ChatTab({ selected, user }) {
   const sendMessage = async () => {
     if (!newMessage.trim() && !file) return
 
-
     setSendError(null)
     setIsSending(true)
-    let fileUrl = null
-    if (file) {
-      setUploading(true)
-      const filePath = `${selected.id}/${uuidv4()}_${file.name}`
-      try {
-        const { error: upErr } = await supabase.storage
-          .from('chat-files')
-          .upload(filePath, file)
 
-        if (upErr) throw upErr
+    if (file) setUploading(true)
+    const { data: inserted, error } = await sendChatMessage({
+      objectId: selected.id,
+      sender: senderName,
+      content: newMessage.trim(),
+      file
+    })
+    if (file) setUploading(false)
 
-        const { data } = supabase.storage
-          .from('chat-files')
-          .getPublicUrl(filePath)
-        fileUrl = data.publicUrl
-      } catch (err) {
-        console.error('Upload error:', err)
-        toast.error('Ошибка загрузки файла')
-        setUploading(false)
-        setIsSending(false)
-        setFile(null)
-        if (fileInputRef.current) fileInputRef.current.value = ''
-        return
-      }
-      setUploading(false)
-    }
-
-    const { data: inserted, error: msgErr } = await supabase
-      .from('chat_messages')
-      .insert([
-        { object_id: selected.id, sender: senderName,  content: newMessage.trim(), file_url: fileUrl }
-      ])
-      .select()
-      .single()
-
-    if (msgErr) {
-      console.error('Insert message error:', msgErr)
+    if (error) {
+      console.error('Insert message error:', error)
       setSendError('Не удалось отправить сообщение')
       toast.error('Не удалось отправить сообщение')
     } else if (inserted) {
@@ -197,22 +171,6 @@ export default function ChatTab({ selected, user }) {
     }
 
     setIsSending(false)
-
-    setUploading(true)
-    const { data: inserted, error } = await sendChatMessage({
-      objectId: selected.id,
-      sender: senderName,
-      content: newMessage.trim(),
-      file
-    })
-    setUploading(false)
-    if (error) {
-      console.error('Insert message error:', error)
-      toast.error('Ошибка отправки сообщения')
-    } else if (inserted) {
-      setMessages(prev => [...prev, inserted])
-    }
-
     setNewMessage('')
     setFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
