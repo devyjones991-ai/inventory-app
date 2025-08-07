@@ -11,7 +11,6 @@ import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import { linkifyText } from '../utils/linkify';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
-import { useSupabaseQuery } from '../utils/useSupabaseQuery';
 import Spinner from './Spinner';
 import ErrorMessage from './ErrorMessage';
 import { useHardware } from '../hooks/useHardware';
@@ -69,6 +68,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const [hardwareError, setHardwareError] = useState(null)
   const [hardwarePage, setHardwarePage]   = useState(0)
   const [hardwareHasMore, setHardwareHasMore] = useState(true)
+  const [loadingHW, setLoadingHW] = useState(false)
 
 
   // --- задачи ---
@@ -100,6 +100,7 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const [tasksError, setTasksError]     = useState(null)
   const [tasksPage, setTasksPage]       = useState(0)
   const [tasksHasMore, setTasksHasMore] = useState(true)
+  const [loadingTasks, setLoadingTasks] = useState(false)
 
 
   // --- чат ---
@@ -108,42 +109,6 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const { fetchTasks: fetchTasksApi, insertTask, updateTask, deleteTask, subscribeToTasks } = useTasks()
   const { fetchMessages, subscribeToMessages } = useChatMessages()
   const { updateObject } = useObjects()
-
-  const { data: fetchedHardware, isLoading: loadingHW, isError: hwError } = useSupabaseQuery(
-    client => {
-      if (!selected) return Promise.resolve({ data: [] })
-      return client
-        .from('hardware')
-        .select('*')
-        .eq('object_id', selected.id)
-        .order('created_at')
-    },
-    [selected]
-  )
-  useEffect(() => { setHardware(fetchedHardware || []) }, [fetchedHardware])
-
-  const { data: fetchedTasks, isLoading: loadingTasks, isError: tasksError } = useSupabaseQuery(
-    client => {
-      if (!selected) return Promise.resolve({ data: [] })
-      return client
-        .from('tasks')
-        .select('*')
-        .eq('object_id', selected.id)
-        .order('created_at')
-    },
-    [selected]
-  )
-  useEffect(() => { setTasks(fetchedTasks || []) }, [fetchedTasks])
-
-  const { data: fetchedChats } = useSupabaseQuery(
-    client => {
-      if (!selected) return Promise.resolve({ data: [] })
-      return client.from('chat_messages').select('*').eq('object_id', selected.id)
-    },
-    [selected]
-  )
-  useEffect(() => { setChatMessages(fetchedChats || []) }, [fetchedChats])
-
   // загрузка данных при смене объекта и восстановление состояния UI
   useEffect(() => {
     if (!selected) return
@@ -193,22 +158,15 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     setTasks([])
     setChatMessages([])
 
-
-    setHardware([])
     setHardwarePage(0)
     setHardwareHasMore(true)
     setHardwareError(null)
-    setTasks([])
     setTasksPage(0)
     setTasksHasMore(true)
     setTasksError(null)
+
     fetchHardware(selected.id, 0)
     fetchTasks(selected.id, 0)
-    supabase.from('chat_messages').select('*').eq('object_id', selected.id)
-      .then(({ data }) => setChatMessages(data || []))
-
-    fetchHardware(selected.id)
-    fetchTasks(selected.id)
     fetchMessages(selected.id).then(({ data }) => setChatMessages(data || []))
 
 
@@ -330,8 +288,8 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
         setHardwarePage(page + 1)
       }
     }
-    const { data, error } = await fetchHardwareApi(objectId)
-    if (!error) setHardware(data || [])
+    const { data: apiData, error: apiError } = await fetchHardwareApi(objectId)
+    if (!apiError) setHardware(apiData || [])
 
     setLoadingHW(false)
   }
@@ -401,11 +359,10 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
       } else {
         setTasksPage(page + 1)
       }
-
-    const { data, error } = await fetchTasksApi(objectId)
-    if (!error) {
-      setTasks(data || [])
-
+    }
+    const { data: apiData, error: apiError } = await fetchTasksApi(objectId)
+    if (!apiError) {
+      setTasks(apiData || [])
     }
     setLoadingTasks(false)
   }
@@ -538,15 +495,14 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
               </button>
             </div>
             {loadingHW && <Spinner />}
-            {hwError && <ErrorMessage message="Ошибка загрузки оборудования" />}
-            {!loadingHW && !hwError && (
+            {hardwareError && <ErrorMessage message="Ошибка загрузки оборудования" />}
+            {!loadingHW && !hardwareError && (
               <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {hardware.map(h => (
                   <HardwareCard key={h.id} item={h} onEdit={() => openHWModal(h)} onDelete={() => askDeleteHardware(h.id)} />
                 ))}
               </div>
             )}
-            {hardwareError && <p className="text-error mt-2">{hardwareError}</p>}
             {hardwareHasMore && !loadingHW && (
               <button className="btn btn-outline btn-sm mt-2" onClick={() => fetchHardware(selected.id, hardwarePage)}>
                 Загрузить ещё
@@ -647,7 +603,6 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                 ))}
               </div>
             )}
-            {tasksError && <p className="text-error mt-2">{tasksError}</p>}
             {tasksHasMore && !loadingTasks && (
               <button className="btn btn-outline btn-sm mt-2" onClick={() => fetchTasks(selected.id, tasksPage)}>
                 Загрузить ещё
