@@ -1,4 +1,7 @@
 # Inventory App
+[![Build](https://github.com/devyjones991-ai/inventory-app/actions/workflows/supabase-migrate.yml/badge.svg)](https://github.com/devyjones991-ai/inventory-app/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/devyjones991-ai/inventory-app)](https://codecov.io/gh/devyjones991-ai/inventory-app)
+[![License](https://img.shields.io/github/license/devyjones991-ai/inventory-app)](LICENSE)
 
 Простое приложение на React для ведения учёта объектов, оборудования и задач. Данные хранятся в [Supabase](https://supabase.com/).
 
