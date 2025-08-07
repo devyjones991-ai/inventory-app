@@ -7,11 +7,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-codex/add-deploy-script-to-package.json
+
     "deploy": "npm run build && vite preview --host"
 
     "prepare": "husky install"
- main
+ 
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -37,7 +37,9 @@ codex/add-deploy-script-to-package.json
     "globals": "^16.3.0",
     "husky": "^9.1.7",
     "jsdom": "^24.0.0",
+
 "lint-staged": "^16.1.4",
+
 
     "msw": "^2.10.4",
     "postcss": "^8.4.31",
