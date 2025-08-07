@@ -12,6 +12,7 @@ vi.mock('@/utils/notifications', () => ({
 vi.mock('@/supabaseClient.js', () => {
   const channelMock = { on: vi.fn().mockReturnThis(), subscribe: vi.fn() };
   return {
+    isSupabaseConfigured: true,
     supabase: {
       auth: {
         getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
