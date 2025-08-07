@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { supabase } from '../supabaseClient';
 import { toast } from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
 import { linkifyText } from '../utils/linkify';
 import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
@@ -9,6 +7,8 @@ import AttachmentPreview from './AttachmentPreview';
 import { useSupabaseQuery } from '../utils/useSupabaseQuery';
 import Spinner from './Spinner';
 import ErrorMessage from './ErrorMessage';
+import { useChatMessages } from '../hooks/useChatMessages';
+
 
 export default function ChatTab({ selected, user }) {
   const [messages, setMessages] = useState([])
@@ -16,9 +16,16 @@ export default function ChatTab({ selected, user }) {
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [modalImage, setModalImage] = useState(null)
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
+  const [isErrorMessages, setIsErrorMessages] = useState(null)
+  const [hasMoreMessages, setHasMoreMessages] = useState(false)
+  const [messageOffset, setMessageOffset] = useState(0)
+  const [isSending, setIsSending] = useState(false)
+  const [sendError, setSendError] = useState(null)
   const scrollRef = useRef(null)
   const fileInputRef = useRef(null)
   const senderName = user.user_metadata?.username || user.email
+
 
   const { data: fetchedMessages, isLoading, isError } = useSupabaseQuery(
     client => {
@@ -38,11 +45,53 @@ export default function ChatTab({ selected, user }) {
   }, [fetchedMessages])
 
   // подписка на новые сообщения
+
+  const PAGE_SIZE = 20
+
+  // загрузка сообщений
+  const loadMessages = async append => {
+    if (!selected) return
+    setIsLoadingMessages(true)
+    setIsErrorMessages(null)
+    const from = append ? messageOffset : 0
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('object_id', selected.id)
+      .order('created_at', { ascending: false })
+      .range(from, from + PAGE_SIZE - 1)
+
+    if (error) {
+      console.error('Fetch messages error:', error)
+      setIsErrorMessages('Ошибка загрузки сообщений')
+    } else {
+      const fetched = (data || []).reverse()
+      setMessages(prev => (append ? [...fetched, ...prev] : fetched))
+      setHasMoreMessages((data || []).length === PAGE_SIZE)
+      setMessageOffset(from + (data ? data.length : 0))
+    }
+    setIsLoadingMessages(false)
+  }
+
+  const { fetchMessages, subscribeToMessages, sendMessage: sendChatMessage } = useChatMessages()
+
+
+  // Загрузка и подписка на новые сообщения
+
   useEffect(() => {
     if (!selected) {
       setMessages([])
       return
     }
+    setMessages([])
+    setMessageOffset(0)
+    setHasMoreMessages(false)
+    setIsErrorMessages(null)
+    loadMessages(false)
+
+
+
+
     const objectId = selected.id
 
     const channel = supabase
@@ -60,6 +109,7 @@ export default function ChatTab({ selected, user }) {
             if (prev.some(m => m.id === payload.new.id)) return prev
             return [...prev, payload.new]
           })
+          setMessageOffset(prev => prev + 1)
         }
       )
       .subscribe(status => {
@@ -67,9 +117,21 @@ export default function ChatTab({ selected, user }) {
           console.error('Chat realtime channel error:', status)
           toast.error('Не удалось подключиться к real-time каналу')
         }
-      })
 
-    return () => supabase.removeChannel(channel)
+    fetchMessages(objectId).then(({ data, error }) => {
+      if (error) console.error('Fetch messages error:', error)
+      else setMessages(data || [])
+    })
+
+    const unsubscribe = subscribeToMessages(objectId, payload => {
+      setMessages(prev => {
+        if (prev.some(m => m.id === payload.new.id)) return prev
+        return [...prev, payload.new]
+
+      })
+    })
+
+    return () => unsubscribe()
   }, [selected])
 
   // автоскролл вниз
@@ -85,6 +147,9 @@ export default function ChatTab({ selected, user }) {
   const sendMessage = async () => {
     if (!newMessage.trim() && !file) return
 
+
+    setSendError(null)
+    setIsSending(true)
     let fileUrl = null
     if (file) {
       setUploading(true)
@@ -104,6 +169,7 @@ export default function ChatTab({ selected, user }) {
         console.error('Upload error:', err)
         toast.error('Ошибка загрузки файла')
         setUploading(false)
+        setIsSending(false)
         setFile(null)
         if (fileInputRef.current) fileInputRef.current.value = ''
         return
@@ -119,12 +185,48 @@ export default function ChatTab({ selected, user }) {
       .select()
       .single()
 
-    if (msgErr) console.error('Insert message error:', msgErr)
-    else if (inserted) setMessages(prev => [...prev, inserted])
+    if (msgErr) {
+      console.error('Insert message error:', msgErr)
+      setSendError('Не удалось отправить сообщение')
+      toast.error('Не удалось отправить сообщение')
+    } else if (inserted) {
+      setMessages(prev => [...prev, inserted])
+      setMessageOffset(prev => prev + 1)
+    }
+
+    setIsSending(false)
+
+    setUploading(true)
+    const { data: inserted, error } = await sendChatMessage({
+      objectId: selected.id,
+      sender: senderName,
+      content: newMessage.trim(),
+      file
+    })
+    setUploading(false)
+    if (error) {
+      console.error('Insert message error:', error)
+      toast.error('Ошибка отправки сообщения')
+    } else if (inserted) {
+      setMessages(prev => [...prev, inserted])
+    }
 
     setNewMessage('')
     setFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const loadMoreMessages = async () => {
+    const container = scrollRef.current?.parentElement
+    const prevHeight = container?.scrollHeight || 0
+    await loadMessages(true)
+    if (container) container.scrollTop = container.scrollHeight - prevHeight
+  }
+
+  const handleScroll = e => {
+    if (e.target.scrollTop === 0 && hasMoreMessages && !isLoadingMessages) {
+      loadMoreMessages()
+    }
   }
 
   const handleKeyDown = e => {
@@ -137,20 +239,54 @@ export default function ChatTab({ selected, user }) {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Сообщения */}
+
       <div className="flex-1 overflow-auto p-2 bg-gray-100">
         {isLoading && <Spinner />}
         {isError && <ErrorMessage message="Ошибка загрузки сообщений" />}
         {!isLoading && !isError && messages.length === 0 && (
+
+      <div className="flex-1 overflow-auto p-2 bg-gray-100" onScroll={handleScroll}>
+        {isErrorMessages && (
+          <div className="text-red-500 text-center mt-4">{isErrorMessages}</div>
+        )}
+        {isLoadingMessages && messages.length === 0 && (
+          <div className="flex justify-center mt-4">
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+          </div>
+        )}
+        {!isLoadingMessages && !isErrorMessages && messages.length === 0 && (
+
           <div className="text-gray-500 text-center mt-4">
             Нет сообщений. Начните диалог.
           </div>
         )}
+
         {!isLoading && !isError && messages.map(msg => {
+
+        {hasMoreMessages && (
+          <button onClick={loadMoreMessages} className="block mx-auto mb-2 text-blue-500">
+            Загрузить ещё
+          </button>
+        )}
+        {isLoadingMessages && messages.length > 0 && (
+          <div className="flex justify-center mb-2">
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+          </div>
+        )}
+        {messages.map(msg => {
+
           const isOwn = msg.sender === senderName;
           return (
             <motion.div
               key={msg.id}
               initial={{ opacity: 0, y: 10 }}
+
               animate={{ opacity: 1, y: 0 }}
               className={`flex mb-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
             >
@@ -160,6 +296,10 @@ export default function ChatTab({ selected, user }) {
                     ? 'bg-green-100 text-right rounded-l-lg rounded-t-lg rounded-br-none'
                     : 'bg-white text-left rounded-r-lg rounded-t-lg rounded-bl-none'
                 }`.replace(/\s+/g, ' ')}
+
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex mb-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
+
               >
                 <div className="text-xs text-gray-500 mb-1">
                   {msg.sender} • {new Date(msg.created_at).toLocaleString()}
@@ -201,10 +341,11 @@ export default function ChatTab({ selected, user }) {
           />
           <button
             onClick={sendMessage}
-            disabled={uploading}
+            disabled={uploading || isSending}
             className="p-2 bg-green-500 text-white rounded-full disabled:opacity-50"
+            aria-label="Send"
           >
-            {uploading ? (
+            {uploading || isSending ? (
               <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
@@ -214,6 +355,7 @@ export default function ChatTab({ selected, user }) {
             )}
           </button>
         </div>
+        {sendError && <div className="text-red-500 text-sm mt-1">{sendError}</div>}
       </div>
 
       {modalImage && (
