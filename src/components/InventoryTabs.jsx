@@ -13,6 +13,7 @@ const HW_MODAL_KEY = objectId => `hwModal_${objectId}`;
 const HW_FORM_KEY = objectId => `hwForm_${objectId}`;
 const TASK_MODAL_KEY = objectId => `taskModal_${objectId}`;
 const TASK_FORM_KEY = objectId => `taskForm_${objectId}`;
+const PAGE_SIZE = 20;
 
 // форматирование даты для отображения в русской локали
 function formatDate(dateStr) {
@@ -38,6 +39,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const defaultHWForm = { name: '', location: '', purchase_status: 'не оплачен', install_status: 'не установлен' }
   const [hwForm, setHWForm]             = useState(defaultHWForm)
   const [hwDeleteId, setHwDeleteId]     = useState(null)
+  const [hardwareError, setHardwareError] = useState(null)
+  const [hardwarePage, setHardwarePage]   = useState(0)
+  const [hardwareHasMore, setHardwareHasMore] = useState(true)
 
   // --- задачи ---
   const [tasks, setTasks]               = useState([])
@@ -49,6 +53,9 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask]   = useState(null)
   const [taskDeleteId, setTaskDeleteId] = useState(null)
+  const [tasksError, setTasksError]     = useState(null)
+  const [tasksPage, setTasksPage]       = useState(0)
+  const [tasksHasMore, setTasksHasMore] = useState(true)
 
   // --- чат ---
   const [chatMessages, setChatMessages] = useState([])
@@ -91,8 +98,16 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
     setTaskForm(parsedTaskForm)
     setIsTaskModalOpen(savedTaskOpen)
     setDescription(selected.description || '')
-    fetchHardware(selected.id)
-    fetchTasks(selected.id)
+    setHardware([])
+    setHardwarePage(0)
+    setHardwareHasMore(true)
+    setHardwareError(null)
+    setTasks([])
+    setTasksPage(0)
+    setTasksHasMore(true)
+    setTasksError(null)
+    fetchHardware(selected.id, 0)
+    fetchTasks(selected.id, 0)
     supabase.from('chat_messages').select('*').eq('object_id', selected.id)
       .then(({ data }) => setChatMessages(data || []))
   }, [selected])
@@ -182,11 +197,28 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   }
 
   // --- CRUD Оборудование ---
-  async function fetchHardware(objectId) {
+  async function fetchHardware(objectId, page = hardwarePage) {
     setLoadingHW(true)
+    setHardwareError(null)
+    const from = page * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
-      .from('hardware').select('*').eq('object_id', objectId).order('created_at')
-    if (!error) setHardware(data)
+      .from('hardware')
+      .select('*')
+      .eq('object_id', objectId)
+      .order('created_at')
+      .range(from, to)
+    if (error) {
+      setHardwareError(error.message)
+      toast.error('Ошибка загрузки оборудования')
+    } else {
+      setHardware(prev => [...prev, ...(data || [])])
+      if (!data || data.length < PAGE_SIZE) {
+        setHardwareHasMore(false)
+      } else {
+        setHardwarePage(page + 1)
+      }
+    }
     setLoadingHW(false)
   }
   function openHWModal(item = null) {
@@ -231,12 +263,27 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
   }
 
   // --- CRUD Задачи ---
-  async function fetchTasks(objectId) {
+  async function fetchTasks(objectId, page = tasksPage) {
     setLoadingTasks(true)
+    setTasksError(null)
+    const from = page * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
-      .from('tasks').select('*').eq('object_id', objectId).order('created_at')
-    if (!error) {
-      setTasks(data || [])
+      .from('tasks')
+      .select('*')
+      .eq('object_id', objectId)
+      .order('created_at')
+      .range(from, to)
+    if (error) {
+      setTasksError(error.message)
+      toast.error('Ошибка загрузки задач')
+    } else {
+      setTasks(prev => [...prev, ...(data || [])])
+      if (!data || data.length < PAGE_SIZE) {
+        setTasksHasMore(false)
+      } else {
+        setTasksPage(page + 1)
+      }
     }
     setLoadingTasks(false)
   }
@@ -380,6 +427,12 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                 ))}
               </div>
             )}
+            {hardwareError && <p className="text-error mt-2">{hardwareError}</p>}
+            {hardwareHasMore && !loadingHW && (
+              <button className="btn btn-outline btn-sm mt-2" onClick={() => fetchHardware(selected.id, hardwarePage)}>
+                Загрузить ещё
+              </button>
+            )}
 
             {isHWModalOpen && (
               <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -472,6 +525,12 @@ export default function InventoryTabs({ selected, onUpdateSelected, user, onTabC
                   />
                 ))}
               </div>
+            )}
+            {tasksError && <p className="text-error mt-2">{tasksError}</p>}
+            {tasksHasMore && !loadingTasks && (
+              <button className="btn btn-outline btn-sm mt-2" onClick={() => fetchTasks(selected.id, tasksPage)}>
+                Загрузить ещё
+              </button>
             )}
 
             {isTaskModalOpen && (

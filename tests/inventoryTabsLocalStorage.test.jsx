@@ -8,7 +8,8 @@ vi.mock('../src/supabaseClient.js', () => {
     const query = {}
     query.select = vi.fn(() => query)
     query.eq = vi.fn(() => query)
-    query.order = vi.fn(() => Promise.resolve({ data: [] }))
+    query.order = vi.fn(() => query)
+    query.range = vi.fn(() => query)
     query.then = vi.fn((resolve) => Promise.resolve({ data: [] }).then(resolve))
     return query
   }

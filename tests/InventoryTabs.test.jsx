@@ -2,18 +2,41 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+let hardwareDataMock = [];
+let tasksDataMock = [];
+let chatDataMock = [];
+
 vi.mock('../src/supabaseClient.js', () => {
-  const chain = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), then: vi.fn(cb => cb({ data: [] })) };
+  const from = vi.fn((table) => {
+    const dataMap = {
+      hardware: hardwareDataMock,
+      tasks: tasksDataMock,
+      chat_messages: chatDataMock,
+    };
+    const chain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      single: vi.fn().mockReturnThis(),
+      then: vi.fn(cb => cb({ data: dataMap[table] || [] }))
+    };
+    return chain;
+  });
   return {
     supabase: {
-      from: vi.fn(() => ({ ...chain })),
+      from,
       channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
       removeChannel: vi.fn(),
     }
   };
 });
 vi.mock('../src/utils/notifications', () => ({ pushNotification: vi.fn(), playTaskSound: vi.fn(), playMessageSound: vi.fn() }));
-vi.mock('react-hot-toast', () => ({ toast: { success: vi.fn() } }));
+vi.mock('react-hot-toast', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../src/components/ChatTab', () => ({ default: () => <div data-testid="chat-tab">ChatMock</div> }));
 
 import InventoryTabs from '../src/components/InventoryTabs';
@@ -27,6 +50,9 @@ const renderComponent = (selected) => render(
 describe('InventoryTabs', () => {
   beforeEach(() => {
     localStorage.clear();
+    hardwareDataMock = [];
+    tasksDataMock = [];
+    chatDataMock = [];
   });
   it('shows description tab and handles empty description', () => {
     renderComponent({ id: 1, name: 'Obj', description: '' });
@@ -52,5 +78,13 @@ describe('InventoryTabs', () => {
     fireEvent.click(screen.getByText('Отмена'));
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.getByText('Changed')).toBeInTheDocument();
+  });
+
+  it('shows load more button when hardware has more', async () => {
+    hardwareDataMock = Array.from({ length: 20 }, (_, i) => ({ id: i + 1 }));
+    renderComponent({ id: 1, name: 'Obj', description: '' });
+    await screen.findByText('Железо (20)');
+    fireEvent.click(screen.getByText('Железо (20)'));
+    expect(await screen.findByText('Загрузить ещё')).toBeInTheDocument();
   });
 });

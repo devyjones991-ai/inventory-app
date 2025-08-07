@@ -11,7 +11,8 @@ const { insertMock, supabaseMock, toastErrorMock } = vi.hoisted(() => {
   const chain = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
-    order: vi.fn(() => Promise.resolve({ data: [] })),
+    order: vi.fn().mockReturnThis(),
+    range: vi.fn().mockReturnThis(),
     then: vi.fn(cb => cb({ data: [] })),
     insert: insertMock,
   };
