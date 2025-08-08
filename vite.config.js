@@ -21,7 +21,6 @@ export default defineConfig({
   },
   test: {
     globals: true,
- codex/ensure-single-test-filename-format
     environment: 'jsdom',
     setupFiles: './tests/setup.js',
     include: ['tests/**/*.test.jsx']
@@ -32,4 +31,3 @@ export default defineConfig({
     setupFiles: "./tests/setup.js",
   },
 });
- main
