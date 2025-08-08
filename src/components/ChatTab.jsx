@@ -49,18 +49,25 @@ export default function ChatTab({ selected }) {
       .channel(`chat:${objectId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'chat_messages', filter: `object_id=eq.${objectId}` },
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `object_id=eq.${objectId}`,
+        },
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setMessages((prev) => [...prev, payload.new].sort(sortByCreatedAt))
           } else if (payload.eventType === 'UPDATE') {
             setMessages((prev) =>
-              prev.map((m) => (m.id === payload.new.id ? payload.new : m)).sort(sortByCreatedAt)
+              prev
+                .map((m) => (m.id === payload.new.id ? payload.new : m))
+                .sort(sortByCreatedAt),
             )
           } else if (payload.eventType === 'DELETE') {
             setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
           }
-        }
+        },
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
@@ -90,13 +97,15 @@ export default function ChatTab({ selected }) {
       content: newMessage.trim(),
       file_url: null,
       created_at: new Date().toISOString(),
-      _optimistic: true
+      _optimistic: true,
     }
     setMessages((prev) => [...prev, optimistic])
 
     const { error } = await supabase
       .from('chat_messages')
-      .insert([{ object_id: objectId, sender: 'me', content: newMessage.trim() }])
+      .insert([
+        { object_id: objectId, sender: 'me', content: newMessage.trim() },
+      ])
 
     if (error) {
       console.error('send error:', error)
@@ -115,18 +124,16 @@ export default function ChatTab({ selected }) {
   }
 
   if (!objectId) {
-    return (
-      <div className="p-6 text-sm text-gray-500">
-        Выбери объект, чтобы открыть чат.
-      </div>
-    )
+    return <div className="p-6 text-sm text-gray-500">Выбери объект</div>
   }
 
   return (
     <div className="flex flex-col h-full">
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.length === 0 ? (
-          <div className="text-sm text-gray-400">Сообщений пока нет — напиши первым.</div>
+          <div className="text-sm text-gray-400">
+            Сообщений пока нет — напиши первым.
+          </div>
         ) : (
           messages.map((m) => (
             <div key={m.id} className="chat chat-start">
@@ -150,7 +157,11 @@ export default function ChatTab({ selected }) {
           onKeyDown={handleKeyDown}
         />
         <div className="flex justify-end">
-          <button className="btn btn-primary" disabled={sending || !newMessage.trim()} onClick={handleSend}>
+          <button
+            className="btn btn-primary"
+            disabled={sending || !newMessage.trim()}
+            onClick={handleSend}
+          >
             {sending ? 'Отправка…' : 'Отправить'}
           </button>
         </div>
