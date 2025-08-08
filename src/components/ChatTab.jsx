@@ -1,142 +1,164 @@
-import React, { useEffect, useRef, useState } from 'react'
-import ChatCard from './ChatCard'
-import { useChatMessages } from '../hooks/useChatMessages'
-import { toast } from 'react-hot-toast'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { supabase } from '../supabaseClient'
 
-export default function ChatTab({ selected, user, objectId, sender }) {
-  const { fetchMessages, sendMessage, subscribeToMessages } = useChatMessages()
+export default function ChatTab({ selected }) {
   const [messages, setMessages] = useState([])
-  const [content, setContent] = useState('')
-  const fileRef = useRef(null)
-  const messagesEndRef = useRef(null)
+  const [newMessage, setNewMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const scrollRef = useRef(null)
+  const channelRef = useRef(null)
 
-codex/update-chattab-test-cases
-  useEffect(() => {
-    if (!selected?.id) return
-    fetchMessages(selected.id).then(({ data, error }) => {
-      if (error) toast.error('Ошибка загрузки сообщений: ' + error.message)
-      else setMessages(data || [])
-    })
-    const unsubscribe = subscribeToMessages(selected.id, (payload) => {
-      setMessages((prev) => [...prev, payload.new])
-    })
-    return () => {
-      unsubscribe()
-    }
-  }, [selected, fetchMessages, subscribeToMessages])
+  const objectId = selected?.id || null
 
+  // Прокрутка вниз при каждом обновлении сообщений
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' })
+    if (!scrollRef.current) return
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-    if (!content && !file) return
-    const { error } = await sendMessage({
-      objectId: selected.id,
-      sender: user?.email,
-      content,
-      file,
-    })
-    if (error) toast.error('Ошибка отправки: ' + error.message)
-    else {
-      setContent('')
-      setFile(null)
+  const loadMessages = useCallback(async () => {
+    if (!objectId) return
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('object_id', objectId)
+      .order('created_at', { ascending: true })
 
-  const objectIdToUse = selected?.id ?? objectId
-  const currentSender = user?.email || user?.user_metadata?.username || sender
+    if (error) {
+      console.error('loadMessages error:', error)
+      return
+    }
+    setMessages(data || [])
+  }, [objectId])
 
+  // Инициализация: загрузка + подписка на realtime
   useEffect(() => {
-    if (!objectIdToUse) return
+    // очистка старого канала при смене объекта
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+      channelRef.current = null
+    }
 
-    let isMounted = true
+    setMessages([])
+    if (!objectId) return
 
-    ;(async () => {
-      const { data, error } = await fetchMessages(objectIdToUse)
-      if (error) toast.error('Ошибка загрузки сообщений: ' + error.message)
-      else if (isMounted && data) setMessages(data)
-    })()
+    loadMessages()
 
-    const unsubscribe = subscribeToMessages(objectIdToUse, (payload) => {
-      setMessages((prev) => [...prev, payload.new])
-    })
+    // ВАЖНО: подписка через supabase.channel + postgres_changes (новый API)
+    const ch = supabase
+      .channel(`chat:${objectId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chat_messages', filter: `object_id=eq.${objectId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setMessages((prev) => [...prev, payload.new].sort(sortByCreatedAt))
+          } else if (payload.eventType === 'UPDATE') {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === payload.new.id ? payload.new : m)).sort(sortByCreatedAt)
+            )
+          } else if (payload.eventType === 'DELETE') {
+            setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // доп. загрузка на всякий, если кэш пустой
+          loadMessages()
+        }
+      })
+
+    channelRef.current = ch
 
     return () => {
-      isMounted = false
-      unsubscribe && unsubscribe()
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
     }
-  }, [objectIdToUse, fetchMessages, subscribeToMessages])
+  }, [objectId, loadMessages])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' })
-  }, [messages])
+  const handleSend = async () => {
+    if (!objectId || !newMessage.trim() || sending) return
+    setSending(true)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const file = fileRef.current?.files[0]
-    if (!content.trim() && !file) return
-
-    const { data, error } = await sendMessage({
-      objectId: objectIdToUse,
-      sender: currentSender,
-      content,
-      file,
-    })
-
-    if (error) toast.error('Ошибка отправки: ' + error.message)
-    else {
-      setMessages((prev) => [...prev, data])
-      setContent('')
-      if (fileRef.current) fileRef.current.value = ''
- main
+    const optimistic = {
+      id: `tmp-${Date.now()}`,
+      object_id: objectId,
+      sender: 'me',
+      content: newMessage.trim(),
+      file_url: null,
+      created_at: new Date().toISOString(),
+      _optimistic: true
     }
+    setMessages((prev) => [...prev, optimistic])
+
+    const { error } = await supabase
+      .from('chat_messages')
+      .insert([{ object_id: objectId, sender: 'me', content: newMessage.trim() }])
+
+    if (error) {
+      console.error('send error:', error)
+      // откатываем оптимистичную запись
+      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id))
+    }
+    setNewMessage('')
+    setSending(false)
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
+  if (!objectId) {
+    return (
+      <div className="p-6 text-sm text-gray-500">
+        Выбери объект, чтобы открыть чат.
+      </div>
+    )
   }
 
   return (
     <div className="flex flex-col h-full">
- codex/update-chattab-test-cases
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
-
-      <div className="flex-1 overflow-y-auto space-y-2 p-4">
- main
-        {messages.map((m) => (
-          <ChatCard key={m.id} message={m} />
-        ))}
-        <div ref={messagesEndRef} />
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2">
+        {messages.length === 0 ? (
+          <div className="text-sm text-gray-400">Сообщений пока нет — напиши первым.</div>
+        ) : (
+          messages.map((m) => (
+            <div key={m.id} className="chat chat-start">
+              <div className="chat-header">{m.sender || 'user'}</div>
+              <div className="chat-bubble whitespace-pre-wrap">{m.content}</div>
+              <div className="chat-footer opacity-50 text-xs">
+                {new Date(m.created_at).toLocaleString()}
+                {m._optimistic ? ' • отправка…' : ''}
+              </div>
+            </div>
+          ))
+        )}
       </div>
- codex/update-chattab-test-cases
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <textarea
-          className="textarea textarea-bordered w-full"
-          placeholder="Сообщение"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-          className="file-input file-input-bordered w-full"
-        />
-        <button type="submit" className="btn btn-primary self-end">
 
-      <form onSubmit={handleSubmit} className="p-4 border-t flex gap-2">
-        <input
-          type="text"
-          className="input input-bordered flex-1"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Сообщение"
+      <div className="p-3 border-t space-y-2">
+        <textarea
+          className="textarea textarea-bordered w-full min-h-24"
+          placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
-        <input
-          type="file"
-          ref={fileRef}
-          className="file-input file-input-bordered"
-        />
-        <button type="submit" className="btn btn-primary">
- main
-          Отправить
-        </button>
-      </form>
+        <div className="flex justify-end">
+          <button className="btn btn-primary" disabled={sending || !newMessage.trim()} onClick={handleSend}>
+            {sending ? 'Отправка…' : 'Отправить'}
+          </button>
+        </div>
+      </div>
     </div>
   )
+}
+
+function sortByCreatedAt(a, b) {
+  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
 }
