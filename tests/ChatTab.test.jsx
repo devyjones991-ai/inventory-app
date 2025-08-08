@@ -40,7 +40,7 @@ import ChatTab from '@/components/ChatTab.jsx'
 
 describe('ChatTab', () => {
   it('отображает сообщения и форму отправки', async () => {
-    render(<ChatTab objectId="1" sender="me" />)
+    render(<ChatTab selected={{ id: '1' }} user={{ email: 'me' }} />)
     for (const msg of initialMessages) {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
     }
@@ -49,7 +49,7 @@ describe('ChatTab', () => {
   })
 
   it('отправляет новое сообщение', async () => {
-    render(<ChatTab objectId="1" sender="me" />)
+    render(<ChatTab selected={{ id: '1' }} user={{ email: 'me' }} />)
     const input = await screen.findByRole('textbox')
     const button = screen.getByRole('button')
     fireEvent.change(input, { target: { value: 'Новое сообщение' } })
