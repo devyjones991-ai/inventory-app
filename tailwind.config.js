@@ -2,10 +2,7 @@
 /* eslint-disable no-undef */
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,jsx}"
-  ],
+  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -17,13 +14,11 @@ module.exports = {
         heading: '1.5rem',
         body: '1rem',
         caption: '0.875rem',
-      }
-    }
+      },
+    },
   },
-  plugins: [
-    require('daisyui'),
-  ],
+  plugins: [require('daisyui')],
   daisyui: {
-    themes: ['light','dark','cupcake','retro','cyberpunk'],
+    themes: ['light', 'dark', 'cupcake', 'retro', 'cyberpunk'],
   },
 }
