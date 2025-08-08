@@ -310,7 +310,7 @@ export default function InventoryTabs({
   async function saveDescription() {
     const { data, error } = await updateObject(selected.id, { description })
     if (!error) {
-      onUpdateSelected({ ...selected, description: data[0].description })
+      onUpdateSelected({ ...selected, description: data.description })
       setIsEditingDesc(false)
     } else toast.error('Ошибка сохранения описания: ' + error.message)
   }
