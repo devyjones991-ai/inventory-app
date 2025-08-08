@@ -1,271 +1,175 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { supabase } from '../supabaseClient';
-import { toast } from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
-import { linkifyText } from '../utils/linkify';
-import { PaperClipIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
-import { motion } from 'framer-motion';
-import AttachmentPreview from './AttachmentPreview';
+import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { supabase } from '../supabaseClient'
 
-export default function ChatTab({ selected, user }) {
+export default function ChatTab({ selected }) {
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
-  const [file, setFile] = useState(null)
-  const [uploading, setUploading] = useState(false)
-  const [modalImage, setModalImage] = useState(null)
+  const [sending, setSending] = useState(false)
   const scrollRef = useRef(null)
-  const senderName = user.user_metadata?.username || user.email
+  const channelRef = useRef(null)
 
-  // Загрузка и подписка на новые сообщения
+  const objectId = selected?.id || null
+
+  // Прокрутка вниз при каждом обновлении сообщений
   useEffect(() => {
-    if (!selected) {
-      setMessages([])
-      return
-    }
-    const objectId = selected.id
+    if (!scrollRef.current) return
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [messages])
 
-    // начальная загрузка
-    supabase
+  const loadMessages = useCallback(async () => {
+    if (!objectId) return
+    const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
       .eq('object_id', objectId)
       .order('created_at', { ascending: true })
-      .then(({ data, error }) => {
-        if (error) console.error('Fetch messages error:', error)
-        else setMessages(data)
-      })
 
-    // realtime подписка
-    const channel = supabase
-      .channel(`chat_messages_object_${objectId}`)
+    if (error) {
+      console.error('loadMessages error:', error)
+      return
+    }
+    setMessages(data || [])
+  }, [objectId])
+
+  // Инициализация: загрузка + подписка на realtime
+  useEffect(() => {
+    // очистка старого канала при смене объекта
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+      channelRef.current = null
+    }
+
+    setMessages([])
+    if (!objectId) return
+
+    loadMessages()
+
+    // ВАЖНО: подписка через supabase.channel + postgres_changes (новый API)
+    const ch = supabase
+      .channel(`chat:${objectId}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'chat_messages',
-          filter: `object_id=eq.${objectId}`
+          filter: `object_id=eq.${objectId}`,
         },
-        payload => {
-          setMessages(prev => {
-            // избегаем дублей
-            if (prev.some(m => m.id === payload.new.id)) return prev
-            return [...prev, payload.new]
-          })
-        }
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setMessages((prev) => [...prev, payload.new].sort(sortByCreatedAt))
+          } else if (payload.eventType === 'UPDATE') {
+            setMessages((prev) =>
+              prev
+                .map((m) => (m.id === payload.new.id ? payload.new : m))
+                .sort(sortByCreatedAt),
+            )
+          } else if (payload.eventType === 'DELETE') {
+            setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
+          }
+        },
       )
-      .subscribe(status => {
+      .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Chat realtime channel subscribed')
-        }
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Chat realtime channel error:', status)
-          toast.error('Не удалось подключиться к real-time каналу')
+          // доп. загрузка на всякий, если кэш пустой
+          loadMessages()
         }
       })
 
-    return () => supabase.removeChannel(channel)
-  }, [selected])
+    channelRef.current = ch
 
-  // автоскролл вниз
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  // отправка сообщения и файла
-  const sendMessage = async () => {
-    if (!newMessage.trim() && !file) return
-
-    let fileUrl = null
-    if (file) {
-      setUploading(true)
-      const filePath = `${selected.id}/${uuidv4()}_${file.name}`
-      try {
-        const { error: upErr } = await supabase.storage
-          .from('chat-files')
-          .upload(filePath, file)
-
-        if (upErr) throw upErr
-
-        const { data } = supabase.storage
-          .from('chat-files')
-          .getPublicUrl(filePath)
-        fileUrl = data.publicUrl
-      } catch (err) {
-        console.error('Upload error:', err)
-        toast.error('Ошибка загрузки файла')
-        setUploading(false)
-        return
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
       }
-      setUploading(false)
     }
+  }, [objectId, loadMessages])
 
-    const { data: inserted, error: msgErr } = await supabase
+  const handleSend = async () => {
+    if (!objectId || !newMessage.trim() || sending) return
+    setSending(true)
+
+    const optimistic = {
+      id: `tmp-${Date.now()}`,
+      object_id: objectId,
+      sender: 'me',
+      content: newMessage.trim(),
+      file_url: null,
+      created_at: new Date().toISOString(),
+      _optimistic: true,
+    }
+    setMessages((prev) => [...prev, optimistic])
+
+    const { error } = await supabase
       .from('chat_messages')
       .insert([
-        { object_id: selected.id, sender: senderName,  content: newMessage.trim(), file_url: fileUrl }
+        { object_id: objectId, sender: 'me', content: newMessage.trim() },
       ])
-      .select()
-      .single()
 
-    if (msgErr) console.error('Insert message error:', msgErr)
-    else if (inserted) setMessages(prev => [...prev, inserted])
-
+    if (error) {
+      console.error('send error:', error)
+      // откатываем оптимистичную запись
+      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id))
+    }
     setNewMessage('')
-    setFile(null)
+    setSending(false)
   }
 
-  const handleKeyDown = e => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      sendMessage()
+      handleSend()
     }
+  }
+
+  if (!objectId) {
+    return <div className="p-6 text-sm text-gray-500">Выбери объект</div>
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Сообщения */}
-      <div className="flex-1 overflow-auto p-2 bg-gray-100">
-        {messages.length === 0 && (
-          <div className="text-gray-500 text-center mt-4">
-            Нет сообщений. Начните диалог.
+    <div className="flex flex-col h-full">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2">
+        {messages.length === 0 ? (
+          <div className="text-sm text-gray-400">
+            Сообщений пока нет — напиши первым.
           </div>
+        ) : (
+          messages.map((m) => (
+            <div key={m.id} className="chat chat-start">
+              <div className="chat-header">{m.sender || 'user'}</div>
+              <div className="chat-bubble whitespace-pre-wrap">{m.content}</div>
+              <div className="chat-footer opacity-50 text-xs">
+                {new Date(m.created_at).toLocaleString()}
+                {m._optimistic ? ' • отправка…' : ''}
+              </div>
+            </div>
+          ))
         )}
-          {messages.map(msg => {
-            const isOwn = msg.sender === senderName;
-            return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex mb-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] sm:max-w-[60%] break-words p-3 shadow ${
-                    isOwn
-                      ? 'bg-green-100 text-right rounded-l-lg rounded-t-lg rounded-br-none'
-                      : 'bg-white text-left rounded-r-lg rounded-t-lg rounded-bl-none'
-                  }`.replace(/\s+/g, ' ')}
-                >
-                  <div className="text-xs text-gray-500 mb-1">
-                    {msg.sender} • {new Date(msg.created_at).toLocaleString()}
-                  </div>
-                  {msg.content && (
-                    <div className="whitespace-pre-line break-words mb-1">
-                      {linkifyText(msg.content)}
-                    </div>
-                  )}
-codex/add-file-buttons-for-non-image-files
-                  {msg.file_url && (() => {
-                    const url = msg.file_url;
-                    const isImage = /\.(png|jpe?g|gif|bmp|webp)$/i.test(url);
-                    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-                    if (isImage) {
-                      return (
-                        <img
-                          src={url}
-                          alt="attachment"
-                          className="max-w-full h-auto mt-1"
-                        />
-                      );
-                    }
-                    if (isVideo) {
-                      return (
-                        <video
-                          src={url}
-                          controls
-                          className="max-w-full h-auto mt-1"
-                        />
-                      );
-                    }
-                    const fileName = url.split('/').pop();
-                    return (
-                      <div className="mt-1">
-                        <div className="break-words mb-1">{fileName}</div>
-                        <div className="flex space-x-2">
-                          <a
-                            href={url}
-                            download
-                            className="text-blue-500 underline"
-                          >
-                            Скачать
-                          </a>
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 underline"
-                          >
-                            Открыть
-                          </a>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {msg.file_url && (
-                  codex/add-video-file-handling-in-attachmentpreview
-                    <AttachmentPreview url={msg.file_url} />
-
-                    <AttachmentPreview url={msg.file_url} onImageClick={setModalImage} />
-main
-                  )}
-main
-                </div>
-              </motion.div>
-            );
-          })}
-        <div ref={scrollRef} />
       </div>
 
-      {/* Форма ввода */}
-      <div className="p-2 border-t bg-white">
-        <div className="flex items-end space-x-2">
-          <label className="p-2 cursor-pointer text-gray-500 hover:text-gray-700">
-            <PaperClipIcon className="w-6 h-6" />
-            <input
-              type="file"
-              onChange={e => setFile(e.target.files[0])}
-              className="hidden"
-            />
-          </label>
-          <textarea
-            className="flex-1 border rounded-lg p-2 resize-none"
-            rows={2}
-            placeholder="Введите сообщение..."
-            value={newMessage}
-            onChange={e => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+      <div className="p-3 border-t space-y-2">
+        <textarea
+          className="textarea textarea-bordered w-full min-h-24"
+          placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <div className="flex justify-end">
           <button
-            onClick={sendMessage}
-            disabled={uploading}
-            className="p-2 bg-green-500 text-white rounded-full disabled:opacity-50"
+            className="btn btn-primary"
+            disabled={sending || !newMessage.trim()}
+            onClick={handleSend}
           >
-            {uploading ? (
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-            ) : (
-              <PaperAirplaneIcon className="w-5 h-5" />
-            )}
+            {sending ? 'Отправка…' : 'Отправить'}
           </button>
         </div>
       </div>
-
-      {modalImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <button
-            aria-label="Close"
-            className="absolute top-4 right-4 text-white text-2xl"
-            onClick={() => setModalImage(null)}
-          >
-            ×
-          </button>
-          <img src={modalImage} alt="preview" className="max-h-full max-w-full" />
-        </div>
-      )}
     </div>
   )
+}
+
+function sortByCreatedAt(a, b) {
+  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
 }

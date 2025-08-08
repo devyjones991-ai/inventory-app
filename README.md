@@ -1,6 +1,14 @@
-# Inventory App
+# Inventory App 
+Inventory App — приложение на React, которое помогает командам вести единый учёт объектов, оборудования, задач и переписки.
 
-Простое приложение на React для ведения учёта объектов, оборудования и задач. Данные хранятся в [Supabase](https://supabase.com/).
+[![Build](https://github.com/devyjones991-ai/inventory-app/actions/workflows/supabase-migrate.yml/badge.svg)](https://github.com/devyjones991-ai/inventory-app/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/devyjones991-ai/inventory-app)](https://codecov.io/gh/devyjones991-ai/inventory-app)
+[![License](https://img.shields.io/github/license/devyjones991-ai/inventory-app)](LICENSE)
+
+
+Все данные хранятся в [Supabase](https://supabase.com/), что обеспечивает удобный доступ и совместную работу без необходимости управлять собственной инфраструктурой.
+
+Приложение ориентировано на небольшие команды и организации, которым нужен единый инструмент учёта.
 
 ## Структура таблиц
 - **objects**: `id`, `name`, `description`, `created_at`
@@ -9,14 +17,41 @@
 - **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`
 
 ## Запуск
-1. Установите зависимости: `npm install`
-2. Создайте файл `.env` и добавьте ключи Supabase `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`
-3. Старт разработки: `npm run dev`
-4. Запуск тестов: `npm test`
+1. Зарегистрируйтесь на [Supabase](https://supabase.com) и создайте проект.
+2. В настройках проекта откройте `Settings → API`.
+3. Скопируйте `URL` проекта и `anon`-ключ.
+4. Скопируйте файл `.env.example` в `.env` и заполните `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`.
+5. Установите зависимости: `npm install`.
+
+### Инициализация базы данных
+
+- Откройте Supabase SQL Editor и выполните `supabase/migrations/*.sql` (или готовый `init.sql`).
+- Либо установите и авторизуйте Supabase CLI, затем выполните `supabase db push` из корня проекта.
+6. Старт разработки: `npm run dev`.
+7. Запуск тестов: `npm test`.
+
+Если переменные окружения из пункта 4 не заданы, приложение запускается в ограниченном режиме: на экране появится уведомление о необходимости настроить `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`, а обращения к базе данных будут отклонены.
 
 ## Сборка
 - Сборка: `npm run build`
 - Предпросмотр: `npm run preview`
+
+## Деплой
+- Переменные окружения: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+  - Vercel: задайте их в **Settings → Environment Variables**.
+  - Netlify: задайте их в **Site Configuration → Environment variables**.
+- Команда сборки: `npm run build`.
+- Директория публикации: `dist`.
+- Деплой на **Vercel**:
+  1. Подключите репозиторий.
+  2. Настройте переменные окружения.
+  3. Запустите сборку.
+- Деплой на **Netlify**:
+  1. Подключите репозиторий.
+  2. Задайте переменные окружения.
+  3. Укажите команду `npm run build` и директорию `dist`.
+  4. Запустите деплой.
+- Локальный продакшн-просмотр: `npm run deploy`.
 
 ## Особенности
 - Переключение тем интерфейса
@@ -26,3 +61,9 @@
 ## CI
 
 При пуше в `main` автоматически выполняется `supabase db push`. Для работы GitHub Actions добавьте в настройках репозитория секреты `SUPABASE_URL` и `SUPABASE_SERVICE_KEY`.
+
+## Что дальше?
+- Авторизация и роли пользователей
+- Уведомления о задачах по email или Slack
+- Импорт/экспорт данных (CSV)
+- Мобильная адаптация интерфейса
