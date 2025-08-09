@@ -347,7 +347,6 @@ export default function InventoryTabs({
       await handleSupabaseError(error, navigate, 'Ошибка загрузки оборудования')
       setLoadingHW(false)
       return
-
     } else {
       setHardware((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -451,7 +450,6 @@ export default function InventoryTabs({
       await handleSupabaseError(error, navigate, 'Ошибка загрузки задач')
       setLoadingTasks(false)
       return
-
     } else {
       setTasks((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -716,7 +714,7 @@ export default function InventoryTabs({
                         </p>
                       )}
                     </div>
-                    <div className="flex space-x-4">
+                    <div className="flex flex-col sm2:flex-row sm2:space-x-4 space-y-4 sm2:space-y-0">
                       <div className="form-control flex-1">
                         <label className="label">
                           <span className="label-text">Статус покупки</span>
