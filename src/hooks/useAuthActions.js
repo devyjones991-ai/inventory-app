@@ -2,7 +2,7 @@ import { supabase } from '../supabaseClient'
 import { pushNotification } from '../utils/notifications'
 import { useState } from 'react'
 
-export function useAuth() {
+export function useAuthActions() {
   const [error, setError] = useState(null)
 
   const getSession = () => supabase.auth.getSession()

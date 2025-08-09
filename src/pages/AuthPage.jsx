@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useAuth } from '../hooks/useAuth'
+import { useAuthActions } from '../hooks/useAuthActions'
 import { useNavigate } from 'react-router-dom'
 
 export default function AuthPage() {
@@ -10,7 +10,7 @@ export default function AuthPage() {
   const [error, setError] = useState(null)
   const [info, setInfo] = useState(null)
   const navigate = useNavigate()
-  const { getSession, onAuthStateChange, signUp, signIn } = useAuth()
+  const { getSession, onAuthStateChange, signUp, signIn } = useAuthActions()
 
   const schema = z
     .object({
