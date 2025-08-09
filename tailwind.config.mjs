@@ -15,6 +15,10 @@ export default {
         body: '1rem',
         caption: '0.875rem',
       },
+      screens: {
+        xs: '320px',
+        sm2: '480px',
+      },
     },
   },
   plugins: [daisyui],
