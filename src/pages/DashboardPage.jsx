@@ -41,6 +41,12 @@ export default function DashboardPage() {
   const [fetchError, setFetchError] = useState(null)
   const navigate = useNavigate()
 
+  const isAdmin =
+    user?.app_metadata?.role === 'admin' ||
+    user?.user_metadata?.role === 'admin' ||
+    user?.app_metadata?.isAdmin ||
+    user?.user_metadata?.isAdmin
+
   const selectedRef = useRef(null)
   const tabRef = useRef('desc')
   const userRef = useRef(null)
@@ -147,9 +153,14 @@ export default function DashboardPage() {
       .select('*')
       .order('created_at', { ascending: true })
     if (error) {
-      if (error.status === 401 || error.status === 403) {
+      if (error.status === 401) {
         await supabase.auth.signOut()
         navigate('/auth')
+        return
+      }
+      if (error.status === 403) {
+        toast.error('Недостаточно прав')
+        setFetchError('Недостаточно прав')
         return
       }
       console.error('Ошибка загрузки объектов:', error)
@@ -182,7 +193,8 @@ export default function DashboardPage() {
         .select()
         .single()
       if (error) {
-        toast.error('Ошибка редактирования: ' + error.message)
+        if (error.status === 403) toast.error('Недостаточно прав')
+        else toast.error('Ошибка редактирования: ' + error.message)
       } else {
         setObjects((prev) =>
           prev.map((o) => (o.id === editingObject.id ? data : o)),
@@ -199,7 +211,8 @@ export default function DashboardPage() {
         .select()
         .single()
       if (error) {
-        toast.error('Ошибка добавления: ' + error.message)
+        if (error.status === 403) toast.error('Недостаточно прав')
+        else toast.error('Ошибка добавления: ' + error.message)
       } else {
         setObjects((prev) => [...prev, data])
         setSelected(data)
@@ -221,7 +234,8 @@ export default function DashboardPage() {
     const id = deleteCandidate
     const { error } = await supabase.from('objects').delete().eq('id', id)
     if (error) {
-      toast.error('Ошибка удаления: ' + error.message)
+      if (error.status === 403) toast.error('Недостаточно прав')
+      else toast.error('Ошибка удаления: ' + error.message)
     } else {
       setObjects((prev) => {
         const updated = prev.filter((o) => o.id !== id)
@@ -329,6 +343,7 @@ export default function DashboardPage() {
             onEdit={editObject}
             onDelete={askDelete}
             notifications={notifications}
+            isAdmin={isAdmin}
           />
         </aside>
         {isSidebarOpen && (
@@ -351,6 +366,7 @@ export default function DashboardPage() {
                 onEdit={editObject}
                 onDelete={askDelete}
                 notifications={notifications}
+                isAdmin={isAdmin}
               />
             </aside>
           </div>
@@ -364,16 +380,18 @@ export default function DashboardPage() {
               <button className="md:hidden text-2xl" onClick={toggleSidebar}>
                 ☰
               </button>
-              <button
-                className="btn btn-primary btn-sm flex items-center gap-1"
-                onClick={() => {
-                  setEditingObject(null)
-                  setObjectName('')
-                  setIsObjectModalOpen(true)
-                }}
-              >
-                <PlusIcon className="w-4 h-4" /> Добавить
-              </button>
+              {isAdmin && (
+                <button
+                  className="btn btn-primary btn-sm flex items-center gap-1"
+                  onClick={() => {
+                    setEditingObject(null)
+                    setObjectName('')
+                    setIsObjectModalOpen(true)
+                  }}
+                >
+                  <PlusIcon className="w-4 h-4" /> Добавить
+                </button>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -397,6 +415,7 @@ export default function DashboardPage() {
               selected={selected}
               onUpdateSelected={handleUpdateSelected}
               user={user}
+              isAdmin={isAdmin}
               onTabChange={handleTabChange}
             />
           </div>
