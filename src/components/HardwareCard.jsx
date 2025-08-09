@@ -1,9 +1,14 @@
 // src/components/HardwareCard.jsx
-import React from 'react';
-import Card from './Card';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import React from 'react'
+import Card from './Card'
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
-export default function HardwareCard({ item, onEdit, onDelete }) {
+export default function HardwareCard({
+  item,
+  onEdit,
+  onDelete,
+  isAdmin = false,
+}) {
   return (
     <Card className="flex justify-between items-center">
       <div>
@@ -14,16 +19,24 @@ export default function HardwareCard({ item, onEdit, onDelete }) {
           <span>Установка: {item.install_status}</span>
         </div>
       </div>
-      <div className="flex space-x-2">
-        <button onClick={onEdit} className="btn btn-sm btn-outline flex items-center gap-1">
-          <PencilIcon className="w-4 h-4" />
-          Изменить
-        </button>
-        <button onClick={onDelete} className="btn btn-sm btn-error flex items-center gap-1">
-          <TrashIcon className="w-4 h-4" />
-          Удалить
-        </button>
-      </div>
+      {isAdmin && (
+        <div className="flex space-x-2">
+          <button
+            onClick={onEdit}
+            className="btn btn-sm btn-outline flex items-center gap-1"
+          >
+            <PencilIcon className="w-4 h-4" />
+            Изменить
+          </button>
+          <button
+            onClick={onDelete}
+            className="btn btn-sm btn-error flex items-center gap-1"
+          >
+            <TrashIcon className="w-4 h-4" />
+            Удалить
+          </button>
+        </div>
+      )}
     </Card>
-  );
+  )
 }

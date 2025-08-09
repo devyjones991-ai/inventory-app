@@ -1,29 +1,38 @@
-import React from 'react';
-import Card from './Card';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import React from 'react'
+import Card from './Card'
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 /**
  * Format date string into locale friendly format.
  * Falls back to original value on parse errors.
  */
 function formatDate(dateStr) {
-  if (!dateStr) return '';
+  if (!dateStr) return ''
   try {
-    return new Date(dateStr).toLocaleDateString('ru-RU');
+    return new Date(dateStr).toLocaleDateString('ru-RU')
   } catch {
-    return dateStr;
+    return dateStr
   }
 }
 
-export default function TaskCard({ item, onEdit, onDelete, onView }) {
-  const badgeClass = {
-    'запланировано': 'badge-info',
-    'в процессе':    'badge-warning',
-    'завершено':     'badge-success'
-  }[item.status] || 'badge';
+export default function TaskCard({
+  item,
+  onEdit,
+  onDelete,
+  onView,
+  user = {},
+  isAdmin = false,
+}) {
+  const badgeClass =
+    {
+      запланировано: 'badge-info',
+      'в процессе': 'badge-warning',
+      завершено: 'badge-success',
+    }[item.status] || 'badge'
 
-  const assignee = item.assignee || item.executor;
-  const dueDate  = item.due_date || item.planned_date || item.plan_date;
+  const assignee = item.assignee || item.executor
+  const dueDate = item.due_date || item.planned_date || item.plan_date
+  const canManage = isAdmin || item.assignee === user?.id
 
   return (
     <Card
@@ -42,27 +51,31 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
       </div>
       <div className="flex items-center space-x-2">
         <span className={`badge ${badgeClass}`}>{item.status}</span>
-        <button
-          className="btn btn-sm btn-ghost"
-          title="Редактировать"
-          onClick={e => {
-            e.stopPropagation();
-            onEdit();
-          }}
-        >
-          <PencilIcon className="w-4 h-4" />
-        </button>
-        <button
-          className="btn btn-sm btn-ghost"
-          title="Удалить"
-          onClick={e => {
-            e.stopPropagation();
-            onDelete();
-          }}
-        >
-          <TrashIcon className="w-4 h-4" />
-        </button>
+        {canManage && (
+          <>
+            <button
+              className="btn btn-sm btn-ghost"
+              title="Редактировать"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
+            >
+              <PencilIcon className="w-4 h-4" />
+            </button>
+            <button
+              className="btn btn-sm btn-ghost"
+              title="Удалить"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
     </Card>
-  );
+  )
 }
