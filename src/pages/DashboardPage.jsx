@@ -6,6 +6,7 @@ import AccountModal from '../components/AccountModal'
 import ConfirmModal from '../components/ConfirmModal'
 import { toast } from 'react-hot-toast'
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
+import ThemeToggle from '../components/ThemeToggle'
 import {
   requestNotificationPermission,
   pushNotification,
@@ -154,7 +155,6 @@ export default function DashboardPage() {
       .select('*')
       .order('created_at', { ascending: true })
     if (error) {
-
       if (error.status === 401) {
         await supabase.auth.signOut()
         navigate('/auth')
@@ -199,13 +199,11 @@ export default function DashboardPage() {
         .select()
         .single()
       if (error) {
-
         if (error.status === 403) toast.error('Недостаточно прав')
         else toast.error('Ошибка редактирования: ' + error.message)
 
         await handleSupabaseError(error, navigate, 'Ошибка редактирования')
         return
-
       } else {
         setObjects((prev) =>
           prev.map((o) => (o.id === editingObject.id ? data : o)),
@@ -222,13 +220,11 @@ export default function DashboardPage() {
         .select()
         .single()
       if (error) {
-
         if (error.status === 403) toast.error('Недостаточно прав')
         else toast.error('Ошибка добавления: ' + error.message)
 
         await handleSupabaseError(error, navigate, 'Ошибка добавления')
         return
-
       } else {
         setObjects((prev) => [...prev, data])
         setSelected(data)
@@ -250,13 +246,11 @@ export default function DashboardPage() {
     const id = deleteCandidate
     const { error } = await supabase.from('objects').delete().eq('id', id)
     if (error) {
-
       if (error.status === 403) toast.error('Недостаточно прав')
       else toast.error('Ошибка удаления: ' + error.message)
 
       await handleSupabaseError(error, navigate, 'Ошибка удаления')
       return
-
     } else {
       setObjects((prev) => {
         const updated = prev.filter((o) => o.id !== id)
@@ -415,6 +409,7 @@ export default function DashboardPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <button
                 className="btn btn-sm"
                 onClick={() => setIsAccountModalOpen(true)}
