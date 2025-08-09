@@ -14,6 +14,7 @@ import {
 } from '../utils/notifications'
 import { Navigate, useNavigate } from 'react-router-dom'
 import Spinner from '../components/Spinner'
+import { handleSupabaseError } from '../utils/handleSupabaseError'
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'
@@ -153,6 +154,7 @@ export default function DashboardPage() {
       .select('*')
       .order('created_at', { ascending: true })
     if (error) {
+
       if (error.status === 401) {
         await supabase.auth.signOut()
         navigate('/auth')
@@ -165,7 +167,11 @@ export default function DashboardPage() {
       }
       console.error('Ошибка загрузки объектов:', error)
       toast.error('Ошибка загрузки объектов: ' + error.message)
+
+      await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')
+
       setFetchError('Ошибка загрузки объектов: ' + error.message)
+      return
     } else {
       setObjects(data)
       const savedId =
@@ -193,8 +199,13 @@ export default function DashboardPage() {
         .select()
         .single()
       if (error) {
+
         if (error.status === 403) toast.error('Недостаточно прав')
         else toast.error('Ошибка редактирования: ' + error.message)
+
+        await handleSupabaseError(error, navigate, 'Ошибка редактирования')
+        return
+
       } else {
         setObjects((prev) =>
           prev.map((o) => (o.id === editingObject.id ? data : o)),
@@ -211,8 +222,13 @@ export default function DashboardPage() {
         .select()
         .single()
       if (error) {
+
         if (error.status === 403) toast.error('Недостаточно прав')
         else toast.error('Ошибка добавления: ' + error.message)
+
+        await handleSupabaseError(error, navigate, 'Ошибка добавления')
+        return
+
       } else {
         setObjects((prev) => [...prev, data])
         setSelected(data)
@@ -234,8 +250,13 @@ export default function DashboardPage() {
     const id = deleteCandidate
     const { error } = await supabase.from('objects').delete().eq('id', id)
     if (error) {
+
       if (error.status === 403) toast.error('Недостаточно прав')
       else toast.error('Ошибка удаления: ' + error.message)
+
+      await handleSupabaseError(error, navigate, 'Ошибка удаления')
+      return
+
     } else {
       setObjects((prev) => {
         const updated = prev.filter((o) => o.id !== id)
