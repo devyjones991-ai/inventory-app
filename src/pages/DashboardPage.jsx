@@ -369,7 +369,7 @@ export default function DashboardPage() {
             />
             <aside className="relative z-20 w-72 bg-gray-50 p-4 shadow-lg overflow-y-auto">
               <button
-                className="btn btn-sm btn-circle absolute right-2 top-2"
+                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
                 onClick={toggleSidebar}
               >
                 ✕
@@ -390,14 +390,14 @@ export default function DashboardPage() {
         {/* Основная часть */}
         <div className="flex-1 flex flex-col">
           {/* Хэдер с одной фиолетовой кнопкой */}
-          <header className="flex items-center justify-between p-4 border-b bg-white">
+          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-white">
             <div className="flex items-center gap-2">
-              <button className="md:hidden text-2xl" onClick={toggleSidebar}>
+              <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰
               </button>
               {isAdmin && (
                 <button
-                  className="btn btn-primary btn-sm flex items-center gap-1"
+                  className="btn btn-primary btn-md md:btn-sm flex items-center gap-1"
                   onClick={() => {
                     setEditingObject(null)
                     setObjectName('')
@@ -411,13 +411,13 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <button
-                className="btn btn-sm"
+                className="btn btn-md md:btn-sm p-2 text-lg md:text-sm"
                 onClick={() => setIsAccountModalOpen(true)}
               >
                 {user.user_metadata?.username || 'Аккаунт'}
               </button>
               <button
-                className="btn btn-sm"
+                className="btn btn-md md:btn-sm p-2 text-lg md:text-sm"
                 onClick={() => supabase.auth.signOut()}
               >
                 Выйти
@@ -442,7 +442,7 @@ export default function DashboardPage() {
           <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="modal-box relative w-full max-w-md">
               <button
-                className="btn btn-sm btn-circle absolute right-2 top-2"
+                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
                 onClick={() => setIsObjectModalOpen(false)}
               >
                 ✕
