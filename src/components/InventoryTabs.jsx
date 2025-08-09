@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { supabase } from '../supabaseClient'
+import { handleSupabaseError } from '../utils/handleSupabaseError'
 import HardwareCard from './HardwareCard'
 import TaskCard from './TaskCard'
 import ChatTab from './ChatTab'
@@ -17,6 +18,7 @@ import { useHardware } from '../hooks/useHardware'
 import { useTasks } from '../hooks/useTasks'
 import { useChatMessages } from '../hooks/useChatMessages'
 import { useObjects } from '../hooks/useObjects'
+import { useNavigate } from 'react-router-dom'
 
 const TAB_KEY = (objectId) => `tab_${objectId}`
 const HW_MODAL_KEY = (objectId) => `hwModal_${objectId}`
@@ -41,6 +43,7 @@ export default function InventoryTabs({
   user,
   onTabChange = () => {},
 }) {
+  const navigate = useNavigate()
   // --- вкладки и описание ---
   const [tab, setTab] = useState('desc')
   const [description, setDescription] = useState('')
@@ -331,7 +334,9 @@ export default function InventoryTabs({
       .range(from, to)
     if (error) {
       setHardwareError(error)
-      toast.error('Ошибка загрузки оборудования: ' + error.message)
+      await handleSupabaseError(error, navigate, 'Ошибка загрузки оборудования')
+      setLoadingHW(false)
+      return
     } else {
       setHardware((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -371,8 +376,10 @@ export default function InventoryTabs({
     } else {
       res = await insertHardware(payload)
     }
-    if (res.error)
-      return toast.error('Ошибка оборудования: ' + res.error.message)
+    if (res.error) {
+      await handleSupabaseError(res.error, navigate, 'Ошибка оборудования')
+      return
+    }
     const rec = res.data
     setHardware((prev) =>
       editingHW ? prev.map((h) => (h.id === rec.id ? rec : h)) : [...prev, rec],
@@ -387,7 +394,10 @@ export default function InventoryTabs({
   async function confirmDeleteHardware() {
     const id = hwDeleteId
     const { error } = await deleteHardware(id)
-    if (error) return toast.error('Ошибка удаления: ' + error.message)
+    if (error) {
+      await handleSupabaseError(error, navigate, 'Ошибка удаления')
+      return
+    }
     setHardware((prev) => prev.filter((h) => h.id !== id))
     setHwDeleteId(null)
   }
@@ -408,7 +418,9 @@ export default function InventoryTabs({
       .range(from, to)
     if (error) {
       setTasksError(error)
-      toast.error('Ошибка загрузки задач: ' + error.message)
+      await handleSupabaseError(error, navigate, 'Ошибка загрузки задач')
+      setLoadingTasks(false)
+      return
     } else {
       setTasks((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -460,7 +472,10 @@ export default function InventoryTabs({
     } else {
       res = await insertTask(payload)
     }
-    if (res.error) return toast.error('Ошибка задач: ' + res.error.message)
+    if (res.error) {
+      await handleSupabaseError(res.error, navigate, 'Ошибка задач')
+      return
+    }
     const rec = res.data
     setTasks((prev) =>
       editingTask
@@ -478,7 +493,10 @@ export default function InventoryTabs({
   async function confirmDeleteTask() {
     const id = taskDeleteId
     const { error } = await deleteTask(id)
-    if (error) return toast.error('Ошибка удаления: ' + error.message)
+    if (error) {
+      await handleSupabaseError(error, navigate, 'Ошибка удаления')
+      return
+    }
     setTasks((prev) => prev.filter((t) => t.id !== id))
     setTaskDeleteId(null)
   }

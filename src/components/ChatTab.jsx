@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
+import { handleSupabaseError } from '../utils/handleSupabaseError'
 
 export default function ChatTab({ selected }) {
   const [messages, setMessages] = useState([])
@@ -25,7 +26,7 @@ export default function ChatTab({ selected }) {
       .order('created_at', { ascending: true })
 
     if (error) {
-      console.error('loadMessages error:', error)
+      await handleSupabaseError(error, null, 'Ошибка загрузки сообщений')
       return
     }
     setMessages(data || [])
@@ -108,7 +109,7 @@ export default function ChatTab({ selected }) {
       ])
 
     if (error) {
-      console.error('send error:', error)
+      await handleSupabaseError(error, null, 'Ошибка отправки')
       // откатываем оптимистичную запись
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id))
     }
