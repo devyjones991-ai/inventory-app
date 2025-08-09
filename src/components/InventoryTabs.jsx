@@ -714,7 +714,7 @@ export default function InventoryTabs({
                         </p>
                       )}
                     </div>
-                    <div className="flex space-x-4">
+                    <div className="flex flex-col sm2:flex-row sm2:space-x-4 space-y-4 sm2:space-y-0">
                       <div className="form-control flex-1">
                         <label className="label">
                           <span className="label-text">Статус покупки</span>
