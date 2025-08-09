@@ -41,6 +41,7 @@ export default function InventoryTabs({
   selected,
   onUpdateSelected,
   user,
+  isAdmin = false,
   onTabChange = () => {},
 }) {
   const navigate = useNavigate()
@@ -222,8 +223,10 @@ export default function InventoryTabs({
     fetchHardware(selected.id, 0)
     fetchTasks(selected.id, 0)
     fetchMessages(selected.id).then(({ data, error }) => {
-      if (error) toast.error('Ошибка загрузки сообщений: ' + error.message)
-      else setChatMessages(data || [])
+      if (error) {
+        if (error.status === 403) toast.error('Недостаточно прав')
+        else toast.error('Ошибка загрузки сообщений: ' + error.message)
+      } else setChatMessages(data || [])
     })
   }, [selected])
 
@@ -315,7 +318,10 @@ export default function InventoryTabs({
     if (!error) {
       onUpdateSelected({ ...selected, description: data.description })
       setIsEditingDesc(false)
-    } else toast.error('Ошибка сохранения описания: ' + error.message)
+    } else {
+      if (error.status === 403) toast.error('Недостаточно прав')
+      else toast.error('Ошибка сохранения описания: ' + error.message)
+    }
   }
 
   // --- CRUD Оборудование ---
@@ -334,9 +340,14 @@ export default function InventoryTabs({
       .range(from, to)
     if (error) {
       setHardwareError(error)
+
+      if (error.status === 403) toast.error('Недостаточно прав')
+      else toast.error('Ошибка загрузки оборудования: ' + error.message)
+
       await handleSupabaseError(error, navigate, 'Ошибка загрузки оборудования')
       setLoadingHW(false)
       return
+
     } else {
       setHardware((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -346,9 +357,10 @@ export default function InventoryTabs({
       }
     }
     const { data: apiData, error: apiError } = await fetchHardwareApi(objectId)
-    if (apiError)
-      toast.error('Ошибка загрузки оборудования: ' + apiError.message)
-    else setHardware(apiData || [])
+    if (apiError) {
+      if (apiError.status === 403) toast.error('Недостаточно прав')
+      else toast.error('Ошибка загрузки оборудования: ' + apiError.message)
+    } else setHardware(apiData || [])
 
     setLoadingHW(false)
   }
@@ -376,10 +388,17 @@ export default function InventoryTabs({
     } else {
       res = await insertHardware(payload)
     }
+
+    if (res.error)
+      return res.error.status === 403
+        ? toast.error('Недостаточно прав')
+        : toast.error('Ошибка оборудования: ' + res.error.message)
+
     if (res.error) {
       await handleSupabaseError(res.error, navigate, 'Ошибка оборудования')
       return
     }
+
     const rec = res.data
     setHardware((prev) =>
       editingHW ? prev.map((h) => (h.id === rec.id ? rec : h)) : [...prev, rec],
@@ -394,10 +413,17 @@ export default function InventoryTabs({
   async function confirmDeleteHardware() {
     const id = hwDeleteId
     const { error } = await deleteHardware(id)
+
+    if (error)
+      return error.status === 403
+        ? toast.error('Недостаточно прав')
+        : toast.error('Ошибка удаления: ' + error.message)
+
     if (error) {
       await handleSupabaseError(error, navigate, 'Ошибка удаления')
       return
     }
+
     setHardware((prev) => prev.filter((h) => h.id !== id))
     setHwDeleteId(null)
   }
@@ -418,9 +444,14 @@ export default function InventoryTabs({
       .range(from, to)
     if (error) {
       setTasksError(error)
+
+      if (error.status === 403) toast.error('Недостаточно прав')
+      else toast.error('Ошибка загрузки задач: ' + error.message)
+
       await handleSupabaseError(error, navigate, 'Ошибка загрузки задач')
       setLoadingTasks(false)
       return
+
     } else {
       setTasks((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -430,8 +461,10 @@ export default function InventoryTabs({
       }
     }
     const { data: apiData, error: apiError } = await fetchTasksApi(objectId)
-    if (apiError) toast.error('Ошибка загрузки задач: ' + apiError.message)
-    else setTasks(apiData || [])
+    if (apiError) {
+      if (apiError.status === 403) toast.error('Недостаточно прав')
+      else toast.error('Ошибка загрузки задач: ' + apiError.message)
+    } else setTasks(apiData || [])
     setLoadingTasks(false)
   }
 
@@ -472,10 +505,17 @@ export default function InventoryTabs({
     } else {
       res = await insertTask(payload)
     }
+
+    if (res.error)
+      return res.error.status === 403
+        ? toast.error('Недостаточно прав')
+        : toast.error('Ошибка задач: ' + res.error.message)
+
     if (res.error) {
       await handleSupabaseError(res.error, navigate, 'Ошибка задач')
       return
     }
+
     const rec = res.data
     setTasks((prev) =>
       editingTask
@@ -493,10 +533,17 @@ export default function InventoryTabs({
   async function confirmDeleteTask() {
     const id = taskDeleteId
     const { error } = await deleteTask(id)
+
+    if (error)
+      return error.status === 403
+        ? toast.error('Недостаточно прав')
+        : toast.error('Ошибка удаления: ' + error.message)
+
     if (error) {
       await handleSupabaseError(error, navigate, 'Ошибка удаления')
       return
     }
+
     setTasks((prev) => prev.filter((t) => t.id !== id))
     setTaskDeleteId(null)
   }
@@ -585,12 +632,14 @@ export default function InventoryTabs({
           <div>
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Оборудование</h3>
-              <button
-                className="btn btn-sm btn-primary flex items-center gap-1"
-                onClick={() => openHWModal()}
-              >
-                <PlusIcon className="w-4 h-4" /> Добавить
-              </button>
+              {isAdmin && (
+                <button
+                  className="btn btn-sm btn-primary flex items-center gap-1"
+                  onClick={() => openHWModal()}
+                >
+                  <PlusIcon className="w-4 h-4" /> Добавить
+                </button>
+              )}
             </div>
             {loadingHW && <Spinner />}
             {hardwareError && (
@@ -607,6 +656,7 @@ export default function InventoryTabs({
                     item={h}
                     onEdit={() => openHWModal(h)}
                     onDelete={() => askDeleteHardware(h.id)}
+                    isAdmin={isAdmin}
                   />
                 ))}
               </div>
@@ -736,12 +786,14 @@ export default function InventoryTabs({
           <div>
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Задачи</h3>
-              <button
-                className="btn btn-sm btn-primary flex items-center gap-1"
-                onClick={() => openTaskModal()}
-              >
-                <PlusIcon className="w-4 h-4" /> Добавить задачу
-              </button>
+              {isAdmin && (
+                <button
+                  className="btn btn-sm btn-primary flex items-center gap-1"
+                  onClick={() => openTaskModal()}
+                >
+                  <PlusIcon className="w-4 h-4" /> Добавить задачу
+                </button>
+              )}
             </div>
             {loadingTasks && <Spinner />}
             {tasksError && (
@@ -759,6 +811,8 @@ export default function InventoryTabs({
                     onView={() => openTaskView(t)}
                     onEdit={() => openTaskModal(t)}
                     onDelete={() => askDeleteTask(t.id)}
+                    user={user}
+                    isAdmin={isAdmin}
                   />
                 ))}
               </div>

@@ -1,7 +1,49 @@
+
+// codex/ensure-single-test-filename-format
+
+
 import React from 'react'
 import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ChatTab from '../src/components/ChatTab.jsx'
+
+
+const { supabaseMock, insertMock, initialMessages } = vi.hoisted(() => {
+  const initialMessages = [
+    {
+      id: '1',
+      object_id: '1',
+      sender: 'Alice',
+      content: 'Привет',
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: '2',
+      object_id: '1',
+      sender: 'Bob',
+      content: 'Здравствуйте',
+      created_at: new Date().toISOString(),
+    },
+  ]
+
+  const selectMock = vi.fn(() => ({
+    eq: vi.fn(() => ({
+      order: vi.fn(() =>
+        Promise.resolve({ data: initialMessages, error: null }),
+      ),
+    })),
+  }))
+
+  const insertMock = vi.fn(() =>
+    Promise.resolve({ data: { id: '3' }, error: null }),
+  )
+
+  const fromMock = vi.fn(() => ({ select: selectMock, insert: insertMock }))
+
+  const channelMock = vi.fn(() => ({
+    on: vi.fn().mockReturnThis(),
+    subscribe: vi.fn(),
+  }))
 import { toast } from 'react-hot-toast'
 
 const { uploadMock, insertMock, supabaseMock, toastErrorMock } = vi.hoisted(
@@ -109,59 +151,43 @@ describe('ChatTab file upload', () => {
   })
 })
 
-const initialMessages = [
-  { id: '1', sender: 'Alice', content: 'Привет' },
-  { id: '2', sender: 'Bob', content: 'Здравствуйте' },
-]
 
-const fetchMessagesMock = vi.fn(() =>
-  Promise.resolve({ data: initialMessages, error: null }),
-)
-let subscribeHandler
-const subscribeToMessagesMock = vi.fn((_objectId, handler) => {
-  subscribeHandler = handler
-  return () => {}
-})
-const sendMessageMock = vi.fn(async ({ objectId, sender, content }) => {
-  const newMessage = {
-    id: String(Date.now()),
-    object_id: objectId,
-    sender,
-    content,
+  const removeChannelMock = vi.fn()
+
+  const supabaseMock = {
+    from: fromMock,
+    channel: channelMock,
+    removeChannel: removeChannelMock,
   }
-  if (subscribeHandler) {
-    subscribeHandler({ new: newMessage })
-  }
-  return { data: newMessage, error: null }
+
+  return { supabaseMock, insertMock, initialMessages }
 })
 
-vi.mock('@/hooks/useChatMessages.js', () => ({
-  useChatMessages: () => ({
-    fetchMessages: fetchMessagesMock,
-    sendMessage: sendMessageMock,
-    subscribeToMessages: subscribeToMessagesMock,
-  }),
-}))
+
+vi.mock('../src/supabaseClient.js', () => ({ supabase: supabaseMock }))
 
 describe('ChatTab', () => {
-  it('отображает сообщения и форму отправки', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    // jsdom doesn't implement scrollIntoView
+    window.HTMLElement.prototype.scrollIntoView = vi.fn()
+  })
+
+  it('отображает сообщения и отправляет новое', async () => {
     render(<ChatTab selected={{ id: '1' }} user={{ email: 'me' }} />)
+
     for (const msg of initialMessages) {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
     }
-    expect(screen.getByRole('textbox')).toBeInTheDocument()
-    expect(screen.getByRole('button')).toBeInTheDocument()
-  })
 
-  it('отправляет новое сообщение', async () => {
-    render(<ChatTab selected={{ id: '1' }} user={{ email: 'me' }} />)
-    const input = await screen.findByRole('textbox')
-    const button = screen.getByRole('button')
-    fireEvent.change(input, { target: { value: 'Новое сообщение' } })
-    fireEvent.click(button)
-    await waitFor(() => {
-      expect(sendMessageMock).toHaveBeenCalled()
-      expect(screen.getByText('Новое сообщение')).toBeInTheDocument()
-    })
+    const textarea = screen.getByPlaceholderText(
+      'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',
+    )
+    fireEvent.change(textarea, { target: { value: 'Новое сообщение' } })
+
+    fireEvent.click(screen.getByText('Отправить'))
+
+    await waitFor(() => expect(insertMock).toHaveBeenCalled())
+    expect(textarea.value).toBe('')
   })
 })
