@@ -5,7 +5,7 @@ import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import MissingEnvPage from './pages/MissingEnvPage'
 import { isSupabaseConfigured } from './supabaseClient'
-import AdminRoute from './components/AdminRoute'
+import PrivateRoute from './components/PrivateRoute'
 
 export default function App() {
   if (!isSupabaseConfigured) {
@@ -20,9 +20,9 @@ export default function App() {
         <Route
           path="/*"
           element={
-            <AdminRoute>
+            <PrivateRoute>
               <DashboardPage />
-            </AdminRoute>
+            </PrivateRoute>
           }
         />
       </Routes>
