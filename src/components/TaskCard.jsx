@@ -36,7 +36,7 @@ export default function TaskCard({
 
   return (
     <Card
-      className="flex justify-between items-center cursor-pointer hover:bg-base-200 transition animate-fade-in"
+      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-base-200 transition animate-fade-in"
       onClick={onView}
     >
       <div className="flex-1">
@@ -49,12 +49,12 @@ export default function TaskCard({
           </p>
         )}
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-col xs:flex-row md:flex-row items-center gap-2 mt-2 xs:mt-0">
         <span className={`badge ${badgeClass}`}>{item.status}</span>
         {canManage && (
           <>
             <button
-              className="btn btn-sm btn-ghost"
+              className="btn btn-sm btn-ghost xs:w-full"
               title="Редактировать"
               onClick={(e) => {
                 e.stopPropagation()
@@ -64,7 +64,7 @@ export default function TaskCard({
               <PencilIcon className="w-4 h-4" />
             </button>
             <button
-              className="btn btn-sm btn-ghost"
+              className="btn btn-sm btn-ghost xs:w-full"
               title="Удалить"
               onClick={(e) => {
                 e.stopPropagation()
