@@ -347,7 +347,6 @@ export default function InventoryTabs({
       await handleSupabaseError(error, navigate, 'Ошибка загрузки оборудования')
       setLoadingHW(false)
       return
-
     } else {
       setHardware((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -451,7 +450,6 @@ export default function InventoryTabs({
       await handleSupabaseError(error, navigate, 'Ошибка загрузки задач')
       setLoadingTasks(false)
       return
-
     } else {
       setTasks((prev) => [...prev, ...(data || [])])
       if (!data || data.length < PAGE_SIZE) {
@@ -672,9 +670,9 @@ export default function InventoryTabs({
 
             {isHWModalOpen && (
               <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="modal-box relative w-full max-w-md animate-fade-in">
+                <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
                   <button
-                    className="btn btn-sm btn-circle absolute right-2 top-2"
+                    className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
                     onClick={() => setIsHWModalOpen(false)}
                   >
                     ✕
@@ -828,9 +826,9 @@ export default function InventoryTabs({
 
             {isTaskModalOpen && (
               <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="modal-box relative w-full max-w-md animate-fade-in">
+                <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
                   <button
-                    className="btn btn-sm btn-circle absolute right-2 top-2"
+                    className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
                     onClick={() => setIsTaskModalOpen(false)}
                   >
                     ✕
@@ -942,9 +940,9 @@ export default function InventoryTabs({
 
             {viewingTask && (
               <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="modal-box relative w-full max-w-md animate-fade-in">
+                <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
                   <button
-                    className="btn btn-sm btn-circle absolute right-2 top-2"
+                    className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
                     onClick={() => setViewingTask(null)}
                   >
                     ✕
