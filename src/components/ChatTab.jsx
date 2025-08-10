@@ -50,6 +50,16 @@ export default function ChatTab({ selected, userEmail }) {
     setMessages(data || [])
   }, [objectId])
 
+  const markMessagesAsRead = useCallback(async () => {
+    if (!objectId) return
+    await supabase
+      .from('chat_messages')
+      .update({ read_at: new Date().toISOString() })
+      .is('read_at', null)
+      .eq('object_id', objectId)
+      .neq('sender', 'me')
+  }, [objectId])
+
   // Инициализация: загрузка + подписка на realtime
   useEffect(() => {
     // очистка старого канала при смене объекта
@@ -104,6 +114,10 @@ export default function ChatTab({ selected, userEmail }) {
       }
     }
   }, [objectId, loadMessages])
+
+  useEffect(() => {
+    markMessagesAsRead()
+  }, [messages, markMessagesAsRead])
 
   const handleSend = async () => {
     if (!objectId || (!newMessage.trim() && !file) || sending) return
@@ -189,6 +203,7 @@ export default function ChatTab({ selected, userEmail }) {
               </div>
               <div className="chat-footer opacity-50 text-xs">
                 {new Date(m.created_at).toLocaleString()}
+                {m.read_at ? ' ✓' : ''}
                 {m._optimistic ? ' • отправка…' : ''}
 
           messages.map((m) => {
