@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
+import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { useChatMessages } from '../hooks/useChatMessages.js'
 
@@ -214,7 +215,11 @@ export default function ChatTab({ selected, userEmail }) {
                       : 'bg-base-100 text-base-content'
                   }`}
                 >
-                  {m.content && <span>{m.content}</span>}
+                  {m.content && (
+                    <span className="whitespace-pre-wrap break-words">
+                      {linkifyText(m.content)}
+                    </span>
+                  )}
                   {m.file_url && (
                     <div className="mt-2">
                       <AttachmentPreview url={m.file_url} />

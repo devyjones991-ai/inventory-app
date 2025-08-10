@@ -1,5 +1,6 @@
 import React from 'react'
 import Card from './Card'
+import { linkifyText } from '../utils/linkify.jsx'
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -18,7 +19,9 @@ export default function ChatCard({ message }) {
         {message.created_at && ` • ${formatDate(message.created_at)}`}
       </div>
       {message.content && (
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words">
+          {linkifyText(message.content)}
+        </p>
       )}
       {message.file_url && (
         <a
