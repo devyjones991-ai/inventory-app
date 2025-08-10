@@ -88,7 +88,6 @@ describe('ChatTab', () => {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
     }
 
-
     const firstFooter = (await screen.findByText(initialMessages[0].content))
       .closest('.chat')
       .querySelector('.text-xs')
@@ -105,7 +104,6 @@ describe('ChatTab', () => {
     const otherBubble = await screen.findByText('Здравствуйте')
     expect(otherBubble.closest('.chat')).toHaveClass('chat-start')
 
-
     const textarea = screen.getByPlaceholderText(
       'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',
     )
@@ -119,11 +117,7 @@ describe('ChatTab', () => {
 
   it('отправляет файл с указанием e-mail отправителя', async () => {
     const { container } = render(
-
-      <ChatTab selected={{ id: '1' }} userEmail="me" />,
-
       <ChatTab selected={{ id: '1' }} userEmail="me@example.com" />,
-
     )
 
     const fileInput = container.querySelector('input[type="file"]')
