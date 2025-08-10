@@ -77,7 +77,11 @@ export default function AuthPage() {
   }, [navigate])
 
   return (
+
     <div className="flex items-center justify-center h-screen bg-base-200 transition-colors">
+
+    <div className="flex w-full min-h-screen items-center justify-center bg-base-100">
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="bg-base-100 p-6 rounded shadow w-full max-w-sm space-y-4 transition-colors"
