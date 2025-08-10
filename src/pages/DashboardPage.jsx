@@ -367,13 +367,13 @@ export default function DashboardPage() {
               className="fixed inset-0 bg-black bg-opacity-50"
               onClick={toggleSidebar}
             />
+            <button
+              className="btn btn-circle btn-md md:btn-sm absolute right-4 top-4 z-20"
+              onClick={toggleSidebar}
+            >
+              ✕
+            </button>
             <aside className="relative z-20 w-72 bg-gray-50 p-4 shadow-lg overflow-y-auto">
-              <button
-                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
-                onClick={toggleSidebar}
-              >
-                ✕
-              </button>
               <InventorySidebar
                 objects={objects}
                 selected={selected}
