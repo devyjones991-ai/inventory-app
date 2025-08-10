@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export default function ConfirmModal({
   open,
@@ -10,7 +10,7 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }) {
-  if (!open) return null;
+  if (!open) return null
   return (
     <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="modal-box relative w-full max-w-sm">
@@ -26,5 +26,5 @@ export default function ConfirmModal({
         </div>
       </div>
     </div>
-  );
+  )
 }

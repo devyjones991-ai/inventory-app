@@ -1,28 +1,23 @@
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabaseClient'
 
 export function useObjects() {
   const fetchObjects = () =>
     supabase
       .from('objects')
       .select('*')
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
 
-  const insertObject = name =>
+  const insertObject = (name) =>
     supabase
       .from('objects')
       .insert([{ name, description: '' }])
       .select()
-      .single();
+      .single()
 
   const updateObject = (id, data) =>
-    supabase
-      .from('objects')
-      .update(data)
-      .eq('id', id)
-      .select()
-      .single();
+    supabase.from('objects').update(data).eq('id', id).select().single()
 
-  const deleteObject = id => supabase.from('objects').delete().eq('id', id);
+  const deleteObject = (id) => supabase.from('objects').delete().eq('id', id)
 
-  return { fetchObjects, insertObject, updateObject, deleteObject };
+  return { fetchObjects, insertObject, updateObject, deleteObject }
 }
