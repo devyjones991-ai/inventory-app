@@ -1,13 +1,19 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
+import AttachmentPreview from './AttachmentPreview.jsx'
+import { useChatMessages } from '../hooks/useChatMessages.js'
 
-export default function ChatTab({ selected }) {
+export default function ChatTab({ selected, userEmail }) {
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
+  const [file, setFile] = useState(null)
+  const [filePreview, setFilePreview] = useState(null)
   const scrollRef = useRef(null)
   const channelRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const { sendMessage } = useChatMessages()
 
   const objectId = selected?.id || null
 
@@ -16,6 +22,18 @@ export default function ChatTab({ selected }) {
     if (!scrollRef.current) return
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
+
+  useEffect(() => {
+    if (!file) {
+      setFilePreview(null)
+      return
+    }
+    if (typeof URL.createObjectURL === 'function') {
+      const url = URL.createObjectURL(file)
+      setFilePreview(url)
+      return () => URL.revokeObjectURL && URL.revokeObjectURL(url)
+    }
+  }, [file])
 
   const loadMessages = useCallback(async () => {
     if (!objectId) return
@@ -30,6 +48,16 @@ export default function ChatTab({ selected }) {
       return
     }
     setMessages(data || [])
+  }, [objectId])
+
+  const markMessagesAsRead = useCallback(async () => {
+    if (!objectId) return
+    await supabase
+      .from('chat_messages')
+      .update({ read_at: new Date().toISOString() })
+      .is('read_at', null)
+      .eq('object_id', objectId)
+      .neq('sender', 'me')
   }, [objectId])
 
   // Инициализация: загрузка + подписка на realtime
@@ -87,14 +115,35 @@ export default function ChatTab({ selected }) {
     }
   }, [objectId, loadMessages])
 
+  useEffect(() => {
+    markMessagesAsRead()
+  }, [messages, markMessagesAsRead])
+
   const handleSend = async () => {
-    if (!objectId || !newMessage.trim() || sending) return
+    if (!objectId || (!newMessage.trim() && !file) || sending) return
     setSending(true)
+
+    if (file) {
+      const { error } = await sendMessage({
+        objectId,
+        sender: 'me',
+        content: newMessage.trim(),
+        file,
+      })
+      if (error) {
+        await handleSupabaseError(error, null, 'Ошибка отправки')
+      }
+      setFile(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      setNewMessage('')
+      setSending(false)
+      return
+    }
 
     const optimistic = {
       id: `tmp-${Date.now()}`,
       object_id: objectId,
-      sender: 'me',
+      sender: userEmail,
       content: newMessage.trim(),
       file_url: null,
       created_at: new Date().toISOString(),
@@ -105,7 +154,7 @@ export default function ChatTab({ selected }) {
     const { error } = await supabase
       .from('chat_messages')
       .insert([
-        { object_id: objectId, sender: 'me', content: newMessage.trim() },
+        { object_id: objectId, sender: userEmail, content: newMessage.trim() },
       ])
 
     if (error) {
@@ -143,6 +192,7 @@ export default function ChatTab({ selected }) {
             Сообщений пока нет — напиши первым.
           </div>
         ) : (
+
           messages.map((m) => {
             const isMe = m.sender === 'me'
             const time = new Date(m.created_at).toLocaleTimeString([], {
@@ -170,6 +220,45 @@ export default function ChatTab({ selected }) {
                     {m._optimistic ? ' • отправка…' : ''}
                   </span>
                 </div>
+
+
+          messages.map((m) => (
+            <div key={m.id} className="chat chat-start">
+              <div className="chat-header">{m.sender || 'user'}</div>
+              <div className="chat-bubble whitespace-pre-wrap">
+                {m.content}
+                {m.file_url && (
+                  <div className="mt-2">
+                    <AttachmentPreview url={m.file_url} />
+                  </div>
+                )}
+              </div>
+              <div className="chat-footer opacity-50 text-xs">
+                {new Date(m.created_at).toLocaleString()}
+                {m.read_at ? ' ✓' : ''}
+                {m._optimistic ? ' • отправка…' : ''}
+
+          messages.map((m) => {
+            const isOwn = m.sender === userEmail
+            return (
+              <div
+                key={m.id}
+                className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
+              >
+                <div className="chat-header">{m.sender || 'user'}</div>
+                <div
+                  className={`chat-bubble whitespace-pre-wrap ${
+                    isOwn ? 'chat-bubble-primary' : ''
+                  }`}
+                >
+                  {m.content}
+                </div>
+                <div className="chat-footer opacity-50 text-xs">
+                  {new Date(m.created_at).toLocaleString()}
+                  {m._optimistic ? ' • отправка…' : ''}
+                </div>
+
+
               </div>
             )
           })
@@ -177,17 +266,34 @@ export default function ChatTab({ selected }) {
       </div>
 
       <div className="p-3 border-t space-y-2">
-        <textarea
-          className="textarea textarea-bordered w-full min-h-24"
-          placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+        {file && filePreview && <AttachmentPreview url={filePreview} />}
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="chat-file-input"
+            className="btn btn-ghost"
+            data-testid="file-label"
+          >
+            📎
+          </label>
+          <input
+            id="chat-file-input"
+            type="file"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+          <textarea
+            className="textarea textarea-bordered w-full min-h-24"
+            placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
         <div className="flex justify-end">
           <button
             className="btn btn-primary"
-            disabled={sending || !newMessage.trim()}
+            disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
             {sending ? 'Отправка…' : 'Отправить'}
