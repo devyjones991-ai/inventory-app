@@ -30,6 +30,19 @@ Inventory App — приложение на React, которое помогае
 6. Старт разработки: `npm run dev`.
 7. Запуск тестов: `npm test`.
 
+### Создание таблицы `profiles`
+
+Таблица `profiles` хранит роли пользователей. Создайте её заранее, если выполняете миграции вручную:
+
+```sql
+create table public.profiles (
+  id uuid references auth.users(id) primary key,
+  role text default 'user'
+);
+```
+
+Без этой таблицы команда `update profiles` из следующего раздела не выполнится.
+
 ### Назначение администраторских прав
 
 1. Авторизуйтесь в Supabase через CLI или веб‑интерфейс.
