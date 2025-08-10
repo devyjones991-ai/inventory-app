@@ -41,7 +41,6 @@ function formatDate(dateStr) {
 export default function InventoryTabs({
   selected,
   onUpdateSelected,
-  isAdmin = false,
   onTabChange = () => {},
 }) {
   const navigate = useNavigate()
@@ -791,7 +790,7 @@ export default function InventoryTabs({
           <div>
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Задачи</h3>
-              {isAdmin && (
+              {user && (
                 <button
                   className="btn btn-sm btn-primary flex items-center gap-1"
                   onClick={() => openTaskModal()}
@@ -817,7 +816,6 @@ export default function InventoryTabs({
                     onEdit={() => openTaskModal(t)}
                     onDelete={() => askDeleteTask(t.id)}
                     user={user}
-                    isAdmin={isAdmin}
                   />
                 ))}
               </div>

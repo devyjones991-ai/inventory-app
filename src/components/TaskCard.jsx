@@ -21,7 +21,6 @@ export default function TaskCard({
   onDelete,
   onView,
   user = {},
-  isAdmin = false,
 }) {
   const badgeClass =
     {
@@ -32,10 +31,7 @@ export default function TaskCard({
 
   const assignee = item.assignee || item.executor
   const dueDate = item.due_date || item.planned_date || item.plan_date
-  const canManage =
-    isAdmin ||
-    item.assignee_id === user?.id ||
-    item.assignee === user?.user_metadata?.username
+  const canManage = !!user?.id
 
   return (
     <Card
