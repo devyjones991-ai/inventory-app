@@ -18,6 +18,7 @@ import { useHardware } from '../hooks/useHardware'
 import { useTasks } from '../hooks/useTasks'
 import { useChatMessages } from '../hooks/useChatMessages'
 import { useObjects } from '../hooks/useObjects'
+import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 
 const TAB_KEY = (objectId) => `tab_${objectId}`
@@ -40,11 +41,11 @@ function formatDate(dateStr) {
 export default function InventoryTabs({
   selected,
   onUpdateSelected,
-  user,
   isAdmin = false,
   onTabChange = () => {},
 }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   // --- вкладки и описание ---
   const [tab, setTab] = useState('desc')
   const [description, setDescription] = useState('')
@@ -1002,7 +1003,11 @@ export default function InventoryTabs({
 
         {/* Чат */}
         {tab === 'chat' && (
-          <ChatTab key={selected?.id} selected={selected} user={user} />
+          <ChatTab
+            key={selected?.id}
+            selected={selected}
+            userEmail={user?.email}
+          />
         )}
       </div>
     </div>

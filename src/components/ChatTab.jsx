@@ -4,7 +4,7 @@ import { handleSupabaseError } from '../utils/handleSupabaseError'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { useChatMessages } from '../hooks/useChatMessages.js'
 
-export default function ChatTab({ selected }) {
+export default function ChatTab({ selected, userEmail }) {
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -129,7 +129,7 @@ export default function ChatTab({ selected }) {
     const optimistic = {
       id: `tmp-${Date.now()}`,
       object_id: objectId,
-      sender: 'me',
+      sender: userEmail,
       content: newMessage.trim(),
       file_url: null,
       created_at: new Date().toISOString(),
@@ -140,7 +140,7 @@ export default function ChatTab({ selected }) {
     const { error } = await supabase
       .from('chat_messages')
       .insert([
-        { object_id: objectId, sender: 'me', content: newMessage.trim() },
+        { object_id: objectId, sender: userEmail, content: newMessage.trim() },
       ])
 
     if (error) {
@@ -175,6 +175,7 @@ export default function ChatTab({ selected }) {
             Сообщений пока нет — напиши первым.
           </div>
         ) : (
+
           messages.map((m) => (
             <div key={m.id} className="chat chat-start">
               <div className="chat-header">{m.sender || 'user'}</div>
@@ -189,9 +190,30 @@ export default function ChatTab({ selected }) {
               <div className="chat-footer opacity-50 text-xs">
                 {new Date(m.created_at).toLocaleString()}
                 {m._optimistic ? ' • отправка…' : ''}
+
+          messages.map((m) => {
+            const isOwn = m.sender === userEmail
+            return (
+              <div
+                key={m.id}
+                className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
+              >
+                <div className="chat-header">{m.sender || 'user'}</div>
+                <div
+                  className={`chat-bubble whitespace-pre-wrap ${
+                    isOwn ? 'chat-bubble-primary' : ''
+                  }`}
+                >
+                  {m.content}
+                </div>
+                <div className="chat-footer opacity-50 text-xs">
+                  {new Date(m.created_at).toLocaleString()}
+                  {m._optimistic ? ' • отправка…' : ''}
+                </div>
+
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
