@@ -30,18 +30,20 @@ Inventory App — приложение на React, которое помогае
 6. Старт разработки: `npm run dev`.
 7. Запуск тестов: `npm test`.
 
-### Создание таблицы `profiles`
+### Применение миграции `profiles`
 
-Таблица `profiles` хранит роли пользователей. Создайте её заранее, если выполняете миграции вручную:
+Файл `supabase/migrations/*_create_profiles_table.sql` создаёт таблицу `profiles`,
+функцию `handle_new_user()` и триггер для автоматического добавления записей.
+Чтобы применить миграцию:
 
-```sql
-create table public.profiles (
-  id uuid references auth.users(id) primary key,
-  role text default 'user'
-);
-```
+1. Установите и авторизуйте Supabase CLI.
+2. Выполните в корне проекта:
 
-Без этой таблицы команда `update profiles` из следующего раздела не выполнится.
+   ```bash
+   supabase db push
+   ```
+
+Миграция создаст необходимые объекты в базе.
 
 ### Назначение администраторских прав
 
