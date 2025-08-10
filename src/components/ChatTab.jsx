@@ -221,6 +221,7 @@ export default function ChatTab({ selected, userEmail }) {
                   )}
                   <span className="self-end mt-1 text-xs opacity-60">
                     {time}
+                    {m.read_at ? ' ✓' : ''}
                     {m._optimistic ? ' • отправка…' : ''}
                   </span>
                 </div>
