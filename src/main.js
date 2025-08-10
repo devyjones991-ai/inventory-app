@@ -4,10 +4,11 @@ import App from './App'
 import './index.css'
 import { AuthProvider } from './context/AuthContext'
 
+// prettier-ignore
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <App />
     </AuthProvider>
-  </StrictMode>,
-)
+  </StrictMode>
+);
