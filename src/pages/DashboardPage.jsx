@@ -14,17 +14,16 @@ import {
   playMessageSound,
 } from '../utils/notifications'
 import { Navigate, useNavigate } from 'react-router-dom'
-import Spinner from '../components/Spinner'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
+import { useAuth } from '../hooks/useAuth'
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'
 
 export default function DashboardPage() {
+  const { user, isAdmin } = useAuth()
   const [objects, setObjects] = useState([])
   const [selected, setSelected] = useState(null)
-  const [user, setUser] = useState(null)
-  const [isLoadingUser, setIsLoadingUser] = useState(true)
   const [activeTab, setActiveTab] = useState('desc')
   const [notifications, setNotifications] = useState(() => {
     if (typeof localStorage === 'undefined') return {}
@@ -42,12 +41,6 @@ export default function DashboardPage() {
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
   const [fetchError, setFetchError] = useState(null)
   const navigate = useNavigate()
-
-  const isAdmin =
-    user?.app_metadata?.role === 'admin' ||
-    user?.user_metadata?.role === 'admin' ||
-    user?.app_metadata?.isAdmin ||
-    user?.user_metadata?.isAdmin
 
   const selectedRef = useRef(null)
   const tabRef = useRef('desc')
@@ -70,18 +63,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     requestNotificationPermission()
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
-        setUser(session?.user || null)
-      })
-      .finally(() => setIsLoadingUser(false))
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null)
-    })
-    return () => subscription.unsubscribe()
   }, [])
 
   // глобальные уведомления по задачам и сообщениям
@@ -300,9 +281,7 @@ export default function DashboardPage() {
     setIsSidebarOpen((prev) => !prev)
   }
 
-  function handleUserUpdated(updated) {
-    setUser(updated)
-  }
+  function handleUserUpdated() {}
 
   function handleTabChange(tab) {
     setActiveTab(tab)
@@ -320,15 +299,7 @@ export default function DashboardPage() {
     })
   }
 
-  if (isLoadingUser) {
-    return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-base-100">
-        <Spinner />
-      </div>
-    )
-  }
-
-  if (!isLoadingUser && !user) return <Navigate to="/auth" replace />
+  if (!user) return <Navigate to="/auth" replace />
 
   if (fetchError) {
     return (
