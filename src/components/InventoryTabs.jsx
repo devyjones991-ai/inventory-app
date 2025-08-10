@@ -95,6 +95,7 @@ export default function InventoryTabs({
     title: '',
     status: 'запланировано',
     assignee: '',
+    assignee_id: '',
     due_date: '',
     notes: '',
   }
@@ -104,6 +105,7 @@ export default function InventoryTabs({
       message: 'Выберите статус',
     }),
     assignee: z.string().optional(),
+    assignee_id: z.string().optional(),
     due_date: z.string().optional(),
     notes: z.string().optional(),
   })
@@ -192,6 +194,10 @@ export default function InventoryTabs({
         if (parsedTaskForm.executor && !parsedTaskForm.assignee) {
           parsedTaskForm.assignee = parsedTaskForm.executor
           delete parsedTaskForm.executor
+        }
+        if (parsedTaskForm.executor_id && !parsedTaskForm.assignee_id) {
+          parsedTaskForm.assignee_id = parsedTaskForm.executor_id
+          delete parsedTaskForm.executor_id
         }
       } catch {
         if (typeof localStorage !== 'undefined') {
@@ -473,6 +479,7 @@ export default function InventoryTabs({
         title: item.title,
         status: item.status,
         assignee: item.assignee || item.executor || '',
+        assignee_id: item.assignee_id || item.executor_id || '',
         due_date: item.due_date || item.planned_date || item.plan_date || '',
         notes: item.notes || '',
       })
@@ -493,6 +500,7 @@ export default function InventoryTabs({
       title: data.title,
       status: data.status,
       assignee: data.assignee || null,
+      assignee_id: data.assignee_id || null,
       planned_date: data.due_date || null,
       plan_date: data.due_date || null,
       notes: data.notes || null,
@@ -861,6 +869,7 @@ export default function InventoryTabs({
                         className="input input-bordered w-full"
                         {...registerTask('assignee')}
                       />
+                      <input type="hidden" {...registerTask('assignee_id')} />
                       {taskErrors.assignee && (
                         <p className="text-red-500 text-sm mt-1">
                           {taskErrors.assignee.message}

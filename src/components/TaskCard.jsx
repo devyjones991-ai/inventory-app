@@ -32,7 +32,10 @@ export default function TaskCard({
 
   const assignee = item.assignee || item.executor
   const dueDate = item.due_date || item.planned_date || item.plan_date
-  const canManage = isAdmin || item.assignee === user?.id
+  const canManage =
+    isAdmin ||
+    item.assignee_id === user?.id ||
+    item.assignee === user?.user_metadata?.username
 
   return (
     <Card
