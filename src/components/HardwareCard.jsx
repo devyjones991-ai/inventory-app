@@ -3,12 +3,7 @@ import React from 'react'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
-export default function HardwareCard({
-  item,
-  onEdit,
-  onDelete,
-  isAdmin = false,
-}) {
+export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
   return (
     <Card className="flex justify-between items-center">
       <div>
@@ -21,7 +16,7 @@ export default function HardwareCard({
           <span>Установка: {item.install_status}</span>
         </div>
       </div>
-      {isAdmin && (
+      {!!user && (
         <div className="flex flex-col xs:flex-row md:flex-row gap-2">
           <button
             onClick={onEdit}
