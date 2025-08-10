@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 export default function AttachmentPreview({ url, onImageClick }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
-  const cleanUrl = url?.split('?')[0].split('#')[0] || '';
-  const extension = cleanUrl.split('.').pop().toLowerCase();
+  const cleanUrl = url?.split('?')[0].split('#')[0] || ''
+  const extension = cleanUrl.split('.').pop().toLowerCase()
 
-  const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
-  const videoExt = ['mp4', 'webm', 'ogg', 'mov'];
+  const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp']
+  const videoExt = ['mp4', 'webm', 'ogg', 'mov']
 
-  const isImage = imageExt.includes(extension);
-  const isVideo = videoExt.includes(extension);
+  const isImage = imageExt.includes(extension)
+  const isVideo = videoExt.includes(extension)
 
   const handleOpen = () => {
     if (isImage && onImageClick) {
-      onImageClick(url);
+      onImageClick(url)
     } else {
-      setOpen(true);
+      setOpen(true)
     }
-  };
+  }
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => setOpen(false)
 
   if (isImage) {
     return (
@@ -40,7 +40,7 @@ export default function AttachmentPreview({ url, onImageClick }) {
             <div className="relative">
               <button
                 onClick={handleClose}
-                className="absolute top-2 right-2 bg-white px-2 py-1 rounded"
+                className="absolute top-2 right-2 bg-base-100 px-2 py-1 rounded transition-colors"
               >
                 Закрыть
               </button>
@@ -49,7 +49,7 @@ export default function AttachmentPreview({ url, onImageClick }) {
           </div>
         )}
       </>
-    );
+    )
   }
 
   if (isVideo) {
@@ -70,7 +70,7 @@ export default function AttachmentPreview({ url, onImageClick }) {
             <div className="relative">
               <button
                 onClick={handleClose}
-                className="absolute top-2 right-2 bg-white px-2 py-1 rounded"
+                className="absolute top-2 right-2 bg-base-100 px-2 py-1 rounded transition-colors"
               >
                 Закрыть
               </button>
@@ -79,7 +79,7 @@ export default function AttachmentPreview({ url, onImageClick }) {
           </div>
         )}
       </>
-    );
+    )
   }
 
   return (
@@ -108,6 +108,5 @@ export default function AttachmentPreview({ url, onImageClick }) {
         </a>
       </div>
     </>
-  );
+  )
 }
-

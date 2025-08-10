@@ -36,13 +36,13 @@ export default function TaskCard({
 
   return (
     <Card
-      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-base-200 transition animate-fade-in"
+      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-base-200 transition-colors animate-fade-in"
       onClick={onView}
     >
       <div className="flex-1">
         <p className="break-words whitespace-pre-wrap">{item.title}</p>
         {(assignee || dueDate) && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-base-content/70 transition-colors">
             {assignee && <span>👤 {assignee}</span>}
             {assignee && dueDate && ' • '}
             {dueDate && <span>📅 {formatDate(dueDate)}</span>}

@@ -13,7 +13,9 @@ export default function HardwareCard({
     <Card className="flex justify-between items-center">
       <div>
         <div className="font-medium text-lg">{item.name}</div>
-        <div className="text-sm text-gray-500">{item.location}</div>
+        <div className="text-sm text-base-content/70 transition-colors">
+          {item.location}
+        </div>
         <div className="flex space-x-2 mt-1 text-sm">
           <span>Покупка: {item.purchase_status}</span>
           <span>Установка: {item.install_status}</span>
