@@ -77,73 +77,77 @@ export default function AuthPage() {
   }, [navigate])
 
   return (
-    <div className="flex items-center justify-center h-screen bg-base-200 transition-colors">
-      <div className="flex w-full min-h-screen items-center justify-center bg-base-100">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-base-100 p-6 rounded shadow w-full max-w-sm space-y-4 transition-colors"
-        >
-          <h2 className="text-lg font-bold text-center">
-            {isRegister ? 'Регистрация' : 'Вход'}
-          </h2>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-          {info && <div className="text-blue-500 text-sm">{info}</div>}
+    <div>
+      <div className="flex items-center justify-center h-screen bg-base-200 transition-colors">
+        <div className="flex w-full min-h-screen items-center justify-center bg-base-100">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-base-100 p-6 rounded shadow w-full max-w-sm space-y-4 transition-colors"
+          >
+            <h2 className="text-lg font-bold text-center">
+              {isRegister ? 'Регистрация' : 'Вход'}
+            </h2>
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            {info && <div className="text-blue-500 text-sm">{info}</div>}
 
-          <div>
-            <input
-              type="email"
-              className="input input-bordered w-full"
-              placeholder="Email"
-              {...register('email')}
-            />
-            {errors.email && (
-              <div className="text-red-500 text-sm">{errors.email.message}</div>
-            )}
-          </div>
-
-          {isRegister && (
             <div>
               <input
-                type="text"
+                type="email"
                 className="input input-bordered w-full"
-                placeholder="Имя пользователя"
-                {...register('username')}
+                placeholder="Email"
+                {...register('email')}
               />
-              {errors.username && (
+              {errors.email && (
                 <div className="text-red-500 text-sm">
-                  {errors.username.message}
+                  {errors.email.message}
                 </div>
               )}
             </div>
-          )}
 
-          <div>
-            <input
-              type="password"
-              className="input input-bordered w-full"
-              placeholder="Пароль"
-              {...register('password')}
-            />
-            {errors.password && (
-              <div className="text-red-500 text-sm">
-                {errors.password.message}
+            {isRegister && (
+              <div>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="Имя пользователя"
+                  {...register('username')}
+                />
+                {errors.username && (
+                  <div className="text-red-500 text-sm">
+                    {errors.username.message}
+                  </div>
+                )}
               </div>
             )}
-          </div>
 
-          <button type="submit" className="btn btn-primary w-full">
-            {isRegister ? 'Зарегистрироваться' : 'Войти'}
-          </button>
-          <button
-            type="button"
-            className="btn btn-link w-full"
-            onClick={() => setIsRegister(!isRegister)}
-          >
-            {isRegister
-              ? 'Уже есть аккаунт? Войти'
-              : 'Нет аккаунта? Регистрация'}
-          </button>
-        </form>
+            <div>
+              <input
+                type="password"
+                className="input input-bordered w-full"
+                placeholder="Пароль"
+                {...register('password')}
+              />
+              {errors.password && (
+                <div className="text-red-500 text-sm">
+                  {errors.password.message}
+                </div>
+              )}
+            </div>
+
+            <button type="submit" className="btn btn-primary w-full">
+              {isRegister ? 'Зарегистрироваться' : 'Войти'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-link w-full"
+              onClick={() => setIsRegister(!isRegister)}
+            >
+              {isRegister
+                ? 'Уже есть аккаунт? Войти'
+                : 'Нет аккаунта? Регистрация'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
