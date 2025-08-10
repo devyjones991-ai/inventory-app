@@ -46,7 +46,7 @@ vi.mock('react-hot-toast', () => ({
 }))
 
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: {}, isAdmin: false }),
+  useAuth: () => ({ user: {} }),
 }))
 
 import { toast } from 'react-hot-toast'

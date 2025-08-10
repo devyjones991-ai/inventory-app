@@ -21,7 +21,7 @@ const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'
 
 export default function DashboardPage() {
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const [objects, setObjects] = useState([])
   const [selected, setSelected] = useState(null)
   const [activeTab, setActiveTab] = useState('desc')
@@ -329,7 +329,6 @@ export default function DashboardPage() {
             onEdit={editObject}
             onDelete={askDelete}
             notifications={notifications}
-            isAdmin={isAdmin}
           />
         </aside>
         {isSidebarOpen && (
@@ -352,7 +351,6 @@ export default function DashboardPage() {
                 onEdit={editObject}
                 onDelete={askDelete}
                 notifications={notifications}
-                isAdmin={isAdmin}
               />
             </aside>
           </div>
@@ -366,18 +364,16 @@ export default function DashboardPage() {
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰
               </button>
-              {isAdmin && (
-                <button
-                  className="btn btn-primary btn-md md:btn-sm flex items-center gap-1"
-                  onClick={() => {
-                    setEditingObject(null)
-                    setObjectName('')
-                    setIsObjectModalOpen(true)
-                  }}
-                >
-                  <PlusIcon className="w-4 h-4" /> Добавить
-                </button>
-              )}
+              <button
+                className="btn btn-primary btn-md md:btn-sm flex items-center gap-1"
+                onClick={() => {
+                  setEditingObject(null)
+                  setObjectName('')
+                  setIsObjectModalOpen(true)
+                }}
+              >
+                <PlusIcon className="w-4 h-4" /> Добавить
+              </button>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
@@ -401,7 +397,6 @@ export default function DashboardPage() {
             <InventoryTabs
               selected={selected}
               onUpdateSelected={handleUpdateSelected}
-              isAdmin={isAdmin}
               onTabChange={handleTabChange}
             />
           </div>
