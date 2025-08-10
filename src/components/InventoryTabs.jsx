@@ -790,6 +790,7 @@ export default function InventoryTabs({
           <div>
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Задачи</h3>
+
               {user && (
                 <button
                   className="btn btn-sm btn-primary flex items-center gap-1"
@@ -798,6 +799,14 @@ export default function InventoryTabs({
                   <PlusIcon className="w-4 h-4" /> Добавить задачу
                 </button>
               )}
+
+              <button
+                className="btn btn-sm btn-primary flex items-center gap-1"
+                onClick={() => openTaskModal()}
+              >
+                <PlusIcon className="w-4 h-4" /> Добавить задачу
+              </button>
+
             </div>
             {loadingTasks && <Spinner />}
             {tasksError && (
