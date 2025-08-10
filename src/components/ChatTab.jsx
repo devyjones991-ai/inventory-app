@@ -208,7 +208,7 @@ export default function ChatTab({ selected, userEmail }) {
                   <div className="chat-header">{m.sender || 'user'}</div>
                 )}
                 <div
-                  className={`chat-bubble whitespace-pre-wrap rounded-lg flex flex-col ${
+                  className={`chat-bubble whitespace-pre-wrap break-words rounded-lg flex flex-col ${
                     isOwn
                       ? 'bg-primary text-primary-content'
                       : 'bg-base-100 text-base-content'
