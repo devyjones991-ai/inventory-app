@@ -126,7 +126,7 @@ export default function ChatTab({ selected, userEmail }) {
     if (file) {
       const { error } = await sendMessage({
         objectId,
-        sender: 'me',
+        sender: userEmail,
         content: newMessage.trim(),
         file,
       })
@@ -192,9 +192,8 @@ export default function ChatTab({ selected, userEmail }) {
             Сообщений пока нет — напиши первым.
           </div>
         ) : (
-
           messages.map((m) => {
-            const isMe = m.sender === 'me'
+            const isOwn = m.sender === userEmail || m.sender === 'me'
             const time = new Date(m.created_at).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -202,63 +201,28 @@ export default function ChatTab({ selected, userEmail }) {
             return (
               <div
                 key={m.id}
-                className={`chat ${isMe ? 'chat-end' : 'chat-start'}`}
+                className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
               >
-                {!isMe && (
+                {!isOwn && (
                   <div className="chat-header">{m.sender || 'user'}</div>
                 )}
                 <div
-                  className={`chat-bubble whitespace-pre-wrap rounded-lg flex flex-col ${
-                    isMe
-                      ? 'bg-primary text-primary-content'
-                      : 'bg-base-100 text-base-content'
-                  }`}
-                >
-                  <span>{m.content}</span>
-                  <span className="self-end mt-1 text-xs opacity-60">
-                    {time}
-                    {m._optimistic ? ' • отправка…' : ''}
-                  </span>
-                </div>
-
-
-          messages.map((m) => (
-            <div key={m.id} className="chat chat-start">
-              <div className="chat-header">{m.sender || 'user'}</div>
-              <div className="chat-bubble whitespace-pre-wrap">
-                {m.content}
-                {m.file_url && (
-                  <div className="mt-2">
-                    <AttachmentPreview url={m.file_url} />
-                  </div>
-                )}
-              </div>
-              <div className="chat-footer opacity-50 text-xs">
-                {new Date(m.created_at).toLocaleString()}
-                {m.read_at ? ' ✓' : ''}
-                {m._optimistic ? ' • отправка…' : ''}
-
-          messages.map((m) => {
-            const isOwn = m.sender === userEmail
-            return (
-              <div
-                key={m.id}
-                className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
-              >
-                <div className="chat-header">{m.sender || 'user'}</div>
-                <div
-                  className={`chat-bubble whitespace-pre-wrap ${
+                  className={`chat-bubble whitespace-pre-wrap flex flex-col ${
                     isOwn ? 'chat-bubble-primary' : ''
                   }`}
                 >
-                  {m.content}
+                  <span>{m.content}</span>
+                  {m.file_url && (
+                    <div className="mt-2">
+                      <AttachmentPreview url={m.file_url} />
+                    </div>
+                  )}
+                  <span className="self-end mt-1 text-xs opacity-60">
+                    {time}
+                    {m.read_at ? ' ✓' : ''}
+                    {m._optimistic ? ' • отправка…' : ''}
+                  </span>
                 </div>
-                <div className="chat-footer opacity-50 text-xs">
-                  {new Date(m.created_at).toLocaleString()}
-                  {m._optimistic ? ' • отправка…' : ''}
-                </div>
-
-
               </div>
             )
           })
