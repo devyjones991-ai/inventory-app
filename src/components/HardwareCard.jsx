@@ -17,17 +17,17 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
         </div>
       </div>
       {!!user && (
-        <div className="flex flex-col xs:flex-row md:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={onEdit}
-            className="btn btn-sm btn-outline flex items-center gap-1 xs:w-full"
+            className="btn btn-sm btn-outline flex items-center gap-1 w-full sm:w-auto"
           >
             <PencilIcon className="w-4 h-4" />
             Изменить
           </button>
           <button
             onClick={onDelete}
-            className="btn btn-sm btn-error flex items-center gap-1 xs:w-full"
+            className="btn btn-sm btn-error flex items-center gap-1 w-full sm:w-auto"
           >
             <TrashIcon className="w-4 h-4" />
             Удалить
