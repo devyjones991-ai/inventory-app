@@ -401,7 +401,6 @@ export default function DashboardPage() {
             <InventoryTabs
               selected={selected}
               onUpdateSelected={handleUpdateSelected}
-              user={user}
               isAdmin={isAdmin}
               onTabChange={handleTabChange}
             />
