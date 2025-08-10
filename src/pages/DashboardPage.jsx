@@ -322,7 +322,7 @@ export default function DashboardPage() {
 
   if (isLoadingUser) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex w-full min-h-screen items-center justify-center bg-base-100">
         <Spinner />
       </div>
     )
@@ -332,7 +332,7 @@ export default function DashboardPage() {
 
   if (fetchError) {
     return (
-      <div className="flex items-center justify-center h-screen text-red-500">
+      <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-red-500">
         {fetchError}
       </div>
     )
@@ -340,7 +340,11 @@ export default function DashboardPage() {
 
   if (!selected) {
     return (
-      <div className="flex items-center justify-center h-screen text-gray-500">
+
+      <div className="flex items-center justify-center h-screen text-base-content/70 transition-colors">
+
+      <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-gray-500">
+
         Загрузка объектов...
       </div>
     )
@@ -348,9 +352,15 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="flex h-screen bg-white">
+
+      <div className="flex h-screen bg-base-100 transition-colors">
         {/* Десктоп- и мобайл-сайдбар */}
-        <aside className="hidden md:flex flex-col w-72 bg-gray-50 p-4 border-r shadow-lg overflow-y-auto">
+        <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto transition-colors">
+
+      <div className="flex min-h-screen w-full bg-base-100">
+        {/* Десктоп- и мобайл-сайдбар */}
+        <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto">
+
           <InventorySidebar
             objects={objects}
             selected={selected}
@@ -367,6 +377,7 @@ export default function DashboardPage() {
               className="fixed inset-0 bg-black bg-opacity-50"
               onClick={toggleSidebar}
             />
+
             <button
               className="btn btn-circle btn-md md:btn-sm absolute right-4 top-4 z-20"
               onClick={toggleSidebar}
@@ -374,6 +385,19 @@ export default function DashboardPage() {
               ✕
             </button>
             <aside className="relative z-20 w-72 bg-gray-50 p-4 shadow-lg overflow-y-auto">
+
+
+            <aside className="relative z-20 w-72 bg-base-200 p-4 shadow-lg overflow-y-auto transition-colors">
+
+            <aside className="relative z-20 w-72 bg-base-200 p-4 shadow-lg overflow-y-auto">
+
+              <button
+                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
+                onClick={toggleSidebar}
+              >
+                ✕
+              </button>
+
               <InventorySidebar
                 objects={objects}
                 selected={selected}
@@ -390,7 +414,7 @@ export default function DashboardPage() {
         {/* Основная часть */}
         <div className="flex-1 flex flex-col">
           {/* Хэдер с одной фиолетовой кнопкой */}
-          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-white">
+          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-base-100 transition-colors">
             <div className="flex items-center gap-2">
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰

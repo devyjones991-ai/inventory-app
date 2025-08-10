@@ -125,7 +125,11 @@ export default function ChatTab({ selected }) {
   }
 
   if (!objectId) {
-    return <div className="p-6 text-sm text-gray-500">Выбери объект</div>
+    return (
+      <div className="p-6 text-sm text-base-content/70 transition-colors">
+        Выбери объект
+      </div>
+    )
   }
 
   return (
