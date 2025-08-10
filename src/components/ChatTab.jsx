@@ -193,7 +193,11 @@ export default function ChatTab({ selected, userEmail }) {
           </div>
         ) : (
           messages.map((m) => {
+
+            const isOwn = m.sender === userEmail
+
             const isMe = m.sender === userEmail
+
             const time = new Date(m.created_at).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -201,19 +205,23 @@ export default function ChatTab({ selected, userEmail }) {
             return (
               <div
                 key={m.id}
-                className={`chat ${isMe ? 'chat-end' : 'chat-start'}`}
+                className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
               >
-                {!isMe && (
+                {!isOwn && (
                   <div className="chat-header">{m.sender || 'user'}</div>
                 )}
                 <div
                   className={`chat-bubble whitespace-pre-wrap rounded-lg flex flex-col ${
-                    isMe
+                    isOwn
                       ? 'bg-primary text-primary-content'
                       : 'bg-base-100 text-base-content'
                   }`}
                 >
+
+                  {m.content && <span>{m.content}</span>}
+
                   <span>{m.content}</span>
+
                   {m.file_url && (
                     <div className="mt-2">
                       <AttachmentPreview url={m.file_url} />
