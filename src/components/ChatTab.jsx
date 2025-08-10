@@ -57,8 +57,8 @@ export default function ChatTab({ selected, userEmail }) {
       .update({ read_at: new Date().toISOString() })
       .is('read_at', null)
       .eq('object_id', objectId)
-      .neq('sender', 'me')
-  }, [objectId])
+      .neq('sender', userEmail)
+  }, [objectId, userEmail])
 
   // Инициализация: загрузка + подписка на realtime
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function ChatTab({ selected, userEmail }) {
     if (file) {
       const { error } = await sendMessage({
         objectId,
-        sender: 'me',
+        sender: userEmail,
         content: newMessage.trim(),
         file,
       })
@@ -193,7 +193,11 @@ export default function ChatTab({ selected, userEmail }) {
           </div>
         ) : (
           messages.map((m) => {
+
             const isOwn = m.sender === userEmail
+
+            const isMe = m.sender === userEmail
+
             const time = new Date(m.created_at).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -213,7 +217,11 @@ export default function ChatTab({ selected, userEmail }) {
                       : 'bg-base-100 text-base-content'
                   }`}
                 >
+
                   {m.content && <span>{m.content}</span>}
+
+                  <span>{m.content}</span>
+
                   {m.file_url && (
                     <div className="mt-2">
                       <AttachmentPreview url={m.file_url} />
@@ -221,6 +229,7 @@ export default function ChatTab({ selected, userEmail }) {
                   )}
                   <span className="self-end mt-1 text-xs opacity-60">
                     {time}
+                    {m.read_at ? ' ✓' : ''}
                     {m._optimistic ? ' • отправка…' : ''}
                   </span>
                 </div>
