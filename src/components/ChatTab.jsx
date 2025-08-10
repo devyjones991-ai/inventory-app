@@ -183,12 +183,44 @@ export default function ChatTab({ selected, userEmail }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-4 space-y-3 bg-base-200 rounded-2xl"
+      >
         {messages.length === 0 ? (
           <div className="text-sm text-gray-400">
             Сообщений пока нет — напиши первым.
           </div>
         ) : (
+
+          messages.map((m) => {
+            const isMe = m.sender === 'me'
+            const time = new Date(m.created_at).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+            return (
+              <div
+                key={m.id}
+                className={`chat ${isMe ? 'chat-end' : 'chat-start'}`}
+              >
+                {!isMe && (
+                  <div className="chat-header">{m.sender || 'user'}</div>
+                )}
+                <div
+                  className={`chat-bubble whitespace-pre-wrap rounded-lg flex flex-col ${
+                    isMe
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-100 text-base-content'
+                  }`}
+                >
+                  <span>{m.content}</span>
+                  <span className="self-end mt-1 text-xs opacity-60">
+                    {time}
+                    {m._optimistic ? ' • отправка…' : ''}
+                  </span>
+                </div>
+
 
           messages.map((m) => (
             <div key={m.id} className="chat chat-start">
@@ -225,6 +257,7 @@ export default function ChatTab({ selected, userEmail }) {
                   {new Date(m.created_at).toLocaleString()}
                   {m._optimistic ? ' • отправка…' : ''}
                 </div>
+
 
               </div>
             )
