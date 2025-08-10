@@ -8,14 +8,14 @@ const { supabaseMock, insertMock, initialMessages } = vi.hoisted(() => {
     {
       id: '1',
       object_id: '1',
-      sender: 'Alice',
+      sender: 'me@example.com',
       content: 'Привет',
       created_at: new Date().toISOString(),
     },
     {
       id: '2',
       object_id: '1',
-      sender: 'Bob',
+      sender: 'other@example.com',
       content: 'Здравствуйте',
       created_at: new Date().toISOString(),
     },
@@ -61,7 +61,7 @@ describe('ChatTab', () => {
   })
 
   it('отображает сообщения и отправляет новое', async () => {
-    render(<ChatTab selected={{ id: '1' }} user={{ email: 'me' }} />)
+    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
 
     for (const msg of initialMessages) {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
@@ -76,5 +76,8 @@ describe('ChatTab', () => {
 
     await waitFor(() => expect(insertMock).toHaveBeenCalled())
     expect(textarea.value).toBe('')
+
+    const myBubble = await screen.findByText('Привет')
+    expect(myBubble.closest('.chat')).toHaveClass('chat-end')
   })
 })
