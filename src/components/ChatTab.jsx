@@ -57,8 +57,8 @@ export default function ChatTab({ selected, userEmail }) {
       .update({ read_at: new Date().toISOString() })
       .is('read_at', null)
       .eq('object_id', objectId)
-      .neq('sender', 'me')
-  }, [objectId])
+      .neq('sender', userEmail)
+  }, [objectId, userEmail])
 
   // Инициализация: загрузка + подписка на realtime
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function ChatTab({ selected, userEmail }) {
     if (file) {
       const { error } = await sendMessage({
         objectId,
-        sender: 'me',
+        sender: userEmail,
         content: newMessage.trim(),
         file,
       })

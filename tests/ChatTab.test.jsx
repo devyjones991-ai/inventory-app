@@ -1,4 +1,3 @@
-import React from 'react'
 import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ChatTab from '../src/components/ChatTab.jsx'
@@ -77,18 +76,18 @@ vi.mock('../src/hooks/useChatMessages.js', () => ({
 describe('ChatTab', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // jsdom doesn't implement scrollIntoView
     window.HTMLElement.prototype.scrollIntoView = vi.fn()
     globalThis.URL.createObjectURL = vi.fn(() => 'blob:preview')
     globalThis.URL.revokeObjectURL = vi.fn()
   })
 
-  it('отображает сообщения и отправляет новое', async () => {
+  it('отображает сообщения и корректно определяет свои по e-mail', async () => {
     render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
 
     for (const msg of initialMessages) {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
     }
+
 
     const firstFooter = (await screen.findByText(initialMessages[0].content))
       .closest('.chat')
@@ -100,6 +99,13 @@ describe('ChatTab', () => {
       .querySelector('.text-xs')
     expect(secondFooter.textContent).not.toContain('✓')
 
+    const myBubble = await screen.findByText('Привет')
+    expect(myBubble.closest('.chat')).toHaveClass('chat-end')
+
+    const otherBubble = await screen.findByText('Здравствуйте')
+    expect(otherBubble.closest('.chat')).toHaveClass('chat-start')
+
+
     const textarea = screen.getByPlaceholderText(
       'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',
     )
@@ -109,14 +115,15 @@ describe('ChatTab', () => {
 
     await waitFor(() => expect(insertMock).toHaveBeenCalled())
     expect(textarea.value).toBe('')
-
-    const myBubble = await screen.findByText('Привет')
-    expect(myBubble.closest('.chat')).toHaveClass('chat-end')
   })
 
-  it('показывает input[type=file] и отправляет файл', async () => {
+  it('отправляет файл с указанием e-mail отправителя', async () => {
     const { container } = render(
+
       <ChatTab selected={{ id: '1' }} userEmail="me" />,
+
+      <ChatTab selected={{ id: '1' }} userEmail="me@example.com" />,
+
     )
 
     const fileInput = container.querySelector('input[type="file"]')
@@ -128,7 +135,10 @@ describe('ChatTab', () => {
     fireEvent.click(screen.getByText('Отправить'))
 
     await waitFor(() => expect(sendMessageMock).toHaveBeenCalled())
-    expect(sendMessageMock.mock.calls[0][0].file).toBe(file)
+    expect(sendMessageMock.mock.calls[0][0]).toMatchObject({
+      file,
+      sender: 'me@example.com',
+    })
     expect(fileInput.value).toBe('')
   })
 })
