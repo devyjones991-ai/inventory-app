@@ -1,6 +1,7 @@
 import React from 'react'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '../hooks/useAuth'
 
 /**
  * Format date string into locale friendly format.
@@ -15,13 +16,8 @@ function formatDate(dateStr) {
   }
 }
 
-export default function TaskCard({
-  item,
-  onEdit,
-  onDelete,
-  onView,
-  user = {},
-}) {
+export default function TaskCard({ item, onEdit, onDelete, onView }) {
+  const { user, isAdmin } = useAuth()
   const badgeClass =
     {
       запланировано: 'badge-info',
@@ -33,6 +29,7 @@ export default function TaskCard({
   const dueDate = item.due_date || item.planned_date || item.plan_date
 
   const canManage =
+    isAdmin ||
     item.assignee_id === user?.id ||
     item.assignee === user?.user_metadata?.username
 

@@ -816,7 +816,6 @@ export default function InventoryTabs({
                     onView={() => openTaskView(t)}
                     onEdit={() => openTaskModal(t)}
                     onDelete={() => askDeleteTask(t.id)}
-                    user={user}
                   />
                 ))}
               </div>
