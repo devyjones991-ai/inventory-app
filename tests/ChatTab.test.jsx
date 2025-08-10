@@ -11,6 +11,7 @@ const { supabaseMock, insertMock, initialMessages } = vi.hoisted(() => {
       sender: 'Alice',
       content: 'Привет',
       created_at: new Date().toISOString(),
+      read_at: new Date().toISOString(),
     },
     {
       id: '2',
@@ -33,7 +34,19 @@ const { supabaseMock, insertMock, initialMessages } = vi.hoisted(() => {
     Promise.resolve({ data: { id: '3' }, error: null }),
   )
 
-  const fromMock = vi.fn(() => ({ select: selectMock, insert: insertMock }))
+  const updateMock = vi.fn(() => ({
+    is: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        neq: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      })),
+    })),
+  }))
+
+  const fromMock = vi.fn(() => ({
+    select: selectMock,
+    insert: insertMock,
+    update: updateMock,
+  }))
 
   const channelMock = vi.fn(() => ({
     on: vi.fn().mockReturnThis(),
@@ -66,6 +79,16 @@ describe('ChatTab', () => {
     for (const msg of initialMessages) {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
     }
+
+    const firstFooter = (await screen.findByText(initialMessages[0].content))
+      .closest('.chat')
+      .querySelector('.chat-footer')
+    expect(firstFooter.textContent).toContain('✓')
+
+    const secondFooter = (await screen.findByText(initialMessages[1].content))
+      .closest('.chat')
+      .querySelector('.chat-footer')
+    expect(secondFooter.textContent).not.toContain('✓')
 
     const textarea = screen.getByPlaceholderText(
       'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',

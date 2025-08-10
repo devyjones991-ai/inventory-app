@@ -14,7 +14,7 @@ Inventory App — приложение на React, которое помогае
 - **objects**: `id`, `name`, `description`, `created_at`
 - **hardware**: `id`, `object_id`, `name`, `location`, `purchase_status`, `install_status`, `created_at`
 - **tasks**: `id`, `object_id`, `title`, `status`, `assignee`, `due_date`, `notes`, `created_at`
-- **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`
+- **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`, `read_at`
 
 ## Запуск
 1. Зарегистрируйтесь на [Supabase](https://supabase.com) и создайте проект.
