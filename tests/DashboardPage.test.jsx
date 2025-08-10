@@ -45,6 +45,10 @@ vi.mock('react-hot-toast', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }))
 
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: {}, isAdmin: false }),
+}))
+
 import { toast } from 'react-hot-toast'
 import DashboardPage from '@/pages/DashboardPage'
 
