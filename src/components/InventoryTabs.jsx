@@ -788,7 +788,7 @@ export default function InventoryTabs({
         {/* Задачи */}
         {tab === 'tasks' && (
           <div>
-            <div className="flex justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
               <h3 className="text-xl font-semibold">Задачи</h3>
 
               {user && (
