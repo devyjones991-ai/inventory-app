@@ -128,6 +128,10 @@ export default function InventoryTabs({
   const [tasksHasMore, setTasksHasMore] = useState(true)
   const [loadingTasks, setLoadingTasks] = useState(false)
 
+  // --- импорт/экспорт ---
+  const [importTable, setImportTable] = useState(null)
+  const [importFile, setImportFile] = useState(null)
+
   // --- чат ---
   const [chatMessages, setChatMessages] = useState([])
   const {
@@ -554,6 +558,63 @@ export default function InventoryTabs({
     setTaskDeleteId(null)
   }
 
+  // --- экспорт/импорт ---
+  function openImportModal(table) {
+    setImportTable(table)
+    setImportFile(null)
+  }
+
+  function closeImportModal() {
+    setImportTable(null)
+    setImportFile(null)
+  }
+
+  async function handleImport() {
+    if (!importTable || !importFile) return
+    const formData = new FormData()
+    formData.append('file', importFile)
+    try {
+      const res = await fetch(`/import/${importTable}`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!res.ok) throw new Error('Ошибка импорта')
+      toast.success('Импорт выполнен')
+      closeImportModal()
+      if (importTable === 'hardware') {
+        setHardware([])
+        setHardwarePage(0)
+        setHardwareHasMore(true)
+        await fetchHardware(selected.id, 0)
+      } else if (importTable === 'tasks') {
+        setTasks([])
+        setTasksPage(0)
+        setTasksHasMore(true)
+        await fetchTasks(selected.id, 0)
+      }
+    } catch (e) {
+      toast.error(e.message)
+    }
+  }
+
+  async function handleExport(table, format = 'csv') {
+    try {
+      const res = await fetch(`/export/${table}.${format}`)
+      if (!res.ok) throw new Error('Ошибка экспорта')
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${table}.${format}`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (e) {
+      toast.error(e.message)
+    }
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Вкладки */}
@@ -638,12 +699,26 @@ export default function InventoryTabs({
           <div>
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-semibold">Оборудование</h3>
-              <button
-                className="btn btn-sm btn-primary flex items-center gap-1"
-                onClick={() => openHWModal()}
-              >
-                <PlusIcon className="w-4 h-4" /> Добавить
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => handleExport('hardware')}
+                >
+                  Экспорт
+                </button>
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => openImportModal('hardware')}
+                >
+                  Импорт
+                </button>
+                <button
+                  className="btn btn-sm btn-primary flex items-center gap-1"
+                  onClick={() => openHWModal()}
+                >
+                  <PlusIcon className="w-4 h-4" /> Добавить
+                </button>
+              </div>
             </div>
             {loadingHW && <Spinner />}
             {hardwareError && (
@@ -790,15 +865,28 @@ export default function InventoryTabs({
           <div>
             <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
               <h3 className="text-xl font-semibold">Задачи</h3>
-
-              {user && (
+              <div className="flex gap-2">
                 <button
-                  className="btn btn-sm btn-primary flex items-center gap-1"
-                  onClick={() => openTaskModal()}
+                  className="btn btn-sm btn-outline"
+                  onClick={() => handleExport('tasks')}
                 >
-                  <PlusIcon className="w-4 h-4" /> Добавить задачу
+                  Экспорт
                 </button>
-              )}
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => openImportModal('tasks')}
+                >
+                  Импорт
+                </button>
+                {user && (
+                  <button
+                    className="btn btn-sm btn-primary flex items-center gap-1"
+                    onClick={() => openTaskModal()}
+                  >
+                    <PlusIcon className="w-4 h-4" /> Добавить задачу
+                  </button>
+                )}
+              </div>
             </div>
             {loadingTasks && <Spinner />}
             {tasksError && (
@@ -994,6 +1082,35 @@ export default function InventoryTabs({
               onConfirm={confirmDeleteTask}
               onCancel={() => setTaskDeleteId(null)}
             />
+          </div>
+        )}
+
+        {importTable && (
+          <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
+              <button
+                className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
+                onClick={closeImportModal}
+              >
+                ✕
+              </button>
+              <h3 className="font-bold text-lg mb-4">
+                Импорт {importTable === 'hardware' ? 'оборудования' : 'задач'}
+              </h3>
+              <input
+                type="file"
+                className="file-input file-input-bordered w-full"
+                onChange={(e) => setImportFile(e.target.files[0])}
+              />
+              <div className="modal-action flex space-x-2">
+                <button className="btn btn-primary" onClick={handleImport}>
+                  Загрузить
+                </button>
+                <button className="btn btn-ghost" onClick={closeImportModal}>
+                  Отмена
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
