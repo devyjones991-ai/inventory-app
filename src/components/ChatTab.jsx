@@ -195,8 +195,9 @@ export default function ChatTab({ selected, userEmail }) {
         ) : (
           messages.map((m) => {
             const isOwn = m.sender === userEmail
-
-            const time = new Date(m.created_at).toLocaleTimeString([], {
+            const dt = new Date(m.created_at)
+            const date = dt.toLocaleDateString()
+            const time = dt.toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
             })
@@ -226,7 +227,7 @@ export default function ChatTab({ selected, userEmail }) {
                     </div>
                   )}
                   <span className="self-end mt-1 text-xs opacity-60">
-                    {time}
+                    {`${date} ${time}`}
                     {m.read_at ? ' ✓' : ''}
                     {m._optimistic ? ' • отправка…' : ''}
                   </span>
