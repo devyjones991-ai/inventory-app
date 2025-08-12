@@ -120,9 +120,15 @@ describe('ChatTab', () => {
       <ChatTab selected={{ id: '1' }} userEmail="me@example.com" />,
     )
 
-    const fileInput = container.querySelector('input[type="file"]')
-    expect(fileInput).toBeInTheDocument()
+    const labelButton = screen.getByRole('button', { name: 'Прикрепить файл' })
+    expect(labelButton).toBeInTheDocument()
 
+    const labelIcon = container.querySelector(
+      'label[data-testid="file-label"] svg',
+    )
+    expect(labelIcon).toBeInTheDocument()
+
+    const fileInput = container.querySelector('input[type="file"]')
     const file = new File(['content'], 'test.txt', { type: 'text/plain' })
     fireEvent.change(fileInput, { target: { files: [file] } })
 
