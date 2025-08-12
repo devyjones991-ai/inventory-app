@@ -4,6 +4,7 @@ import { handleSupabaseError } from '../utils/handleSupabaseError'
 import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { useChatMessages } from '../hooks/useChatMessages.js'
+import { PaperClipIcon } from '@heroicons/react/24/outline'
 
 export default function ChatTab({ selected, userEmail }) {
   const [messages, setMessages] = useState([])
@@ -245,8 +246,12 @@ export default function ChatTab({ selected, userEmail }) {
             htmlFor="chat-file-input"
             className="btn btn-ghost"
             data-testid="file-label"
+            aria-label="Прикрепить файл"
+            title="Прикрепить файл"
+            role="button"
+            tabIndex={0}
           >
-            📎
+            <PaperClipIcon className="w-6 h-6" />
           </label>
           <input
             id="chat-file-input"
