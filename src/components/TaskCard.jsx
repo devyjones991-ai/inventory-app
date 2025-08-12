@@ -43,12 +43,12 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
           </p>
         )}
       </div>
-      <div className="flex flex-col xs:flex-row md:flex-row items-center gap-2 mt-2 xs:mt-0">
+      <div className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
         <span className={`badge ${badgeClass}`}>{item.status}</span>
         {canManage && (
           <>
             <button
-              className="btn btn-sm btn-ghost xs:w-full"
+              className="btn btn-sm btn-ghost w-full xs:w-auto"
               title="Редактировать"
               onClick={(e) => {
                 e.stopPropagation()
@@ -58,7 +58,7 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
               <PencilIcon className="w-4 h-4" />
             </button>
             <button
-              className="btn btn-sm btn-ghost xs:w-full"
+              className="btn btn-sm btn-ghost w-full xs:w-auto"
               title="Удалить"
               onClick={(e) => {
                 e.stopPropagation()
