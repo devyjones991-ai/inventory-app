@@ -21,7 +21,7 @@ const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, isAdmin, isManager } = useAuth()
   const [objects, setObjects] = useState([])
   const [selected, setSelected] = useState(null)
   const [activeTab, setActiveTab] = useState('desc')
@@ -374,6 +374,22 @@ export default function DashboardPage() {
               >
                 <PlusIcon className="w-4 h-4" /> Добавить
               </button>
+              {(isAdmin || isManager) && (
+                <>
+                  <button
+                    className="btn btn-secondary btn-md md:btn-sm"
+                    onClick={() => {}}
+                  >
+                    Импорт
+                  </button>
+                  <button
+                    className="btn btn-secondary btn-md md:btn-sm"
+                    onClick={() => {}}
+                  >
+                    Экспорт
+                  </button>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
