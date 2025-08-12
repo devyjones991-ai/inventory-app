@@ -926,15 +926,15 @@ export default function InventoryTabs({
                       )}
                     </div>
                   </div>
-                  <div className="modal-action flex space-x-2">
+                  <div className="modal-action flex flex-col xs:flex-row space-y-2 xs:space-y-0 xs:space-x-2">
                     <button
-                      className="btn btn-primary"
+                      className="btn btn-primary w-full xs:w-auto"
                       onClick={handleSubmitTask(saveTask)}
                     >
                       Сохранить
                     </button>
                     <button
-                      className="btn btn-ghost"
+                      className="btn btn-ghost w-full xs:w-auto"
                       onClick={() => setIsTaskModalOpen(false)}
                     >
                       Отмена
