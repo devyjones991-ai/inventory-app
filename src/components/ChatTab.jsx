@@ -8,6 +8,8 @@ export default function ChatTab({ selected, userEmail }) {
   const objectId = selected?.id || null
   const {
     messages,
+    hasMore,
+    loadMore,
     newMessage,
     setNewMessage,
     sending,
@@ -34,6 +36,13 @@ export default function ChatTab({ selected, userEmail }) {
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3 bg-base-200 rounded-2xl"
       >
+        {hasMore && (
+          <div className="text-center">
+            <button className="btn btn-sm" onClick={() => loadMore()}>
+              Загрузить ещё
+            </button>
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="text-sm text-gray-400">
             Сообщений пока нет — напиши первым.
