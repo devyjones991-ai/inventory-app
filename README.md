@@ -16,6 +16,8 @@ Inventory App — приложение на React, которое помогае
 - **tasks**: `id`, `object_id`, `title`, `status`, `assignee`, `due_date`, `notes`, `created_at`
 - **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`, `read_at`
 
+Подробные схемы данных с перечислением обязательных и необязательных полей, форматов дат и допустимых значений находятся в [docs/api/openapi.yaml](docs/api/openapi.yaml).
+
 ## Запуск
 1. Зарегистрируйтесь на [Supabase](https://supabase.com) и создайте проект.
 2. В настройках проекта откройте `Settings → API`.
