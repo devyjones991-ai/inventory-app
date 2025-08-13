@@ -1,99 +1,92 @@
 import { render, fireEvent, waitFor, screen } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ChatTab from '../src/components/ChatTab.jsx'
 
-const { supabaseMock, insertMock, initialMessages, sendMessageMock } =
-  vi.hoisted(() => {
-    const initialMessages = [
-      {
-        id: '1',
-        object_id: '1',
-        sender: 'me@example.com',
-        content: 'Привет',
-        created_at: new Date().toISOString(),
-        read_at: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        object_id: '1',
-        sender: 'other@example.com',
-        content: 'Здравствуйте',
-        created_at: new Date().toISOString(),
-      },
-    ]
+const mockMessages = [
+  {
+    id: '1',
+    object_id: '1',
+    sender: 'me@example.com',
+    content: 'Привет',
+    created_at: new Date().toISOString(),
+    read_at: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    object_id: '1',
+    sender: 'other@example.com',
+    content: 'Здравствуйте',
+    created_at: new Date().toISOString(),
+  },
+]
 
-    const selectMock = vi.fn(() => ({
-      eq: vi.fn(() => ({
-        order: vi.fn(() =>
-          Promise.resolve({ data: initialMessages, error: null }),
-        ),
+var mockInsert
+var mockSendMessage
+
+jest.mock('../src/supabaseClient.js', () => {
+  const mockSelect = jest.fn(() => ({
+    eq: jest.fn(() => ({
+      order: jest.fn(() =>
+        Promise.resolve({ data: mockMessages, error: null }),
+      ),
+    })),
+  }))
+  mockInsert = jest.fn(() =>
+    Promise.resolve({ data: { id: '3' }, error: null }),
+  )
+  const mockUpdate = jest.fn(() => ({
+    is: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        neq: jest.fn(() => Promise.resolve({ data: [], error: null })),
       })),
-    }))
+    })),
+  }))
+  const mockFrom = jest.fn(() => ({
+    select: mockSelect,
+    insert: mockInsert,
+    update: mockUpdate,
+  }))
+  const mockChannel = jest.fn(() => ({
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn(),
+  }))
+  const mockRemoveChannel = jest.fn()
+  return {
+    supabase: {
+      from: mockFrom,
+      channel: mockChannel,
+      removeChannel: mockRemoveChannel,
+    },
+  }
+})
 
-    const insertMock = vi.fn(() =>
-      Promise.resolve({ data: { id: '3' }, error: null }),
-    )
-
-    const updateMock = vi.fn(() => ({
-      is: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          neq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-        })),
-      })),
-    }))
-
-    const fromMock = vi.fn(() => ({
-      select: selectMock,
-      insert: insertMock,
-      update: updateMock,
-    }))
-
-    const channelMock = vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn(),
-    }))
-
-    const removeChannelMock = vi.fn()
-
-    const supabaseMock = {
-      from: fromMock,
-      channel: channelMock,
-      removeChannel: removeChannelMock,
-    }
-
-    const sendMessageMock = vi.fn(() =>
-      Promise.resolve({ data: { id: '4' }, error: null }),
-    )
-
-    return { supabaseMock, insertMock, initialMessages, sendMessageMock }
-  })
-
-vi.mock('../src/supabaseClient.js', () => ({ supabase: supabaseMock }))
-vi.mock('../src/hooks/useChatMessages.js', () => ({
-  useChatMessages: () => ({ sendMessage: sendMessageMock }),
-}))
+jest.mock('../src/hooks/useChatMessages.js', () => {
+  mockSendMessage = jest.fn(() =>
+    Promise.resolve({ data: { id: '4' }, error: null }),
+  )
+  return { useChatMessages: () => ({ sendMessage: mockSendMessage }) }
+})
 
 describe('ChatTab', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    window.HTMLElement.prototype.scrollIntoView = vi.fn()
-    globalThis.URL.createObjectURL = vi.fn(() => 'blob:preview')
-    globalThis.URL.revokeObjectURL = vi.fn()
+    jest.clearAllMocks()
+    window.HTMLElement.prototype.scrollIntoView = jest.fn()
+    globalThis.URL.createObjectURL = jest.fn(() => 'blob:preview')
+    globalThis.URL.revokeObjectURL = jest.fn()
   })
 
   it('отображает сообщения и корректно определяет свои по e-mail', async () => {
     render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
 
-    for (const msg of initialMessages) {
+    for (const msg of mockMessages) {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
     }
 
-    const firstFooter = (await screen.findByText(initialMessages[0].content))
+    const firstFooter = (await screen.findByText(mockMessages[0].content))
       .closest('.chat')
       .querySelector('.text-xs')
     expect(firstFooter.textContent).toContain('✓')
 
-    const secondFooter = (await screen.findByText(initialMessages[1].content))
+    const secondFooter = (await screen.findByText(mockMessages[1].content))
       .closest('.chat')
       .querySelector('.text-xs')
     expect(secondFooter.textContent).not.toContain('✓')
@@ -111,7 +104,7 @@ describe('ChatTab', () => {
 
     fireEvent.click(screen.getByText('Отправить'))
 
-    await waitFor(() => expect(insertMock).toHaveBeenCalled())
+    await waitFor(() => expect(mockInsert).toHaveBeenCalled())
     expect(textarea.value).toBe('')
   })
 
@@ -134,8 +127,8 @@ describe('ChatTab', () => {
 
     fireEvent.click(screen.getByText('Отправить'))
 
-    await waitFor(() => expect(sendMessageMock).toHaveBeenCalled())
-    expect(sendMessageMock.mock.calls[0][0]).toMatchObject({
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled())
+    expect(mockSendMessage.mock.calls[0][0]).toMatchObject({
       file,
       sender: 'me@example.com',
     })

@@ -1,38 +1,37 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
 
-vi.mock('@/utils/notifications', () => ({
-  requestNotificationPermission: vi.fn(),
-  pushNotification: vi.fn(),
-  playTaskSound: vi.fn(),
-  playMessageSound: vi.fn(),
+jest.mock('@/utils/notifications', () => ({
+  requestNotificationPermission: jest.fn(),
+  pushNotification: jest.fn(),
+  playTaskSound: jest.fn(),
+  playMessageSound: jest.fn(),
 }))
 
-vi.mock('@/supabaseClient.js', () => {
-  const channelMock = { on: vi.fn().mockReturnThis(), subscribe: vi.fn() }
+jest.mock('@/supabaseClient.js', () => {
+  const channelMock = { on: jest.fn().mockReturnThis(), subscribe: jest.fn() }
   return {
     isSupabaseConfigured: true,
     supabase: {
       auth: {
-        getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
-        onAuthStateChange: vi.fn(() => ({
-          data: { subscription: { unsubscribe: vi.fn() } },
+        getSession: jest.fn(() => Promise.resolve({ data: { session: null } })),
+        onAuthStateChange: jest.fn(() => ({
+          data: { subscription: { unsubscribe: jest.fn() } },
         })),
       },
-      channel: vi.fn(() => channelMock),
-      removeChannel: vi.fn(),
-      from: vi.fn(() => ({
-        select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      channel: jest.fn(() => channelMock),
+      removeChannel: jest.fn(),
+      from: jest.fn(() => ({
+        select: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: [], error: null }),
       })),
     },
   }
 })
 
-vi.mock('react-hot-toast', () => ({
+jest.mock('react-hot-toast', () => ({
   Toaster: () => null,
-  toast: { success: vi.fn(), error: vi.fn() },
+  toast: { success: jest.fn(), error: jest.fn() },
 }))
 
 import App from '@/App'
