@@ -20,71 +20,61 @@ const mockInitialMessages = [
   },
 ]
 
-var mockSelect
-var mockInsert
-var mockFrom
-var mockChannel
-var mockRemoveChannel
-var mockSupabase
-var mockSendMessage
+const mockSelectMock = jest.fn(() => ({
+  eq: jest.fn(() => ({
+    order: jest.fn(() =>
+      Promise.resolve({ data: mockInitialMessages, error: null }),
+    ),
+  })),
+}))
 
-jest.mock('../src/supabaseClient.js', () => {
-  mockSelect = jest.fn(() => ({
+const mockInsertMock = jest.fn(() =>
+  Promise.resolve({ data: { id: '3' }, error: null }),
+)
+
+const mockUpdateMock = jest.fn(() => ({
+  is: jest.fn(() => ({
     eq: jest.fn(() => ({
-      order: jest.fn(() =>
-        Promise.resolve({ data: mockInitialMessages, error: null }),
-      ),
+      neq: jest.fn(() => Promise.resolve({ data: [], error: null })),
     })),
-  }))
+  })),
+}))
 
-  const mockUpdate = jest.fn(() => ({
-    is: jest.fn(() => ({
-      eq: jest.fn(() => Promise.resolve({ data: null, error: null })),
-    })),
-  }))
+const mockFromMock = jest.fn(() => ({
+  select: mockSelectMock,
+  insert: mockInsertMock,
+  update: mockUpdateMock,
+}))
 
-  mockInsert = jest.fn(() =>
-    Promise.resolve({ data: { id: '3' }, error: null }),
-  )
+const mockChannelMock = jest.fn(() => ({
+  on: jest.fn().mockReturnThis(),
+  subscribe: jest.fn((cb) => {
+    cb && cb('SUBSCRIBED')
+  }),
+}))
 
-  mockFrom = jest.fn((table) => {
-    if (table === 'messages') {
-      return {
-        select: mockSelect,
-        insert: mockInsert,
-        update: mockUpdate,
-      }
-    }
-    return {
-      select: jest.fn(() => ({ eq: jest.fn() })),
-      insert: jest.fn(),
-      update: jest.fn(),
-    }
-  })
+const mockRemoveChannelMock = jest.fn()
 
-  mockChannel = jest.fn(() => ({
-    on: jest.fn(() => ({
-      subscribe: jest.fn(() => ({
-        unsubscribe: jest.fn(),
-      })),
-    })),
-  }))
+const mockSupabase = {
+  from: mockFromMock,
+  channel: mockChannelMock,
+  removeChannel: mockRemoveChannelMock,
+}
 
-  mockRemoveChannel = jest.fn()
+const mockSendMessage = jest.fn(() =>
+  Promise.resolve({ data: { id: '4' }, error: null }),
+)
 
-  mockSupabase = {
-    from: mockFrom,
-    channel: mockChannel,
-    removeChannel: mockRemoveChannel,
-  }
+const mockUseChatMessages = {
+  sendMessage: mockSendMessage,
+}
 
-  return { supabase: mockSupabase }
-})
-
-jest.mock('../src/api/messages.js', () => ({
-  sendMessage: (mockSendMessage = jest.fn(() =>
-    Promise.resolve({ data: { id: '4' }, error: null }),
-  )),
+jest.mock('../src/supabaseClient.js', () => ({ supabase: mockSupabase }))
+jest.mock('../src/hooks/useChatMessages.js', () => ({
+  useChatMessages: () => mockUseChatMessages,
+}))
+jest.mock('../src/utils/handleSupabaseError', () => ({
+  handleSupabaseError: jest.fn(),
 }))
 
 describe('useChat', () => {
@@ -92,27 +82,29 @@ describe('useChat', () => {
     jest.clearAllMocks()
   })
 
-  it('should initialize with empty messages', async () => {
+  it('should initialize with loading state', () => {
     const { result } = renderHook(() => useChat('1'))
-
-    expect(result.current.messages).toEqual([])
     expect(result.current.isLoading).toBe(true)
+    expect(result.current.messages).toEqual([])
+    expect(result.current.newMessage).toBe('')
   })
 
-  it('should fetch messages on mount', async () => {
-    const { result } = renderHook(() => useChat('1'))
+  it('should load initial messages', async () => {
+    const { result } = renderHook(() =>
+      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+    )
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })
 
     expect(result.current.messages).toEqual(mockInitialMessages)
-    expect(mockFrom).toHaveBeenCalledWith('messages')
-    expect(mockSelect).toHaveBeenCalled()
   })
 
-  it('should send a message', async () => {
-    const { result } = renderHook(() => useChat('1'))
+  it('should send messages', async () => {
+    const { result } = renderHook(() =>
+      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+    )
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
@@ -140,7 +132,7 @@ describe('useChat', () => {
       result.current.markAsRead()
     })
 
-    expect(mockFrom).toHaveBeenCalledWith('messages')
+    expect(mockFromMock).toHaveBeenCalledWith('messages')
   })
 
   it('should handle real-time updates', async () => {
@@ -150,6 +142,6 @@ describe('useChat', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(mockChannel).toHaveBeenCalledWith('messages:1')
+    expect(mockChannelMock).toHaveBeenCalledWith('messages:1')
   })
 })

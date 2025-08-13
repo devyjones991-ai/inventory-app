@@ -37,9 +37,10 @@ jest.mock('react-hot-toast', () => ({
 import App from '@/App'
 
 describe('App', () => {
-  it('отображает страницу авторизации по /auth', async () => {
+  it('отображает индикатор загрузки и страницу авторизации по /auth', async () => {
     window.history.pushState({}, '', '/auth')
     render(<App />)
+    expect(screen.getByText('Загрузка...')).toBeInTheDocument()
     expect(await screen.findByText('Вход')).toBeInTheDocument()
   })
 })
