@@ -5,7 +5,7 @@ import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import MissingEnvPage from './pages/MissingEnvPage'
 import { isSupabaseConfigured } from './supabaseClient'
-import PrivateRoute from './components/PrivateRoute'
+import PrivateRoute from '@/features/auth/components/PrivateRoute'
 
 export default function App() {
   if (!isSupabaseConfigured) {

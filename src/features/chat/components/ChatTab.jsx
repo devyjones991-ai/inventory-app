@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
-import { supabase } from '../supabaseClient'
-import { handleSupabaseError } from '../utils/handleSupabaseError'
-import { linkifyText } from '../utils/linkify.jsx'
+import { supabase } from '@/supabaseClient'
+import { handleSupabaseError } from '@/utils/handleSupabaseError'
+import { linkifyText } from '@/utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
-import { useChatMessages } from '../hooks/useChatMessages.js'
+import { useChatMessages } from '../hooks/useChatMessages'
 import { PaperClipIcon } from '@heroicons/react/24/outline'
 
 export default function ChatTab({ selected, userEmail }) {

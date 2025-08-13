@@ -1,6 +1,6 @@
 import React from 'react'
-import Card from './Card'
-import { linkifyText } from '../utils/linkify.jsx'
+import Card from '@/components/Card'
+import { linkifyText } from '@/utils/linkify.jsx'
 
 function formatDate(dateStr) {
   if (!dateStr) return ''

@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/supabaseClient'
 
 export async function exportInventory() {
   const { data, error } = await supabase.functions.invoke('export-inventory')
@@ -12,6 +12,7 @@ export async function importInventory(file) {
   })
   if (error) throw error
   return data
+}
 
 export async function exportTable(table, format) {
   try {

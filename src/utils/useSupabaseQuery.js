@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/supabaseClient'
 
 export function useSupabaseQuery(queryBuilder, deps = []) {
   const [data, setData] = useState(null)

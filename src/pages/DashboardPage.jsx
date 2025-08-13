@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { supabase } from '../supabaseClient'
-import InventorySidebar from '../components/InventorySidebar'
-import InventoryTabs from '../components/InventoryTabs'
-import AccountModal from '../components/AccountModal'
-import ConfirmModal from '../components/ConfirmModal'
+import { supabase } from '@/supabaseClient'
+import InventorySidebar from '@/features/dashboard/components/InventorySidebar'
+import InventoryTabs from '@/features/dashboard/components/InventoryTabs'
+import AccountModal from '@/features/auth/components/AccountModal'
+import ConfirmModal from '@/features/dashboard/components/ConfirmModal'
 import { toast } from 'react-hot-toast'
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
-import ThemeToggle from '../components/ThemeToggle'
+import ThemeToggle from '@/features/dashboard/components/ThemeToggle'
 import {
   requestNotificationPermission,
   pushNotification,
   playTaskSound,
   playMessageSound,
-} from '../utils/notifications'
+} from '@/utils/notifications'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { handleSupabaseError } from '../utils/handleSupabaseError'
-import { useAuth } from '../hooks/useAuth'
+import { handleSupabaseError } from '@/utils/handleSupabaseError'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'

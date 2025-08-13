@@ -1,6 +1,6 @@
 // src/components/HardwareCard.jsx
 import React from 'react'
-import Card from './Card'
+import Card from '@/components/Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 export default function HardwareCard({ item, onEdit, onDelete, user = null }) {

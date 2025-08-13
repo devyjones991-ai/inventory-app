@@ -1,6 +1,6 @@
 import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ChatTab from '../src/components/ChatTab.jsx'
+import ChatTab from '@/features/chat/components/ChatTab.jsx'
 
 const { supabaseMock, insertMock, initialMessages, sendMessageMock } =
   vi.hoisted(() => {
@@ -68,8 +68,8 @@ const { supabaseMock, insertMock, initialMessages, sendMessageMock } =
     return { supabaseMock, insertMock, initialMessages, sendMessageMock }
   })
 
-vi.mock('../src/supabaseClient.js', () => ({ supabase: supabaseMock }))
-vi.mock('../src/hooks/useChatMessages.js', () => ({
+vi.mock('@/supabaseClient.js', () => ({ supabase: supabaseMock }))
+vi.mock('@/features/chat/hooks/useChatMessages.js', () => ({
   useChatMessages: () => ({ sendMessage: sendMessageMock }),
 }))
 

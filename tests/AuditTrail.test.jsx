@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import AuditTrail from '../src/components/AuditTrail.jsx'
+import AuditTrail from '@/features/dashboard/components/AuditTrail.jsx'
 
 const { supabaseMock } = vi.hoisted(() => {
   const logs = [
@@ -23,7 +23,7 @@ const { supabaseMock } = vi.hoisted(() => {
   return { supabaseMock: { from: fromMock }, logs }
 })
 
-vi.mock('../src/supabaseClient.js', () => ({ supabase: supabaseMock }))
+vi.mock('@/supabaseClient.js', () => ({ supabase: supabaseMock }))
 
 describe('AuditTrail', () => {
   it('отображает логи', async () => {

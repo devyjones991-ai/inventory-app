@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
+import { useSupabaseAuth } from '@/features/auth/hooks/useSupabaseAuth'
 import { useNavigate } from 'react-router-dom'
 
 export default function AuthPage() {
