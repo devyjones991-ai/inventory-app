@@ -13,6 +13,22 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'react-vendor'
+            if (id.includes('react-router-dom')) return 'react-router'
+            if (id.includes('@supabase')) return 'supabase'
+          }
+          if (id.includes('src/pages')) {
+            return path.basename(id, '.jsx').toLowerCase()
+          }
+        },
+      },
+    },
+  },
   server: {
     host: true, // 0.0.0.0
     port: 5173,

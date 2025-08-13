@@ -1,99 +1,96 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import useChat from '../src/hooks/useChat.js'
 
-const {
-  supabaseMock,
-  insertMock,
-  initialMessages,
-  sendMessageMock,
-  selectMock,
-} = vi.hoisted(() => {
-  const initialMessages = [
-    {
-      id: '1',
-      object_id: '1',
-      sender: 'me@example.com',
-      content: 'Привет',
-      created_at: new Date().toISOString(),
-      read_at: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      object_id: '1',
-      sender: 'other@example.com',
-      content: 'Здравствуйте',
-      created_at: new Date().toISOString(),
-    },
-  ]
+const mockInitialMessages = [
+  {
+    id: '1',
+    object_id: '1',
+    sender: 'me@example.com',
+    content: 'Привет',
+    created_at: new Date().toISOString(),
+    read_at: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    object_id: '1',
+    sender: 'other@example.com',
+    content: 'Здравствуйте',
+    created_at: new Date().toISOString(),
+  },
+]
 
-  const selectMock = vi.fn(() => ({
-    eq: vi.fn(() => ({
-      order: vi.fn(() =>
-        Promise.resolve({ data: initialMessages, error: null }),
+var mockSelect
+var mockInsert
+var mockFrom
+var mockChannel
+var mockRemoveChannel
+var mockSupabase
+var mockSendMessage
+
+jest.mock('../src/supabaseClient.js', () => {
+  mockSelect = jest.fn(() => ({
+    eq: jest.fn(() => ({
+      order: jest.fn(() =>
+        Promise.resolve({ data: mockInitialMessages, error: null }),
       ),
     })),
   }))
 
-  const insertMock = vi.fn(() =>
-    Promise.resolve({ data: { id: '3' }, error: null }),
-  )
-
-  const updateMock = vi.fn(() => ({
-    is: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        neq: vi.fn(() => Promise.resolve({ data: [], error: null })),
+  const mockUpdate = jest.fn(() => ({
+    is: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        neq: jest.fn(() => Promise.resolve({ data: [], error: null })),
       })),
     })),
   }))
 
-  const fromMock = vi.fn(() => ({
-    select: selectMock,
-    insert: insertMock,
-    update: updateMock,
+  mockInsert = jest.fn(() =>
+    Promise.resolve({ data: { id: '3' }, error: null }),
+  )
+
+  mockFrom = jest.fn(() => ({
+    select: mockSelect,
+    insert: mockInsert,
+    update: mockUpdate,
   }))
 
-  const channelMock = vi.fn(() => ({
-    on: vi.fn().mockReturnThis(),
-    subscribe: vi.fn((cb) => {
+  mockChannel = jest.fn(() => ({
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn((cb) => {
       cb && cb('SUBSCRIBED')
     }),
   }))
 
-  const removeChannelMock = vi.fn()
+  mockRemoveChannel = jest.fn()
 
-  const supabaseMock = {
-    from: fromMock,
-    channel: channelMock,
-    removeChannel: removeChannelMock,
+  mockSupabase = {
+    from: mockFrom,
+    channel: mockChannel,
+    removeChannel: mockRemoveChannel,
   }
 
-  const sendMessageMock = vi.fn(() =>
+  return { supabase: mockSupabase }
+})
+
+jest.mock('../src/hooks/useChatMessages.js', () => {
+  mockSendMessage = jest.fn(() =>
     Promise.resolve({ data: { id: '4' }, error: null }),
   )
-
   return {
-    supabaseMock,
-    insertMock,
-    initialMessages,
-    sendMessageMock,
-    selectMock,
+    useChatMessages: () => ({ sendMessage: mockSendMessage }),
   }
 })
 
-vi.mock('../src/supabaseClient.js', () => ({ supabase: supabaseMock }))
-vi.mock('../src/hooks/useChatMessages.js', () => ({
-  useChatMessages: () => ({ sendMessage: sendMessageMock }),
-}))
-vi.mock('../src/utils/handleSupabaseError', () => ({
-  handleSupabaseError: vi.fn(),
+jest.mock('../src/utils/handleSupabaseError', () => ({
+  handleSupabaseError: jest.fn(),
 }))
 
 describe('useChat', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    globalThis.URL.createObjectURL = vi.fn(() => 'blob:preview')
-    globalThis.URL.revokeObjectURL = vi.fn()
+    jest.clearAllMocks()
+    globalThis.URL.createObjectURL = jest.fn(() => 'blob:preview')
+    globalThis.URL.revokeObjectURL = jest.fn()
   })
 
   it('загружает сообщения при инициализации', async () => {
@@ -102,9 +99,9 @@ describe('useChat', () => {
     )
 
     await waitFor(() =>
-      expect(result.current.messages).toEqual(initialMessages),
+      expect(result.current.messages).toEqual(mockInitialMessages),
     )
-    expect(selectMock).toHaveBeenCalled()
+    expect(mockSelect).toHaveBeenCalled()
   })
 
   it('отправляет текстовое сообщение', async () => {
@@ -119,7 +116,7 @@ describe('useChat', () => {
       await result.current.handleSend()
     })
 
-    await waitFor(() => expect(insertMock).toHaveBeenCalled())
+    await waitFor(() => expect(mockInsert).toHaveBeenCalled())
     expect(result.current.newMessage).toBe('')
   })
 
@@ -136,7 +133,7 @@ describe('useChat', () => {
       await result.current.handleSend()
     })
 
-    await waitFor(() => expect(sendMessageMock).toHaveBeenCalled())
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled())
     expect(result.current.file).toBe(null)
   })
 })
