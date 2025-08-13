@@ -18,15 +18,17 @@ serve(async (req: Request) => {
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
   )
 
-  const { data: userData, error: userError } = await supabase.auth.getUser(token)
+  const { data: userData, error: userError } =
+    await supabase.auth.getUser(token)
   if (userError || !userData?.user) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const roles = (userData.user.app_metadata?.roles as string[] | undefined) || []
+  const roles =
+    (userData.user.app_metadata?.roles as string[] | undefined) || []
   if (!roles.includes('admin')) {
     return new Response('Forbidden', { status: 403 })
   }
@@ -41,8 +43,8 @@ serve(async (req: Request) => {
     return new Response(csv, {
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="${table}.csv"`
-      }
+        'Content-Disposition': `attachment; filename="${table}.csv"`,
+      },
     })
   }
 
@@ -55,11 +57,10 @@ serve(async (req: Request) => {
       headers: {
         'Content-Type':
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="${table}.xlsx"`
-      }
+        'Content-Disposition': `attachment; filename="${table}.xlsx"`,
+      },
     })
   }
 
   return new Response('Invalid format', { status: 400 })
 })
-
