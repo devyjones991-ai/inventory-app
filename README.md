@@ -1,28 +1,284 @@
-# Inventory App
-
-Inventory App — приложение на React, которое помогает командам вести единый учёт объектов, оборудования, задач и переписки.
-
-[![Build](https://github.com/devyjones991-ai/inventory-app/actions/workflows/supabase-migrate.yml/badge.svg)](https://github.com/devyjones991-ai/inventory-app/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/devyjones991-ai/inventory-app)](https://codecov.io/gh/devyjones991-ai/inventory-app)
-[![License](https://img.shields.io/github/license/devyjones991-ai/inventory-app)](LICENSE)
-
-Все данные хранятся в [Supabase](https://supabase.com/), что обеспечивает удобный доступ и совместную работу без необходимости управлять собственной инфраструктурой.
-
-Приложение ориентировано на небольшие команды и организации, которым нужен единый инструмент учёта.
-
-## Структура таблиц
-
-- **objects**: `id`, `name`, `description`, `created_at`
-- **hardware**: `id`, `object_id`, `name`, `location`, `purchase_status`, `install_status`, `created_at`
-- **tasks**: `id`, `object_id`, `title`, `status`, `assignee`, `due_date`, `notes`, `created_at`
-- **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`, `read_at`
-
+69
+ 
+## Деплой
+70
+ 
+​
+71
+ 
+### Чек-лист перед деплоем
+72
+ 
+- 
+`npm test`
+73
+ 
+- 
+`npm run docs:build`
+74
+ 
+- Визуально проверить Swagger UI
+75
+ 
+​
+76
+ 
+- Переменные окружения: 
+`VITE_SUPABASE_URL`
+, 
+`VITE_SUPABASE_ANON_KEY`
+.
+77
+ 
+- Vercel: задайте их в 
+**Settings → Environment Variables**
+.
+78
+ 
+- Netlify: задайте их в 
+**Site Configuration → Environment variables**
+.
+79
+ 
+- Команда сборки: 
+`npm run build`
+.
+80
+ 
+- Директория публикации: 
+`dist`
+.
+81
+ 
+- Деплой на 
+**Vercel**
+:
+82
+ 
+1. Подключите репозиторий.
+83
+ 
+2. Настройте переменные окружения.
+84
+ 
+3. Запустите сборку.
+85
+ 
+- Деплой на 
+**Netlify**
+:
+86
+ 
+1. Подключите репозиторий.
+87
+ 
+2. Задайте переменные окружения.
+88
+ 
+3. Укажите команду 
+`npm run build`
+ и директорию 
+`dist`
+.
+89
+ 
+4. Запустите деплой.
+90
+ 
+- Локальный продакшн-просмотр: 
+`npm run deploy`
+.
+91
+ 
+​
+92
+ 
+## Особенности
+93
+ 
+- Переключение тем интерфейса
+94
+ 
+- Работа с оборудованием и задачами через модальные окна
+95
+ 
+- Пример чата для каждого объекта
+96
+ 
+​
+97
+ 
+## Импорт/экспорт данных
+98
+ 
+​
+99
+ 
+### Эндпоинты
+100
+ 
+​
+101
+ 
+- 
+`POST /api/import/:table`
+ — загрузка файла CSV/XLSX и добавление записей в таблицу 
+`objects`
+, 
+`hardware`
+, 
+`tasks`
+ или 
+`chat_messages`
+.
+102
+ 
+- 
+`GET /api/export/:table?format=csv|xlsx`
+ — выгрузка содержимого таблицы в выбранном формате.
+103
+ 
+​
+104
+ 
+### Поддерживаемые форматы
+105
+ 
+​
+106
+ 
+- 
+**CSV**
+ — кодировка UTF‑8, разделитель запятая, первая строка содержит заголовки.
+107
+ 
+- 
+**XLSX**
+ — один лист с теми же заголовками, что и в CSV.
+108
+ 
+​
+109
+ 
+### Требования к данным
+110
+ 
+​
+111
+ 
+- Заголовки должны совпадать с названиями столбцов соответствующих таблиц.
+112
+ 
+- Поля 
+`id`
+ и 
+`created_at`
+ можно опустить — они заполняются автоматически.
+113
+ 
+- Значения 
+`object_id`
+ должны ссылаться на существующие объекты.
+114
+ 
+- Даты (
+`due_date`
+, 
+`created_at`
+) передаются в формате ISO 8601.
+115
+ 
+​
+116
+ 
+### Ограничения по ролям
+117
+ 
+​
+118
+ 
+- Импорт доступен только пользователям с ролью 
+`admin`
+.
+119
+ 
+- Экспорт доступен всем авторизованным пользователям.
+120
+ 
+​
+121
+ 
+### Пример структуры CSV/XLSX
+122
+ 
+​
+123
+ 
+```
+124
+ 
+object_id,name,location,purchase_status,install_status
+125
+ 
+1,Принтер,Офис,ordered,installed
+126
+ 
+```
+127
+ 
+​
+128
+ 
+В файле XLSX используется такой же набор столбцов на первом листе.
+129
+ 
+​
+130
+ 
+## CI
+131
+ 
 ## Настройка проекта
-
-1. Скопируйте `.env.example` в `.env` и заполните `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`.
-2. Установите зависимости: `npm install`.
-3. Запустите разработку: `npm run dev`.
-4. Выполните тесты: `npm test`.
-5. Соберите приложение: `npm run build`.
-
-Подробная инструкция: [docs/setup.md](docs/setup.md).
+132
+ 
+​
+133
+ 
+1. Скопируйте 
+`.env.example`
+ в 
+`.env`
+ и заполните 
+`VITE_SUPABASE_URL`
+ и 
+`VITE_SUPABASE_ANON_KEY`
+.
+134
+ 
+2. Установите зависимости: 
+`npm install`
+.
+135
+ 
+3. Запустите разработку: 
+`npm run dev`
+.
+136
+ 
+4. Выполните тесты: 
+`npm test`
+.
+137
+ 
+5. Соберите приложение: 
+`npm run build`
+.
+138
+ 
+​
+139
+ 
+Подробная инструкция: 
+[docs/setup.md]
+(docs/setup.md)
+.
