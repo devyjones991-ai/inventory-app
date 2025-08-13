@@ -20,7 +20,7 @@ const mockSupabase = {
 }
 
 jest.mock('../src/supabaseClient.js', () => ({
-  supabase: mockSupabase
+  supabase: mockSupabase,
 }))
 
 jest.mock('../src/utils/handleSupabaseError', () => ({
