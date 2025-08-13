@@ -1,11 +1,14 @@
 import { supabase } from '../supabaseClient'
 
 export function useHardware() {
-  const fetchHardware = (objectId) =>
+  const fetchHardware = (objectId, { limit = 100, offset = 0 } = {}) =>
     supabase
       .from('hardware')
-      .select('*')
+      .select(
+        'id, object_id, name, location, purchase_status, install_status, created_at',
+      )
       .eq('object_id', objectId)
+      .range(offset, offset + limit - 1)
       .order('created_at')
 
   const insertHardware = (data) =>

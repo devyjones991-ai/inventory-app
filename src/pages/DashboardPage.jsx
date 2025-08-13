@@ -127,13 +127,14 @@ export default function DashboardPage() {
 
   // Загрузка списка объектов
   useEffect(() => {
-    fetchObjects()
+    fetchObjects({ limit: 100, offset: 0 })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function fetchObjects() {
+  async function fetchObjects({ limit = 100, offset = 0 } = {}) {
     const { data, error } = await supabase
       .from('objects')
-      .select('*')
+      .select('id, name, description, created_at')
+      .range(offset, offset + limit - 1)
       .order('created_at', { ascending: true })
     if (error) {
       if (error.status === 401) {

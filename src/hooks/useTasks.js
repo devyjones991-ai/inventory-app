@@ -1,11 +1,14 @@
 import { supabase } from '../supabaseClient'
 
 export function useTasks() {
-  const fetchTasks = (objectId) =>
+  const fetchTasks = (objectId, { limit = 100, offset = 0 } = {}) =>
     supabase
       .from('tasks')
-      .select('*')
+      .select(
+        'id, object_id, title, status, assignee, assignee_id, due_date, notes, created_at',
+      )
       .eq('object_id', objectId)
+      .range(offset, offset + limit - 1)
       .order('created_at')
 
   const insertTask = (data) =>

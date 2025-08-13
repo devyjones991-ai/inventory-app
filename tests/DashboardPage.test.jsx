@@ -28,6 +28,7 @@ jest.mock('@/supabaseClient.js', () => {
       removeChannel: jest.fn(),
       from: jest.fn(() => ({
         select: jest.fn().mockReturnThis(),
+        range: jest.fn().mockReturnThis(),
         order: jest
           .fn()
           .mockResolvedValue({ data: null, error: mockLoadError }),

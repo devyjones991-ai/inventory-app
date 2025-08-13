@@ -1,10 +1,11 @@
 import { supabase } from '../supabaseClient'
 
 export function useObjects() {
-  const fetchObjects = () =>
+  const fetchObjects = ({ limit = 100, offset = 0 } = {}) =>
     supabase
       .from('objects')
-      .select('*')
+      .select('id, name, description, created_at')
+      .range(offset, offset + limit - 1)
       .order('created_at', { ascending: true })
 
   const insertObject = (name) =>

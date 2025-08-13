@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { supabase } from '../supabaseClient'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
 import HardwareCard from './HardwareCard'
 import TaskCard from './TaskCard'
@@ -232,12 +231,14 @@ export default function InventoryTabs({
 
     fetchHardware(selected.id, 0)
     fetchTasks(selected.id, 0)
-    fetchMessages(selected.id).then(({ data, error }) => {
-      if (error) {
-        if (error.status === 403) toast.error('Недостаточно прав')
-        else toast.error('Ошибка загрузки сообщений: ' + error.message)
-      } else setChatMessages(data || [])
-    })
+    fetchMessages(selected.id, { limit: PAGE_SIZE, offset: 0 }).then(
+      ({ data, error }) => {
+        if (error) {
+          if (error.status === 403) toast.error('Недостаточно прав')
+          else toast.error('Ошибка загрузки сообщений: ' + error.message)
+        } else setChatMessages(data || [])
+      },
+    )
   }, [selected])
 
   useEffect(() => {
@@ -340,14 +341,10 @@ export default function InventoryTabs({
     setLoadingHW(true)
 
     setHardwareError(null)
-    const from = page * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-    const { data, error } = await supabase
-      .from('hardware')
-      .select('*')
-      .eq('object_id', objectId)
-      .order('created_at')
-      .range(from, to)
+    const { data, error } = await fetchHardwareApi(objectId, {
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    })
     if (error) {
       setHardwareError(error)
 
@@ -365,11 +362,6 @@ export default function InventoryTabs({
         setHardwarePage(page + 1)
       }
     }
-    const { data: apiData, error: apiError } = await fetchHardwareApi(objectId)
-    if (apiError) {
-      if (apiError.status === 403) toast.error('Недостаточно прав')
-      else toast.error('Ошибка загрузки оборудования: ' + apiError.message)
-    } else setHardware(apiData || [])
 
     setLoadingHW(false)
   }
@@ -443,14 +435,10 @@ export default function InventoryTabs({
     setLoadingTasks(true)
 
     setTasksError(null)
-    const from = page * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('object_id', objectId)
-      .order('created_at')
-      .range(from, to)
+    const { data, error } = await fetchTasksApi(objectId, {
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    })
     if (error) {
       setTasksError(error)
 
@@ -468,11 +456,6 @@ export default function InventoryTabs({
         setTasksPage(page + 1)
       }
     }
-    const { data: apiData, error: apiError } = await fetchTasksApi(objectId)
-    if (apiError) {
-      if (apiError.status === 403) toast.error('Недостаточно прав')
-      else toast.error('Ошибка загрузки задач: ' + apiError.message)
-    } else setTasks(apiData || [])
     setLoadingTasks(false)
   }
 
