@@ -18,7 +18,7 @@ export function useObjects() {
     const result = await supabase
       .from('objects')
       .insert([{ name, description: '' }])
-      .select()
+      .select('id, name, description')
       .single()
     if (!result.error) await invalidate()
     return result
@@ -41,5 +41,10 @@ export function useObjects() {
     return result
   }
 
-  return { fetchObjects, insertObject, updateObject, deleteObject }
+  return {
+    fetchObjects,
+    insertObject,
+    updateObject,
+    deleteObject
+  }
 }

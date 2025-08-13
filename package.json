@@ -15,7 +15,9 @@
     "prepare": "husky install",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run"
+    "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run",
+    "lighthouse": "lighthouse http://localhost:5173 --output html --output-path=tests/perf/lighthouse-report.html",
+    "webpagetest": "webpagetest test http://localhost:5173 --key $WPT_API_KEY"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -52,6 +54,7 @@
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^24.0.0",
+    "lighthouse": "^12.0.0",
     "lint-staged": "^16.1.4",
     "postcss": "^8.4.32",
     "prettier": "^3.4.2",
@@ -59,15 +62,33 @@
     "start-server-and-test": "^2.0.4",
     "tailwindcss": "^3.4.1",
     "vite": "^4.0.0",
-    "vitest": "^1.6.0"
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-imagemin": "^0.6.1",
+    "vitest": "^1.6.0",
+    "webpagetest": "^0.7.6"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,css,md}": [
+    "*.{css,scss,md,json}": [
       "prettier --write"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/src/setupTests.js"],
+    "moduleNameMapping": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    },
+    "transform": {
+      "^.+\\.(js|jsx)$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js"
     ]
   }
 }
