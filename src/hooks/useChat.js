@@ -35,12 +35,22 @@ export default function useChat({ objectId, userEmail }) {
 
   const markMessagesAsRead = useCallback(async () => {
     if (!objectId) return
-    await supabase
-      .from('chat_messages')
-      .update({ read_at: new Date().toISOString() })
-      .is('read_at', null)
-      .eq('object_id', objectId)
-      .neq('sender', userEmail)
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ read_at: new Date().toISOString() })
+        .is('read_at', null)
+        .eq('object_id', objectId)
+        .neq('sender', userEmail)
+
+      if (error) throw error
+    } catch (error) {
+      await handleSupabaseError(
+        error,
+        null,
+        'Ошибка отметки сообщений как прочитанных',
+      )
+    }
   }, [objectId, userEmail])
 
   const lastMessageIdRef = useRef(null)

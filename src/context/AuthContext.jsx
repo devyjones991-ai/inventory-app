@@ -13,7 +13,10 @@ export function AuthProvider({ children }) {
 
     const fetchRole = async (id) => {
       const res = await fetch(`/functions/v1/cacheGet?table=profiles&id=${id}`)
-      if (!res.ok) return null
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text)
+      }
       const body = await res.json()
       return body.data?.role ?? null
     }
@@ -26,7 +29,12 @@ export function AuthProvider({ children }) {
       setUser(currentUser)
 
       if (currentUser) {
-        setRole(await fetchRole(currentUser.id))
+        try {
+          setRole(await fetchRole(currentUser.id))
+        } catch (error) {
+          console.error('Ошибка получения роли:', error)
+          setRole(null)
+        }
       } else {
         setRole(null)
       }
@@ -40,7 +48,12 @@ export function AuthProvider({ children }) {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       if (currentUser) {
-        setRole(await fetchRole(currentUser.id))
+        try {
+          setRole(await fetchRole(currentUser.id))
+        } catch (error) {
+          console.error('Ошибка получения роли:', error)
+          setRole(null)
+        }
       } else {
         setRole(null)
       }

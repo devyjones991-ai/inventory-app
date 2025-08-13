@@ -1,6 +1,15 @@
 import { supabase } from '../supabaseClient'
 import { v4 as uuidv4 } from 'uuid'
 
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'application/pdf',
+  'text/plain',
+]
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
+
 export function useChatMessages() {
   const fetchMessages = (objectId, { limit, offset } = {}) => {
     let query = supabase
@@ -23,6 +32,12 @@ export function useChatMessages() {
   async function sendMessage({ objectId, sender, content, file }) {
     let fileUrl = null
     if (file) {
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        return { error: new Error('Unsupported file type') }
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        return { error: new Error('File too large') }
+      }
       const filePath = `${objectId}/${uuidv4()}_${file.name}`
       const { error: uploadError } = await supabase.storage
         .from('chat-files')

@@ -16,6 +16,7 @@ import {
 import { Navigate, useNavigate } from 'react-router-dom'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
 import { useAuth } from '../hooks/useAuth'
+import { exportInventory, importInventory } from '../utils/exportImport'
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'
@@ -45,6 +46,7 @@ export default function DashboardPage() {
   const selectedRef = useRef(null)
   const tabRef = useRef('desc')
   const userRef = useRef(null)
+  const importInputRef = useRef(null)
   useEffect(() => {
     selectedRef.current = selected
   }, [selected])
@@ -281,6 +283,40 @@ export default function DashboardPage() {
     setIsSidebarOpen((prev) => !prev)
   }
 
+  async function handleImport(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const res = await importInventory(file)
+      if (res?.invalidRows) {
+        toast.error(`Невалидных строк: ${res.invalidRows}`)
+      } else {
+        toast.success('Импорт выполнен')
+      }
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      e.target.value = ''
+    }
+  }
+
+  async function handleExport() {
+    try {
+      const blob = await exportInventory()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'inventory.csv'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      toast.success('Экспорт выполнен')
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }
+
   function handleUserUpdated() {}
 
   function handleTabChange(tab) {
@@ -378,16 +414,23 @@ export default function DashboardPage() {
                 <>
                   <button
                     className="btn btn-secondary btn-md md:btn-sm"
-                    onClick={() => {}}
+                    onClick={() => importInputRef.current?.click()}
                   >
                     Импорт
                   </button>
                   <button
                     className="btn btn-secondary btn-md md:btn-sm"
-                    onClick={() => {}}
+                    onClick={handleExport}
                   >
                     Экспорт
                   </button>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    ref={importInputRef}
+                    className="hidden"
+                    onChange={handleImport}
+                  />
                 </>
               )}
             </div>
