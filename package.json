@@ -11,8 +11,8 @@
     "lint": "eslint .",
     "format": "prettier . --write",
     "deploy": "npm run build && vite preview --host",
-    "docs:build": "mkdir -p docs && swagger-cli bundle openapi.yaml --outfile docs/openapi.json --type json && redocly build-docs openapi.yaml -o docs/index.html",
-    "prepare": "husky",
+    "docs:build": "mkdir -p docs && redocly bundle openapi.yaml -o docs/openapi.json --ext json && redoc-cli bundle openapi.yaml -o docs/index.html",
+    "prepare": "husky install",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run",
@@ -34,7 +34,6 @@
     "zod": "^4.0.15"
   },
   "devDependencies": {
-    "@apidevtools/swagger-cli": "^4.0.4",
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-react": "^7.27.1",
     "@eslint/js": "^9.32.0",
