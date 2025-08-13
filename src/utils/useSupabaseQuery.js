@@ -15,6 +15,7 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
       try {
         const { data, error } = await queryBuilder(supabase)
         if (!active) return
+
         if (error) {
           setIsError(error)
           setData(null)
@@ -32,10 +33,11 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
     }
 
     run()
+
     return () => {
       active = false
     }
-  }, deps)
+  }, [queryBuilder, ...deps])
 
   return { data, isLoading, isError }
 }
