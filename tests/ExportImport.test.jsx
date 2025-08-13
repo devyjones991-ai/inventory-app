@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from '@jest/globals'
 
-vi.mock('@/supabaseClient.js', () => ({
-  supabase: { functions: { invoke: vi.fn() } },
+jest.mock('@/supabaseClient.js', () => ({
+  supabase: { functions: { invoke: jest.fn() } },
 }))
 
 import { supabase } from '@/supabaseClient.js'

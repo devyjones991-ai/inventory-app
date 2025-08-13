@@ -1,26 +1,27 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 
-const fromMock = vi.fn()
-const signUpMock = vi
+const mockFrom = jest.fn()
+const mockSignUp = jest
   .fn()
   .mockResolvedValue({ data: { user: { id: 'user-id' } }, error: null })
-const getSessionMock = vi.fn(() => Promise.resolve({ data: { session: null } }))
-const onAuthStateChangeMock = vi.fn(() => ({
-  data: { subscription: { unsubscribe: vi.fn() } },
+const mockGetSession = jest.fn(() =>
+  Promise.resolve({ data: { session: null } }),
+)
+const mockOnAuthStateChange = jest.fn(() => ({
+  data: { subscription: { unsubscribe: jest.fn() } },
 }))
 
-vi.mock('@/supabaseClient.js', () => ({
+jest.mock('@/supabaseClient.js', () => ({
   supabase: {
     auth: {
-      signUp: signUpMock,
-      signInWithPassword: vi.fn(),
-      getSession: getSessionMock,
-      onAuthStateChange: onAuthStateChangeMock,
+      signUp: mockSignUp,
+      signInWithPassword: jest.fn(),
+      getSession: mockGetSession,
+      onAuthStateChange: mockOnAuthStateChange,
     },
-    from: fromMock,
+    from: mockFrom,
   },
   isSupabaseConfigured: true,
 }))
@@ -49,8 +50,8 @@ describe('AuthPage', () => {
     fireEvent.click(screen.getByText('Зарегистрироваться'))
 
     await waitFor(() => {
-      expect(signUpMock).toHaveBeenCalled()
-      expect(fromMock).not.toHaveBeenCalled()
+      expect(mockSignUp).toHaveBeenCalled()
+      expect(mockFrom).not.toHaveBeenCalled()
     })
   })
 })

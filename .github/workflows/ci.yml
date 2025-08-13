@@ -12,6 +12,7 @@ jobs:
           node-version-file: package.json
       - run: npm ci
       - run: npm run lint
-      - run: npm test
+      - name: Run Jest tests
+        run: npm test
       - run: npm run test:e2e
       - run: npm run build -- --dry-run
