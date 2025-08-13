@@ -15,7 +15,9 @@
     "prepare": "husky install",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run"
+    "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run",
+    "lighthouse": "lighthouse http://localhost:5173 --output html --output-path=tests/perf/lighthouse-report.html",
+    "webpagetest": "webpagetest test http://localhost:5173 --key $WPT_API_KEY"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -42,6 +44,7 @@
     "@vitest/ui": "^1.6.0",
     "autoprefixer": "^10.4.17",
     "babel-jest": "^30.0.5",
+    "lighthouse": "^12.0.0",
     "cypress": "^14.5.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -59,7 +62,8 @@
     "start-server-and-test": "^2.0.4",
     "tailwindcss": "^3.4.1",
     "vite": "^4.0.0",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "webpagetest": "^0.7.6"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
