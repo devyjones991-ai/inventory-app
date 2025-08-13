@@ -45,6 +45,6 @@ export function useObjects() {
     fetchObjects,
     insertObject,
     updateObject,
-    deleteObject
+    deleteObject,
   }
 }
