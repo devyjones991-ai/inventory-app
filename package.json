@@ -44,7 +44,6 @@
     "@vitest/ui": "^1.6.0",
     "autoprefixer": "^10.4.17",
     "babel-jest": "^30.0.5",
-    "lighthouse": "^12.0.0",
     "cypress": "^14.5.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -55,6 +54,7 @@
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^24.0.0",
+    "lighthouse": "^12.0.0",
     "lint-staged": "^16.1.4",
     "postcss": "^8.4.32",
     "prettier": "^3.4.2",
@@ -62,6 +62,8 @@
     "start-server-and-test": "^2.0.4",
     "tailwindcss": "^3.4.1",
     "vite": "^4.0.0",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-imagemin": "^0.6.1",
     "vitest": "^1.6.0",
     "webpagetest": "^0.7.6"
   },
@@ -70,8 +72,23 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,css,md}": [
+    "*.{css,scss,md,json}": [
       "prettier --write"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/src/setupTests.js"],
+    "moduleNameMapping": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    },
+    "transform": {
+      "^.+\\.(js|jsx)$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js"
     ]
   }
 }
