@@ -4,15 +4,30 @@ export function useTasks() {
   const fetchTasks = (objectId) =>
     supabase
       .from('tasks')
-      .select('*')
+      .select(
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
+      )
       .eq('object_id', objectId)
       .order('created_at')
 
   const insertTask = (data) =>
-    supabase.from('tasks').insert([data]).select().single()
+    supabase
+      .from('tasks')
+      .insert([data])
+      .select(
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
+      )
+      .single()
 
   const updateTask = (id, data) =>
-    supabase.from('tasks').update(data).eq('id', id).select().single()
+    supabase
+      .from('tasks')
+      .update(data)
+      .eq('id', id)
+      .select(
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
+      )
+      .single()
 
   const deleteTask = (id) => supabase.from('tasks').delete().eq('id', id)
 

@@ -1,13 +1,15 @@
-import React from 'react'
+import { memo, useCallback } from 'react'
 import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
 
-export default function ChatTab({ selected, userEmail }) {
+function ChatTab({ selected, userEmail }) {
   const objectId = selected?.id || null
   const {
     messages,
+    hasMore,
+    loadMore,
     newMessage,
     setNewMessage,
     sending,
@@ -19,6 +21,16 @@ export default function ChatTab({ selected, userEmail }) {
     fileInputRef,
     scrollRef,
   } = useChat({ objectId, userEmail })
+
+  const handleFileChange = useCallback(
+    (e) => setFile(e.target.files[0]),
+    [setFile],
+  )
+
+  const handleMessageChange = useCallback(
+    (e) => setNewMessage(e.target.value),
+    [setNewMessage],
+  )
 
   if (!objectId) {
     return (
@@ -34,6 +46,13 @@ export default function ChatTab({ selected, userEmail }) {
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3 bg-base-200 rounded-2xl"
       >
+        {hasMore && (
+          <div className="text-center">
+            <button className="btn btn-sm" onClick={() => loadMore()}>
+              Загрузить ещё
+            </button>
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="text-sm text-gray-400">
             Сообщений пока нет — напиши первым.
@@ -103,13 +122,13 @@ export default function ChatTab({ selected, userEmail }) {
             type="file"
             className="hidden"
             ref={fileInputRef}
-            onChange={(e) => setFile(e.target.files[0])}
+            onChange={handleFileChange}
           />
           <textarea
             className="textarea textarea-bordered w-full min-h-24"
             placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleMessageChange}
             onKeyDown={handleKeyDown}
           />
         </div>
@@ -126,3 +145,5 @@ export default function ChatTab({ selected, userEmail }) {
     </div>
   )
 }
+
+export default memo(ChatTab)

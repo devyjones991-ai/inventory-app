@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo, useMemo, useCallback } from 'react'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
@@ -15,16 +15,42 @@ function formatDate(dateStr) {
   }
 }
 
-export default function TaskCard({ item, onEdit, onDelete, onView }) {
-  const badgeClass =
-    {
-      запланировано: 'badge-info',
-      'в процессе': 'badge-warning',
-      завершено: 'badge-success',
-    }[item.status] || 'badge'
+function TaskCard({ item, onEdit, onDelete, onView }) {
+  const badgeClass = useMemo(
+    () =>
+      ({
+        запланировано: 'badge-info',
+        'в процессе': 'badge-warning',
+        завершено: 'badge-success',
+      })[item.status] || 'badge',
+    [item.status],
+  )
 
-  const assignee = item.assignee || item.executor
-  const dueDate = item.due_date || item.planned_date || item.plan_date
+  const assignee = useMemo(
+    () => item.assignee || item.executor,
+    [item.assignee, item.executor],
+  )
+
+  const dueDate = useMemo(
+    () => item.due_date || item.planned_date || item.plan_date,
+    [item.due_date, item.planned_date, item.plan_date],
+  )
+
+  const handleEdit = useCallback(
+    (e) => {
+      e.stopPropagation()
+      onEdit()
+    },
+    [onEdit],
+  )
+
+  const handleDelete = useCallback(
+    (e) => {
+      e.stopPropagation()
+      onDelete()
+    },
+    [onDelete],
+  )
 
   const canManage = true
 
@@ -50,20 +76,14 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
             <button
               className="btn btn-sm btn-ghost w-full xs:w-auto"
               title="Редактировать"
-              onClick={(e) => {
-                e.stopPropagation()
-                onEdit()
-              }}
+              onClick={handleEdit}
             >
               <PencilIcon className="w-4 h-4" />
             </button>
             <button
               className="btn btn-sm btn-ghost w-full xs:w-auto"
               title="Удалить"
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-              }}
+              onClick={handleDelete}
             >
               <TrashIcon className="w-4 h-4" />
             </button>
@@ -73,3 +93,5 @@ export default function TaskCard({ item, onEdit, onDelete, onView }) {
     </Card>
   )
 }
+
+export default memo(TaskCard)

@@ -11,6 +11,13 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!isSupabaseConfigured) return
 
+    const fetchRole = async (id) => {
+      const res = await fetch(`/functions/v1/cacheGet?table=profiles&id=${id}`)
+      if (!res.ok) return null
+      const body = await res.json()
+      return body.data?.role ?? null
+    }
+
     const fetchSession = async () => {
       const {
         data: { session },
@@ -19,12 +26,7 @@ export function AuthProvider({ children }) {
       setUser(currentUser)
 
       if (currentUser) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', currentUser.id)
-          .single()
-        setRole(data?.role ?? null)
+        setRole(await fetchRole(currentUser.id))
       } else {
         setRole(null)
       }
@@ -34,16 +36,11 @@ export function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       if (currentUser) {
-        supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', currentUser.id)
-          .single()
-          .then(({ data }) => setRole(data?.role ?? null))
+        setRole(await fetchRole(currentUser.id))
       } else {
         setRole(null)
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -38,17 +38,18 @@ function formatDate(dateStr) {
   }
 }
 
-export default function InventoryTabs({
-  selected,
-  onUpdateSelected,
-  onTabChange = () => {},
-}) {
+function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   // --- вкладки и описание ---
   const [tab, setTab] = useState('desc')
   const [description, setDescription] = useState('')
   const [isEditingDesc, setIsEditingDesc] = useState(false)
+
+  const showDesc = useCallback(() => setTab('desc'), [])
+  const showHW = useCallback(() => setTab('hw'), [])
+  const showTasks = useCallback(() => setTab('tasks'), [])
+  const showChat = useCallback(() => setTab('chat'), [])
 
   // --- оборудование ---
   const [hardware, setHardware] = useState([])
@@ -344,7 +345,7 @@ export default function InventoryTabs({
     const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
       .from('hardware')
-      .select('*')
+      .select('id, name, location, purchase_status, install_status')
       .eq('object_id', objectId)
       .order('created_at')
       .range(from, to)
@@ -447,7 +448,9 @@ export default function InventoryTabs({
     const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
+      )
       .eq('object_id', objectId)
       .order('created_at')
       .range(from, to)
@@ -621,25 +624,25 @@ export default function InventoryTabs({
       <div className="flex mb-4 border-b">
         <button
           className={`px-4 py-2 hover:bg-primary/10 ${tab === 'desc' ? 'border-b-2 border-primary' : ''}`}
-          onClick={() => setTab('desc')}
+          onClick={showDesc}
         >
           Описание
         </button>
         <button
           className={`px-4 py-2 hover:bg-primary/10 ${tab === 'hw' ? 'border-b-2 border-primary' : ''}`}
-          onClick={() => setTab('hw')}
+          onClick={showHW}
         >
           Железо ({hardware.length})
         </button>
         <button
           className={`px-4 py-2 hover:bg-primary/10 ${tab === 'tasks' ? 'border-b-2 border-primary' : ''}`}
-          onClick={() => setTab('tasks')}
+          onClick={showTasks}
         >
           Задачи ({tasks.length})
         </button>
         <button
           className={`px-4 py-2 hover:bg-primary/10 flex items-center gap-1 ${tab === 'chat' ? 'border-b-2 border-primary' : ''}`}
-          onClick={() => setTab('chat')}
+          onClick={showChat}
         >
           <ChatBubbleOvalLeftIcon className="w-4 h-4" /> Чат (
           {chatMessages.length})
@@ -1126,3 +1129,5 @@ export default function InventoryTabs({
     </div>
   )
 }
+
+export default React.memo(InventoryTabs)

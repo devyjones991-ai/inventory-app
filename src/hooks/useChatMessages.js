@@ -2,12 +2,23 @@ import { supabase } from '../supabaseClient'
 import { v4 as uuidv4 } from 'uuid'
 
 export function useChatMessages() {
-  const fetchMessages = (objectId) =>
-    supabase
+  const fetchMessages = (objectId, { limit, offset } = {}) => {
+    let query = supabase
       .from('chat_messages')
       .select('*')
       .eq('object_id', objectId)
       .order('created_at', { ascending: true })
+
+    if (typeof limit === 'number') {
+      if (typeof offset === 'number') {
+        query = query.range(offset, offset + limit - 1)
+      } else {
+        query = query.limit(limit)
+      }
+    }
+
+    return query
+  }
 
   async function sendMessage({ objectId, sender, content, file }) {
     let fileUrl = null

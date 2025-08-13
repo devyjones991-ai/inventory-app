@@ -1,25 +1,26 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-const AuthPage = React.lazy(() => import('./pages/AuthPage'))
-const DashboardPage = React.lazy(() => import('./pages/DashboardPage'))
-const MissingEnvPage = React.lazy(() => import('./pages/MissingEnvPage'))
 import { isSupabaseConfigured } from './supabaseClient'
 import PrivateRoute from './components/PrivateRoute'
+
+const AuthPage = lazy(() => import('./pages/AuthPage'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const MissingEnvPage = lazy(() => import('./pages/MissingEnvPage'))
 
 export default function App() {
   if (!isSupabaseConfigured) {
     return (
-      <React.Suspense fallback={<div>Загрузка...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
         <MissingEnvPage />
-      </React.Suspense>
+      </Suspense>
     )
   }
 
   return (
     <BrowserRouter>
       <Toaster position="top-right" />
-      <React.Suspense fallback={<div>Загрузка...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route
@@ -31,7 +32,7 @@ export default function App() {
             }
           />
         </Routes>
-      </React.Suspense>
+      </Suspense>
     </BrowserRouter>
   )
 }
