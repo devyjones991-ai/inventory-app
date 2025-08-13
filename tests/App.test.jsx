@@ -40,7 +40,7 @@ describe('App', () => {
   it('отображает индикатор загрузки и страницу авторизации по /auth', async () => {
     window.history.pushState({}, '', '/auth')
     render(<App />)
-    expect(screen.getByText('Загрузка...')).toBeInTheDocument()
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
     expect(await screen.findByText('Вход')).toBeInTheDocument()
   })
 })
