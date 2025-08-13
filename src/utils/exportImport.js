@@ -1,18 +1,16 @@
-import { supabase } from '../supabaseClient'
-
+import { supabase } from '../supabaseClient';
 export async function exportInventory() {
   const { data, error } = await supabase.functions.invoke('export-inventory')
   if (error) throw error
   return data
 }
-
 export async function importInventory(file) {
   const { data, error } = await supabase.functions.invoke('import-inventory', {
     body: file,
   })
   if (error) throw error
   return data
-
+}
 export async function exportTable(table, format) {
   try {
     const res = await fetch(
@@ -28,7 +26,6 @@ export async function exportTable(table, format) {
     throw err
   }
 }
-
 export async function importTable(table, file) {
   const formData = new FormData()
   formData.append('file', file)

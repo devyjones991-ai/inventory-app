@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Inventory API
+  version: 1.0.0
+  description: API для импорта и экспорта данных.
+servers:
+  - url: https://{project}.functions.supabase.co
+    variables:
+      project:
+        default: your-project-ref
+paths:
+  /export/{table}/{format}:
+    get:
+      summary: Экспорт данных таблицы
+      parameters:
+        - name: table
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [csv, xlsx]
+      responses:
+        '200':
+          description: Экспортированный файл
+          content:
+            text/csv: {}
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: {}
+  /import:
+    post:
+      summary: Импорт данных в таблицу
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                table:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+              required: [table, file]
+      responses:
+        '200':
+          description: Результат импорта
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inserted:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        row:
+                          type: integer
+                        error:
+                          type: string
+  /import-export:
+    get:
+      summary: Проверка прав доступа
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

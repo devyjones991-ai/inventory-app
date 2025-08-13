@@ -1,9 +1,14 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
-  title: Inventory App Schemas
-  version: "1.0.0"
-  description: |
-    Схемы данных таблиц Supabase для приложения Inventory App.
+  title: Inventory App API
+  version: 1.0.0
+  description: API для приложения учёта объектов, оборудования и задач
+servers:
+  - url: https://{project}.supabase.co/functions/v1
+    variables:
+      project:
+        default: YOUR_PROJECT_REF
+paths:
 components:
   schemas:
     Object:
@@ -21,7 +26,7 @@ components:
           description: Название объекта
         description:
           type: string
-          description: Описание
+          description: Описание объекта
           nullable: true
         created_at:
           type: string
@@ -33,8 +38,6 @@ components:
         - id
         - object_id
         - name
-        - purchase_status
-        - install_status
         - created_at
       properties:
         id:
@@ -48,20 +51,24 @@ components:
           description: Название оборудования
         location:
           type: string
-          description: Местоположение
+          description: Местоположение оборудования
           nullable: true
         purchase_status:
           type: string
-          description: Статус покупки
+          description: Статус закупки
           enum:
-            - "не оплачен"
-            - "оплачен"
+            - "не заказано"
+            - "заказано"
+            - "доставлено"
+          nullable: true
         install_status:
           type: string
           description: Статус установки
           enum:
-            - "не установлен"
-            - "установлен"
+            - "не установлено"
+            - "установлено"
+            - "настроено"
+          nullable: true
         created_at:
           type: string
           format: date-time
@@ -83,7 +90,7 @@ components:
           description: Идентификатор связанного объекта
         title:
           type: string
-          description: Название задачи
+          description: Заголовок задачи
         status:
           type: string
           description: Статус задачи
