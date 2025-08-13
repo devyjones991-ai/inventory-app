@@ -1,6 +1,33 @@
-import { renderHook, act, waitFor } from '@testing-library/react'
-import useChat from '../src/hooks/useChat.js'
+// Move mocks before imports to avoid initialization errors
+const mockError = new Error('update failed')
 
+// Mock Supabase client first
+const updateChain = {
+  is: jest.fn(() => ({
+    eq: jest.fn(() => ({
+      neq: jest.fn(() => Promise.resolve({ data: null, error: mockError })),
+    })),
+  })),
+}
+
+const mockSupabase = {
+  from: jest.fn(() => ({ update: jest.fn(() => updateChain) })),
+  channel: jest.fn(() => ({
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn(),
+  })),
+  removeChannel: jest.fn(),
+}
+
+jest.mock('../src/supabaseClient.js', () => ({
+  supabase: mockSupabase
+}))
+
+jest.mock('../src/utils/handleSupabaseError', () => ({
+  handleSupabaseError: jest.fn(),
+}))
+
+// Test data
 const page1 = [
   {
     id: '1',
@@ -33,6 +60,7 @@ const mockFetchMessages = jest
   .mockResolvedValueOnce({ data: page2, error: null })
 const mockSendMessage = jest.fn()
 
+// Mock the useChatMessages hook
 jest.mock('../src/hooks/useChatMessages.js', () => ({
   useChatMessages: () => ({
     fetchMessages: mockFetchMessages,
@@ -40,27 +68,13 @@ jest.mock('../src/hooks/useChatMessages.js', () => ({
   }),
 }))
 
-var mockSupabase
-jest.mock('../src/supabaseClient.js', () => {
-  const updateChain = {
-    is: jest.fn(() => ({ eq: jest.fn(() => ({ neq: jest.fn() })) })),
-  }
-  mockSupabase = {
-    from: jest.fn(() => ({ update: jest.fn(() => updateChain) })),
-    channel: jest.fn(() => ({
-      on: jest.fn().mockReturnThis(),
-      subscribe: jest.fn(),
-    })),
-    removeChannel: jest.fn(),
-  }
-  return { supabase: mockSupabase }
-})
+// Now import the components
+import { renderHook, act, waitFor } from '@testing-library/react'
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import useChat from '../src/hooks/useChat.js'
+import { handleSupabaseError as mockHandleSupabaseError } from '../src/utils/handleSupabaseError'
 
-jest.mock('../src/utils/handleSupabaseError', () => ({
-  handleSupabaseError: jest.fn(),
-}))
-
-describe('useChat', () => {
+describe('useChat markMessagesAsRead', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -86,5 +100,17 @@ describe('useChat', () => {
       offset: page1.length,
     })
     expect(result.current.messages).toHaveLength(page1.length + page2.length)
+  })
+
+  it('обрабатывает ошибку при отметке сообщений прочитанными', async () => {
+    renderHook(() => useChat({ objectId: '1', userEmail: 'me@example.com' }))
+
+    await waitFor(() => {
+      expect(mockHandleSupabaseError).toHaveBeenCalledWith(
+        mockError,
+        null,
+        'Ошибка отметки сообщений как прочитанных',
+      )
+    })
   })
 })

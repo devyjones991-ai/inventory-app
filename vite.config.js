@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import viteCompression from 'vite-plugin-compression'
-import viteImagemin from 'vite-plugin-imagemin'
+import viteImagemin from '@vheemstra/vite-plugin-imagemin'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
