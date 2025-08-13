@@ -344,7 +344,7 @@ export default function InventoryTabs({
     const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
       .from('hardware')
-      .select('*')
+      .select('id, name, location, purchase_status, install_status')
       .eq('object_id', objectId)
       .order('created_at')
       .range(from, to)
@@ -447,7 +447,9 @@ export default function InventoryTabs({
     const to = from + PAGE_SIZE - 1
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
+      )
       .eq('object_id', objectId)
       .order('created_at')
       .range(from, to)

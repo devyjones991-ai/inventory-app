@@ -133,7 +133,7 @@ export default function DashboardPage() {
   async function fetchObjects() {
     const { data, error } = await supabase
       .from('objects')
-      .select('*')
+      .select('id, name, description')
       .order('created_at', { ascending: true })
     if (error) {
       if (error.status === 401) {
@@ -177,7 +177,7 @@ export default function DashboardPage() {
         .from('objects')
         .update({ name: objectName })
         .eq('id', editingObject.id)
-        .select()
+        .select('id, name, description')
         .single()
       if (error) {
         if (error.status === 403) toast.error('Недостаточно прав')
@@ -198,7 +198,7 @@ export default function DashboardPage() {
       const { data, error } = await supabase
         .from('objects')
         .insert([{ name: objectName, description: '' }])
-        .select()
+        .select('id, name, description')
         .single()
       if (error) {
         if (error.status === 403) toast.error('Недостаточно прав')

@@ -39,9 +39,7 @@ jest.mock('../src/supabaseClient.js', () => {
 
   const mockUpdate = jest.fn(() => ({
     is: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        neq: jest.fn(() => Promise.resolve({ data: [], error: null })),
-      })),
+      eq: jest.fn(() => Promise.resolve({ data: null, error: null })),
     })),
   }))
 
@@ -49,17 +47,27 @@ jest.mock('../src/supabaseClient.js', () => {
     Promise.resolve({ data: { id: '3' }, error: null }),
   )
 
-  mockFrom = jest.fn(() => ({
-    select: mockSelect,
-    insert: mockInsert,
-    update: mockUpdate,
-  }))
+  mockFrom = jest.fn((table) => {
+    if (table === 'messages') {
+      return {
+        select: mockSelect,
+        insert: mockInsert,
+        update: mockUpdate,
+      }
+    }
+    return {
+      select: jest.fn(() => ({ eq: jest.fn() })),
+      insert: jest.fn(),
+      update: jest.fn(),
+    }
+  })
 
   mockChannel = jest.fn(() => ({
-    on: jest.fn().mockReturnThis(),
-    subscribe: jest.fn((cb) => {
-      cb && cb('SUBSCRIBED')
-    }),
+    on: jest.fn(() => ({
+      subscribe: jest.fn(() => ({
+        unsubscribe: jest.fn(),
+      })),
+    })),
   }))
 
   mockRemoveChannel = jest.fn()
@@ -73,67 +81,75 @@ jest.mock('../src/supabaseClient.js', () => {
   return { supabase: mockSupabase }
 })
 
-jest.mock('../src/hooks/useChatMessages.js', () => {
-  mockSendMessage = jest.fn(() =>
+jest.mock('../src/api/messages.js', () => ({
+  sendMessage: (mockSendMessage = jest.fn(() =>
     Promise.resolve({ data: { id: '4' }, error: null }),
-  )
-  return {
-    useChatMessages: () => ({ sendMessage: mockSendMessage }),
-  }
-})
-
-jest.mock('../src/utils/handleSupabaseError', () => ({
-  handleSupabaseError: jest.fn(),
+  )),
 }))
 
 describe('useChat', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    globalThis.URL.createObjectURL = jest.fn(() => 'blob:preview')
-    globalThis.URL.revokeObjectURL = jest.fn()
   })
 
-  it('загружает сообщения при инициализации', async () => {
-    const { result } = renderHook(() =>
-      useChat({ objectId: '1', userEmail: 'me@example.com' }),
-    )
+  it('should initialize with empty messages', async () => {
+    const { result } = renderHook(() => useChat('1'))
 
-    await waitFor(() =>
-      expect(result.current.messages).toEqual(mockInitialMessages),
-    )
+    expect(result.current.messages).toEqual([])
+    expect(result.current.isLoading).toBe(true)
+  })
+
+  it('should fetch messages on mount', async () => {
+    const { result } = renderHook(() => useChat('1'))
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.messages).toEqual(mockInitialMessages)
+    expect(mockFrom).toHaveBeenCalledWith('messages')
     expect(mockSelect).toHaveBeenCalled()
   })
 
-  it('отправляет текстовое сообщение', async () => {
-    const { result } = renderHook(() =>
-      useChat({ objectId: '1', userEmail: 'me@example.com' }),
-    )
+  it('should send a message', async () => {
+    const { result } = renderHook(() => useChat('1'))
 
-    await act(async () => {
-      result.current.setNewMessage('Новое')
-    })
-    await act(async () => {
-      await result.current.handleSend()
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
     })
 
-    await waitFor(() => expect(mockInsert).toHaveBeenCalled())
-    expect(result.current.newMessage).toBe('')
+    await act(async () => {
+      await result.current.sendMessage('Новое сообщение', 'user@example.com')
+    })
+
+    expect(mockSendMessage).toHaveBeenCalledWith({
+      object_id: '1',
+      content: 'Новое сообщение',
+      sender: 'user@example.com',
+    })
   })
 
-  it('отправляет файл', async () => {
-    const { result } = renderHook(() =>
-      useChat({ objectId: '1', userEmail: 'me@example.com' }),
-    )
-    const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+  it('should mark messages as read', async () => {
+    const { result } = renderHook(() => useChat('1'))
 
-    await act(async () => {
-      result.current.setFile(file)
-    })
-    await act(async () => {
-      await result.current.handleSend()
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
     })
 
-    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled())
-    expect(result.current.file).toBe(null)
+    await act(async () => {
+      result.current.markAsRead()
+    })
+
+    expect(mockFrom).toHaveBeenCalledWith('messages')
+  })
+
+  it('should handle real-time updates', async () => {
+    const { result } = renderHook(() => useChat('1'))
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(mockChannel).toHaveBeenCalledWith('messages:1')
   })
 })
