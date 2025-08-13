@@ -18,6 +18,10 @@ export default function useChat({ objectId, userEmail }) {
 
   const offsetRef = useRef(0)
 
+  /**
+   * Загружает следующую порцию сообщений, используя внутреннее смещение.
+   * Позволяет реализовать постраничную подгрузку без передачи параметров.
+   */
   const loadMore = useCallback(async () => {
     if (!objectId) return
     const { data, error } = await fetchMessages(objectId, {
@@ -76,7 +80,7 @@ export default function useChat({ objectId, userEmail }) {
     offsetRef.current = 0
     if (!objectId) return
 
-    loadMore(0)
+    loadMore()
 
     const ch = supabase
       .channel(`chat:${objectId}`)
@@ -105,7 +109,7 @@ export default function useChat({ objectId, userEmail }) {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          loadMore(0)
+          loadMore()
         }
       })
 
