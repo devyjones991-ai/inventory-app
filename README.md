@@ -96,8 +96,8 @@ Inventory App — приложение на React, которое помогае
 
 ### Эндпоинты
 
-- `POST /api/import/:table` — загрузка файла CSV/XLSX и добавление записей в таблицу `objects`, `hardware`, `tasks` или `chat_messages`.
-- `GET /api/export/:table?format=csv|xlsx` — выгрузка содержимого таблицы в выбранном формате.
+- `POST /functions/v1/import` — загрузка файла CSV/XLSX и добавление записей в таблицу `objects`, `hardware`, `tasks` или `chat_messages`.
+- `GET /functions/v1/export/{table}/{format}` — выгрузка содержимого таблицы в формате `csv` или `xlsx`.
 
 ### Поддерживаемые форматы
 
@@ -124,6 +124,24 @@ object_id,name,location,purchase_status,install_status
 ```
 
 В файле XLSX используется такой же набор столбцов на первом листе.
+
+### Примеры запросов
+
+```bash
+# Экспорт CSV
+curl -L -H "Authorization: Bearer <TOKEN>" \
+  https://PROJECT.supabase.co/functions/v1/export/tasks/csv -o tasks.csv
+
+# Экспорт XLSX
+curl -L -H "Authorization: Bearer <TOKEN>" \
+  https://PROJECT.supabase.co/functions/v1/export/tasks/xlsx -o tasks.xlsx
+
+# Импорт CSV
+curl -L -X POST \
+  -F table=tasks \
+  -F file=@tasks.csv \
+  https://PROJECT.supabase.co/functions/v1/import
+```
 
 ## CI
 
