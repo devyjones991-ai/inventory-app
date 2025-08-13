@@ -1,149 +1,156 @@
 openapi: 3.0.3
 info:
-  title: Inventory App Edge Functions API
+  title: Inventory App API
   version: 1.0.0
+  description: API для приложения учёта объектов, оборудования и задач
 servers:
   - url: https://{project}.supabase.co/functions/v1
     variables:
       project:
         default: YOUR_PROJECT_REF
 paths:
-  /export/{table}/{format}:
-    get:
-      summary: Export table data
-      description: |
-        Download the contents of a table in CSV or XLSX format.
-
-        **CSV example**
-        ```bash
-        curl -L -H "Authorization: Bearer <TOKEN>" \\
-          https://{project}.supabase.co/functions/v1/export/tasks/csv -o tasks.csv
-        ```
-
-        **XLSX example**
-        ```bash
-        curl -L -H "Authorization: Bearer <TOKEN>" \\
-          https://{project}.supabase.co/functions/v1/export/tasks/xlsx -o tasks.xlsx
-        ```
-      parameters:
-        - name: table
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Target table name.
-        - name: format
-          in: path
-          required: true
-          schema:
-            type: string
-            enum: [csv, xlsx]
-          description: Output format.
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Exported file
-          content:
-            text/csv:
-              schema:
-                type: string
-                format: binary
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
-              schema:
-                type: string
-                format: binary
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /import:
-    post:
-      summary: Import table data
-      description: |
-        Upload a CSV or XLSX file and insert its rows into the specified table.
-
-        **Upload example**
-        ```bash
-        curl -L -X POST \\
-          -F table=tasks \\
-          -F file=@tasks.csv \\
-          https://{project}.supabase.co/functions/v1/import
-        ```
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - table
-                - file
-              properties:
-                table:
-                  type: string
-                  description: Target table name.
-                file:
-                  type: string
-                  format: binary
-                  description: CSV or XLSX file.
-      responses:
-        '200':
-          description: Import result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ImportResponse'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '405':
-          description: Method not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
-    Error:
+    Object:
       type: object
+      required:
+        - id
+        - name
+        - created_at
       properties:
-        error:
-          type: string
-    ImportResponse:
-      type: object
-      properties:
-        inserted:
+        id:
           type: integer
-          description: Number of successfully inserted rows.
-        errors:
-          type: array
-          items:
-            type: object
-            properties:
-              row:
-                type: integer
-              error:
-                type: string
+          description: Уникальный идентификатор объекта
+        name:
+          type: string
+          description: Название объекта
+        description:
+          type: string
+          description: Описание объекта
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+    Hardware:
+      type: object
+      required:
+        - id
+        - object_id
+        - name
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор оборудования
+        object_id:
+          type: integer
+          description: Идентификатор связанного объекта
+        name:
+          type: string
+          description: Название оборудования
+        location:
+          type: string
+          description: Местоположение оборудования
+          nullable: true
+        purchase_status:
+          type: string
+          description: Статус закупки
+          enum:
+            - "не заказано"
+            - "заказано"
+            - "доставлено"
+          nullable: true
+        install_status:
+          type: string
+          description: Статус установки
+          enum:
+            - "не установлено"
+            - "установлено"
+            - "настроено"
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+    Task:
+      type: object
+      required:
+        - id
+        - object_id
+        - title
+        - status
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор задачи
+        object_id:
+          type: integer
+          description: Идентификатор связанного объекта
+        title:
+          type: string
+          description: Заголовок задачи
+        status:
+          type: string
+          description: Статус задачи
+          enum:
+            - "запланировано"
+            - "в процессе"
+            - "завершено"
+        assignee:
+          type: string
+          description: Имя исполнителя
+          nullable: true
+        assignee_id:
+          type: string
+          description: Идентификатор исполнителя
+          nullable: true
+        due_date:
+          type: string
+          format: date-time
+          description: Срок выполнения
+          nullable: true
+        notes:
+          type: string
+          description: Дополнительные заметки
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+    ChatMessage:
+      type: object
+      required:
+        - id
+        - object_id
+        - sender
+        - content
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор сообщения
+        object_id:
+          type: integer
+          description: Идентификатор связанного объекта
+        sender:
+          type: string
+          description: E-mail отправителя
+        content:
+          type: string
+          description: Текст сообщения
+        file_url:
+          type: string
+          format: uri
+          description: Ссылка на вложенный файл
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время отправки
+        read_at:
+          type: string
+          format: date-time
+          description: Дата и время чтения
+          nullable: true

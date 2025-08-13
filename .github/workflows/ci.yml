@@ -13,4 +13,4 @@ jobs:
       - name: Run Jest tests
         run: npm test
       - run: npm run test:e2e
-      - run: npm run build -- --dry-run
+      - run: npm run build
