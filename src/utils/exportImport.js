@@ -12,6 +12,7 @@ export async function importInventory(file) {
   })
   if (error) throw error
   return data
+}
 
 export async function exportTable(table, format) {
   try {
