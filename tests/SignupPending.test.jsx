@@ -1,43 +1,41 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 
-vi.mock('@/utils/notifications', () => ({
-  requestNotificationPermission: vi.fn(),
-  pushNotification: vi.fn(),
-  playTaskSound: vi.fn(),
-  playMessageSound: vi.fn(),
+jest.mock('@/utils/notifications', () => ({
+  requestNotificationPermission: jest.fn(),
+  pushNotification: jest.fn(),
+  playTaskSound: jest.fn(),
+  playMessageSound: jest.fn(),
 }))
 
-const { signUpMock, getSessionMock, onAuthStateChangeMock } = vi.hoisted(() => {
+jest.mock('@/supabaseClient.js', () => {
+  const mockSignUp = jest.fn(() =>
+    Promise.resolve({ data: { user: { confirmed_at: null } }, error: null }),
+  )
+  const mockGetSession = jest.fn(() =>
+    Promise.resolve({ data: { session: null } }),
+  )
+  const mockOnAuthStateChange = jest.fn(() => ({
+    data: { subscription: { unsubscribe: jest.fn() } },
+  }))
   return {
-    signUpMock: vi.fn(() =>
-      Promise.resolve({ data: { user: { confirmed_at: null } }, error: null }),
-    ),
-    getSessionMock: vi.fn(() => Promise.resolve({ data: { session: null } })),
-    onAuthStateChangeMock: vi.fn(() => ({
-      data: { subscription: { unsubscribe: vi.fn() } },
-    })),
+    isSupabaseConfigured: true,
+    supabase: {
+      auth: {
+        signUp: mockSignUp,
+        signInWithPassword: jest.fn(),
+        getSession: mockGetSession,
+        onAuthStateChange: mockOnAuthStateChange,
+        signOut: jest.fn(),
+      },
+    },
   }
 })
 
-vi.mock('@/supabaseClient.js', () => ({
-  isSupabaseConfigured: true,
-  supabase: {
-    auth: {
-      signUp: signUpMock,
-      signInWithPassword: vi.fn(),
-      getSession: getSessionMock,
-      onAuthStateChange: onAuthStateChangeMock,
-      signOut: vi.fn(),
-    },
-  },
-}))
-
-vi.mock('react-hot-toast', () => ({
+jest.mock('react-hot-toast', () => ({
   Toaster: () => null,
-  toast: { success: vi.fn(), error: vi.fn() },
+  toast: { success: jest.fn(), error: jest.fn() },
 }))
 
 import { pushNotification } from '@/utils/notifications'

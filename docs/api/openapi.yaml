@@ -1,0 +1,149 @@
+openapi: 3.0.3
+info:
+  title: Inventory App Edge Functions API
+  version: 1.0.0
+servers:
+  - url: https://{project}.supabase.co/functions/v1
+    variables:
+      project:
+        default: YOUR_PROJECT_REF
+paths:
+  /export/{table}/{format}:
+    get:
+      summary: Export table data
+      description: |
+        Download the contents of a table in CSV or XLSX format.
+
+        **CSV example**
+        ```bash
+        curl -L -H "Authorization: Bearer <TOKEN>" \\
+          https://{project}.supabase.co/functions/v1/export/tasks/csv -o tasks.csv
+        ```
+
+        **XLSX example**
+        ```bash
+        curl -L -H "Authorization: Bearer <TOKEN>" \\
+          https://{project}.supabase.co/functions/v1/export/tasks/xlsx -o tasks.xlsx
+        ```
+      parameters:
+        - name: table
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Target table name.
+        - name: format
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [csv, xlsx]
+          description: Output format.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Exported file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /import:
+    post:
+      summary: Import table data
+      description: |
+        Upload a CSV or XLSX file and insert its rows into the specified table.
+
+        **Upload example**
+        ```bash
+        curl -L -X POST \\
+          -F table=tasks \\
+          -F file=@tasks.csv \\
+          https://{project}.supabase.co/functions/v1/import
+        ```
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - table
+                - file
+              properties:
+                table:
+                  type: string
+                  description: Target table name.
+                file:
+                  type: string
+                  format: binary
+                  description: CSV or XLSX file.
+      responses:
+        '200':
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    ImportResponse:
+      type: object
+      properties:
+        inserted:
+          type: integer
+          description: Number of successfully inserted rows.
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              row:
+                type: integer
+              error:
+                type: string
