@@ -65,6 +65,12 @@ Inventory App — приложение на React, которое помогае
 - Предпросмотр: `npm run preview`
 
 ## Деплой
+
+### Чек-лист перед деплоем
+- `npm test`
+- `npm run docs:build`
+- Визуально проверить Swagger UI
+
 - Переменные окружения: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
   - Vercel: задайте их в **Settings → Environment Variables**.
   - Netlify: задайте их в **Site Configuration → Environment variables**.
