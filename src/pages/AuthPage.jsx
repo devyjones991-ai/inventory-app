@@ -37,6 +37,7 @@ export default function AuthPage() {
   async function onSubmit({ email, password, username }) {
     setError(null)
     setInfo(null)
+
     if (isRegister) {
       const { data, error } = await signUp(email, password, username)
       if (error) {
@@ -58,11 +59,13 @@ export default function AuthPage() {
 
   useEffect(() => {
     let isMounted = true
+
     getSession().then(({ data: { session } }) => {
       if (session && isMounted) {
         navigate('/')
       }
     })
+
     const {
       data: { subscription },
     } = onAuthStateChange((_event, session) => {
@@ -70,11 +73,12 @@ export default function AuthPage() {
         navigate('/')
       }
     })
+
     return () => {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [navigate])
+  }, [navigate, getSession, onAuthStateChange])
 
   return (
     <div>
@@ -87,6 +91,7 @@ export default function AuthPage() {
             <h2 className="text-lg font-bold text-center">
               {isRegister ? 'Регистрация' : 'Вход'}
             </h2>
+
             {error && <div className="text-red-500 text-sm">{error}</div>}
             {info && <div className="text-blue-500 text-sm">{info}</div>}
 
@@ -134,9 +139,10 @@ export default function AuthPage() {
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary w-full">
+            <button className="btn btn-primary w-full" type="submit">
               {isRegister ? 'Зарегистрироваться' : 'Войти'}
             </button>
+
             <button
               type="button"
               className="btn btn-link w-full"
