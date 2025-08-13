@@ -5,6 +5,7 @@ import { useChatMessages } from './useChatMessages.js'
 
 export default function useChat({ objectId, userEmail }) {
   const [messages, setMessages] = useState([])
+  const [hasMore, setHasMore] = useState(true)
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [file, setFile] = useState(null)
@@ -12,22 +13,25 @@ export default function useChat({ objectId, userEmail }) {
   const scrollRef = useRef(null)
   const channelRef = useRef(null)
   const fileInputRef = useRef(null)
-  const { sendMessage } = useChatMessages()
+  const { fetchMessages, sendMessage } = useChatMessages()
+  const LIMIT = 20
 
-  const loadMessages = useCallback(async () => {
+  const offsetRef = useRef(0)
+
+  const loadMore = useCallback(async () => {
     if (!objectId) return
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('object_id', objectId)
-      .order('created_at', { ascending: true })
-
+    const { data, error } = await fetchMessages(objectId, {
+      limit: LIMIT,
+      offset: offsetRef.current,
+    })
     if (error) {
       await handleSupabaseError(error, null, 'Ошибка загрузки сообщений')
       return
     }
-    setMessages(data || [])
-  }, [objectId])
+    offsetRef.current += data?.length || 0
+    setMessages((prev) => [...(data || []), ...prev].sort(sortByCreatedAt))
+    if (!data || data.length < LIMIT) setHasMore(false)
+  }, [objectId, fetchMessages])
 
   const markMessagesAsRead = useCallback(async () => {
     if (!objectId) return
@@ -39,9 +43,14 @@ export default function useChat({ objectId, userEmail }) {
       .neq('sender', userEmail)
   }, [objectId, userEmail])
 
+  const lastMessageIdRef = useRef(null)
   useEffect(() => {
     if (!scrollRef.current) return
-    scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    const lastId = messages[messages.length - 1]?.id
+    if (lastId && lastId !== lastMessageIdRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      lastMessageIdRef.current = lastId
+    }
   }, [messages])
 
   useEffect(() => {
@@ -63,9 +72,11 @@ export default function useChat({ objectId, userEmail }) {
     }
 
     setMessages([])
+    setHasMore(true)
+    offsetRef.current = 0
     if (!objectId) return
 
-    loadMessages()
+    loadMore(0)
 
     const ch = supabase
       .channel(`chat:${objectId}`)
@@ -79,6 +90,7 @@ export default function useChat({ objectId, userEmail }) {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
+            offsetRef.current += 1
             setMessages((prev) => [...prev, payload.new].sort(sortByCreatedAt))
           } else if (payload.eventType === 'UPDATE') {
             setMessages((prev) =>
@@ -93,7 +105,7 @@ export default function useChat({ objectId, userEmail }) {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          loadMessages()
+          loadMore(0)
         }
       })
 
@@ -105,7 +117,7 @@ export default function useChat({ objectId, userEmail }) {
         channelRef.current = null
       }
     }
-  }, [objectId, loadMessages])
+  }, [objectId, loadMore])
 
   useEffect(() => {
     markMessagesAsRead()
@@ -141,6 +153,7 @@ export default function useChat({ objectId, userEmail }) {
       created_at: new Date().toISOString(),
       _optimistic: true,
     }
+    offsetRef.current += 1
     setMessages((prev) => [...prev, optimistic])
 
     const { error } = await supabase
@@ -166,6 +179,8 @@ export default function useChat({ objectId, userEmail }) {
 
   return {
     messages,
+    hasMore,
+    loadMore,
     newMessage,
     setNewMessage,
     sending,

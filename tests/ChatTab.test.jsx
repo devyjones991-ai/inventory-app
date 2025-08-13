@@ -21,15 +21,9 @@ const mockMessages = [
 
 var mockInsert
 var mockSendMessage
+var mockFetchMessages
 
 jest.mock('../src/supabaseClient.js', () => {
-  const mockSelect = jest.fn(() => ({
-    eq: jest.fn(() => ({
-      order: jest.fn(() =>
-        Promise.resolve({ data: mockMessages, error: null }),
-      ),
-    })),
-  }))
   mockInsert = jest.fn(() =>
     Promise.resolve({ data: { id: '3' }, error: null }),
   )
@@ -41,7 +35,6 @@ jest.mock('../src/supabaseClient.js', () => {
     })),
   }))
   const mockFrom = jest.fn(() => ({
-    select: mockSelect,
     insert: mockInsert,
     update: mockUpdate,
   }))
@@ -63,15 +56,25 @@ jest.mock('../src/hooks/useChatMessages.js', () => {
   mockSendMessage = jest.fn(() =>
     Promise.resolve({ data: { id: '4' }, error: null }),
   )
-  return { useChatMessages: () => ({ sendMessage: mockSendMessage }) }
+  mockFetchMessages = jest.fn(() =>
+    Promise.resolve({ data: mockMessages, error: null }),
+  )
+  return {
+    useChatMessages: () => ({
+      sendMessage: mockSendMessage,
+      fetchMessages: mockFetchMessages,
+    }),
+  }
 })
 
 describe('ChatTab', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockFetchMessages.mockReset()
     window.HTMLElement.prototype.scrollIntoView = jest.fn()
     globalThis.URL.createObjectURL = jest.fn(() => 'blob:preview')
     globalThis.URL.revokeObjectURL = jest.fn()
+    mockFetchMessages.mockResolvedValue({ data: mockMessages, error: null })
   })
 
   it('отображает сообщения и корректно определяет свои по e-mail', async () => {
@@ -133,5 +136,35 @@ describe('ChatTab', () => {
       sender: 'me@example.com',
     })
     expect(fileInput.value).toBe('')
+  })
+
+  it('подгружает дополнительные сообщения по кнопке', async () => {
+    const page1 = Array.from({ length: 20 }, (_, i) => ({
+      id: `${i + 1}`,
+      object_id: '1',
+      sender: 'other@example.com',
+      content: `msg${i + 1}`,
+      created_at: new Date(Date.now() + i).toISOString(),
+    }))
+    const page2 = [
+      {
+        id: '21',
+        object_id: '1',
+        sender: 'other@example.com',
+        content: 'msg21',
+        created_at: new Date().toISOString(),
+      },
+    ]
+    mockFetchMessages
+      .mockResolvedValueOnce({ data: page1, error: null })
+      .mockResolvedValueOnce({ data: page2, error: null })
+
+    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
+
+    const loadBtn = await screen.findByText('Загрузить ещё')
+    fireEvent.click(loadBtn)
+
+    await waitFor(() => expect(mockFetchMessages).toHaveBeenCalledTimes(2))
+    expect(await screen.findByText('msg21')).toBeInTheDocument()
   })
 })
