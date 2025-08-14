@@ -1,4 +1,12 @@
 // Move mocks before imports to avoid initialization errors
+let mockSupabase
+
+jest.mock('../src/supabaseClient.js', () => ({
+  get supabase() {
+    return mockSupabase
+  },
+}))
+
 const mockError = new Error('update failed')
 
 // Mock Supabase client first
@@ -10,7 +18,7 @@ const updateChain = {
   })),
 }
 
-const mockSupabase = {
+mockSupabase = {
   from: jest.fn(() => ({ update: jest.fn(() => updateChain) })),
   channel: jest.fn(() => ({
     on: jest.fn().mockReturnThis(),
@@ -18,10 +26,6 @@ const mockSupabase = {
   })),
   removeChannel: jest.fn(),
 }
-
-jest.mock('../src/supabaseClient.js', () => ({
-  supabase: mockSupabase,
-}))
 
 jest.mock('../src/utils/handleSupabaseError', () => ({
   handleSupabaseError: jest.fn(),
@@ -58,6 +62,7 @@ const mockFetchMessages = jest
   .fn()
   .mockResolvedValueOnce({ data: page1, error: null })
   .mockResolvedValueOnce({ data: page2, error: null })
+  .mockResolvedValue({ data: [], error: null })
 const mockSendMessage = jest.fn()
 
 // Mock the useChatMessages hook

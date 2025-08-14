@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL
@@ -14,15 +15,29 @@ export function AuthProvider({ children }) {
     if (!isSupabaseConfigured) return
 
     const fetchRole = async (id) => {
+
+      try {
+        const res = await fetch(
+          `/functions/v1/cacheGet?table=profiles&id=${id}`,
+        )
+        if (!res.ok) {
+          const text = await res.text()
+          throw new Error(text)
+        }
+        const body = await res.json()
+        return { role: body.data?.role ?? null }
+      } catch (error) {
+        toast.error('Ошибка получения роли: ' + error.message)
+        return { error }
+
       const res = await fetch(
         `${baseUrl}/functions/v1/cacheGet?table=profiles&id=${id}`,
       )
       if (!res.ok) {
         const text = await res.text()
         throw new Error(text)
+
       }
-      const body = await res.json()
-      return body.data?.role ?? null
     }
 
     const fetchSession = async () => {
@@ -33,11 +48,13 @@ export function AuthProvider({ children }) {
       setUser(currentUser)
 
       if (currentUser) {
-        try {
-          setRole(await fetchRole(currentUser.id))
-        } catch (error) {
+        const { role: fetchedRole, error } = await fetchRole(currentUser.id)
+        if (error) {
           console.error('Ошибка получения роли:', error)
+          toast.error('Ошибка получения роли: ' + error.message)
           setRole(null)
+        } else {
+          setRole(fetchedRole)
         }
       } else {
         setRole(null)
@@ -52,11 +69,13 @@ export function AuthProvider({ children }) {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       if (currentUser) {
-        try {
-          setRole(await fetchRole(currentUser.id))
-        } catch (error) {
+        const { role: fetchedRole, error } = await fetchRole(currentUser.id)
+        if (error) {
           console.error('Ошибка получения роли:', error)
+          toast.error('Ошибка получения роли: ' + error.message)
           setRole(null)
+        } else {
+          setRole(fetchedRole)
         }
       } else {
         setRole(null)
