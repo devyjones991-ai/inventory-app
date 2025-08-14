@@ -1,4 +1,6 @@
 import { supabase } from '../supabaseClient'
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL
 export async function exportInventory() {
   const { data, error } = await supabase.functions.invoke('export-inventory')
   if (error) throw error
@@ -14,7 +16,7 @@ export async function importInventory(file) {
 export async function exportTable(table, format) {
   try {
     const res = await fetch(
-      `/api/export/${table}?format=${encodeURIComponent(format)}`,
+      `${baseUrl}/api/export/${table}?format=${encodeURIComponent(format)}`,
     )
     if (!res.ok) {
       const text = await res.text().catch(() => '')
@@ -30,7 +32,7 @@ export async function importTable(table, file) {
   const formData = new FormData()
   formData.append('file', file)
   try {
-    const res = await fetch(`/api/import/${table}`, {
+    const res = await fetch(`${baseUrl}/api/import/${table}`, {
       method: 'POST',
       body: formData,
     })

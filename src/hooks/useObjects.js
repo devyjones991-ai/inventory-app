@@ -1,7 +1,9 @@
 import { supabase } from '../supabaseClient'
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+
 export function useObjects() {
-  const cacheUrl = '/functions/v1/cacheGet?table=objects'
+  const cacheUrl = `${baseUrl}/functions/v1/cacheGet?table=objects`
 
   const fetchObjects = async () => {
     const res = await fetch(cacheUrl)
