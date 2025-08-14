@@ -21,6 +21,8 @@ import { useObjects } from '../hooks/useObjects'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+
 const TAB_KEY = (objectId) => `tab_${objectId}`
 const HW_MODAL_KEY = (objectId) => `hwModal_${objectId}`
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
@@ -577,7 +579,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     const formData = new FormData()
     formData.append('file', importFile)
     try {
-      const res = await fetch(`/import/${importTable}`, {
+      const res = await fetch(`${baseUrl}/import/${importTable}`, {
         method: 'POST',
         body: formData,
       })
@@ -602,7 +604,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   async function handleExport(table, format = 'csv') {
     try {
-      const res = await fetch(`/export/${table}.${format}`)
+      const res = await fetch(`${baseUrl}/export/${table}.${format}`)
       if (!res.ok) throw new Error('Ошибка экспорта')
       const blob = await res.blob()
       const url = window.URL.createObjectURL(blob)

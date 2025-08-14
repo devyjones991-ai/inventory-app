@@ -1,6 +1,8 @@
 import { createContext, useEffect, useState } from 'react'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext({ user: null, role: null })
 
@@ -12,7 +14,9 @@ export function AuthProvider({ children }) {
     if (!isSupabaseConfigured) return
 
     const fetchRole = async (id) => {
-      const res = await fetch(`/functions/v1/cacheGet?table=profiles&id=${id}`)
+      const res = await fetch(
+        `${baseUrl}/functions/v1/cacheGet?table=profiles&id=${id}`,
+      )
       if (!res.ok) {
         const text = await res.text()
         throw new Error(text)
