@@ -6,12 +6,16 @@ export function useObjects() {
   const cacheUrl = `${baseUrl}/functions/v1/cacheGet?table=objects`
 
   const fetchObjects = async () => {
-    const res = await fetch(cacheUrl)
-    if (!res.ok) {
-      return { data: null, error: new Error(await res.text()) }
+    try {
+      const res = await fetch(cacheUrl)
+      if (!res.ok) {
+        return { data: null, error: new Error(await res.text()) }
+      }
+      const body = await res.json()
+      return { data: body.data, error: null }
+    } catch (error) {
+      return { data: null, error }
     }
-    const body = await res.json()
-    return { data: body.data, error: null }
   }
 
   const invalidate = () => fetch(cacheUrl, { method: 'DELETE' })
