@@ -25,6 +25,8 @@ Inventory App — приложение на React, которое помогае
 2. В настройках проекта откройте `Settings → API`.
 3. Скопируйте `URL` проекта и `anon`-ключ.
 4. Скопируйте файл `.env.example` в `.env` и заполните `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` и `VITE_API_BASE_URL`.
+   Если `VITE_API_BASE_URL` не указана, запросы к API завершатся ошибкой и интерфейс не сможет загрузить данные.
+   Пример: `VITE_API_BASE_URL=https://<project-ref>.supabase.co` — значение берётся в Supabase в разделе `Settings → API` в поле `Project URL`.
 5. Установите зависимости: `npm install`.
 
 ### Инициализация базы данных
