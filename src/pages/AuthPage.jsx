@@ -7,10 +7,16 @@ import { useNavigate } from 'react-router-dom'
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
-  const [error, setError] = useState(null)
+  const [userError, setUserError] = useState(null)
   const [info, setInfo] = useState(null)
   const navigate = useNavigate()
-  const { getSession, onAuthStateChange, signUp, signIn } = useSupabaseAuth()
+  const {
+    getSession,
+    onAuthStateChange,
+    signUp,
+    signIn,
+    error: authError,
+  } = useSupabaseAuth()
 
   const schema = z
     .object({
@@ -35,21 +41,39 @@ export default function AuthPage() {
   } = useForm({ resolver: zodResolver(schema) })
 
   async function onSubmit({ email, password, username }) {
-    setError(null)
+    setUserError(null)
     setInfo(null)
     if (isRegister) {
       const { data, error } = await signUp(email, password, username)
       if (error) {
-        setError(error.message)
+        if (error.name === 'FetchError') {
+          console.error(error)
+          setUserError('Не удалось подключиться к серверу. Попробуйте позже.')
+        } else {
+          setUserError(error.message)
+        }
       } else if (data.user && data.user.confirmed_at === null) {
         setInfo('Проверьте почту для подтверждения аккаунта')
+      } else if (!data.session) {
+        setInfo(
+          'Нет активной сессии. Подтвердите аккаунт или проверьте конфигурацию.',
+        )
       } else {
         navigate('/')
       }
     } else {
-      const { error } = await signIn(email, password)
+      const { data, error } = await signIn(email, password)
       if (error) {
-        setError(error.message)
+        if (error.name === 'FetchError') {
+          console.error(error)
+          setUserError('Не удалось подключиться к серверу. Попробуйте позже.')
+        } else {
+          setUserError(error.message)
+        }
+      } else if (!data.session) {
+        setInfo(
+          'Нет активной сессии. Подтвердите аккаунт или проверьте конфигурацию.',
+        )
       } else {
         navigate('/')
       }
@@ -87,7 +111,12 @@ export default function AuthPage() {
             <h2 className="text-lg font-bold text-center">
               {isRegister ? 'Регистрация' : 'Вход'}
             </h2>
-            {error && <div className="text-red-500 text-sm">{error}</div>}
+            {userError && (
+              <div className="text-red-500 text-sm">{userError}</div>
+            )}
+            {authError && (
+              <div className="text-gray-500 text-xs">{authError}</div>
+            )}
             {info && <div className="text-blue-500 text-sm">{info}</div>}
 
             <div>
