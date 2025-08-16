@@ -12,29 +12,47 @@ export function useSupabaseAuth() {
   const signUp = async (email, password, username) => {
     setError(null)
 
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
-      {
-        email,
-        password,
-        options: { data: { username } },
-      },
-    )
+    try {
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
+        })
 
-    if (signUpError) {
-      setError(signUpError.message)
-    } else if (signUpData.user && signUpData.user.confirmed_at === null) {
-      pushNotification(
-        'Регистрация',
-        'Проверьте почту для подтверждения аккаунта',
-      )
-      setError('Проверьте почту для подтверждения аккаунта')
+      if (signUpError) {
+        setError(signUpError.message)
+      } else if (signUpData.user && signUpData.user.confirmed_at === null) {
+        pushNotification(
+          'Регистрация',
+          'Проверьте почту для подтверждения аккаунта',
+        )
+      }
+
+      return { data: signUpData, error: signUpError }
+    } catch (err) {
+      setError(err.message)
+      return { data: null, error: err }
     }
-
-    return { data: signUpData, error: signUpError }
   }
 
-  const signIn = (email, password) =>
-    supabase.auth.signInWithPassword({ email, password })
+  const signIn = async (email, password) => {
+    setError(null)
+    try {
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+      if (signInError) {
+        setError(signInError.message)
+      }
+      return { data, error: signInError }
+    } catch (err) {
+      setError(err.message)
+      return { data: null, error: err }
+    }
+  }
 
   const signOut = () => supabase.auth.signOut()
 
