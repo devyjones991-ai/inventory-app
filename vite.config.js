@@ -5,13 +5,20 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import viteCompression from 'vite-plugin-compression'
 import viteImagemin from '@vheemstra/vite-plugin-imagemin'
+import imageminMozjpeg from 'imagemin-mozjpeg'
+import imageminPngquant from 'imagemin-pngquant'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [
     react(),
-    viteImagemin(),
+    viteImagemin({
+      plugins: {
+        jpg: imageminMozjpeg(),
+        png: imageminPngquant(),
+      },
+    }),
     viteCompression(),
     viteCompression({ algorithm: 'brotliCompress' }),
   ],

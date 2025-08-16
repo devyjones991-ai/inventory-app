@@ -15,10 +15,9 @@ export function AuthProvider({ children }) {
     if (!isSupabaseConfigured) return
 
     const fetchRole = async (id) => {
-
       try {
         const res = await fetch(
-          `/functions/v1/cacheGet?table=profiles&id=${id}`,
+          `${baseUrl}/functions/v1/cacheGet?table=profiles&id=${id}`,
         )
         if (!res.ok) {
           const text = await res.text()
@@ -29,14 +28,6 @@ export function AuthProvider({ children }) {
       } catch (error) {
         toast.error('Ошибка получения роли: ' + error.message)
         return { error }
-
-      const res = await fetch(
-        `${baseUrl}/functions/v1/cacheGet?table=profiles&id=${id}`,
-      )
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text)
-
       }
     }
 
