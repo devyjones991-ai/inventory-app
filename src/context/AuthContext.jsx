@@ -37,26 +37,37 @@ export function AuthProvider({ children }) {
     }
 
     const fetchSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+        if (error) throw error
+        const currentUser = session?.user ?? null
+        setUser(currentUser)
 
-      if (currentUser) {
-        if (isApiConfigured) {
-          const { role: fetchedRole, error } = await fetchRole(currentUser.id)
-          if (error) {
-            console.error('Ошибка получения роли:', error)
-            toast.error('Ошибка получения роли: ' + error.message)
-            setRole(null)
+        if (currentUser) {
+          if (isApiConfigured) {
+            const { role: fetchedRole, error: roleError } = await fetchRole(
+              currentUser.id,
+            )
+            if (roleError) {
+              console.error('Ошибка получения роли:', roleError)
+              toast.error('Ошибка получения роли: ' + roleError.message)
+              setRole(null)
+            } else {
+              setRole(fetchedRole)
+            }
           } else {
-            setRole(fetchedRole)
+            setRole(null)
           }
         } else {
           setRole(null)
         }
-      } else {
+      } catch (error) {
+        console.error('Ошибка получения сессии:', error)
+        toast.error('Ошибка получения сессии: ' + error.message)
+        setUser(null)
         setRole(null)
       }
     }
