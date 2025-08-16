@@ -6,9 +6,9 @@ export default function MissingEnvPage() {
       <div className="flex w-full min-h-screen items-center justify-center bg-base-200">
         <div className="alert alert-error max-w-md text-center shadow-lg">
           <span>
-            Переменные окружения VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY не
-            заданы. Приложение не может подключиться к базе данных и работает в
-            ограниченном режиме.
+            Переменные окружения VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY или
+            VITE_API_BASE_URL не заданы. Приложение не может подключиться к базе
+            данных или API и работает в ограниченном режиме.
           </span>
         </div>
       </div>

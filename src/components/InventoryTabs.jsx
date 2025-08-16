@@ -21,8 +21,7 @@ import { useChatMessages } from '../hooks/useChatMessages'
 import { useObjects } from '../hooks/useObjects'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { apiBaseUrl, isApiConfigured } from '../apiConfig'
 
 const TAB_KEY = (objectId) => `tab_${objectId}`
 const HW_MODAL_KEY = (objectId) => `hwModal_${objectId}`
@@ -577,10 +576,14 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange }) {
 
   async function handleImport() {
     if (!importTable || !importFile) return
+    if (!isApiConfigured) {
+      toast.error('API не настроен')
+      return
+    }
     const formData = new FormData()
     formData.append('file', importFile)
     try {
-      const res = await fetch(`${baseUrl}/import/${importTable}`, {
+      const res = await fetch(`${apiBaseUrl}/import/${importTable}`, {
         method: 'POST',
         body: formData,
       })
@@ -604,8 +607,12 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange }) {
   }
 
   async function handleExport(table, format = 'csv') {
+    if (!isApiConfigured) {
+      toast.error('API не настроен')
+      return
+    }
     try {
-      const res = await fetch(`${baseUrl}/export/${table}.${format}`)
+      const res = await fetch(`${apiBaseUrl}/export/${table}.${format}`)
       if (!res.ok) throw new Error('Ошибка экспорта')
       const blob = await res.blob()
       const url = window.URL.createObjectURL(blob)
