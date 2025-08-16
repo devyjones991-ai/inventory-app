@@ -1,12 +1,13 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 export default function ConfirmModal({
   open,
   title,
   message,
-  confirmLabel = 'OK',
-  cancelLabel = 'Отмена',
-  confirmClass = 'btn-error',
+  confirmLabel,
+  cancelLabel,
+  confirmClass,
   onConfirm,
   onCancel,
 }) {
@@ -27,4 +28,23 @@ export default function ConfirmModal({
       </div>
     </div>
   )
+}
+
+ConfirmModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  title: PropTypes.string,
+  message: PropTypes.string,
+  confirmLabel: PropTypes.node,
+  cancelLabel: PropTypes.node,
+  confirmClass: PropTypes.string,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+}
+
+ConfirmModal.defaultProps = {
+  title: '',
+  message: '',
+  confirmLabel: 'OK',
+  cancelLabel: 'Отмена',
+  confirmClass: 'btn-error',
 }

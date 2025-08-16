@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import Card from './Card'
 import { linkifyText } from '../utils/linkify.jsx'
 
@@ -35,4 +36,8 @@ export default function ChatCard({ message }) {
       )}
     </Card>
   )
+}
+
+ChatCard.propTypes = {
+  message: PropTypes.object.isRequired,
 }

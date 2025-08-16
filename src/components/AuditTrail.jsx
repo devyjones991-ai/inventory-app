@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import { supabase } from '../supabaseClient'
 import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
 
-export default function AuditTrail({ limit = 50 }) {
+export default function AuditTrail({ limit }) {
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -69,4 +70,12 @@ export default function AuditTrail({ limit = 50 }) {
       </table>
     </div>
   )
+}
+
+AuditTrail.propTypes = {
+  limit: PropTypes.number,
+}
+
+AuditTrail.defaultProps = {
+  limit: 50,
 }

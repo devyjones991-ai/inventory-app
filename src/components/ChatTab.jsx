@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react'
+import PropTypes from 'prop-types'
 import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon } from '@heroicons/react/24/outline'
@@ -147,3 +148,12 @@ function ChatTab({ selected, userEmail }) {
 }
 
 export default memo(ChatTab)
+
+ChatTab.propTypes = {
+  selected: PropTypes.object,
+  userEmail: PropTypes.string.isRequired,
+}
+
+ChatTab.defaultProps = {
+  selected: null,
+}
