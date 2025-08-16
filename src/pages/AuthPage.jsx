@@ -40,18 +40,24 @@ export default function AuthPage() {
     formState: { errors },
   } = useForm({ resolver: zodResolver(schema) })
 
+  function getNetworkErrorMessage(error) {
+    if (
+      error instanceof TypeError ||
+      (error.message && error.message.toLowerCase().includes('failed to fetch'))
+    ) {
+      console.error(error)
+      return 'Не удалось подключиться к серверу. Попробуйте позже.'
+    }
+    return error.message
+  }
+
   async function onSubmit({ email, password, username }) {
     setUserError(null)
     setInfo(null)
     if (isRegister) {
       const { data, error } = await signUp(email, password, username)
       if (error) {
-        if (error.name === 'FetchError') {
-          console.error(error)
-          setUserError('Не удалось подключиться к серверу. Попробуйте позже.')
-        } else {
-          setUserError(error.message)
-        }
+        setUserError(getNetworkErrorMessage(error))
       } else if (data.user && data.user.confirmed_at === null) {
         setInfo('Проверьте почту для подтверждения аккаунта')
       } else if (!data.session) {
@@ -64,12 +70,7 @@ export default function AuthPage() {
     } else {
       const { data, error } = await signIn(email, password)
       if (error) {
-        if (error.name === 'FetchError') {
-          console.error(error)
-          setUserError('Не удалось подключиться к серверу. Попробуйте позже.')
-        } else {
-          setUserError(error.message)
-        }
+        setUserError(getNetworkErrorMessage(error))
       } else if (!data.session) {
         setInfo(
           'Нет активной сессии. Подтвердите аккаунт или проверьте конфигурацию.',
