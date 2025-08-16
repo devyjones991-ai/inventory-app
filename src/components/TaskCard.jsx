@@ -1,4 +1,5 @@
 import { memo, useMemo, useCallback } from 'react'
+import PropTypes from 'prop-types'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
@@ -95,3 +96,10 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
 }
 
 export default memo(TaskCard)
+
+TaskCard.propTypes = {
+  item: PropTypes.object.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onView: PropTypes.func.isRequired,
+}

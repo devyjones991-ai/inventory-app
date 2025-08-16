@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 import { useAccount } from '../hooks/useAccount'
 import { toast } from 'react-hot-toast'
 
@@ -54,4 +55,10 @@ export default function AccountModal({ user, onClose, onUpdated }) {
       </div>
     </div>
   )
+}
+
+AccountModal.propTypes = {
+  user: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onUpdated: PropTypes.func.isRequired,
 }

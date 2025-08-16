@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import PropTypes from 'prop-types'
 
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -40,7 +41,7 @@ function formatDate(dateStr) {
   }
 }
 
-function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
+function InventoryTabs({ selected, onUpdateSelected, onTabChange }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   // --- вкладки и описание ---
@@ -1133,3 +1134,13 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 }
 
 export default React.memo(InventoryTabs)
+
+InventoryTabs.propTypes = {
+  selected: PropTypes.object.isRequired,
+  onUpdateSelected: PropTypes.func.isRequired,
+  onTabChange: PropTypes.func,
+}
+
+InventoryTabs.defaultProps = {
+  onTabChange: () => {},
+}

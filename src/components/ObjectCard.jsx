@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import PropTypes from 'prop-types'
 import Card from './Card'
 
 function ObjectCard({ item }) {
@@ -13,3 +14,7 @@ function ObjectCard({ item }) {
 }
 
 export default memo(ObjectCard)
+
+ObjectCard.propTypes = {
+  item: PropTypes.object.isRequired,
+}

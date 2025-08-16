@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react'
+import PropTypes from 'prop-types'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
@@ -8,7 +9,7 @@ function InventorySidebar({
   onSelect,
   onEdit,
   onDelete,
-  notifications = {},
+  notifications,
 }) {
   const items = useMemo(
     () =>
@@ -65,3 +66,17 @@ function InventorySidebar({
 }
 
 export default memo(InventorySidebar)
+
+InventorySidebar.propTypes = {
+  objects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  selected: PropTypes.object,
+  onSelect: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  notifications: PropTypes.object,
+}
+
+InventorySidebar.defaultProps = {
+  selected: null,
+  notifications: {},
+}

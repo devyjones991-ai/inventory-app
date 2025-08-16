@@ -1,9 +1,10 @@
 // src/components/HardwareCard.jsx
 import React from 'react'
+import PropTypes from 'prop-types'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
-export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
+export default function HardwareCard({ item, onEdit, onDelete, user }) {
   return (
     <Card className="flex justify-between items-center">
       <div>
@@ -36,4 +37,15 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
       )}
     </Card>
   )
+}
+
+HardwareCard.propTypes = {
+  item: PropTypes.object.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  user: PropTypes.object,
+}
+
+HardwareCard.defaultProps = {
+  user: null,
 }
