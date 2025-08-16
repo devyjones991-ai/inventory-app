@@ -20,8 +20,8 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Toaster position="top-right" />
       <Suspense fallback={<div>Loading...</div>}>
+        <Toaster position="top-right" />
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route
