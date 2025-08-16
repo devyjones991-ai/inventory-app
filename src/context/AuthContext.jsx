@@ -1,8 +1,7 @@
 import { createContext, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { apiBaseUrl, isApiConfigured } from '../apiConfig'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext({ user: null, role: null })
@@ -13,11 +12,17 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!isSupabaseConfigured) return
+    if (!isApiConfigured) {
+      console.error(
+        'Не задана переменная окружения VITE_API_BASE_URL. Авторизация через API недоступна.',
+      )
+      return
+    }
 
     const fetchRole = async (id) => {
       try {
         const res = await fetch(
-          `${baseUrl}/functions/v1/cacheGet?table=profiles&id=${id}`,
+          `${apiBaseUrl}/functions/v1/cacheGet?table=profiles&id=${id}`,
         )
         if (!res.ok) {
           const text = await res.text()

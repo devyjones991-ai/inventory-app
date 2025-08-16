@@ -1,6 +1,5 @@
 import { supabase } from '../supabaseClient'
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { apiBaseUrl, isApiConfigured } from '../apiConfig'
 export async function exportInventory() {
   const { data, error } = await supabase.functions.invoke('export-inventory')
   if (error) throw error
@@ -14,9 +13,15 @@ export async function importInventory(file) {
   return data
 }
 export async function exportTable(table, format) {
+  if (!isApiConfigured) {
+    console.error(
+      'Не задана переменная окружения VITE_API_BASE_URL. Экспорт невозможен.',
+    )
+    throw new Error('API не настроен')
+  }
   try {
     const res = await fetch(
-      `${baseUrl}/api/export/${table}?format=${encodeURIComponent(format)}`,
+      `${apiBaseUrl}/api/export/${table}?format=${encodeURIComponent(format)}`,
     )
     if (!res.ok) {
       const text = await res.text().catch(() => '')
@@ -31,8 +36,14 @@ export async function exportTable(table, format) {
 export async function importTable(table, file) {
   const formData = new FormData()
   formData.append('file', file)
+  if (!isApiConfigured) {
+    console.error(
+      'Не задана переменная окружения VITE_API_BASE_URL. Импорт невозможен.',
+    )
+    throw new Error('API не настроен')
+  }
   try {
-    const res = await fetch(`${baseUrl}/api/import/${table}`, {
+    const res = await fetch(`${apiBaseUrl}/api/import/${table}`, {
       method: 'POST',
       body: formData,
     })

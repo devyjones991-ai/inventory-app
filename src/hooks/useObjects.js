@@ -1,9 +1,22 @@
 import { supabase } from '../supabaseClient'
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { apiBaseUrl, isApiConfigured } from '../apiConfig'
 
 export function useObjects() {
-  const cacheUrl = `${baseUrl}/functions/v1/cacheGet?table=objects`
+  if (!isApiConfigured) {
+    console.error(
+      'Не задана переменная окружения VITE_API_BASE_URL. Работа с объектами недоступна.',
+    )
+    const error = new Error('API не настроен')
+    const reject = async () => ({ data: null, error })
+    return {
+      fetchObjects: reject,
+      insertObject: reject,
+      updateObject: reject,
+      deleteObject: reject,
+    }
+  }
+
+  const cacheUrl = `${apiBaseUrl}/functions/v1/cacheGet?table=objects`
 
   const fetchObjects = async () => {
     try {
