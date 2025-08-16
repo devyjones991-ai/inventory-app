@@ -83,21 +83,35 @@ export default function AuthPage() {
 
   useEffect(() => {
     let isMounted = true
-    getSession().then(({ data: { session } }) => {
-      if (session && isMounted) {
-        navigate('/')
+    let subscription
+
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await getSession()
+        if (session && isMounted) {
+          navigate('/')
+        }
+        ;({
+          data: { subscription },
+        } = onAuthStateChange((_event, session) => {
+          if (session) {
+            navigate('/')
+          }
+        }))
+      } catch (error) {
+        console.error(error)
+        setUserError('Не удалось получить сессию. Попробуйте позже.')
+        return
       }
-    })
-    const {
-      data: { subscription },
-    } = onAuthStateChange((_event, session) => {
-      if (session) {
-        navigate('/')
-      }
-    })
+    }
+
+    checkSession()
+
     return () => {
       isMounted = false
-      subscription.unsubscribe()
+      subscription?.unsubscribe()
     }
   }, [navigate])
 
