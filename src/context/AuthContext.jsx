@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
       console.error(
         'Не задана переменная окружения VITE_API_BASE_URL. Авторизация через API недоступна.',
       )
-      return
+      toast.error('Роль недоступна: API не сконфигурирован')
     }
 
     const fetchRole = async (id) => {
@@ -44,13 +44,17 @@ export function AuthProvider({ children }) {
       setUser(currentUser)
 
       if (currentUser) {
-        const { role: fetchedRole, error } = await fetchRole(currentUser.id)
-        if (error) {
-          console.error('Ошибка получения роли:', error)
-          toast.error('Ошибка получения роли: ' + error.message)
-          setRole(null)
+        if (isApiConfigured) {
+          const { role: fetchedRole, error } = await fetchRole(currentUser.id)
+          if (error) {
+            console.error('Ошибка получения роли:', error)
+            toast.error('Ошибка получения роли: ' + error.message)
+            setRole(null)
+          } else {
+            setRole(fetchedRole)
+          }
         } else {
-          setRole(fetchedRole)
+          setRole(null)
         }
       } else {
         setRole(null)
@@ -65,13 +69,17 @@ export function AuthProvider({ children }) {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       if (currentUser) {
-        const { role: fetchedRole, error } = await fetchRole(currentUser.id)
-        if (error) {
-          console.error('Ошибка получения роли:', error)
-          toast.error('Ошибка получения роли: ' + error.message)
-          setRole(null)
+        if (isApiConfigured) {
+          const { role: fetchedRole, error } = await fetchRole(currentUser.id)
+          if (error) {
+            console.error('Ошибка получения роли:', error)
+            toast.error('Ошибка получения роли: ' + error.message)
+            setRole(null)
+          } else {
+            setRole(fetchedRole)
+          }
         } else {
-          setRole(fetchedRole)
+          setRole(null)
         }
       } else {
         setRole(null)
