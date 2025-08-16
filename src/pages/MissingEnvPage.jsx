@@ -24,11 +24,21 @@ export default function MissingEnvPage() {
   return (
     <div className="flex h-screen items-center justify-center bg-base-200 transition-colors">
       <div className="flex w-full min-h-screen items-center justify-center bg-base-200">
-        <div className="alert alert-error max-w-md text-center shadow-lg">
-          <span>
-            {prefix} {varsText} не заданы. Приложение не может подключиться к{' '}
-            {targetsText} и работает в ограниченном режиме.
-          </span>
+        <div className="space-y-4 max-w-md text-center">
+          <div className="alert alert-error shadow-lg">
+            <span>
+              {prefix} {varsText} не заданы. Приложение не может подключиться к{' '}
+              {targetsText} и работает в ограниченном режиме.
+            </span>
+          </div>
+          {!isApiConfigured && (
+            <div className="alert alert-warning shadow-lg">
+              <span>
+                Без API недоступны управление объектами, импорт и экспорт
+                данных, а также получение ролей пользователей.
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
