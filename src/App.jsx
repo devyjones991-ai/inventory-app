@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
 import { Toaster, toast } from 'react-hot-toast'
 import { isSupabaseConfigured } from './supabaseClient'
 import { isApiConfigured } from './apiConfig'
@@ -30,17 +31,19 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<div>Loading...</div>}>
         <Toaster position="top-right" />
-        <Routes>
-          <Route path="/auth" element={<AuthPage />} />
-          <Route
-            path="/*"
-            element={
-              <PrivateRoute>
-                <DashboardPage />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route
+              path="/*"
+              element={
+                <PrivateRoute>
+                  <DashboardPage />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </ErrorBoundary>
       </Suspense>
     </BrowserRouter>
   )
