@@ -16,7 +16,3 @@ export default function ErrorMessage({
     </div>
   )
 }
-
-ErrorMessage.defaultProps = {
-  message: 'Ошибка загрузки данных',
-}
