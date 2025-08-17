@@ -1,4 +1,6 @@
 import { supabase } from '../supabaseClient'
+import { handleSupabaseError } from '../utils/handleSupabaseError'
+import { useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
 
 const ALLOWED_MIME_TYPES = [
@@ -11,48 +13,64 @@ const ALLOWED_MIME_TYPES = [
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
 
 export function useChatMessages() {
-  const fetchMessages = (objectId, { limit, offset } = {}) => {
-    let query = supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('object_id', objectId)
-      .order('created_at', { ascending: true })
+  const navigate = useNavigate()
 
-    if (typeof limit === 'number') {
-      if (typeof offset === 'number') {
-        query = query.range(offset, offset + limit - 1)
-      } else {
-        query = query.limit(limit)
+  const fetchMessages = async (objectId, { limit, offset } = {}) => {
+    try {
+      let query = supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('object_id', objectId)
+        .order('created_at', { ascending: true })
+
+      if (typeof limit === 'number') {
+        if (typeof offset === 'number') {
+          query = query.range(offset, offset + limit - 1)
+        } else {
+          query = query.limit(limit)
+        }
       }
-    }
 
-    return query
+      const result = await query
+      if (result.error) throw result.error
+      return result
+    } catch (error) {
+      await handleSupabaseError(error, navigate, 'Ошибка загрузки сообщений')
+      return { data: null, error }
+    }
   }
 
   async function sendMessage({ objectId, sender, content, file }) {
-    let fileUrl = null
-    if (file) {
-      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-        return { error: new Error('Unsupported file type') }
+    try {
+      let fileUrl = null
+      if (file) {
+        if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+          return { error: new Error('Unsupported file type') }
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          return { error: new Error('File too large') }
+        }
+        const filePath = `${objectId}/${uuidv4()}_${file.name}`
+        const { error: uploadError } = await supabase.storage
+          .from('chat-files')
+          .upload(filePath, file)
+        if (uploadError) throw uploadError
+        const { data } = supabase.storage
+          .from('chat-files')
+          .getPublicUrl(filePath)
+        fileUrl = data.publicUrl
       }
-      if (file.size > MAX_FILE_SIZE) {
-        return { error: new Error('File too large') }
-      }
-      const filePath = `${objectId}/${uuidv4()}_${file.name}`
-      const { error: uploadError } = await supabase.storage
-        .from('chat-files')
-        .upload(filePath, file)
-      if (uploadError) return { error: uploadError }
-      const { data } = supabase.storage
-        .from('chat-files')
-        .getPublicUrl(filePath)
-      fileUrl = data.publicUrl
+      const result = await supabase
+        .from('chat_messages')
+        .insert([{ object_id: objectId, sender, content, file_url: fileUrl }])
+        .select()
+        .single()
+      if (result.error) throw result.error
+      return result
+    } catch (error) {
+      await handleSupabaseError(error, navigate, 'Ошибка отправки сообщения')
+      return { data: null, error }
     }
-    return supabase
-      .from('chat_messages')
-      .insert([{ object_id: objectId, sender, content, file_url: fileUrl }])
-      .select()
-      .single()
   }
 
   const subscribeToMessages = (objectId, handler) => {
