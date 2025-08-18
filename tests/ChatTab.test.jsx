@@ -90,6 +90,80 @@ describe('ChatTab', () => {
     expect(await screen.findByText('msg25')).toBeInTheDocument()
   })
 
+  it('автоскроллит контейнер вниз при загрузке длинного списка сообщений', async () => {
+    const manyMessages = Array.from({ length: 50 }, (_, i) => ({
+      id: `${i + 1}`,
+      object_id: '1',
+      sender: 'other@example.com',
+      content: `msg${i + 1}`,
+      created_at: new Date(Date.now() + i).toISOString(),
+    }))
+    mockFetchMessages.mockResolvedValueOnce({ data: manyMessages, error: null })
+
+    let scrollTop = 0
+    const scrollTopSetter = jest.fn((v) => {
+      scrollTop = v
+    })
+    const originalScrollTop = Object.getOwnPropertyDescriptor(
+      window.HTMLElement.prototype,
+      'scrollTop',
+    )
+    const originalScrollHeight = Object.getOwnPropertyDescriptor(
+      window.HTMLElement.prototype,
+      'scrollHeight',
+    )
+    const originalClientHeight = Object.getOwnPropertyDescriptor(
+      window.HTMLElement.prototype,
+      'clientHeight',
+    )
+
+    Object.defineProperty(window.HTMLElement.prototype, 'scrollTop', {
+      configurable: true,
+      get: () => scrollTop,
+      set: scrollTopSetter,
+    })
+    Object.defineProperty(window.HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get: () => 1000,
+    })
+    Object.defineProperty(window.HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      get: () => 100,
+    })
+
+    const { container } = render(
+      <ChatTab selected={{ id: '1' }} userEmail="me@example.com" />,
+    )
+
+    expect(await screen.findByText('msg50')).toBeInTheDocument()
+
+    const scrollContainer = container.querySelector('.flex-1.overflow-y-auto')
+    expect(scrollTopSetter).toHaveBeenCalled()
+    expect(scrollContainer.scrollTop).toBe(scrollContainer.scrollHeight)
+
+    if (originalScrollTop)
+      Object.defineProperty(
+        window.HTMLElement.prototype,
+        'scrollTop',
+        originalScrollTop,
+      )
+    else delete window.HTMLElement.prototype.scrollTop
+    if (originalScrollHeight)
+      Object.defineProperty(
+        window.HTMLElement.prototype,
+        'scrollHeight',
+        originalScrollHeight,
+      )
+    else delete window.HTMLElement.prototype.scrollHeight
+    if (originalClientHeight)
+      Object.defineProperty(
+        window.HTMLElement.prototype,
+        'clientHeight',
+        originalClientHeight,
+      )
+    else delete window.HTMLElement.prototype.clientHeight
+  })
+
   it('отображает сообщения и корректно определяет свои по e-mail', async () => {
     render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
 
