@@ -5,11 +5,36 @@ import { Redis } from 'https://deno.land/x/upstash_redis@v1.22.0/mod.ts'
 serve(async (req) => {
   const url = new URL(req.url)
   const table = url.searchParams.get('table')
+  const allowedTables = ['profiles']
   const id = url.searchParams.get('id')
 
   if (!table) {
     return new Response(JSON.stringify({ error: 'table is required' }), {
       status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  if (!allowedTables.includes(table)) {
+    return new Response(JSON.stringify({ error: 'table is not allowed' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  const authHeader = req.headers.get('Authorization') || ''
+  const token = authHeader.replace('Bearer ', '')
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+  )
+
+  const { data: userData, error: userError } =
+    await supabase.auth.getUser(token)
+  if (userError || !userData?.user) {
+    return new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
       headers: { 'Content-Type': 'application/json' },
     })
   }
@@ -41,11 +66,6 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json', 'X-Cache': 'HIT' },
     })
   }
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-  )
 
   let query
   if (id) {
