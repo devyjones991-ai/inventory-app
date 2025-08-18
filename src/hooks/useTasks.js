@@ -5,6 +5,10 @@ import { useNavigate } from 'react-router-dom'
 export function useTasks() {
   const navigate = useNavigate()
 
+  const isSchemaCacheError = (error) =>
+    error?.code === '42703' ||
+    error?.message?.toLowerCase?.().includes('schema cache')
+
   const fetchTasks = async (objectId) => {
     try {
       const baseFields =
@@ -16,9 +20,9 @@ export function useTasks() {
         .select(baseFields)
         .eq('object_id', objectId)
       let result = await baseQuery.order('created_at')
-      if (result.error?.code === '42703') {
+      if (isSchemaCacheError(result.error)) {
         result = await baseQuery
-        if (result.error?.code === '42703') {
+        if (isSchemaCacheError(result.error)) {
           result = await supabase
             .from('tasks')
             .select(fallbackFields)
@@ -54,7 +58,7 @@ export function useTasks() {
         .insert([data])
         .select(baseFields)
         .single()
-      if (result.error?.code === '42703') {
+      if (isSchemaCacheError(result.error)) {
         result = await supabase
           .from('tasks')
           .insert([data])
@@ -89,7 +93,7 @@ export function useTasks() {
         .eq('id', id)
         .select(baseFields)
         .single()
-      if (result.error?.code === '42703') {
+      if (isSchemaCacheError(result.error)) {
         result = await supabase
           .from('tasks')
           .update(data)
