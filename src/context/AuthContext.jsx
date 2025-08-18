@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
     const fetchRole = async (id) => {
       try {
         const res = await fetch(
-          `${apiBaseUrl}/functions/v1/cacheGet?table=profiles&id=${id}`,
+          `${apiBaseUrl}/functions/v1/cacheGet?table=${encodeURIComponent('profiles')}&id=${encodeURIComponent(id)}`,
         )
         if (!res.ok) {
           const text = await res.text()
