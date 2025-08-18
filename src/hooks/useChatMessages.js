@@ -23,7 +23,7 @@ export function useChatMessages() {
           .from('chat_messages')
           .select('*')
           .eq('object_id', objectId)
-          .order('created_at', { ascending: true })
+          .order('created_at', { ascending: false })
 
         if (typeof limit === 'number') {
           if (typeof offset === 'number') {
@@ -35,6 +35,7 @@ export function useChatMessages() {
 
         const result = await query
         if (result.error) throw result.error
+        if (result.data) result.data.reverse()
         return result
       } catch (error) {
         await handleSupabaseError(error, navigate, 'Ошибка загрузки сообщений')
