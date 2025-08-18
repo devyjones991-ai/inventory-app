@@ -19,7 +19,35 @@ export function AuthProvider({ children }) {
       toast.error('Роль недоступна: API не сконфигурирован')
     }
 
+    let cacheGetAvailable = null
+
+    const checkCacheGetAvailability = async () => {
+      if (cacheGetAvailable !== null) return cacheGetAvailable
+      try {
+        const res = await fetch(`${apiBaseUrl}/functions/v1/cacheGet`, {
+          method: 'OPTIONS',
+        })
+        cacheGetAvailable = res.status !== 404
+      } catch {
+        cacheGetAvailable = false
+      }
+      return cacheGetAvailable
+    }
+
     const fetchRole = async (id) => {
+      if (!(await checkCacheGetAvailability())) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', id)
+            .maybeSingle()
+          if (error) throw error
+          return { role: data?.role ?? null }
+        } catch (error) {
+          return { error }
+        }
+      }
       try {
         const res = await fetch(
           `${apiBaseUrl}/functions/v1/cacheGet?table=${encodeURIComponent('profiles')}&id=${encodeURIComponent(id)}`,
@@ -39,6 +67,7 @@ export function AuthProvider({ children }) {
             res.status === 404 ||
             message?.includes('Requested function was not found')
           ) {
+            cacheGetAvailable = false
             try {
               const { data, error: fallbackError } = await supabase
                 .from('profiles')
@@ -56,7 +85,6 @@ export function AuthProvider({ children }) {
         const body = await res.json()
         return { role: body.data?.role ?? null }
       } catch (error) {
-        // toast.error('Ошибка получения роли: ' + error.message)
         return { error }
       }
     }
