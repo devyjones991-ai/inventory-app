@@ -124,6 +124,26 @@ export function useTasks() {
         },
         handler,
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tasks',
+          filter: `object_id=eq.${objectId}`,
+        },
+        handler,
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'tasks',
+          filter: `object_id=eq.${objectId}`,
+        },
+        handler,
+      )
       .subscribe()
     return () => supabase.removeChannel(channel)
   }
@@ -134,6 +154,16 @@ export function useTasks() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'tasks' },
+        handler,
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'tasks' },
+        handler,
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'tasks' },
         handler,
       )
       .subscribe()
