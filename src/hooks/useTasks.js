@@ -11,23 +11,25 @@ export function useTasks() {
         'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes'
       const fallbackFields =
         'id, title, status, assignee, executor, due_date, planned_date, plan_date, notes'
-      let result = await supabase
+      const baseQuery = supabase
         .from('tasks')
         .select(baseFields)
         .eq('object_id', objectId)
-        .order('created_at')
+      let result = await baseQuery.order('created_at')
       if (result.error?.code === '42703') {
-        result = await supabase
-          .from('tasks')
-          .select(fallbackFields)
-          .eq('object_id', objectId)
-          .order('created_at')
-        if (!result.error && result.data) {
-          result.data = result.data.map((task) => ({
-            ...task,
-            assignee_id: null,
-            executor_id: null,
-          }))
+        result = await baseQuery
+        if (result.error?.code === '42703') {
+          result = await supabase
+            .from('tasks')
+            .select(fallbackFields)
+            .eq('object_id', objectId)
+          if (!result.error && result.data) {
+            result.data = result.data.map((task) => ({
+              ...task,
+              assignee_id: null,
+              executor_id: null,
+            }))
+          }
         }
       }
       if (result.error) throw result.error
