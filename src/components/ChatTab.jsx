@@ -60,7 +60,9 @@ function ChatTab({ selected, userEmail }) {
           </div>
         ) : (
           messages.map((m) => {
-            const isOwn = m.sender === userEmail
+            const isOwn =
+              (m.sender || '').trim().toLowerCase() ===
+              (userEmail || '').trim().toLowerCase()
             const dt = new Date(m.created_at)
             const date = dt.toLocaleDateString()
             const time = dt.toLocaleTimeString([], {
