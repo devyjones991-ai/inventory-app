@@ -17,11 +17,20 @@ var mockInsert
 var mockFrom
 var mockEq
 var mockOrder
+var mockEqResults
 
 jest.mock('../src/supabaseClient.js', () => {
+  mockEqResults = []
   mockSingle = jest.fn(() => Promise.resolve({ data: null, error: null }))
   mockOrder = jest.fn(() => Promise.resolve({ data: null, error: null }))
-  mockEq = jest.fn(() => ({ order: mockOrder }))
+  mockEq = jest.fn(() => {
+    const res = mockEqResults.shift() || { data: null, error: null }
+    const thenable = {
+      order: mockOrder,
+      then: (resolve) => resolve(res),
+    }
+    return thenable
+  })
   mockSelect = jest.fn(() => ({
     single: mockSingle,
     eq: mockEq,
@@ -35,6 +44,7 @@ jest.mock('../src/supabaseClient.js', () => {
 describe('useTasks', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockEqResults = []
   })
 
   it('обрабатывает ошибку добавления задачи', async () => {
@@ -51,12 +61,12 @@ describe('useTasks', () => {
   })
 
   it('повторно запрашивает задачи при отсутствии assignee_id', async () => {
-    mockOrder
-      .mockResolvedValueOnce({ data: null, error: { code: '42703' } })
-      .mockResolvedValueOnce({
-        data: [{ id: 1, title: 't', assignee: 'a', executor: 'e' }],
-        error: null,
-      })
+    mockOrder.mockResolvedValueOnce({ data: null, error: { code: '42703' } })
+    mockEqResults.push({ data: null, error: { code: '42703' } })
+    mockEqResults.push({
+      data: [{ id: 1, title: 't', assignee: 'a', executor: 'e' }],
+      error: null,
+    })
 
     const { result } = renderHook(() => useTasks())
     const { data, error } = await result.current.fetchTasks(1)
@@ -79,6 +89,40 @@ describe('useTasks', () => {
       2,
       expect.not.stringContaining('assignee_id'),
     )
+    expect(mockOrder).toHaveBeenCalledTimes(1)
     expect(mockHandleSupabaseError).not.toHaveBeenCalled()
+  })
+
+  it('успешно загружает задачи без created_at', async () => {
+    mockOrder.mockResolvedValueOnce({ data: null, error: { code: '42703' } })
+    mockEqResults.push({
+      data: [
+        {
+          id: 1,
+          title: 't',
+          assignee: 'a',
+          executor: 'e',
+          assignee_id: 10,
+          executor_id: 20,
+        },
+      ],
+      error: null,
+    })
+
+    const { result } = renderHook(() => useTasks())
+    const { data, error } = await result.current.fetchTasks(1)
+    expect(error).toBeNull()
+    expect(data).toEqual([
+      {
+        id: 1,
+        title: 't',
+        assignee: 'a',
+        executor: 'e',
+        assignee_id: 10,
+        executor_id: 20,
+      },
+    ])
+    expect(mockSelect).toHaveBeenCalledTimes(1)
+    expect(mockOrder).toHaveBeenCalledTimes(1)
   })
 })
