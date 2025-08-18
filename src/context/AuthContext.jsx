@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
                 .from('profiles')
                 .select('role')
                 .eq('id', id)
-                .single()
+                .maybeSingle()
               if (fallbackError) throw fallbackError
               return { role: data?.role ?? null }
             } catch (error) {
