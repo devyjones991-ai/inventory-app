@@ -127,7 +127,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const [taskDeleteId, setTaskDeleteId] = useState(null)
   const taskEffectRan = React.useRef(false)
   const [tasksError, setTasksError] = useState(null)
-  const [tasksPage, setTasksPage] = useState(0)
   const [tasksHasMore, setTasksHasMore] = useState(true)
   const [loadingTasks, setLoadingTasks] = useState(false)
 
@@ -229,12 +228,11 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     setHardwarePage(0)
     setHardwareHasMore(true)
     setHardwareError(null)
-    setTasksPage(0)
     setTasksHasMore(true)
     setTasksError(null)
 
     fetchHardware(selected.id, 0)
-    fetchTasks(selected.id, 0)
+    fetchTasks(selected.id)
     fetchMessages(selected.id).then(({ data, error }) => {
       if (error) {
         if (error.status === 403) toast.error('Недостаточно прав')
@@ -442,42 +440,19 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   // --- CRUD Задачи ---
 
-  async function fetchTasks(objectId, page = tasksPage) {
+  async function fetchTasks(objectId) {
     setLoadingTasks(true)
 
     setTasksError(null)
-    const from = page * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-    const { data, error } = await supabase
-      .from('tasks')
-      .select(
-        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
-      )
-      .eq('object_id', objectId)
-      .order('created_at')
-      .range(from, to)
+    const { data, error } = await fetchTasksApi(objectId)
     if (error) {
       setTasksError(error)
-
       if (error.status === 403) toast.error('Недостаточно прав')
       else toast.error('Ошибка загрузки задач: ' + error.message)
-
-      await handleSupabaseError(error, navigate, 'Ошибка загрузки задач')
-      setLoadingTasks(false)
-      return
     } else {
-      setTasks((prev) => [...prev, ...(data || [])])
-      if (!data || data.length < PAGE_SIZE) {
-        setTasksHasMore(false)
-      } else {
-        setTasksPage(page + 1)
-      }
+      setTasks(data || [])
+      setTasksHasMore(false)
     }
-    const { data: apiData, error: apiError } = await fetchTasksApi(objectId)
-    if (apiError) {
-      if (apiError.status === 403) toast.error('Недостаточно прав')
-      else toast.error('Ошибка загрузки задач: ' + apiError.message)
-    } else setTasks(apiData || [])
     setLoadingTasks(false)
   }
 
@@ -597,9 +572,8 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         await fetchHardware(selected.id, 0)
       } else if (importTable === 'tasks') {
         setTasks([])
-        setTasksPage(0)
         setTasksHasMore(true)
-        await fetchTasks(selected.id, 0)
+        await fetchTasks(selected.id)
       }
     } catch (e) {
       toast.error(e.message)
@@ -924,7 +898,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             {tasksHasMore && !loadingTasks && (
               <button
                 className="btn btn-outline btn-sm mt-2"
-                onClick={() => fetchTasks(selected.id, tasksPage)}
+                onClick={() => fetchTasks(selected.id)}
               >
                 Загрузить ещё
               </button>
