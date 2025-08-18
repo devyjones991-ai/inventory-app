@@ -104,8 +104,24 @@ describe('InventoryTabs', () => {
     fireEvent.click(screen.getByText(/Железо/))
     expect(await screen.findByText('Оборудование')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText(/Задачи/))
+    fireEvent.click(screen.getAllByText(/Задачи/)[0])
     expect(await screen.findByText('Задачи')).toBeInTheDocument()
+  })
+
+  it('показывает сообщение при отсутствии задач', async () => {
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getAllByText(/Задачи/)[0])
+
+    expect(await screen.findByText('Задачи не найдены')).toBeInTheDocument()
   })
 
   it('отображает кнопку «Загрузить ещё» при наличии дополнительных задач', async () => {
