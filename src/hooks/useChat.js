@@ -107,7 +107,23 @@ export default function useChat({ objectId, userEmail }) {
         (payload) => {
           if (payload.eventType === 'INSERT') {
             offsetRef.current += 1
-            setMessages((prev) => [...prev, payload.new].sort(sortByCreatedAt))
+            setMessages((prev) => {
+              const optimisticIndex = prev.findIndex(
+                (m) =>
+                  m._optimistic &&
+                  m.sender === payload.new.sender &&
+                  Math.abs(
+                    new Date(m.created_at).getTime() -
+                      new Date(payload.new.created_at).getTime(),
+                  ) < 5000,
+              )
+              if (optimisticIndex !== -1) {
+                const updated = [...prev]
+                updated[optimisticIndex] = payload.new
+                return updated.sort(sortByCreatedAt)
+              }
+              return [...prev, payload.new].sort(sortByCreatedAt)
+            })
           } else if (payload.eventType === 'UPDATE') {
             setMessages((prev) =>
               prev
