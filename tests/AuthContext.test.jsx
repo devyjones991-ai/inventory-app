@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, jest } from '@jest/globals'
 import { useContext } from 'react'
 import { AuthProvider, AuthContext } from '../src/context/AuthContext.jsx'
+import { toast } from 'react-hot-toast'
 
 const mockGetSession = jest.fn()
 const mockOnAuthStateChange = jest.fn()
@@ -36,7 +37,11 @@ describe('AuthContext', () => {
     globalThis.fetch = jest.fn(() =>
       Promise.resolve({
         ok: false,
+        json: () => Promise.reject(new Error('not json')),
         text: () => Promise.resolve(errorText),
+        clone() {
+          return this
+        },
       }),
     )
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
@@ -57,6 +62,37 @@ describe('AuthContext', () => {
     expect(screen.getByText('без роли')).toBeInTheDocument()
 
     consoleSpy.mockRestore()
+    globalThis.fetch = originalFetch
+  })
+
+  it('использует сообщение из JSON при ошибке API', async () => {
+    const errorMessage = 'Нет доступа'
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve({ message: errorMessage }),
+        text: () => Promise.resolve(''),
+        clone() {
+          return this
+        },
+      }),
+    )
+    const toastSpy = jest.spyOn(toast, 'error').mockImplementation(() => {})
+
+    render(
+      <AuthProvider>
+        <Consumer />
+      </AuthProvider>,
+    )
+
+    await waitFor(() => expect(toastSpy).toHaveBeenCalled())
+
+    expect(toastSpy).toHaveBeenCalledWith(
+      'Ошибка получения роли: ' + errorMessage,
+    )
+
+    toastSpy.mockRestore()
     globalThis.fetch = originalFetch
   })
 })

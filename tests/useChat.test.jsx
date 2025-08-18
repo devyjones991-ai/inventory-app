@@ -12,9 +12,7 @@ const mockError = new Error('update failed')
 // Mock Supabase client first
 const updateChain = {
   is: jest.fn(() => ({
-    eq: jest.fn(() => ({
-      neq: jest.fn(() => Promise.resolve({ data: null, error: mockError })),
-    })),
+    eq: jest.fn(() => Promise.resolve({ data: null, error: mockError })),
   })),
 }
 
@@ -111,14 +109,17 @@ describe('useChat markMessagesAsRead', () => {
   })
 
   it('обрабатывает ошибку при отметке сообщений прочитанными', async () => {
-    renderHook(() => useChat({ objectId: '1', userEmail: 'me@example.com' }))
-
-    await waitFor(() => {
-      expect(mockHandleSupabaseError).toHaveBeenCalledWith(
-        mockError,
-        null,
-        'Ошибка отметки сообщений как прочитанных',
-      )
+    const { result } = renderHook(() =>
+      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+    )
+    await waitFor(() => result.current.messages.length > 0)
+    await act(async () => {
+      await result.current.markMessagesAsRead()
     })
+    expect(mockHandleSupabaseError).toHaveBeenCalledWith(
+      mockError,
+      null,
+      'Ошибка отметки сообщений как прочитанных',
+    )
   })
 })

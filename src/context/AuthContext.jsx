@@ -25,8 +25,17 @@ export function AuthProvider({ children }) {
           `${apiBaseUrl}/functions/v1/cacheGet?table=${encodeURIComponent('profiles')}&id=${encodeURIComponent(id)}`,
         )
         if (!res.ok) {
-          const text = await res.text()
-          throw new Error(text)
+          let message
+          try {
+            const errorBody = await res.clone().json()
+            message = errorBody?.message
+          } catch {
+            // ignore JSON parse errors
+          }
+          if (!message) {
+            message = await res.text()
+          }
+          throw new Error(message)
         }
         const body = await res.json()
         return { role: body.data?.role ?? null }
