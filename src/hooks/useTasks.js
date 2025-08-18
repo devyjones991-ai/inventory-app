@@ -7,13 +7,29 @@ export function useTasks() {
 
   const fetchTasks = async (objectId) => {
     try {
-      const result = await supabase
+      const baseFields =
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes'
+      const fallbackFields =
+        'id, title, status, assignee, executor, due_date, planned_date, plan_date, notes'
+      let result = await supabase
         .from('tasks')
-        .select(
-          'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
-        )
+        .select(baseFields)
         .eq('object_id', objectId)
         .order('created_at')
+      if (result.error?.code === '42703') {
+        result = await supabase
+          .from('tasks')
+          .select(fallbackFields)
+          .eq('object_id', objectId)
+          .order('created_at')
+        if (!result.error && result.data) {
+          result.data = result.data.map((task) => ({
+            ...task,
+            assignee_id: null,
+            executor_id: null,
+          }))
+        }
+      }
       if (result.error) throw result.error
       return result
     } catch (error) {
@@ -24,13 +40,25 @@ export function useTasks() {
 
   const insertTask = async (data) => {
     try {
-      const result = await supabase
+      const baseFields =
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes'
+      const fallbackFields =
+        'id, title, status, assignee, executor, due_date, planned_date, plan_date, notes'
+      let result = await supabase
         .from('tasks')
         .insert([data])
-        .select(
-          'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
-        )
+        .select(baseFields)
         .single()
+      if (result.error?.code === '42703') {
+        result = await supabase
+          .from('tasks')
+          .insert([data])
+          .select(fallbackFields)
+          .single()
+        if (!result.error && result.data) {
+          result.data = { ...result.data, assignee_id: null, executor_id: null }
+        }
+      }
       if (result.error) throw result.error
       return result
     } catch (error) {
@@ -41,14 +69,27 @@ export function useTasks() {
 
   const updateTask = async (id, data) => {
     try {
-      const result = await supabase
+      const baseFields =
+        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes'
+      const fallbackFields =
+        'id, title, status, assignee, executor, due_date, planned_date, plan_date, notes'
+      let result = await supabase
         .from('tasks')
         .update(data)
         .eq('id', id)
-        .select(
-          'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes',
-        )
+        .select(baseFields)
         .single()
+      if (result.error?.code === '42703') {
+        result = await supabase
+          .from('tasks')
+          .update(data)
+          .eq('id', id)
+          .select(fallbackFields)
+          .single()
+        if (!result.error && result.data) {
+          result.data = { ...result.data, assignee_id: null, executor_id: null }
+        }
+      }
       if (result.error) throw result.error
       return result
     } catch (error) {
