@@ -8,9 +8,9 @@ export function useTasks() {
   const fetchTasks = async (objectId) => {
     try {
       const baseFields =
-        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes'
+        'id, title, status, assignee, assignee_id, due_date, planned_date, plan_date, notes'
       const fallbackFields =
-        'id, title, status, assignee, executor, due_date, planned_date, plan_date, notes'
+        'id, title, status, executor, executor_id, due_date, planned_date, plan_date, notes'
       const baseQuery = supabase
         .from('tasks')
         .select(baseFields)
@@ -24,11 +24,13 @@ export function useTasks() {
             .select(fallbackFields)
             .eq('object_id', objectId)
           if (!result.error && result.data) {
-            result.data = result.data.map((task) => ({
-              ...task,
-              assignee_id: null,
-              executor_id: null,
-            }))
+            result.data = result.data.map(
+              ({ executor, executor_id, ...rest }) => ({
+                ...rest,
+                assignee: executor,
+                assignee_id: executor_id,
+              }),
+            )
           }
         }
       }
@@ -44,9 +46,9 @@ export function useTasks() {
   const insertTask = async (data) => {
     try {
       const baseFields =
-        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes'
+        'id, title, status, assignee, assignee_id, due_date, planned_date, plan_date, notes'
       const fallbackFields =
-        'id, title, status, assignee, executor, due_date, planned_date, plan_date, notes'
+        'id, title, status, executor, executor_id, due_date, planned_date, plan_date, notes'
       let result = await supabase
         .from('tasks')
         .insert([data])
@@ -59,7 +61,12 @@ export function useTasks() {
           .select(fallbackFields)
           .single()
         if (!result.error && result.data) {
-          result.data = { ...result.data, assignee_id: null, executor_id: null }
+          const { executor, executor_id, ...rest } = result.data
+          result.data = {
+            ...rest,
+            assignee: executor,
+            assignee_id: executor_id,
+          }
         }
       }
       if (result.error) throw result.error
@@ -73,9 +80,9 @@ export function useTasks() {
   const updateTask = async (id, data) => {
     try {
       const baseFields =
-        'id, title, status, assignee, assignee_id, executor, executor_id, due_date, planned_date, plan_date, notes'
+        'id, title, status, assignee, assignee_id, due_date, planned_date, plan_date, notes'
       const fallbackFields =
-        'id, title, status, assignee, executor, due_date, planned_date, plan_date, notes'
+        'id, title, status, executor, executor_id, due_date, planned_date, plan_date, notes'
       let result = await supabase
         .from('tasks')
         .update(data)
@@ -90,7 +97,12 @@ export function useTasks() {
           .select(fallbackFields)
           .single()
         if (!result.error && result.data) {
-          result.data = { ...result.data, assignee_id: null, executor_id: null }
+          const { executor, executor_id, ...rest } = result.data
+          result.data = {
+            ...rest,
+            assignee: executor,
+            assignee_id: executor_id,
+          }
         }
       }
       if (result.error) throw result.error

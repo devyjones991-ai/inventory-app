@@ -64,7 +64,7 @@ describe('useTasks', () => {
     mockOrder.mockResolvedValueOnce({ data: null, error: { code: '42703' } })
     mockEqResults.push({ data: null, error: { code: '42703' } })
     mockEqResults.push({
-      data: [{ id: 1, title: 't', assignee: 'a', executor: 'e' }],
+      data: [{ id: 1, title: 't', executor: 'e', executor_id: 5 }],
       error: null,
     })
 
@@ -75,10 +75,8 @@ describe('useTasks', () => {
       {
         id: 1,
         title: 't',
-        assignee: 'a',
-        executor: 'e',
-        assignee_id: null,
-        executor_id: null,
+        assignee: 'e',
+        assignee_id: 5,
       },
     ])
     expect(mockSelect).toHaveBeenNthCalledWith(
@@ -87,7 +85,7 @@ describe('useTasks', () => {
     )
     expect(mockSelect).toHaveBeenNthCalledWith(
       2,
-      expect.not.stringContaining('assignee_id'),
+      expect.stringContaining('executor_id'),
     )
     expect(mockOrder).toHaveBeenCalledTimes(1)
     expect(mockHandleSupabaseError).not.toHaveBeenCalled()
@@ -101,9 +99,7 @@ describe('useTasks', () => {
           id: 1,
           title: 't',
           assignee: 'a',
-          executor: 'e',
           assignee_id: 10,
-          executor_id: 20,
         },
       ],
       error: null,
@@ -117,9 +113,7 @@ describe('useTasks', () => {
         id: 1,
         title: 't',
         assignee: 'a',
-        executor: 'e',
         assignee_id: 10,
-        executor_id: 20,
       },
     ])
     expect(mockSelect).toHaveBeenCalledTimes(1)
