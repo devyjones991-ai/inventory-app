@@ -152,6 +152,8 @@ function ChatTab({ selected = null, userEmail }) {
 export default memo(ChatTab)
 
 ChatTab.propTypes = {
-  selected: PropTypes.object,
+  selected: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }),
   userEmail: PropTypes.string.isRequired,
 }

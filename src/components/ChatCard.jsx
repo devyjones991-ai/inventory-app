@@ -39,5 +39,10 @@ export default function ChatCard({ message }) {
 }
 
 ChatCard.propTypes = {
-  message: PropTypes.object.isRequired,
+  message: PropTypes.shape({
+    sender: PropTypes.string,
+    created_at: PropTypes.string,
+    content: PropTypes.string,
+    file_url: PropTypes.string,
+  }).isRequired,
 }
