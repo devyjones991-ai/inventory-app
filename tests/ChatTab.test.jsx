@@ -20,7 +20,6 @@ const mockMessages = [
 ]
 
 var mockInsert
-var mockSendMessage
 var mockFetchMessages
 
 jest.mock('../src/supabaseClient.js', () => {
@@ -56,15 +55,11 @@ jest.mock('../src/supabaseClient.js', () => {
 })
 
 jest.mock('../src/hooks/useChatMessages.js', () => {
-  mockSendMessage = jest.fn(() =>
-    Promise.resolve({ data: { id: '4' }, error: null }),
-  )
   mockFetchMessages = jest.fn(() =>
     Promise.resolve({ data: mockMessages, error: null }),
   )
   return {
     useChatMessages: () => ({
-      sendMessage: mockSendMessage,
       fetchMessages: mockFetchMessages,
     }),
   }
@@ -133,9 +128,8 @@ describe('ChatTab', () => {
 
     fireEvent.click(screen.getByText('Отправить'))
 
-    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled())
-    expect(mockSendMessage.mock.calls[0][0]).toMatchObject({
-      file,
+    await waitFor(() => expect(mockInsert).toHaveBeenCalled())
+    expect(mockInsert.mock.calls[0][0][0]).toMatchObject({
       sender: 'me@example.com',
     })
     expect(fileInput.value).toBe('')

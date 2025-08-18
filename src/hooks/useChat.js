@@ -13,7 +13,7 @@ export default function useChat({ objectId, userEmail }) {
   const scrollRef = useRef(null)
   const channelRef = useRef(null)
   const fileInputRef = useRef(null)
-  const { fetchMessages, sendMessage } = useChatMessages()
+  const { fetchMessages } = useChatMessages()
   const LIMIT = 20
 
   const offsetRef = useRef(0)
@@ -47,10 +47,18 @@ export default function useChat({ objectId, userEmail }) {
         .eq('object_id', objectId)
 
       if (error) {
-        console.error('Ошибка отметки сообщений как прочитанных:', error)
+        await handleSupabaseError(
+          error,
+          null,
+          'Ошибка отметки сообщений как прочитанных',
+        )
       }
     } catch (error) {
-      console.error('Ошибка отметки сообщений как прочитанных:', error)
+      await handleSupabaseError(
+        error,
+        null,
+        'Ошибка отметки сообщений как прочитанных',
+      )
     }
   }, [objectId])
 
@@ -226,6 +234,7 @@ export default function useChat({ objectId, userEmail }) {
     handleKeyDown,
     fileInputRef,
     scrollRef,
+    markMessagesAsRead,
   }
 }
 
