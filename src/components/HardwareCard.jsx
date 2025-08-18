@@ -40,10 +40,17 @@ export default function HardwareCard({ item, onEdit, onDelete, user }) {
 }
 
 HardwareCard.propTypes = {
-  item: PropTypes.object.isRequired,
+  item: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    location: PropTypes.string,
+    purchase_status: PropTypes.string.isRequired,
+    install_status: PropTypes.string.isRequired,
+  }).isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  user: PropTypes.object,
+  user: PropTypes.shape({
+    id: PropTypes.string,
+  }),
 }
 
 HardwareCard.defaultProps = {

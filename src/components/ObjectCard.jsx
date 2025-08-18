@@ -16,5 +16,8 @@ function ObjectCard({ item }) {
 export default memo(ObjectCard)
 
 ObjectCard.propTypes = {
-  item: PropTypes.object.isRequired,
+  item: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string,
+  }).isRequired,
 }

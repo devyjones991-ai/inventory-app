@@ -22,7 +22,7 @@ jest.mock('@/supabaseClient.js', () => {
       from: jest.fn(() => ({
         select: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
-          data: [{ id: 1, name: 'Obj', description: '' }],
+          data: [{ id: '1', name: 'Obj', description: '' }],
           error: null,
         }),
         insert: jest.fn().mockReturnThis(),

@@ -1143,7 +1143,11 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange }) {
 export default React.memo(InventoryTabs)
 
 InventoryTabs.propTypes = {
-  selected: PropTypes.object.isRequired,
+  selected: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string,
+  }).isRequired,
   onUpdateSelected: PropTypes.func.isRequired,
   onTabChange: PropTypes.func,
 }

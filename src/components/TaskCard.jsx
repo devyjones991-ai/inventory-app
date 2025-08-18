@@ -98,7 +98,15 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
 export default memo(TaskCard)
 
 TaskCard.propTypes = {
-  item: PropTypes.object.isRequired,
+  item: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    assignee: PropTypes.string,
+    executor: PropTypes.string,
+    due_date: PropTypes.string,
+    planned_date: PropTypes.string,
+    plan_date: PropTypes.string,
+  }).isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onView: PropTypes.func.isRequired,

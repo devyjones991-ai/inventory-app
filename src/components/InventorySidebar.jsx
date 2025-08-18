@@ -68,12 +68,20 @@ function InventorySidebar({
 export default memo(InventorySidebar)
 
 InventorySidebar.propTypes = {
-  objects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  selected: PropTypes.object,
+  objects: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+  selected: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  }),
   onSelect: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  notifications: PropTypes.object,
+  notifications: PropTypes.objectOf(PropTypes.number),
 }
 
 InventorySidebar.defaultProps = {

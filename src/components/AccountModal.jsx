@@ -58,7 +58,11 @@ export default function AccountModal({ user, onClose, onUpdated }) {
 }
 
 AccountModal.propTypes = {
-  user: PropTypes.object.isRequired,
+  user: PropTypes.shape({
+    user_metadata: PropTypes.shape({
+      username: PropTypes.string,
+    }),
+  }).isRequired,
   onClose: PropTypes.func.isRequired,
   onUpdated: PropTypes.func.isRequired,
 }
