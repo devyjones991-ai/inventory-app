@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
         const body = await res.json()
         return { role: body.data?.role ?? null }
       } catch (error) {
-        toast.error('Ошибка получения роли: ' + error.message)
+        // toast.error('Ошибка получения роли: ' + error.message)
         return { error }
       }
     }
