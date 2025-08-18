@@ -35,6 +35,22 @@ export function AuthProvider({ children }) {
           if (!message) {
             message = await res.text()
           }
+          if (
+            res.status === 404 ||
+            message?.includes('Requested function was not found')
+          ) {
+            try {
+              const { data, error: fallbackError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', id)
+                .single()
+              if (fallbackError) throw fallbackError
+              return { role: data?.role ?? null }
+            } catch (error) {
+              return { error }
+            }
+          }
           throw new Error(message)
         }
         const body = await res.json()
@@ -63,6 +79,8 @@ export function AuthProvider({ children }) {
             if (roleError) {
               console.error('Ошибка получения роли:', roleError)
               toast.error('Ошибка получения роли: ' + roleError.message)
+              setRole(null)
+            } else if (fetchedRole === null) {
               setRole(null)
             } else {
               setRole(fetchedRole)
@@ -94,6 +112,8 @@ export function AuthProvider({ children }) {
           if (error) {
             console.error('Ошибка получения роли:', error)
             toast.error('Ошибка получения роли: ' + error.message)
+            setRole(null)
+          } else if (fetchedRole === null) {
             setRole(null)
           } else {
             setRole(fetchedRole)
