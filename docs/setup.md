@@ -11,6 +11,15 @@
    npm install
    ```
 
+## Настройка API
+1. В `.env` добавьте переменную `VITE_API_BASE_URL`, указывающую на базовый URL проекта Supabase без суффикса `functions/v1`.
+2. Для локального запуска функций выполните:
+   ```bash
+   supabase start
+   supabase functions serve cacheGet
+   ```
+3. Если указан неверный URL или функция не задеплоена, приложение вернёт ошибку `Requested function was not found`.
+
 ## Основные команды
 - Запуск разработки:
   ```bash
