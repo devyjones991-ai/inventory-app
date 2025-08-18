@@ -17,6 +17,7 @@ export default function useChat({ objectId, userEmail }) {
   const LIMIT = 20
 
   const offsetRef = useRef(0)
+  const isInitialRender = useRef(true)
 
   /**
    * Загружает следующую порцию сообщений, используя внутреннее смещение.
@@ -154,7 +155,9 @@ export default function useChat({ objectId, userEmail }) {
         .subscribe((status) => {
           console.log('Channel status:', status)
           if (status === 'SUBSCRIBED') {
-            loadMore().then(() => autoScrollToBottom(true)) // Загружаем сообщения только после подписки
+            loadMore().then(() => {
+              setTimeout(() => autoScrollToBottom(true), 0)
+            }) // Загружаем сообщения только после подписки
           }
         })
 
@@ -171,7 +174,12 @@ export default function useChat({ objectId, userEmail }) {
   )
 
   useEffect(() => {
-    autoScrollToBottom()
+    if (isInitialRender.current) {
+      autoScrollToBottom(true)
+      isInitialRender.current = false
+    } else {
+      autoScrollToBottom()
+    }
   }, [messages, autoScrollToBottom])
 
   // Markiere Nachrichten als gelesen wenn das Fenster sichtbar ist
