@@ -895,17 +895,20 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
               />
             )}
             {!loadingTasks && !tasksError && (
-              <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {tasks.map((t) => (
-                  <TaskCard
-                    key={t.id}
-                    item={t}
-                    onView={() => openTaskView(t)}
-                    onEdit={() => openTaskModal(t)}
-                    onDelete={() => askDeleteTask(t.id)}
-                  />
-                ))}
-              </div>
+              <>
+                {tasks.length === 0 && <p>Задачи не найдены</p>}
+                <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {tasks.map((t) => (
+                    <TaskCard
+                      key={t.id}
+                      item={t}
+                      onView={() => openTaskView(t)}
+                      onEdit={() => openTaskModal(t)}
+                      onDelete={() => askDeleteTask(t.id)}
+                    />
+                  ))}
+                </div>
+              </>
             )}
             {tasksHasMore && !loadingTasks && (
               <button
