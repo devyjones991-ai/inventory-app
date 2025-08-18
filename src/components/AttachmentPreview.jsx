@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
-export default function AttachmentPreview({ url, onImageClick }) {
+export default function AttachmentPreview({ url, onImageClick = null }) {
   const [open, setOpen] = useState(false)
 
   const cleanUrl = url?.split('?')[0].split('#')[0] || ''
@@ -115,8 +115,4 @@ export default function AttachmentPreview({ url, onImageClick }) {
 AttachmentPreview.propTypes = {
   url: PropTypes.string.isRequired,
   onImageClick: PropTypes.func,
-}
-
-AttachmentPreview.defaultProps = {
-  onImageClick: null,
 }

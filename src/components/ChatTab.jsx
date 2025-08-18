@@ -5,7 +5,7 @@ import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
 
-function ChatTab({ selected, userEmail }) {
+function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null
   const {
     messages,
@@ -154,8 +154,4 @@ export default memo(ChatTab)
 ChatTab.propTypes = {
   selected: PropTypes.object,
   userEmail: PropTypes.string.isRequired,
-}
-
-ChatTab.defaultProps = {
-  selected: null,
 }

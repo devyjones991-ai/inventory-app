@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient'
 import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
 
-export default function AuditTrail({ limit }) {
+export default function AuditTrail({ limit = 50 }) {
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -74,8 +74,4 @@ export default function AuditTrail({ limit }) {
 
 AuditTrail.propTypes = {
   limit: PropTypes.number,
-}
-
-AuditTrail.defaultProps = {
-  limit: 50,
 }

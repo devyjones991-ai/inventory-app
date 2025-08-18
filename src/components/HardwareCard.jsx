@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
-export default function HardwareCard({ item, onEdit, onDelete, user }) {
+export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
   return (
     <Card className="flex justify-between items-center">
       <div>
@@ -44,8 +44,4 @@ HardwareCard.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   user: PropTypes.object,
-}
-
-HardwareCard.defaultProps = {
-  user: null,
 }

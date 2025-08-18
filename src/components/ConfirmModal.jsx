@@ -3,11 +3,11 @@ import PropTypes from 'prop-types'
 
 export default function ConfirmModal({
   open,
-  title,
-  message,
-  confirmLabel,
-  cancelLabel,
-  confirmClass,
+  title = '',
+  message = '',
+  confirmLabel = 'OK',
+  cancelLabel = 'Отмена',
+  confirmClass = 'btn-error',
   onConfirm,
   onCancel,
 }) {
@@ -39,12 +39,4 @@ ConfirmModal.propTypes = {
   confirmClass: PropTypes.string,
   onConfirm: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
-}
-
-ConfirmModal.defaultProps = {
-  title: '',
-  message: '',
-  confirmLabel: 'OK',
-  cancelLabel: 'Отмена',
-  confirmClass: 'btn-error',
 }

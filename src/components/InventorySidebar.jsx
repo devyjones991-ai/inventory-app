@@ -5,11 +5,11 @@ import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 function InventorySidebar({
   objects,
-  selected,
+  selected = null,
   onSelect,
   onEdit,
   onDelete,
-  notifications,
+  notifications = {},
 }) {
   const items = useMemo(
     () =>
@@ -74,9 +74,4 @@ InventorySidebar.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   notifications: PropTypes.object,
-}
-
-InventorySidebar.defaultProps = {
-  selected: null,
-  notifications: {},
 }
