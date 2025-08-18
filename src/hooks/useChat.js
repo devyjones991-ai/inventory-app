@@ -45,34 +45,35 @@ export default function useChat({ objectId, userEmail }) {
         .update({ read_at: new Date().toISOString() })
         .is('read_at', null)
         .eq('object_id', objectId)
-        .neq('sender', userEmail)
 
-      if (error) throw error
+      if (error) {
+        console.error('Ошибка отметки сообщений как прочитанных:', error)
+      }
     } catch (error) {
-      await handleSupabaseError(
-        error,
-        null,
-        'Ошибка отметки сообщений как прочитанных',
-      )
+      console.error('Ошибка отметки сообщений как прочитанных:', error)
     }
-  }, [objectId, userEmail])
+  }, [objectId])
 
-  const lastMessageIdRef = useRef(null)
-  useEffect(() => {
-    if (!scrollRef.current) return
-    const lastId = messages[messages.length - 1]?.id
-    if (lastId && lastId !== lastMessageIdRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-      lastMessageIdRef.current = lastId
+  // Автоскролл к новому сообщению
+  const autoScrollToBottom = useCallback(() => {
+    if (scrollRef.current) {
+      const scrollElement = scrollRef.current
+      const isNearBottom =
+        scrollElement.scrollTop >=
+        scrollElement.scrollHeight - scrollElement.clientHeight - 100
+      if (isNearBottom) {
+        scrollElement.scrollTop = scrollElement.scrollHeight
+      }
     }
-  }, [messages])
+  }, [])
 
+  // Handle file preview
   useEffect(() => {
     if (!file) {
       setFilePreview(null)
       return
     }
-    if (typeof URL.createObjectURL === 'function') {
+    if (file.type.startsWith('image/')) {
       const url = URL.createObjectURL(file)
       setFilePreview(url)
       return () => URL.revokeObjectURL && URL.revokeObjectURL(url)
@@ -90,7 +91,9 @@ export default function useChat({ objectId, userEmail }) {
     offsetRef.current = 0
     if (!objectId) return
 
-    loadMore()
+    // loadMore() вызывает двойную загрузку при инициализации,
+    // поэтому оставляем вызов только после подписки на канал
+    // loadMore()
 
     const ch = supabase
       .channel(`chat:${objectId}`)
@@ -121,20 +124,24 @@ export default function useChat({ objectId, userEmail }) {
               offsetRef.current += 1
               return [...prev, payload.new].sort(sortByCreatedAt)
             })
-          } else if (payload.eventType === 'UPDATE') {
+          }
+          if (payload.eventType === 'UPDATE') {
             setMessages((prev) =>
               prev
-                .map((m) => (m.id === payload.new.id ? payload.new : m))
+                .map((m) => (m.id === payload.old.id ? payload.new : m))
                 .sort(sortByCreatedAt),
             )
-          } else if (payload.eventType === 'DELETE') {
+          }
+          if (payload.eventType === 'DELETE') {
+            offsetRef.current -= 1
             setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
           }
         },
       )
       .subscribe((status) => {
+        console.log('Channel status:', status)
         if (status === 'SUBSCRIBED') {
-          loadMore()
+          loadMore() // Загружаем сообщения только после подписки
         }
       })
 
@@ -143,42 +150,41 @@ export default function useChat({ objectId, userEmail }) {
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
-        channelRef.current = null
       }
     }
   }, [objectId, loadMore])
 
   useEffect(() => {
-    markMessagesAsRead()
+    autoScrollToBottom()
+  }, [messages, autoScrollToBottom])
+
+  // Markiere Nachrichten als gelesen wenn das Fenster sichtbar ist
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && messages.length > 0) {
+        markMessagesAsRead()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [messages, markMessagesAsRead])
 
   const handleSend = async () => {
-    if (!objectId || (!newMessage.trim() && !file) || sending) return
+    if ((!newMessage.trim() && !file) || sending) return
+
     setSending(true)
-
-    if (file) {
-      const { error } = await sendMessage({
-        objectId,
-        sender: userEmail,
-        content: newMessage.trim(),
-        file,
-      })
-      if (error) {
-        await handleSupabaseError(error, null, 'Ошибка отправки')
-      }
-      setFile(null)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      setNewMessage('')
-      setSending(false)
-      return
-    }
-
+    const optimisticId = Date.now() + Math.random()
     const optimistic = {
-      id: `tmp-${Date.now()}`,
+      id: optimisticId,
       object_id: objectId,
       sender: userEmail,
       content: newMessage.trim(),
-      file_url: null,
+      file_url: file ? URL.createObjectURL(file) : null,
+      file_name: file?.name || null,
+      file_size: file?.size || null,
+      file_type: file?.type || null,
       created_at: new Date().toISOString(),
       _optimistic: true,
     }

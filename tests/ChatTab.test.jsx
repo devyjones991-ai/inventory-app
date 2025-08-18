@@ -40,7 +40,10 @@ jest.mock('../src/supabaseClient.js', () => {
   }))
   const mockChannel = jest.fn(() => ({
     on: jest.fn().mockReturnThis(),
-    subscribe: jest.fn(),
+    subscribe: jest.fn((cb) => {
+      cb('SUBSCRIBED')
+      return { unsubscribe: jest.fn() }
+    }),
   }))
   const mockRemoveChannel = jest.fn()
   return {
