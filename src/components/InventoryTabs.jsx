@@ -305,8 +305,19 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     if (!selected) return
     const unsubscribeTasks = subscribeToTasks(selected.id, (payload) => {
       setTasks((prev) => {
-        if (prev.some((t) => t.id === payload.new.id)) return prev
-        return [...prev, payload.new]
+        if (payload.eventType === 'INSERT') {
+          if (prev.some((t) => t.id === payload.new.id)) return prev
+          return [...prev, payload.new]
+        }
+        if (payload.eventType === 'UPDATE') {
+          return prev.map((t) =>
+            t.id === payload.new.id ? { ...t, ...payload.new } : t,
+          )
+        }
+        if (payload.eventType === 'DELETE') {
+          return prev.filter((t) => t.id !== payload.old.id)
+        }
+        return prev
       })
     })
 

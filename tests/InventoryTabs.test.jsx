@@ -3,6 +3,8 @@ var mockDeleteHardware
 var mockFetchHardwareApi
 var mockFetchTasksApi
 var mockFetchMessages
+var mockSubscribeToTasks
+var taskHandler
 const mockNavigate = jest.fn()
 
 jest.mock('../src/supabaseClient.js', () => {
@@ -31,13 +33,17 @@ jest.mock('../src/hooks/useHardware.js', () => {
 
 jest.mock('../src/hooks/useTasks.js', () => {
   mockFetchTasksApi = jest.fn().mockResolvedValue({ data: [], error: null })
+  mockSubscribeToTasks = jest.fn((_, handler) => {
+    taskHandler = handler
+    return jest.fn()
+  })
   return {
     useTasks: () => ({
       fetchTasks: mockFetchTasksApi,
       insertTask: jest.fn(),
       updateTask: jest.fn(),
       deleteTask: jest.fn(),
-      subscribeToTasks: jest.fn(() => jest.fn()),
+      subscribeToTasks: mockSubscribeToTasks,
     }),
   }
 })
@@ -69,7 +75,7 @@ jest.mock('react-router-dom', () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import InventoryTabs from '../src/components/InventoryTabs.jsx'
 import { toast } from 'react-hot-toast'
@@ -80,6 +86,8 @@ describe('InventoryTabs', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockFetchHardwareApi.mockResolvedValue({ data: [], error: null })
+    mockFetchTasksApi.mockResolvedValue({ data: [], error: null })
+    taskHandler = null
   })
 
   it('переключает вкладки "Железо" и "Задачи"', async () => {
@@ -167,6 +175,43 @@ describe('InventoryTabs', () => {
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith('Ошибка оборудования: fail'),
+    )
+  })
+
+  it('синхронизирует список задач при обновлении и удалении', async () => {
+    mockFetchTasksApi.mockResolvedValue({
+      data: [{ id: 't1', title: 'Задача 1', status: 'запланировано' }],
+      error: null,
+    })
+
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByText(/Задачи/))
+    expect(await screen.findByText('Задача 1')).toBeInTheDocument()
+
+    act(() => {
+      taskHandler({
+        eventType: 'UPDATE',
+        new: { id: 't1', title: 'Обновлено', status: 'в процессе' },
+      })
+    })
+
+    expect(await screen.findByText('Обновлено')).toBeInTheDocument()
+
+    act(() => {
+      taskHandler({ eventType: 'DELETE', old: { id: 't1' } })
+    })
+
+    await waitFor(() =>
+      expect(screen.queryByText('Обновлено')).not.toBeInTheDocument(),
     )
   })
 })
