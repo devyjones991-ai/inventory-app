@@ -90,7 +90,9 @@ export default function useChat({ objectId, userEmail }) {
     offsetRef.current = 0
     if (!objectId) return
 
-    loadMore()
+    // loadMore() вызывает двойную загрузку при инициализации,
+    // поэтому оставляем вызов только после подписки на канал
+    // loadMore()
 
     const ch = supabase
       .channel(`chat:${objectId}`)
