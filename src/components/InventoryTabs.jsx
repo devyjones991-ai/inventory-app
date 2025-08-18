@@ -466,7 +466,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         status: item.status,
         assignee: item.assignee || '',
         assignee_id: item.assignee_id || '',
-        due_date: item.due_date || item.planned_date || item.plan_date || '',
+        due_date: item.due_date || '',
         notes: item.notes || '',
       })
     } else {
@@ -487,8 +487,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       status: data.status,
       assignee: data.assignee || null,
       assignee_id: data.assignee_id || null,
-      planned_date: data.due_date || null,
-      plan_date: data.due_date || null,
+      due_date: data.due_date || null,
       notes: data.notes || null,
     }
     let res
@@ -1038,16 +1037,10 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                         <strong>Исполнитель:</strong> {viewingTask.assignee}
                       </p>
                     )}
-                    {(viewingTask.due_date ||
-                      viewingTask.planned_date ||
-                      viewingTask.plan_date) && (
+                    {viewingTask.due_date && (
                       <p>
                         <strong>Дата:</strong>{' '}
-                        {formatDate(
-                          viewingTask.due_date ||
-                            viewingTask.planned_date ||
-                            viewingTask.plan_date,
-                        )}
+                        {formatDate(viewingTask.due_date)}
                       </p>
                     )}
                     <p>
