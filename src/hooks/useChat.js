@@ -17,6 +17,7 @@ export default function useChat({ objectId, userEmail, search }) {
   const LIMIT = 20
 
   const offsetRef = useRef(0)
+  const isInitialRender = useRef(true)
   const activeSearchRef = useRef(search)
 
   /**
@@ -158,7 +159,9 @@ export default function useChat({ objectId, userEmail, search }) {
       .subscribe((status) => {
         console.log('Channel status:', status)
         if (status === 'SUBSCRIBED') {
-          loadMore().then(() => autoScrollToBottom(true))
+          loadMore().then(() => {
+            setTimeout(() => autoScrollToBottom(true), 0)
+          })
         }
       })
 
@@ -187,7 +190,12 @@ export default function useChat({ objectId, userEmail, search }) {
   }, [search])
 
   useEffect(() => {
-    autoScrollToBottom()
+    if (isInitialRender.current) {
+      autoScrollToBottom(true)
+      isInitialRender.current = false
+    } else {
+      autoScrollToBottom()
+    }
   }, [messages, autoScrollToBottom])
 
   // Markiere Nachrichten als gelesen wenn das Fenster sichtbar ist
