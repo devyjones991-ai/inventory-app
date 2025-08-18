@@ -2,13 +2,14 @@ import { memo, useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
-import { PaperClipIcon } from '@heroicons/react/24/outline'
+import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
 
 function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   useEffect(() => {
     const id = setTimeout(() => setSearchQuery(searchInput), 300)
     return () => clearTimeout(id)
@@ -44,6 +45,17 @@ function ChatTab({ selected = null, userEmail }) {
     [],
   )
 
+  const handleSearchToggle = useCallback(() => {
+    setIsSearchOpen((prev) => {
+      const next = !prev
+      if (!next) {
+        setSearchInput('')
+        setSearchQuery('')
+      }
+      return next
+    })
+  }, [])
+
   if (!objectId) {
     return (
       <div className="p-6 text-sm text-base-content/70 transition-colors">
@@ -55,13 +67,30 @@ function ChatTab({ selected = null, userEmail }) {
   return (
     <div className="flex flex-col h-full">
       <div className="p-3">
-        <input
-          type="text"
-          className="input input-bordered w-full"
-          placeholder="Поиск сообщений"
-          value={searchInput}
-          onChange={handleSearchChange}
-        />
+        <button
+          type="button"
+          className="btn btn-ghost"
+          aria-label="Поиск"
+          onClick={handleSearchToggle}
+        >
+          <MagnifyingGlassIcon className="w-6 h-6" />
+        </button>
+        <div
+          className={`transition-all duration-300 overflow-hidden ${
+            isSearchOpen ? 'max-h-20 mt-2' : 'max-h-0'
+          }`}
+        >
+          {isSearchOpen && (
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              placeholder="Поиск сообщений"
+              value={searchInput}
+              onChange={handleSearchChange}
+              autoFocus
+            />
+          )}
+        </div>
       </div>
       <div
         ref={scrollRef}
