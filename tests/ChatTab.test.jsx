@@ -260,6 +260,8 @@ describe('ChatTab', () => {
     render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
     await screen.findByText('Привет')
 
+    const searchBtn = screen.getByRole('button', { name: 'Поиск' })
+    fireEvent.click(searchBtn)
     const searchInput = screen.getByPlaceholderText('Поиск сообщений')
 
     const filtered = [mockMessages[0]]
@@ -291,6 +293,11 @@ describe('ChatTab', () => {
       ),
     )
     expect(await screen.findByText('Сообщения не найдены')).toBeInTheDocument()
+
+    fireEvent.click(searchBtn)
+    expect(
+      screen.queryByPlaceholderText('Поиск сообщений'),
+    ).not.toBeInTheDocument()
     jest.useRealTimers()
   })
 })
