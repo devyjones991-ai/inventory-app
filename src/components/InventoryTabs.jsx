@@ -40,7 +40,7 @@ function formatDate(dateStr) {
   }
 }
 
-function InventoryTabs({ selected, onUpdateSelected, onTabChange }) {
+function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   // --- вкладки и описание ---
@@ -1146,8 +1146,4 @@ InventoryTabs.propTypes = {
   selected: PropTypes.object.isRequired,
   onUpdateSelected: PropTypes.func.isRequired,
   onTabChange: PropTypes.func,
-}
-
-InventoryTabs.defaultProps = {
-  onTabChange: () => {},
 }

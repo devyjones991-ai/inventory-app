@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-export default function WhatsAppIcon({ className }) {
+export default function WhatsAppIcon({ className = 'w-5 h-5' }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -26,8 +26,4 @@ export default function WhatsAppIcon({ className }) {
 
 WhatsAppIcon.propTypes = {
   className: PropTypes.string,
-}
-
-WhatsAppIcon.defaultProps = {
-  className: 'w-5 h-5',
 }
