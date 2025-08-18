@@ -100,6 +100,29 @@ describe('InventoryTabs', () => {
     expect(await screen.findByText('Задачи')).toBeInTheDocument()
   })
 
+  it('отображает кнопку «Загрузить ещё» при наличии дополнительных задач', async () => {
+    const tasks = Array.from({ length: 20 }, (_, i) => ({
+      id: `t${i}`,
+      title: `Task ${i}`,
+      status: 'запланировано',
+    }))
+    mockFetchTasksApi.mockResolvedValue({ data: tasks, error: null })
+
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getAllByText(/Задачи/)[0])
+
+    expect(await screen.findByText('Загрузить ещё')).toBeInTheDocument()
+  })
+
   it('создаёт и удаляет запись оборудования', async () => {
     mockInsertHardware.mockResolvedValue({
       data: {

@@ -450,8 +450,9 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       if (error.status === 403) toast.error('Недостаточно прав')
       else toast.error('Ошибка загрузки задач: ' + error.message)
     } else {
-      setTasks(data || [])
-      setTasksHasMore(false)
+      const tasksData = data || []
+      setTasks(tasksData)
+      setTasksHasMore(tasksData.length === PAGE_SIZE)
     }
     setLoadingTasks(false)
   }
