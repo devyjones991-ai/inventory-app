@@ -197,14 +197,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     if (savedTaskForm) {
       try {
         parsedTaskForm = JSON.parse(savedTaskForm)
-        if (parsedTaskForm.executor && !parsedTaskForm.assignee) {
-          parsedTaskForm.assignee = parsedTaskForm.executor
-          delete parsedTaskForm.executor
-        }
-        if (parsedTaskForm.executor_id && !parsedTaskForm.assignee_id) {
-          parsedTaskForm.assignee_id = parsedTaskForm.executor_id
-          delete parsedTaskForm.executor_id
-        }
       } catch {
         if (typeof localStorage !== 'undefined') {
           localStorage.removeItem(TASK_FORM_KEY(selected.id))
@@ -474,8 +466,8 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       resetTask({
         title: item.title,
         status: item.status,
-        assignee: item.assignee || item.executor || '',
-        assignee_id: item.assignee_id || item.executor_id || '',
+        assignee: item.assignee || '',
+        assignee_id: item.assignee_id || '',
         due_date: item.due_date || item.planned_date || item.plan_date || '',
         notes: item.notes || '',
       })
@@ -1047,10 +1039,9 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                     {viewingTask.title}
                   </h3>
                   <div className="space-y-2">
-                    {(viewingTask.assignee || viewingTask.executor) && (
+                    {viewingTask.assignee && (
                       <p>
-                        <strong>Исполнитель:</strong>{' '}
-                        {viewingTask.assignee || viewingTask.executor}
+                        <strong>Исполнитель:</strong> {viewingTask.assignee}
                       </p>
                     )}
                     {(viewingTask.due_date ||

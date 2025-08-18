@@ -13,8 +13,6 @@ export function useTasks() {
     try {
       const baseFields =
         'id, title, status, assignee, assignee_id, due_date, planned_date, plan_date, notes'
-      const fallbackFields =
-        'id, title, status, executor, executor_id, due_date, planned_date, plan_date, notes'
       const baseQuery = supabase
         .from('tasks')
         .select(baseFields)
@@ -22,21 +20,6 @@ export function useTasks() {
       let result = await baseQuery.order('created_at')
       if (isSchemaCacheError(result.error)) {
         result = await baseQuery
-        if (isSchemaCacheError(result.error)) {
-          result = await supabase
-            .from('tasks')
-            .select(fallbackFields)
-            .eq('object_id', objectId)
-          if (!result.error && result.data) {
-            result.data = result.data.map(
-              ({ executor, executor_id, ...rest }) => ({
-                ...rest,
-                assignee: executor,
-                assignee_id: executor_id,
-              }),
-            )
-          }
-        }
       }
       if (result.error) throw result.error
       return result
@@ -51,28 +34,11 @@ export function useTasks() {
     try {
       const baseFields =
         'id, title, status, assignee, assignee_id, due_date, planned_date, plan_date, notes'
-      const fallbackFields =
-        'id, title, status, executor, executor_id, due_date, planned_date, plan_date, notes'
-      let result = await supabase
+      const result = await supabase
         .from('tasks')
         .insert([data])
         .select(baseFields)
         .single()
-      if (isSchemaCacheError(result.error)) {
-        result = await supabase
-          .from('tasks')
-          .insert([data])
-          .select(fallbackFields)
-          .single()
-        if (!result.error && result.data) {
-          const { executor, executor_id, ...rest } = result.data
-          result.data = {
-            ...rest,
-            assignee: executor,
-            assignee_id: executor_id,
-          }
-        }
-      }
       if (result.error) throw result.error
       return result
     } catch (error) {
@@ -85,30 +51,12 @@ export function useTasks() {
     try {
       const baseFields =
         'id, title, status, assignee, assignee_id, due_date, planned_date, plan_date, notes'
-      const fallbackFields =
-        'id, title, status, executor, executor_id, due_date, planned_date, plan_date, notes'
-      let result = await supabase
+      const result = await supabase
         .from('tasks')
         .update(data)
         .eq('id', id)
         .select(baseFields)
         .single()
-      if (isSchemaCacheError(result.error)) {
-        result = await supabase
-          .from('tasks')
-          .update(data)
-          .eq('id', id)
-          .select(fallbackFields)
-          .single()
-        if (!result.error && result.data) {
-          const { executor, executor_id, ...rest } = result.data
-          result.data = {
-            ...rest,
-            assignee: executor,
-            assignee_id: executor_id,
-          }
-        }
-      }
       if (result.error) throw result.error
       return result
     } catch (error) {
