@@ -1,4 +1,4 @@
-import { render, fireEvent, waitFor, screen } from '@testing-library/react'
+import { render, fireEvent, waitFor, screen, act } from '@testing-library/react'
 import ChatTab from '../src/components/ChatTab.jsx'
 
 const mockMessages = [
@@ -178,5 +178,45 @@ describe('ChatTab', () => {
 
     await waitFor(() => expect(mockFetchMessages).toHaveBeenCalledTimes(2))
     expect(await screen.findByText('msg21')).toBeInTheDocument()
+  })
+
+  it('фильтрует сообщения по поиску и показывает предупреждение при отсутствии', async () => {
+    jest.useFakeTimers()
+    mockFetchMessages.mockResolvedValueOnce({ data: mockMessages, error: null })
+    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
+    await screen.findByText('Привет')
+
+    const searchInput = screen.getByPlaceholderText('Поиск сообщений')
+
+    const filtered = [mockMessages[0]]
+    mockFetchMessages.mockResolvedValueOnce({ data: filtered, error: null })
+    fireEvent.change(searchInput, { target: { value: 'Прив' } })
+    act(() => {
+      jest.advanceTimersByTime(300)
+    })
+    await waitFor(() =>
+      expect(mockFetchMessages).toHaveBeenLastCalledWith(
+        '1',
+        expect.objectContaining({ search: 'Прив' }),
+      ),
+    )
+    await waitFor(() =>
+      expect(screen.queryByText('Здравствуйте')).not.toBeInTheDocument(),
+    )
+    expect(await screen.findByText('Привет')).toBeInTheDocument()
+
+    mockFetchMessages.mockResolvedValueOnce({ data: [], error: null })
+    fireEvent.change(searchInput, { target: { value: 'Не найдено' } })
+    act(() => {
+      jest.advanceTimersByTime(300)
+    })
+    await waitFor(() =>
+      expect(mockFetchMessages).toHaveBeenLastCalledWith(
+        '1',
+        expect.objectContaining({ search: 'Не найдено' }),
+      ),
+    )
+    expect(await screen.findByText('Сообщения не найдены')).toBeInTheDocument()
+    jest.useRealTimers()
   })
 })

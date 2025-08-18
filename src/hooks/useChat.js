@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
 import { useChatMessages } from './useChatMessages.js'
 
-export default function useChat({ objectId, userEmail }) {
+export default function useChat({ objectId, userEmail, search }) {
   const [messages, setMessages] = useState([])
   const [hasMore, setHasMore] = useState(true)
   const [newMessage, setNewMessage] = useState('')
@@ -18,25 +18,34 @@ export default function useChat({ objectId, userEmail }) {
 
   const offsetRef = useRef(0)
   const isInitialRender = useRef(true)
+  const activeSearchRef = useRef(search)
 
   /**
    * Загружает следующую порцию сообщений, используя внутреннее смещение.
    * Позволяет реализовать постраничную подгрузку без передачи параметров.
    */
-  const loadMore = useCallback(async () => {
-    if (!objectId) return
-    const { data, error } = await fetchMessages(objectId, {
-      limit: LIMIT,
-      offset: offsetRef.current,
-    })
-    if (error) {
-      await handleSupabaseError(error, null, 'Ошибка загрузки сообщений')
-      return
-    }
-    offsetRef.current += data?.length || 0
-    setMessages((prev) => [...(data || []), ...prev])
-    if (!data || data.length < LIMIT) setHasMore(false)
-  }, [objectId, fetchMessages])
+  const loadMore = useCallback(
+    async (replace = false) => {
+      if (!objectId) return
+      const currentSearch = search
+      const params = { limit: LIMIT, offset: offsetRef.current }
+      if (currentSearch) params.search = currentSearch
+      const { data, error } = await fetchMessages(objectId, params)
+      if (currentSearch !== activeSearchRef.current) return
+      if (error) {
+        await handleSupabaseError(error, null, 'Ошибка загрузки сообщений')
+        return
+      }
+      offsetRef.current += data?.length || 0
+      if (replace) {
+        setMessages(data || [])
+      } else {
+        setMessages((prev) => [...(data || []), ...prev])
+      }
+      if (!data || data.length < LIMIT) setHasMore(false)
+    },
+    [objectId, fetchMessages, search],
+  )
 
   const markMessagesAsRead = useCallback(async () => {
     if (!objectId) return
@@ -93,85 +102,92 @@ export default function useChat({ objectId, userEmail }) {
     }
   }, [file])
 
-  useEffect(
-    () => {
+  useEffect(() => {
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+      channelRef.current = null
+    }
+
+    setMessages([])
+    setHasMore(true)
+    offsetRef.current = 0
+    if (!objectId) return
+
+    const ch = supabase
+      .channel(`chat:${objectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `object_id=eq.${objectId}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setMessages((prev) => {
+              const existingIndex = prev.findIndex(
+                (m) =>
+                  m._optimistic &&
+                  m.sender === payload.new.sender &&
+                  m.content === payload.new.content,
+              )
+
+              if (existingIndex !== -1) {
+                const updated = [...prev]
+                updated[existingIndex] = payload.new
+                return updated.sort(sortByCreatedAt)
+              }
+
+              offsetRef.current += 1
+              return [...prev, payload.new].sort(sortByCreatedAt)
+            })
+          }
+          if (payload.eventType === 'UPDATE') {
+            setMessages((prev) =>
+              prev
+                .map((m) => (m.id === payload.old.id ? payload.new : m))
+                .sort(sortByCreatedAt),
+            )
+          }
+          if (payload.eventType === 'DELETE') {
+            offsetRef.current -= 1
+            setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
+          }
+        },
+      )
+      .subscribe((status) => {
+        console.log('Channel status:', status)
+        if (status === 'SUBSCRIBED') {
+          loadMore().then(() => {
+            setTimeout(() => autoScrollToBottom(true), 0)
+          })
+        }
+      })
+
+    channelRef.current = ch
+
+    return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
-        channelRef.current = null
       }
+    }
+  }, [objectId, loadMore, autoScrollToBottom])
 
-      setMessages([])
-      setHasMore(true)
-      offsetRef.current = 0
-      if (!objectId) return
-
-      // loadMore() вызывает двойную загрузку при инициализации,
-      // поэтому оставляем вызов только после подписки на канал
-      // loadMore()
-
-      const ch = supabase
-        .channel(`chat:${objectId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'chat_messages',
-            filter: `object_id=eq.${objectId}`,
-          },
-          (payload) => {
-            if (payload.eventType === 'INSERT') {
-              setMessages((prev) => {
-                const existingIndex = prev.findIndex(
-                  (m) =>
-                    m._optimistic &&
-                    m.sender === payload.new.sender &&
-                    m.content === payload.new.content,
-                )
-
-                if (existingIndex !== -1) {
-                  const updated = [...prev]
-                  updated[existingIndex] = payload.new
-                  return updated.sort(sortByCreatedAt)
-                }
-
-                offsetRef.current += 1
-                return [...prev, payload.new].sort(sortByCreatedAt)
-              })
-            }
-            if (payload.eventType === 'UPDATE') {
-              setMessages((prev) =>
-                prev
-                  .map((m) => (m.id === payload.old.id ? payload.new : m))
-                  .sort(sortByCreatedAt),
-              )
-            }
-            if (payload.eventType === 'DELETE') {
-              offsetRef.current -= 1
-              setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
-            }
-          },
-        )
-        .subscribe((status) => {
-          console.log('Channel status:', status)
-          if (status === 'SUBSCRIBED') {
-            loadMore().then(() => {
-              setTimeout(() => autoScrollToBottom(true), 0)
-            }) // Загружаем сообщения только после подписки
-          }
-        })
-
-      channelRef.current = ch
-
-      return () => {
-        if (channelRef.current) {
-          supabase.removeChannel(channelRef.current)
-        }
-      }
-    },
+  const searchInitRef = useRef(false)
+  useEffect(() => {
+    if (!searchInitRef.current) {
+      searchInitRef.current = true
+      activeSearchRef.current = search
+      return
+    }
+    activeSearchRef.current = search
+    setMessages([])
+    setHasMore(true)
+    offsetRef.current = 0
+    if (objectId) loadMore(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [objectId],
-  )
+  }, [search])
 
   useEffect(() => {
     if (isInitialRender.current) {

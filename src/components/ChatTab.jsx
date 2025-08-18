@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
@@ -7,6 +7,12 @@ import useChat from '../hooks/useChat.js'
 
 function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null
+  const [searchInput, setSearchInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  useEffect(() => {
+    const id = setTimeout(() => setSearchQuery(searchInput), 300)
+    return () => clearTimeout(id)
+  }, [searchInput])
   const {
     messages,
     hasMore,
@@ -21,7 +27,7 @@ function ChatTab({ selected = null, userEmail }) {
     handleKeyDown,
     fileInputRef,
     scrollRef,
-  } = useChat({ objectId, userEmail })
+  } = useChat({ objectId, userEmail, search: searchQuery })
 
   const handleFileChange = useCallback(
     (e) => setFile(e.target.files[0]),
@@ -31,6 +37,11 @@ function ChatTab({ selected = null, userEmail }) {
   const handleMessageChange = useCallback(
     (e) => setNewMessage(e.target.value),
     [setNewMessage],
+  )
+
+  const handleSearchChange = useCallback(
+    (e) => setSearchInput(e.target.value),
+    [],
   )
 
   if (!objectId) {
@@ -43,6 +54,15 @@ function ChatTab({ selected = null, userEmail }) {
 
   return (
     <div className="flex flex-col h-full">
+      <div className="p-3">
+        <input
+          type="text"
+          className="input input-bordered w-full"
+          placeholder="Поиск сообщений"
+          value={searchInput}
+          onChange={handleSearchChange}
+        />
+      </div>
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3 bg-base-200 rounded-2xl"
@@ -55,9 +75,13 @@ function ChatTab({ selected = null, userEmail }) {
           </div>
         )}
         {messages.length === 0 ? (
-          <div className="text-sm text-gray-400">
-            Сообщений пока нет — напиши первым.
-          </div>
+          searchQuery ? (
+            <div className="text-sm text-gray-400">Сообщения не найдены</div>
+          ) : (
+            <div className="text-sm text-gray-400">
+              Сообщений пока нет — напиши первым.
+            </div>
+          )
         ) : (
           messages.map((m) => {
             const isOwn =

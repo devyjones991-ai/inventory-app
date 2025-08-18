@@ -17,13 +17,17 @@ export function useChatMessages() {
   const navigate = useNavigate()
 
   const fetchMessages = useCallback(
-    async (objectId, { limit, offset } = {}) => {
+    async (objectId, { limit, offset, search } = {}) => {
       try {
         let query = supabase
           .from('chat_messages')
           .select('*')
           .eq('object_id', objectId)
           .order('created_at', { ascending: false })
+
+        if (search) {
+          query = query.ilike('content', `%${search}%`)
+        }
 
         if (typeof limit === 'number') {
           if (typeof offset === 'number') {
