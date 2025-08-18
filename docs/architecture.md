@@ -11,6 +11,7 @@
 - `supabase/functions/import` — Edge Function, принимающая CSV/XLSX и импортирующая данные.
 - `supabase/functions/export` — Edge Function, формирующая выгрузку таблиц.
 - `supabase/functions/import-export` — комбинированные функции для пакетной обработки данных.
+- `supabase/functions/cacheGet` — Edge Function для чтения данных с кэшированием.
 - `supabase/migrations` — SQL-скрипты для создания и изменения структуры БД.
 - `tests` — модульные тесты Vitest.
 
@@ -38,3 +39,7 @@ sequenceDiagram
     F->>D: Дополнительная обработка
     D-->>C: Ответ
 ```
+
+## Ограничения функции cacheGet
+
+Edge Function `cacheGet` обслуживает только таблицы из разрешённого списка (на текущий момент `profiles`). Для обращения к функции требуется заголовок `Authorization` с действительным токеном. Запросы к запрещённым таблицам возвращают ответ `403`, отсутствие или неверный токен приводит к ответу `401`.
