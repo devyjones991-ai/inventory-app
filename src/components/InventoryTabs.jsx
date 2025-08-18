@@ -402,12 +402,10 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       res = await insertHardware(payload)
     }
 
-    if (res.error)
-      return res.error.status === 403
+    if (res.error) {
+      res.error.status === 403
         ? toast.error('Недостаточно прав')
         : toast.error('Ошибка оборудования: ' + res.error.message)
-
-    if (res.error) {
       await handleSupabaseError(res.error, navigate, 'Ошибка оборудования')
       return
     }
@@ -500,12 +498,10 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       res = await insertTask(payload)
     }
 
-    if (res.error)
-      return res.error.status === 403
+    if (res.error) {
+      res.error.status === 403
         ? toast.error('Недостаточно прав')
         : toast.error('Ошибка задач: ' + res.error.message)
-
-    if (res.error) {
       await handleSupabaseError(res.error, navigate, 'Ошибка задач')
       return
     }
@@ -528,12 +524,10 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     const id = taskDeleteId
     const { error } = await deleteTask(id)
 
-    if (error)
-      return error.status === 403
+    if (error) {
+      error.status === 403
         ? toast.error('Недостаточно прав')
         : toast.error('Ошибка удаления: ' + error.message)
-
-    if (error) {
       await handleSupabaseError(error, navigate, 'Ошибка удаления')
       return
     }
