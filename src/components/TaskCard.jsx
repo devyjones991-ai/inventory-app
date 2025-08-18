@@ -27,10 +27,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
     [item.status],
   )
 
-  const assignee = useMemo(
-    () => item.assignee || item.executor,
-    [item.assignee, item.executor],
-  )
+  const assignee = useMemo(() => item.assignee, [item.assignee])
 
   const dueDate = useMemo(
     () => item.due_date || item.planned_date || item.plan_date,
@@ -102,7 +99,6 @@ TaskCard.propTypes = {
     title: PropTypes.string.isRequired,
     status: PropTypes.string.isRequired,
     assignee: PropTypes.string,
-    executor: PropTypes.string,
     due_date: PropTypes.string,
     planned_date: PropTypes.string,
     plan_date: PropTypes.string,
