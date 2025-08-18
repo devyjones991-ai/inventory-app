@@ -13,7 +13,7 @@ export default function useChat({ objectId, userEmail }) {
   const scrollRef = useRef(null)
   const channelRef = useRef(null)
   const fileInputRef = useRef(null)
-  const { fetchMessages, sendMessage } = useChatMessages()
+  const { fetchMessages } = useChatMessages()
   const LIMIT = 20
 
   const offsetRef = useRef(0)
@@ -80,79 +80,83 @@ export default function useChat({ objectId, userEmail }) {
     }
   }, [file])
 
-  useEffect(() => {
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current)
-      channelRef.current = null
-    }
-
-    setMessages([])
-    setHasMore(true)
-    offsetRef.current = 0
-    if (!objectId) return
-
-    // loadMore() вызывает двойную загрузку при инициализации,
-    // поэтому оставляем вызов только после подписки на канал
-    // loadMore()
-
-    const ch = supabase
-      .channel(`chat:${objectId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `object_id=eq.${objectId}`,
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setMessages((prev) => {
-              const existingIndex = prev.findIndex(
-                (m) =>
-                  m._optimistic &&
-                  m.sender === payload.new.sender &&
-                  m.content === payload.new.content,
-              )
-
-              if (existingIndex !== -1) {
-                const updated = [...prev]
-                updated[existingIndex] = payload.new
-                return updated.sort(sortByCreatedAt)
-              }
-
-              offsetRef.current += 1
-              return [...prev, payload.new].sort(sortByCreatedAt)
-            })
-          }
-          if (payload.eventType === 'UPDATE') {
-            setMessages((prev) =>
-              prev
-                .map((m) => (m.id === payload.old.id ? payload.new : m))
-                .sort(sortByCreatedAt),
-            )
-          }
-          if (payload.eventType === 'DELETE') {
-            offsetRef.current -= 1
-            setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
-          }
-        },
-      )
-      .subscribe((status) => {
-        console.log('Channel status:', status)
-        if (status === 'SUBSCRIBED') {
-          loadMore() // Загружаем сообщения только после подписки
-        }
-      })
-
-    channelRef.current = ch
-
-    return () => {
+  useEffect(
+    () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
+        channelRef.current = null
       }
-    }
-  }, [objectId, loadMore])
+
+      setMessages([])
+      setHasMore(true)
+      offsetRef.current = 0
+      if (!objectId) return
+
+      // loadMore() вызывает двойную загрузку при инициализации,
+      // поэтому оставляем вызов только после подписки на канал
+      // loadMore()
+
+      const ch = supabase
+        .channel(`chat:${objectId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'chat_messages',
+            filter: `object_id=eq.${objectId}`,
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setMessages((prev) => {
+                const existingIndex = prev.findIndex(
+                  (m) =>
+                    m._optimistic &&
+                    m.sender === payload.new.sender &&
+                    m.content === payload.new.content,
+                )
+
+                if (existingIndex !== -1) {
+                  const updated = [...prev]
+                  updated[existingIndex] = payload.new
+                  return updated.sort(sortByCreatedAt)
+                }
+
+                offsetRef.current += 1
+                return [...prev, payload.new].sort(sortByCreatedAt)
+              })
+            }
+            if (payload.eventType === 'UPDATE') {
+              setMessages((prev) =>
+                prev
+                  .map((m) => (m.id === payload.old.id ? payload.new : m))
+                  .sort(sortByCreatedAt),
+              )
+            }
+            if (payload.eventType === 'DELETE') {
+              offsetRef.current -= 1
+              setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
+            }
+          },
+        )
+        .subscribe((status) => {
+          console.log('Channel status:', status)
+          if (status === 'SUBSCRIBED') {
+            loadMore() // Загружаем сообщения только после подписки
+          }
+        })
+
+      channelRef.current = ch
+
+      return () => {
+        if (channelRef.current) {
+          supabase.removeChannel(channelRef.current)
+        }
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [objectId],
+  )
 
   useEffect(() => {
     autoScrollToBottom()
