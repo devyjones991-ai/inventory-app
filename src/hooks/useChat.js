@@ -63,9 +63,13 @@ export default function useChat({ objectId, userEmail }) {
   }, [objectId])
 
   // Автоскролл к новому сообщению
-  const autoScrollToBottom = useCallback(() => {
+  const autoScrollToBottom = useCallback((force = false) => {
     if (scrollRef.current) {
       const scrollElement = scrollRef.current
+      if (force) {
+        scrollElement.scrollTop = scrollElement.scrollHeight
+        return
+      }
       const isNearBottom =
         scrollElement.scrollTop >=
         scrollElement.scrollHeight - scrollElement.clientHeight - 100
@@ -150,7 +154,7 @@ export default function useChat({ objectId, userEmail }) {
         .subscribe((status) => {
           console.log('Channel status:', status)
           if (status === 'SUBSCRIBED') {
-            loadMore() // Загружаем сообщения только после подписки
+            loadMore().then(() => autoScrollToBottom(true)) // Загружаем сообщения только после подписки
           }
         })
 
