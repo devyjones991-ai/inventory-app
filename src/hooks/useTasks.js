@@ -9,7 +9,7 @@ export function useTasks() {
     error?.code === '42703' ||
     error?.message?.toLowerCase?.().includes('schema cache')
 
-  const fetchTasks = async (objectId) => {
+  const fetchTasks = async (objectId, offset = 0, limit = 20) => {
     try {
       const baseFields =
         'id, title, status, assignee, assignee_id, due_date, notes'
@@ -17,9 +17,11 @@ export function useTasks() {
         .from('tasks')
         .select(baseFields)
         .eq('object_id', objectId)
-      let result = await baseQuery.order('created_at')
+      let result = await baseQuery
+        .order('created_at')
+        .range(offset, offset + limit - 1)
       if (isSchemaCacheError(result.error)) {
-        result = await baseQuery
+        result = await baseQuery.range(offset, offset + limit - 1)
       }
       if (result.error) throw result.error
       return result

@@ -17,25 +17,16 @@ var mockInsert
 var mockFrom
 var mockEq
 var mockOrder
-var mockEqResults
+var mockRangeOrder
+var mockRangeBase
 
 jest.mock('../src/supabaseClient.js', () => {
-  mockEqResults = []
   mockSingle = jest.fn(() => Promise.resolve({ data: null, error: null }))
-  mockOrder = jest.fn(() => Promise.resolve({ data: null, error: null }))
-  mockEq = jest.fn(() => {
-    const res = mockEqResults.shift() || { data: null, error: null }
-    const thenable = {
-      order: mockOrder,
-      then: (resolve) => resolve(res),
-    }
-    return thenable
-  })
-  mockSelect = jest.fn(() => ({
-    single: mockSingle,
-    eq: mockEq,
-    order: mockOrder,
-  }))
+  mockRangeOrder = jest.fn(() => Promise.resolve({ data: null, error: null }))
+  mockRangeBase = jest.fn(() => Promise.resolve({ data: null, error: null }))
+  mockOrder = jest.fn(() => ({ range: mockRangeOrder }))
+  mockEq = jest.fn(() => ({ order: mockOrder, range: mockRangeBase }))
+  mockSelect = jest.fn(() => ({ single: mockSingle, eq: mockEq }))
   mockInsert = jest.fn(() => ({ select: mockSelect }))
   mockFrom = jest.fn(() => ({ insert: mockInsert, select: mockSelect }))
   return { supabase: { from: mockFrom } }
@@ -44,7 +35,6 @@ jest.mock('../src/supabaseClient.js', () => {
 describe('useTasks', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockEqResults = []
   })
 
   it('обрабатывает ошибку добавления задачи', async () => {
@@ -61,8 +51,11 @@ describe('useTasks', () => {
   })
 
   it('успешно загружает задачи без created_at', async () => {
-    mockOrder.mockResolvedValueOnce({ data: null, error: { code: '42703' } })
-    mockEqResults.push({
+    mockRangeOrder.mockResolvedValueOnce({
+      data: null,
+      error: { code: '42703' },
+    })
+    mockRangeBase.mockResolvedValueOnce({
       data: [
         {
           id: 1,
@@ -75,7 +68,7 @@ describe('useTasks', () => {
     })
 
     const { result } = renderHook(() => useTasks())
-    const { data, error } = await result.current.fetchTasks(1)
+    const { data, error } = await result.current.fetchTasks(1, 0, 20)
     expect(error).toBeNull()
     expect(data).toEqual([
       {
@@ -87,5 +80,7 @@ describe('useTasks', () => {
     ])
     expect(mockSelect).toHaveBeenCalledTimes(1)
     expect(mockOrder).toHaveBeenCalledTimes(1)
+    expect(mockRangeOrder).toHaveBeenCalledTimes(1)
+    expect(mockRangeBase).toHaveBeenCalledTimes(1)
   })
 })

@@ -127,6 +127,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const [taskDeleteId, setTaskDeleteId] = useState(null)
   const taskEffectRan = React.useRef(false)
   const [tasksError, setTasksError] = useState(null)
+  const [tasksPage, setTasksPage] = useState(0)
   const [tasksHasMore, setTasksHasMore] = useState(true)
   const [loadingTasks, setLoadingTasks] = useState(false)
 
@@ -220,11 +221,12 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     setHardwarePage(0)
     setHardwareHasMore(true)
     setHardwareError(null)
+    setTasksPage(0)
     setTasksHasMore(true)
     setTasksError(null)
 
     fetchHardware(selected.id, 0)
-    fetchTasks(selected.id)
+    fetchTasks(selected.id, 0)
     fetchMessages(selected.id).then(({ data, error }) => {
       if (error) {
         if (error.status === 403) toast.error('Недостаточно прав')
@@ -441,21 +443,27 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   // --- CRUD Задачи ---
 
-  async function fetchTasks(objectId) {
+  async function fetchTasks(objectId, offset = 0) {
     setLoadingTasks(true)
 
     setTasksError(null)
-    const { data, error } = await fetchTasksApi(objectId)
+    const { data, error } = await fetchTasksApi(objectId, offset, PAGE_SIZE)
     if (error) {
       setTasksError(error)
       if (error.status === 403) toast.error('Недостаточно прав')
       else toast.error('Ошибка загрузки задач: ' + error.message)
     } else {
       const tasksData = data || []
-      setTasks(tasksData)
+      setTasks((prev) => (offset === 0 ? tasksData : [...prev, ...tasksData]))
       setTasksHasMore(tasksData.length === PAGE_SIZE)
     }
     setLoadingTasks(false)
+  }
+
+  function loadMoreTasks() {
+    const nextPage = tasksPage + 1
+    setTasksPage(nextPage)
+    fetchTasks(selected.id, nextPage * PAGE_SIZE)
   }
 
   function openTaskModal(item = null) {
@@ -569,8 +577,9 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         await fetchHardware(selected.id, 0)
       } else if (importTable === 'tasks') {
         setTasks([])
+        setTasksPage(0)
         setTasksHasMore(true)
-        await fetchTasks(selected.id)
+        await fetchTasks(selected.id, 0)
       }
     } catch (e) {
       toast.error(e.message)
@@ -898,7 +907,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             {tasksHasMore && !loadingTasks && (
               <button
                 className="btn btn-outline btn-sm mt-2"
-                onClick={() => fetchTasks(selected.id)}
+                onClick={loadMoreTasks}
               >
                 Загрузить ещё
               </button>

@@ -130,13 +130,20 @@ describe('InventoryTabs', () => {
     expect(await screen.findByText('Задачи не найдены')).toBeInTheDocument()
   })
 
-  it('отображает кнопку «Загрузить ещё» при наличии дополнительных задач', async () => {
-    const tasks = Array.from({ length: 20 }, (_, i) => ({
+  it('подгружает дополнительные задачи по кнопке «Загрузить ещё»', async () => {
+    const tasks1 = Array.from({ length: 20 }, (_, i) => ({
       id: `t${i}`,
       title: `Task ${i}`,
       status: 'запланировано',
     }))
-    mockFetchTasksApi.mockResolvedValue({ data: tasks, error: null })
+    const tasks2 = Array.from({ length: 5 }, (_, i) => ({
+      id: `t${i + 20}`,
+      title: `Task ${i + 20}`,
+      status: 'запланировано',
+    }))
+    mockFetchTasksApi
+      .mockResolvedValueOnce({ data: tasks1, error: null })
+      .mockResolvedValueOnce({ data: tasks2, error: null })
 
     render(
       <MemoryRouter>
@@ -150,7 +157,14 @@ describe('InventoryTabs', () => {
 
     fireEvent.click(screen.getAllByText(/Задачи/)[0])
 
-    expect(await screen.findByText('Загрузить ещё')).toBeInTheDocument()
+    const loadMoreBtn = await screen.findByText('Загрузить ещё')
+    fireEvent.click(loadMoreBtn)
+
+    await waitFor(() =>
+      expect(mockFetchTasksApi).toHaveBeenLastCalledWith(selected.id, 20, 20),
+    )
+    expect(await screen.findByText('Task 24')).toBeInTheDocument()
+    expect(screen.queryByText('Загрузить ещё')).not.toBeInTheDocument()
   })
 
   it('создаёт и удаляет запись оборудования', async () => {
