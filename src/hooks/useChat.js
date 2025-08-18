@@ -33,7 +33,7 @@ export default function useChat({ objectId, userEmail }) {
       return
     }
     offsetRef.current += data?.length || 0
-    setMessages((prev) => [...(data || []), ...prev].sort(sortByCreatedAt))
+    setMessages((prev) => [...(data || []), ...prev])
     if (!data || data.length < LIMIT) setHasMore(false)
   }, [objectId, fetchMessages])
 

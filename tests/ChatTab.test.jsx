@@ -75,6 +75,21 @@ describe('ChatTab', () => {
     mockFetchMessages.mockResolvedValue({ data: mockMessages, error: null })
   })
 
+  it('отображает последнее сообщение после загрузки', async () => {
+    const manyMessages = Array.from({ length: 25 }, (_, i) => ({
+      id: `${i + 1}`,
+      object_id: '1',
+      sender: 'other@example.com',
+      content: `msg${i + 1}`,
+      created_at: new Date(Date.now() + i).toISOString(),
+    }))
+    mockFetchMessages.mockResolvedValueOnce({ data: manyMessages, error: null })
+
+    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
+
+    expect(await screen.findByText('msg25')).toBeInTheDocument()
+  })
+
   it('отображает сообщения и корректно определяет свои по e-mail', async () => {
     render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
 
