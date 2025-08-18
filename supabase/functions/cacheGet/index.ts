@@ -69,7 +69,7 @@ serve(async (req) => {
 
   let query
   if (id) {
-    query = supabase.from(table).select('*').eq('id', id).single()
+    query = supabase.from(table).select('*').eq('id', id).maybeSingle()
   } else {
     query = supabase.from(table).select('*')
   }
