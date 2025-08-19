@@ -66,7 +66,7 @@ function ChatTab({ selected = null, userEmail }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3">
+      <div className="px-3 py-2">
         <button
           type="button"
           className="btn btn-ghost"
@@ -77,13 +77,13 @@ function ChatTab({ selected = null, userEmail }) {
         </button>
         <div
           className={`transition-all duration-300 overflow-hidden ${
-            isSearchOpen ? 'max-h-20 mt-2' : 'max-h-0'
+            isSearchOpen ? 'max-h-12 mt-1' : 'max-h-0'
           }`}
         >
           {isSearchOpen && (
             <input
               type="text"
-              className="input input-bordered w-full"
+              className="input input-bordered input-sm w-full"
               placeholder="Поиск сообщений"
               value={searchInput}
               onChange={handleSearchChange}
