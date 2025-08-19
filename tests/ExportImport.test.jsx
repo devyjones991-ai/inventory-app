@@ -128,6 +128,9 @@ describe('DashboardPage import/export', () => {
     const revokeObjectURL = jest.fn()
     globalThis.URL.createObjectURL = createObjectURL
     globalThis.URL.revokeObjectURL = revokeObjectURL
+    const appendChildSpy = jest
+      .spyOn(document.body, 'appendChild')
+      .mockImplementation(() => {})
 
     render(
       <MemoryRouter>
@@ -141,12 +144,18 @@ describe('DashboardPage import/export', () => {
     await waitFor(() => expect(spy).toHaveBeenCalled())
     expect(createObjectURL).toHaveBeenCalledWith(blob)
     expect(toast.success).toHaveBeenCalledWith('Экспорт выполнен')
+    expect(appendChildSpy).toHaveBeenCalled()
+    appendChildSpy.mockRestore()
   })
 
   it('показывает ошибку при экспорте', async () => {
     const spy = jest
       .spyOn(exportImport, 'exportInventory')
       .mockRejectedValueOnce(new Error('fail'))
+
+    const appendChildSpy = jest
+      .spyOn(document.body, 'appendChild')
+      .mockImplementation(() => {})
 
     render(
       <MemoryRouter>
@@ -159,6 +168,7 @@ describe('DashboardPage import/export', () => {
 
     await waitFor(() => expect(spy).toHaveBeenCalled())
     expect(toast.error).toHaveBeenCalledWith('fail')
+    appendChildSpy.mockRestore()
   })
 
   it('показывает уведомление об успешном импорте', async () => {

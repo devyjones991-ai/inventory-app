@@ -113,7 +113,7 @@ export default function AuthPage() {
       isMounted = false
       subscription?.unsubscribe()
     }
-  }, [navigate])
+  }, [navigate, getSession, onAuthStateChange])
 
   return (
     <div>

@@ -40,4 +40,10 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ['src/utils/useSupabaseQuery.js'],
+    rules: {
+      'react-hooks/exhaustive-deps': 'off',
+    },
+  },
 ])

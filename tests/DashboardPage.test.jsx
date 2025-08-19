@@ -55,6 +55,7 @@ import DashboardPage from '@/pages/DashboardPage'
 
 describe('DashboardPage', () => {
   it('отображает ошибку при сбое загрузки объектов', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     render(
       <MemoryRouter>
         <DashboardPage />
@@ -66,5 +67,10 @@ describe('DashboardPage', () => {
     expect(toast.error).toHaveBeenCalledWith(
       'Ошибка загрузки объектов: load failed',
     )
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Ошибка загрузки объектов:',
+      mockLoadError,
+    )
+    consoleSpy.mockRestore()
   })
 })

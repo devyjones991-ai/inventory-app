@@ -79,6 +79,7 @@ describe('AuthContext', () => {
       }),
     )
     const toastSpy = jest.spyOn(toast, 'error').mockImplementation(() => {})
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
     render(
       <AuthProvider>
@@ -92,7 +93,13 @@ describe('AuthContext', () => {
       'Ошибка получения роли: ' + errorMessage,
     )
 
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Ошибка получения роли:',
+      expect.objectContaining({ message: errorMessage }),
+    )
+
     toastSpy.mockRestore()
+    consoleSpy.mockRestore()
     globalThis.fetch = originalFetch
   })
 })

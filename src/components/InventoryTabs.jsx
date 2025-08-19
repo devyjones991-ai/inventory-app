@@ -40,6 +40,44 @@ function formatDate(dateStr) {
   }
 }
 
+const defaultHWForm = {
+  name: '',
+  location: '',
+  purchase_status: 'не оплачен',
+  install_status: 'не установлен',
+}
+
+const hardwareSchema = z.object({
+  name: z.string().min(1, 'Введите название'),
+  location: z.string().optional(),
+  purchase_status: z.enum(['не оплачен', 'оплачен'], {
+    message: 'Недопустимый статус покупки',
+  }),
+  install_status: z.enum(['не установлен', 'установлен'], {
+    message: 'Недопустимый статус установки',
+  }),
+})
+
+const defaultTaskForm = {
+  title: '',
+  status: 'запланировано',
+  assignee: '',
+  assignee_id: '',
+  due_date: '',
+  notes: '',
+}
+
+const taskSchema = z.object({
+  title: z.string().min(1, 'Введите название'),
+  status: z.enum(['запланировано', 'в процессе', 'завершено'], {
+    message: 'Выберите статус',
+  }),
+  assignee: z.string().optional(),
+  assignee_id: z.string().optional(),
+  due_date: z.string().optional(),
+  notes: z.string().optional(),
+})
+
 function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -57,22 +95,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const [hardware, setHardware] = useState([])
   const [isHWModalOpen, setIsHWModalOpen] = useState(false)
   const [editingHW, setEditingHW] = useState(null)
-  const defaultHWForm = {
-    name: '',
-    location: '',
-    purchase_status: 'не оплачен',
-    install_status: 'не установлен',
-  }
-  const hardwareSchema = z.object({
-    name: z.string().min(1, 'Введите название'),
-    location: z.string().optional(),
-    purchase_status: z.enum(['не оплачен', 'оплачен'], {
-      message: 'Недопустимый статус покупки',
-    }),
-    install_status: z.enum(['не установлен', 'установлен'], {
-      message: 'Недопустимый статус установки',
-    }),
-  })
   const {
     register: registerHW,
     handleSubmit: handleSubmitHW,
@@ -94,24 +116,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const [tasks, setTasks] = useState([])
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
-  const defaultTaskForm = {
-    title: '',
-    status: 'запланировано',
-    assignee: '',
-    assignee_id: '',
-    due_date: '',
-    notes: '',
-  }
-  const taskSchema = z.object({
-    title: z.string().min(1, 'Введите название'),
-    status: z.enum(['запланировано', 'в процессе', 'завершено'], {
-      message: 'Выберите статус',
-    }),
-    assignee: z.string().optional(),
-    assignee_id: z.string().optional(),
-    due_date: z.string().optional(),
-    notes: z.string().optional(),
-  })
   const {
     register: registerTask,
     handleSubmit: handleSubmitTask,
@@ -152,88 +156,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   } = useTasks()
   const { fetchMessages, subscribeToMessages } = useChatMessages()
   const { updateObject } = useObjects()
-  // загрузка данных при смене объекта и восстановление состояния UI
-  useEffect(() => {
-    if (!selected) return
-    const savedTab =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(TAB_KEY(selected.id))
-        : null
-    setTab(savedTab || 'desc')
-    const savedHWForm =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(HW_FORM_KEY(selected.id))
-        : null
-    const savedHWOpen =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(HW_MODAL_KEY(selected.id)) === 'true'
-        : false
-    let parsedHWForm = defaultHWForm
-    if (savedHWForm) {
-      try {
-        parsedHWForm = JSON.parse(savedHWForm)
-      } catch {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem(HW_FORM_KEY(selected.id))
-        }
-      }
-    }
-    resetHW(parsedHWForm)
-    if (savedHWOpen && typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        HW_FORM_KEY(selected.id),
-        JSON.stringify(parsedHWForm),
-      )
-    }
-    setIsHWModalOpen(savedHWOpen)
-    const savedTaskForm =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(TASK_FORM_KEY(selected.id))
-        : null
-    const savedTaskOpen =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true'
-        : false
-    let parsedTaskForm = defaultTaskForm
-    if (savedTaskForm) {
-      try {
-        parsedTaskForm = JSON.parse(savedTaskForm)
-      } catch {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem(TASK_FORM_KEY(selected.id))
-        }
-      }
-    }
-    resetTask(parsedTaskForm)
-    if (savedTaskOpen && typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        TASK_FORM_KEY(selected.id),
-        JSON.stringify(parsedTaskForm),
-      )
-    }
-    setIsTaskModalOpen(savedTaskOpen)
-    setDescription(selected.description || '')
-
-    setHardware([])
-    setTasks([])
-    setChatMessages([])
-
-    setHardwarePage(0)
-    setHardwareHasMore(true)
-    setHardwareError(null)
-    setTasksPage(0)
-    setTasksHasMore(true)
-    setTasksError(null)
-
-    fetchHardware(selected.id, 0)
-    fetchTasks(selected.id, 0)
-    fetchMessages(selected.id).then(({ data, error }) => {
-      if (error) {
-        if (error.status === 403) toast.error('Недостаточно прав')
-        else toast.error('Ошибка загрузки сообщений: ' + error.message)
-      } else setChatMessages(data || [])
-    })
-  }, [selected])
 
   useEffect(() => {
     onTabChange(tab)
@@ -326,7 +248,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       unsubscribeTasks()
       unsubscribeChat()
     }
-  }, [selected])
+  }, [selected, subscribeToMessages, subscribeToTasks])
 
   // --- CRUD Описание ---
   async function saveDescription() {
@@ -342,43 +264,47 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   // --- CRUD Оборудование ---
 
-  async function fetchHardware(objectId, page = hardwarePage) {
-    setLoadingHW(true)
-
-    setHardwareError(null)
-    const from = page * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-    const { data, error } = await supabase
-      .from('hardware')
-      .select('id, name, location, purchase_status, install_status')
-      .eq('object_id', objectId)
-      .order('created_at')
-      .range(from, to)
-    if (error) {
-      setHardwareError(error)
-
-      if (error.status === 403) toast.error('Недостаточно прав')
-      else toast.error('Ошибка загрузки оборудования: ' + error.message)
-
-      await handleSupabaseError(error, navigate, 'Ошибка загрузки оборудования')
-      setLoadingHW(false)
-      return
-    } else {
-      setHardware((prev) => [...prev, ...(data || [])])
-      if (!data || data.length < PAGE_SIZE) {
-        setHardwareHasMore(false)
+  const fetchHardware = useCallback(
+    async (objectId, page = hardwarePage) => {
+      setLoadingHW(true)
+      setHardwareError(null)
+      const from = page * PAGE_SIZE
+      const to = from + PAGE_SIZE - 1
+      const { data, error } = await supabase
+        .from('hardware')
+        .select('id, name, location, purchase_status, install_status')
+        .eq('object_id', objectId)
+        .order('created_at')
+        .range(from, to)
+      if (error) {
+        setHardwareError(error)
+        if (error.status === 403) toast.error('Недостаточно прав')
+        else toast.error('Ошибка загрузки оборудования: ' + error.message)
+        await handleSupabaseError(
+          error,
+          navigate,
+          'Ошибка загрузки оборудования',
+        )
       } else {
-        setHardwarePage(page + 1)
+        setHardware((prev) => [...prev, ...(data || [])])
+        if (!data || data.length < PAGE_SIZE) {
+          setHardwareHasMore(false)
+        } else {
+          setHardwarePage(page + 1)
+        }
       }
-    }
-    const { data: apiData, error: apiError } = await fetchHardwareApi(objectId)
-    if (apiError) {
-      if (apiError.status === 403) toast.error('Недостаточно прав')
-      else toast.error('Ошибка загрузки оборудования: ' + apiError.message)
-    } else setHardware(apiData || [])
-
-    setLoadingHW(false)
-  }
+      const { data: apiData, error: apiError } =
+        await fetchHardwareApi(objectId)
+      if (apiError) {
+        if (apiError.status === 403) toast.error('Недостаточно прав')
+        else toast.error('Ошибка загрузки оборудования: ' + apiError.message)
+      } else {
+        setHardware(apiData || [])
+      }
+      setLoadingHW(false)
+    },
+    [hardwarePage, navigate, fetchHardwareApi],
+  )
 
   function openHWModal(item = null) {
     if (item) {
@@ -443,22 +369,97 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   // --- CRUD Задачи ---
 
-  async function fetchTasks(objectId, offset = 0) {
-    setLoadingTasks(true)
+  const fetchTasks = useCallback(
+    async (objectId, offset = 0) => {
+      setLoadingTasks(true)
+      setTasksError(null)
+      const { data, error } = await fetchTasksApi(objectId, offset, PAGE_SIZE)
+      if (error) {
+        setTasksError(error)
+        if (error.status === 403) toast.error('Недостаточно прав')
+        else toast.error('Ошибка загрузки задач: ' + error.message)
+      } else {
+        const tasksData = data || []
+        setTasks((prev) => (offset === 0 ? tasksData : [...prev, ...tasksData]))
+        setTasksHasMore(tasksData.length === PAGE_SIZE)
+      }
+      setLoadingTasks(false)
+    },
+    [fetchTasksApi],
+  )
 
-    setTasksError(null)
-    const { data, error } = await fetchTasksApi(objectId, offset, PAGE_SIZE)
-    if (error) {
-      setTasksError(error)
-      if (error.status === 403) toast.error('Недостаточно прав')
-      else toast.error('Ошибка загрузки задач: ' + error.message)
-    } else {
-      const tasksData = data || []
-      setTasks((prev) => (offset === 0 ? tasksData : [...prev, ...tasksData]))
-      setTasksHasMore(tasksData.length === PAGE_SIZE)
+  // загрузка данных при смене объекта и восстановление состояния UI
+  useEffect(() => {
+    if (!selected) return
+
+    // Загрузка данных
+    const loadData = async () => {
+      setHardware([])
+      setTasks([])
+      setChatMessages([])
+
+      setHardwarePage(0)
+      setHardwareHasMore(true)
+      setHardwareError(null)
+      setTasksPage(0)
+      setTasksHasMore(true)
+      setTasksError(null)
+
+      await fetchHardware(selected.id, 0)
+      await fetchTasks(selected.id, 0)
+
+      const { data, error } = await fetchMessages(selected.id)
+      if (error) {
+        if (error.status === 403) toast.error('Недостаточно прав')
+        else toast.error('Ошибка загрузки сообщений: ' + error.message)
+      } else {
+        setChatMessages(data || [])
+      }
     }
-    setLoadingTasks(false)
-  }
+
+    // Восстановление состояния UI
+    const restoreUIState = () => {
+      const savedTab = localStorage.getItem(TAB_KEY(selected.id))
+      setTab(savedTab || 'desc')
+
+      // Восстановление формы Hardware
+      const savedHWForm = localStorage.getItem(HW_FORM_KEY(selected.id))
+      const savedHWOpen =
+        localStorage.getItem(HW_MODAL_KEY(selected.id)) === 'true'
+      if (savedHWForm) {
+        try {
+          resetHW(JSON.parse(savedHWForm))
+        } catch {
+          localStorage.removeItem(HW_FORM_KEY(selected.id))
+          resetHW(defaultHWForm)
+        }
+      } else {
+        resetHW(defaultHWForm)
+      }
+      setIsHWModalOpen(savedHWOpen)
+
+      // Восстановление формы Task
+      const savedTaskForm = localStorage.getItem(TASK_FORM_KEY(selected.id))
+      const savedTaskOpen =
+        localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true'
+      if (savedTaskForm) {
+        try {
+          resetTask(JSON.parse(savedTaskForm))
+        } catch {
+          localStorage.removeItem(TASK_FORM_KEY(selected.id))
+          resetTask(defaultTaskForm)
+        }
+      } else {
+        resetTask(defaultTaskForm)
+      }
+      setIsTaskModalOpen(savedTaskOpen)
+
+      setDescription(selected.description || '')
+    }
+
+    restoreUIState()
+    loadData()
+  }, [selected, resetHW, resetTask, fetchHardware, fetchTasks, fetchMessages])
 
   function loadMoreTasks() {
     const nextPage = tasksPage + 1

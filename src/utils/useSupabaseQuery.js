@@ -35,7 +35,7 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
     return () => {
       active = false
     }
-  }, deps)
+  }, [queryBuilder, ...deps])
 
   return { data, isLoading, isError }
 }
