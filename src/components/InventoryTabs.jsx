@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
-import { useForm } from 'react-hook-form'
+import usePersistedForm from '../hooks/usePersistedForm'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { supabase } from '../supabaseClient'
@@ -77,14 +77,14 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     register: registerHW,
     handleSubmit: handleSubmitHW,
     reset: resetHW,
-    watch: watchHW,
     formState: { errors: hwErrors },
-  } = useForm({
-    resolver: zodResolver(hardwareSchema),
-    defaultValues: defaultHWForm,
-  })
+  } = usePersistedForm(
+    selected ? HW_FORM_KEY(selected.id) : null,
+    defaultHWForm,
+    isHWModalOpen,
+    { resolver: zodResolver(hardwareSchema) },
+  )
   const [hwDeleteId, setHwDeleteId] = useState(null)
-  const hwEffectRan = React.useRef(false)
   const [hardwareError, setHardwareError] = useState(null)
   const [hardwarePage, setHardwarePage] = useState(0)
   const [hardwareHasMore, setHardwareHasMore] = useState(true)
@@ -116,16 +116,16 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     register: registerTask,
     handleSubmit: handleSubmitTask,
     reset: resetTask,
-    watch: watchTask,
     formState: { errors: taskErrors },
-  } = useForm({
-    resolver: zodResolver(taskSchema),
-    defaultValues: defaultTaskForm,
-  })
+  } = usePersistedForm(
+    selected ? TASK_FORM_KEY(selected.id) : null,
+    defaultTaskForm,
+    isTaskModalOpen,
+    { resolver: zodResolver(taskSchema) },
+  )
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [viewingTask, setViewingTask] = useState(null)
   const [taskDeleteId, setTaskDeleteId] = useState(null)
-  const taskEffectRan = React.useRef(false)
   const [tasksError, setTasksError] = useState(null)
   const [tasksPage, setTasksPage] = useState(0)
   const [tasksHasMore, setTasksHasMore] = useState(true)
@@ -165,57 +165,15 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         ? localStorage.getItem(TAB_KEY(selected.id))
         : null
     setTab(savedTab || 'desc')
-    const savedHWForm =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(HW_FORM_KEY(selected.id))
-        : null
     const savedHWOpen =
       typeof localStorage !== 'undefined'
         ? localStorage.getItem(HW_MODAL_KEY(selected.id)) === 'true'
         : false
-    let parsedHWForm = defaultHWForm
-    if (savedHWForm) {
-      try {
-        parsedHWForm = JSON.parse(savedHWForm)
-      } catch {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem(HW_FORM_KEY(selected.id))
-        }
-      }
-    }
-    resetHW(parsedHWForm)
-    if (savedHWOpen && typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        HW_FORM_KEY(selected.id),
-        JSON.stringify(parsedHWForm),
-      )
-    }
     setIsHWModalOpen(savedHWOpen)
-    const savedTaskForm =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(TASK_FORM_KEY(selected.id))
-        : null
     const savedTaskOpen =
       typeof localStorage !== 'undefined'
         ? localStorage.getItem(TASK_MODAL_KEY(selected.id)) === 'true'
         : false
-    let parsedTaskForm = defaultTaskForm
-    if (savedTaskForm) {
-      try {
-        parsedTaskForm = JSON.parse(savedTaskForm)
-      } catch {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem(TASK_FORM_KEY(selected.id))
-        }
-      }
-    }
-    resetTask(parsedTaskForm)
-    if (savedTaskOpen && typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        TASK_FORM_KEY(selected.id),
-        JSON.stringify(parsedTaskForm),
-      )
-    }
     setIsTaskModalOpen(savedTaskOpen)
     setDescription(selected.description || '')
 
@@ -253,51 +211,17 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   useEffect(() => {
     if (!selected) return
-    if (hwEffectRan.current) {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(HW_MODAL_KEY(selected.id), isHWModalOpen)
-        if (!isHWModalOpen) {
-          localStorage.removeItem(HW_FORM_KEY(selected.id))
-        }
-      }
-    } else {
-      hwEffectRan.current = true
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(HW_MODAL_KEY(selected.id), isHWModalOpen)
     }
   }, [isHWModalOpen, selected])
 
   useEffect(() => {
-    if (!selected || !isHWModalOpen) return
-    const sub = watchHW((value) => {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(HW_FORM_KEY(selected.id), JSON.stringify(value))
-      }
-    })
-    return () => sub.unsubscribe()
-  }, [watchHW, selected, isHWModalOpen])
-
-  useEffect(() => {
     if (!selected) return
-    if (taskEffectRan.current) {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(TASK_MODAL_KEY(selected.id), isTaskModalOpen)
-        if (!isTaskModalOpen) {
-          localStorage.removeItem(TASK_FORM_KEY(selected.id))
-        }
-      }
-    } else {
-      taskEffectRan.current = true
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(TASK_MODAL_KEY(selected.id), isTaskModalOpen)
     }
   }, [isTaskModalOpen, selected])
-
-  useEffect(() => {
-    if (!selected || !isTaskModalOpen) return
-    const sub = watchTask((value) => {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(TASK_FORM_KEY(selected.id), JSON.stringify(value))
-      }
-    })
-    return () => sub.unsubscribe()
-  }, [watchTask, selected, isTaskModalOpen])
 
   // realtime обновление задач и чата
   useEffect(() => {
