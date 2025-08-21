@@ -432,11 +432,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         ? toast.error('Недостаточно прав')
         : toast.error('Ошибка удаления: ' + error.message)
 
-    if (error) {
-      await handleSupabaseError(error, navigate, 'Ошибка удаления')
-      return
-    }
-
     setHardware((prev) => prev.filter((h) => h.id !== id))
     setHwDeleteId(null)
   }
