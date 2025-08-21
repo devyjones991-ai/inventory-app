@@ -5,19 +5,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
 import { useNavigate } from 'react-router-dom'
 import logger from '../utils/logger'
+import { useAuth } from '../hooks/useAuth'
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
   const [userError, setUserError] = useState(null)
   const [info, setInfo] = useState(null)
   const navigate = useNavigate()
-  const {
-    getSession,
-    onAuthStateChange,
-    signUp,
-    signIn,
-    error: authError,
-  } = useSupabaseAuth()
+  const { signUp, signIn, error: authError } = useSupabaseAuth()
+  const { user, isLoading } = useAuth()
 
   const schema = z
     .object({
@@ -83,38 +79,10 @@ export default function AuthPage() {
   }
 
   useEffect(() => {
-    let isMounted = true
-    let subscription
-
-    const checkSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await getSession()
-        if (session && isMounted) {
-          navigate('/')
-        }
-        ;({
-          data: { subscription },
-        } = onAuthStateChange((_event, session) => {
-          if (session) {
-            navigate('/')
-          }
-        }))
-      } catch (error) {
-        logger.error(error)
-        setUserError('Не удалось получить сессию. Попробуйте позже.')
-        return
-      }
+    if (!isLoading && user) {
+      navigate('/')
     }
-
-    checkSession()
-
-    return () => {
-      isMounted = false
-      subscription?.unsubscribe()
-    }
-  }, [navigate])
+  }, [user, isLoading, navigate])
 
   return (
     <div>
