@@ -50,22 +50,23 @@ describe('useTasks', () => {
     )
   })
 
-  it('успешно загружает задачи без created_at', async () => {
-    mockRangeOrder.mockResolvedValueOnce({
-      data: null,
-      error: { code: '42703' },
-    })
-    mockRangeBase.mockResolvedValueOnce({
-      data: [
-        {
-          id: 1,
-          title: 't',
-          assignee: 'a',
-          assignee_id: 10,
-        },
-      ],
-      error: null,
-    })
+  it('успешно загружает задачи при ошибке schema cache', async () => {
+    mockRangeOrder
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: '42703' },
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: 1,
+            title: 't',
+            assignee: 'a',
+            assignee_id: 10,
+          },
+        ],
+        error: null,
+      })
 
     const { result } = renderHook(() => useTasks())
     const { data, error } = await result.current.fetchTasks(1, 0, 20)
@@ -79,8 +80,8 @@ describe('useTasks', () => {
       },
     ])
     expect(mockSelect).toHaveBeenCalledTimes(1)
-    expect(mockOrder).toHaveBeenCalledTimes(1)
-    expect(mockRangeOrder).toHaveBeenCalledTimes(1)
-    expect(mockRangeBase).toHaveBeenCalledTimes(1)
+    expect(mockOrder).toHaveBeenCalledTimes(2)
+    expect(mockRangeOrder).toHaveBeenCalledTimes(2)
+    expect(mockRangeBase).toHaveBeenCalledTimes(0)
   })
 })
