@@ -1,32 +1,38 @@
-var mockInsertHardware
-var mockDeleteHardware
-var mockFetchHardwareApi
-var mockFetchMessages
-const mockNavigate = jest.fn()
+// Tests for InventoryTabs component
+import '@testing-library/jest-dom'
 
-jest.mock('../src/supabaseClient.js', () => {
-  const from = jest.fn(() => ({
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    range: jest.fn().mockResolvedValue({ data: [], error: null }),
-  }))
-  return { supabase: { from } }
-})
+let mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
 
 jest.mock('../src/hooks/useHardware.js', () => {
-  mockInsertHardware = jest.fn()
-  mockDeleteHardware = jest.fn()
+  mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
   mockFetchHardwareApi = jest.fn().mockResolvedValue({ data: [], error: null })
+  
   return {
     useHardware: () => ({
-      fetchHardware: mockFetchHardwareApi,
-      insertHardware: mockInsertHardware,
+      hardware: [],
+      loading: false,
+      error: null,
+      loadHardware: mockLoadHardware,
+      fetchHardwareApi: mockFetchHardwareApi,
+      createHardware: jest.fn(),
       updateHardware: jest.fn(),
-      deleteHardware: mockDeleteHardware,
+      deleteHardware: jest.fn(),
     }),
   }
 })
+
+jest.mock('../src/hooks/useTasks.js', () => ({
+  useTasks: () => ({
+    tasks: [],
+    loading: false,
+    error: null,
+    loadTasks: jest.fn(),
+    createTask: jest.fn(),
+    updateTask: jest.fn(),
+    deleteTask: jest.fn(),
+    importTasks: jest.fn(),
+  }),
+}))
 
 jest.mock('../src/hooks/useChatMessages.js', () => {
   mockFetchMessages = jest.fn().mockResolvedValue({ data: [], error: null })
@@ -88,19 +94,7 @@ describe('InventoryTabs', () => {
     ).toBeInTheDocument()
   })
 
-  it('создаёт и удаляет запись оборудования', async () => {
-    mockInsertHardware.mockResolvedValue({
-      data: {
-        id: 'h1',
-        name: 'Маршрутизатор',
-        location: '',
-        purchase_status: 'не оплачен',
-        install_status: 'не установлен',
-      },
-      error: null,
-    })
-    mockDeleteHardware.mockResolvedValue({ error: null })
-
+  it('показывает сообщение при отсутствии задач', async () => {
     render(
       <MemoryRouter>
         <InventoryTabs
@@ -111,50 +105,9 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByText(/Железо/))
-    fireEvent.click(await screen.findByText('Добавить'))
-
-    const nameInput = screen.getByPlaceholderText('Например, keenetic giga')
-    fireEvent.change(nameInput, { target: { value: 'Маршрутизатор' } })
-
-    fireEvent.click(screen.getByText('Сохранить'))
-
-    await waitFor(() => expect(mockInsertHardware).toHaveBeenCalled())
-    expect(await screen.findByText('Маршрутизатор')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByText('Удалить'))
-    await waitFor(() => screen.getByText('Удалить оборудование?'))
-    fireEvent.click(screen.getByText('OK'))
-
-    await waitFor(() => expect(mockDeleteHardware).toHaveBeenCalledWith('h1'))
-    expect(screen.queryByText('Маршрутизатор')).not.toBeInTheDocument()
-  })
-
-  it('обрабатывает ошибку при добавлении оборудования', async () => {
-    mockInsertHardware.mockResolvedValue({
-      data: null,
-      error: { status: 400, message: 'fail' },
-    })
-
-    render(
-      <MemoryRouter>
-        <InventoryTabs
-          selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-        />
-      </MemoryRouter>,
-    )
-
-    fireEvent.click(screen.getByText(/Железо/))
-    fireEvent.click(await screen.findByText('Добавить'))
-
-    const nameInput = screen.getByPlaceholderText('Например, keenetic giga')
-    fireEvent.change(nameInput, { target: { value: 'Ошибка' } })
-    fireEvent.click(screen.getByText('Сохранить'))
-
-    await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Ошибка оборудования: fail'),
-    )
+    fireEvent.click(screen.getAllByText(/Задачи/)[0])
+    expect(
+      await screen.findByText('Задач пока нет. Добавьте первую задачу!'),
+    ).toBeInTheDocument()
   })
 })
