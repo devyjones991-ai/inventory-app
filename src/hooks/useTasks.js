@@ -22,7 +22,9 @@ export function useTasks() {
         .order('created_at')
         .range(offset, offset + limit - 1)
       if (isSchemaCacheError(result.error)) {
-        result = await baseQuery.range(offset, offset + limit - 1)
+        result = await baseQuery
+          .order('created_at')
+          .range(offset, offset + limit - 1)
       }
       if (result.error) throw result.error
       return result
