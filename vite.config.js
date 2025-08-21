@@ -37,7 +37,7 @@ export default defineConfig({
             if (id.includes('@supabase')) return 'supabase'
           }
           if (id.includes('src/pages')) {
-            return path.basename(id, '.jsx').toLowerCase()
+            return path.basename(id, path.extname(id)).toLowerCase()
           }
         },
       },
@@ -51,7 +51,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./tests/setup.js'],
-    include: ['tests/**/*.test.jsx'],
+    setupFiles: ['./tests/setup.ts'],
+    include: ['tests/**/*.test.ts?(x)'],
   },
 })
