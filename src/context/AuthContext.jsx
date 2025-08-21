@@ -1,16 +1,21 @@
 import { createContext, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
-import { apiBaseUrl, isApiConfigured } from '../apiConfig'
+import { isApiConfigured } from '../apiConfig'
 import logger from '../utils/logger'
 import { fetchSession, fetchRole } from '../services/authService'
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const AuthContext = createContext({ user: null, role: null })
+export const AuthContext = createContext({
+  user: null,
+  role: null,
+  isLoading: true,
+})
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (!isSupabaseConfigured) return
@@ -22,12 +27,14 @@ export function AuthProvider({ children }) {
     }
 
     const loadSession = async () => {
+      setIsLoading(true)
       const { user: currentUser, error: sessionError } = await fetchSession()
       if (sessionError) {
         console.error('Ошибка получения сессии:', sessionError)
         toast.error('Ошибка получения сессии: ' + sessionError.message)
         setUser(null)
         setRole(null)
+        setIsLoading(false)
         return
       }
       setUser(currentUser)
@@ -45,18 +52,20 @@ export function AuthProvider({ children }) {
       } else {
         setRole(null)
       }
+      setIsLoading(false)
     }
 
     loadSession()
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         loadSession()
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
         setRole(null)
+        setIsLoading(false)
       }
     })
 
@@ -66,6 +75,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     role,
+    isLoading,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
