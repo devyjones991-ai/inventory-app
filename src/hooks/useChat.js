@@ -13,6 +13,7 @@ export default function useChat({ objectId, userEmail, search }) {
   const scrollRef = useRef(null)
   const channelRef = useRef(null)
   const fileInputRef = useRef(null)
+  const optimisticTimersRef = useRef({})
   const { fetchMessages } = useChatMessages()
   const LIMIT = 20
 
@@ -129,13 +130,20 @@ export default function useChat({ objectId, userEmail, search }) {
               const existingIndex = prev.findIndex(
                 (m) =>
                   m._optimistic &&
-                  m.sender === payload.new.sender &&
-                  m.content === payload.new.content,
+                  m.client_generated_id === payload.new.client_generated_id,
               )
 
               if (existingIndex !== -1) {
                 const updated = [...prev]
                 updated[existingIndex] = payload.new
+                const timer =
+                  optimisticTimersRef.current[payload.new.client_generated_id]
+                if (timer) {
+                  clearTimeout(timer)
+                  delete optimisticTimersRef.current[
+                    payload.new.client_generated_id
+                  ]
+                }
                 return updated.sort(sortByCreatedAt)
               }
 
@@ -218,6 +226,7 @@ export default function useChat({ objectId, userEmail, search }) {
     const optimisticId = Date.now() + Math.random()
     const optimistic = {
       id: optimisticId,
+      client_generated_id: optimisticId,
       object_id: objectId,
       sender: userEmail,
       content: newMessage.trim(),
@@ -231,15 +240,27 @@ export default function useChat({ objectId, userEmail, search }) {
     offsetRef.current += 1
     setMessages((prev) => [...prev, optimistic])
 
-    const { error } = await supabase
-      .from('chat_messages')
-      .insert([
-        { object_id: objectId, sender: userEmail, content: newMessage.trim() },
-      ])
+    const { error } = await supabase.from('chat_messages').insert([
+      {
+        object_id: objectId,
+        sender: userEmail,
+        content: newMessage.trim(),
+        client_generated_id: optimisticId,
+      },
+    ])
 
     if (error) {
       await handleSupabaseError(error, null, 'Ошибка отправки')
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id))
+      offsetRef.current -= 1
+    } else {
+      optimisticTimersRef.current[optimisticId] = setTimeout(() => {
+        setMessages((prev) =>
+          prev.filter((m) => m.client_generated_id !== optimisticId),
+        )
+        offsetRef.current -= 1
+        delete optimisticTimersRef.current[optimisticId]
+      }, 5000)
     }
     setNewMessage('')
     setSending(false)
