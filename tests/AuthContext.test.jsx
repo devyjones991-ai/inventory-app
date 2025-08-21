@@ -3,6 +3,7 @@ import { describe, it, expect, jest } from '@jest/globals'
 import { useContext } from 'react'
 import { AuthProvider, AuthContext } from '../src/context/AuthContext.jsx'
 import { toast } from 'react-hot-toast'
+import logger from '../src/utils/logger.js'
 
 const mockGetSession = jest.fn()
 const mockOnAuthStateChange = jest.fn()
@@ -44,7 +45,7 @@ describe('AuthContext', () => {
         },
       }),
     )
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleSpy = jest.spyOn(logger, 'error').mockImplementation(() => {})
 
     render(
       <AuthProvider>

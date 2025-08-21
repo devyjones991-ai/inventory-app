@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
 import { apiBaseUrl, isApiConfigured } from '../apiConfig'
+import logger from '../utils/logger'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext({ user: null, role: null })
@@ -13,7 +14,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!isSupabaseConfigured) return
     if (!isApiConfigured) {
-      console.error(
+      logger.error(
         'Не задана переменная окружения VITE_API_BASE_URL. Авторизация через API недоступна.',
       )
       toast.error('Роль недоступна: API не сконфигурирован')
@@ -105,7 +106,7 @@ export function AuthProvider({ children }) {
               currentUser.id,
             )
             if (roleError) {
-              console.error('Ошибка получения роли:', roleError)
+              logger.error('Ошибка получения роли:', roleError)
               toast.error('Ошибка получения роли: ' + roleError.message)
               setRole(null)
             } else if (fetchedRole === null) {
@@ -120,7 +121,7 @@ export function AuthProvider({ children }) {
           setRole(null)
         }
       } catch (error) {
-        console.error('Ошибка получения сессии:', error)
+        logger.error('Ошибка получения сессии:', error)
         toast.error('Ошибка получения сессии: ' + error.message)
         setUser(null)
         setRole(null)
@@ -138,7 +139,7 @@ export function AuthProvider({ children }) {
         if (isApiConfigured) {
           const { role: fetchedRole, error } = await fetchRole(currentUser.id)
           if (error) {
-            console.error('Ошибка получения роли:', error)
+            logger.error('Ошибка получения роли:', error)
             toast.error('Ошибка получения роли: ' + error.message)
             setRole(null)
           } else if (fetchedRole === null) {

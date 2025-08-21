@@ -17,6 +17,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
 import { useAuth } from '../hooks/useAuth'
 import { exportInventory, importInventory } from '../utils/exportImport'
+import logger from '../utils/logger'
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
 const NOTIF_KEY = 'objectNotifications'
@@ -148,7 +149,7 @@ export default function DashboardPage() {
         setFetchError('Недостаточно прав')
         return
       }
-      console.error('Ошибка загрузки объектов:', error)
+      logger.error('Ошибка загрузки объектов:', error)
       toast.error('Ошибка загрузки объектов: ' + error.message)
 
       await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')

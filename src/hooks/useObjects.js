@@ -1,9 +1,10 @@
 import { supabase } from '../supabaseClient'
 import { apiBaseUrl, isApiConfigured } from '../apiConfig'
+import logger from '../utils/logger'
 
 export function useObjects() {
   if (!isApiConfigured) {
-    console.error(
+    logger.error(
       'Не задана переменная окружения VITE_API_BASE_URL. Работа с объектами недоступна.',
     )
     const error = new Error('API не настроен')
