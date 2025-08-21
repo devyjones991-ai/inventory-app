@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { supabase } from '../supabaseClient'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
 import HardwareCard from './HardwareCard'
-import TaskCard from './TaskCard'
+import VirtualizedTaskList from './VirtualizedTaskList'
 import ChatTab from './ChatTab'
 import { PlusIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline'
 import { linkifyText } from '../utils/linkify'
@@ -893,17 +893,12 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             {!loadingTasks && !tasksError && (
               <>
                 {tasks.length === 0 && <p>Задачи не найдены</p>}
-                <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {tasks.map((t) => (
-                    <TaskCard
-                      key={t.id}
-                      item={t}
-                      onView={() => openTaskView(t)}
-                      onEdit={() => openTaskModal(t)}
-                      onDelete={() => askDeleteTask(t.id)}
-                    />
-                  ))}
-                </div>
+                <VirtualizedTaskList
+                  tasks={tasks}
+                  onView={openTaskView}
+                  onEdit={openTaskModal}
+                  onDelete={askDeleteTask}
+                />
               </>
             )}
             {tasksHasMore && !loadingTasks && (

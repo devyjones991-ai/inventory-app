@@ -165,7 +165,8 @@ describe('InventoryTabs', () => {
     await waitFor(() =>
       expect(mockFetchTasksApi).toHaveBeenLastCalledWith(selected.id, 20, 20),
     )
-    expect(await screen.findByText('Task 24')).toBeInTheDocument()
+    const list = screen.getByTestId('task-list')
+    expect(list.firstChild.style.height).toBe('3000px')
     expect(screen.queryByText('Загрузить ещё')).not.toBeInTheDocument()
   })
 
