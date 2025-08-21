@@ -7,6 +7,10 @@ jest.mock('../src/utils/handleSupabaseError', () => ({
   handleSupabaseError: jest.fn(),
 }))
 
+jest.mock('react-hot-toast', () => ({
+  toast: { error: jest.fn() },
+}))
+
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
 }))

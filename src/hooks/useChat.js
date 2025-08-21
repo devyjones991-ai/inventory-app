@@ -10,6 +10,7 @@ export default function useChat({ objectId, userEmail, search }) {
   const [sending, setSending] = useState(false)
   const [file, setFile] = useState(null)
   const [filePreview, setFilePreview] = useState(null)
+  const [loadError, setLoadError] = useState(null)
   const scrollRef = useRef(null)
   const channelRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -34,9 +35,16 @@ export default function useChat({ objectId, userEmail, search }) {
       const { data, error } = await fetchMessages(objectId, params)
       if (currentSearch !== activeSearchRef.current) return
       if (error) {
+        console.error('loadMore error', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        })
+        setLoadError(error)
         await handleSupabaseError(error, null, 'Ошибка загрузки сообщений')
-        return
+        return { error }
       }
+      setLoadError(null)
       offsetRef.current += data?.length || 0
       if (replace) {
         setMessages(data || [])
@@ -288,6 +296,7 @@ export default function useChat({ objectId, userEmail, search }) {
     fileInputRef,
     scrollRef,
     markMessagesAsRead,
+    loadError,
   }
 }
 
