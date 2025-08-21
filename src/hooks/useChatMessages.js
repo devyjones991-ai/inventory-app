@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
 import { useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
+import { toast } from 'react-hot-toast'
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -19,11 +20,25 @@ export function useChatMessages() {
   const fetchMessages = useCallback(
     async (objectId, { limit, offset, search } = {}) => {
       try {
-        let query = supabase
-          .from('chat_messages')
-          .select('*')
-          .eq('object_id', objectId)
-          .order('created_at', { ascending: false })
+        let query
+        try {
+          query = supabase
+            .from('chat_messages')
+            .select('*')
+            .eq('object_id', objectId)
+            .order('created_at', { ascending: false })
+        } catch (error) {
+          if (error instanceof TypeError) {
+            console.error('Supabase unavailable', {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            })
+            toast.error('Сервер недоступен')
+            return { data: null, error }
+          }
+          throw error
+        }
 
         if (search) {
           query = query.ilike('content', `%${search}%`)
@@ -42,6 +57,11 @@ export function useChatMessages() {
         if (result.data) result.data.reverse()
         return result
       } catch (error) {
+        console.error('fetchMessages error', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        })
         await handleSupabaseError(error, navigate, 'Ошибка загрузки сообщений')
         return { data: null, error }
       }
@@ -70,14 +90,35 @@ export function useChatMessages() {
             .getPublicUrl(filePath)
           fileUrl = data.publicUrl
         }
-        const result = await supabase
-          .from('chat_messages')
-          .insert([{ object_id: objectId, sender, content, file_url: fileUrl }])
-          .select()
-          .single()
+        let result
+        try {
+          result = await supabase
+            .from('chat_messages')
+            .insert([
+              { object_id: objectId, sender, content, file_url: fileUrl },
+            ])
+            .select()
+            .single()
+        } catch (error) {
+          if (error instanceof TypeError) {
+            console.error('Supabase unavailable', {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            })
+            toast.error('Сервер недоступен')
+            return { data: null, error }
+          }
+          throw error
+        }
         if (result.error) throw result.error
         return result
       } catch (error) {
+        console.error('sendMessage error', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        })
         await handleSupabaseError(error, navigate, 'Ошибка отправки сообщения')
         return { data: null, error }
       }
