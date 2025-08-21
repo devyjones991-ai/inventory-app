@@ -131,6 +131,11 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const [tasksHasMore, setTasksHasMore] = useState(true)
   const [loadingTasks, setLoadingTasks] = useState(false)
 
+  const sortByCreatedAt = (arr) =>
+    arr.sort(
+      (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0),
+    )
+
   // --- импорт/экспорт ---
   const [importTable, setImportTable] = useState(null)
   const [importFile, setImportFile] = useState(null)
@@ -299,19 +304,17 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     if (!selected) return
     const unsubscribeTasks = subscribeToTasks(selected.id, (payload) => {
       setTasks((prev) => {
-        if (payload.eventType === 'INSERT') {
-          if (prev.some((t) => t.id === payload.new.id)) return prev
-          return [...prev, payload.new]
-        }
-        if (payload.eventType === 'UPDATE') {
-          return prev.map((t) =>
-            t.id === payload.new.id ? { ...t, ...payload.new } : t,
-          )
-        }
         if (payload.eventType === 'DELETE') {
-          return prev.filter((t) => t.id !== payload.old.id)
+          const updated = prev.filter((t) => t.id !== payload.old.id)
+          return sortByCreatedAt(updated)
         }
-        return prev
+        const exists = prev.some((t) => t.id === payload.new.id)
+        const updated = exists
+          ? prev.map((t) =>
+              t.id === payload.new.id ? { ...t, ...payload.new } : t,
+            )
+          : [...prev, payload.new]
+        return sortByCreatedAt(updated)
       })
     })
 
@@ -449,7 +452,10 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       else toast.error('Ошибка загрузки задач: ' + error.message)
     } else {
       const tasksData = data || []
-      setTasks((prev) => (offset === 0 ? tasksData : [...prev, ...tasksData]))
+      setTasks((prev) => {
+        const merged = offset === 0 ? [...tasksData] : [...prev, ...tasksData]
+        return sortByCreatedAt(merged)
+      })
       setTasksHasMore(tasksData.length === PAGE_SIZE)
     }
     setLoadingTasks(false)
@@ -509,11 +515,12 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     }
 
     const rec = res.data
-    setTasks((prev) =>
-      editingTask
+    setTasks((prev) => {
+      const updated = editingTask
         ? prev.map((t) => (t.id === rec.id ? rec : t))
-        : [...prev, rec],
-    )
+        : [...prev, rec]
+      return sortByCreatedAt(updated)
+    })
     setIsTaskModalOpen(false)
     setEditingTask(null)
     resetTask({ ...defaultTaskForm })
@@ -534,7 +541,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       return
     }
 
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    setTasks((prev) => sortByCreatedAt(prev.filter((t) => t.id !== id)))
     setTaskDeleteId(null)
   }
 

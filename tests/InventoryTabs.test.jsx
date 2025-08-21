@@ -135,11 +135,13 @@ describe('InventoryTabs', () => {
       id: `t${i}`,
       title: `Task ${i}`,
       status: 'запланировано',
+      created_at: new Date(Date.UTC(2024, 0, 1, 0, 0, i)).toISOString(),
     }))
     const tasks2 = Array.from({ length: 5 }, (_, i) => ({
       id: `t${i + 20}`,
       title: `Task ${i + 20}`,
       status: 'запланировано',
+      created_at: new Date(Date.UTC(2024, 0, 1, 0, 0, i + 20)).toISOString(),
     }))
     mockFetchTasksApi
       .mockResolvedValueOnce({ data: tasks1, error: null })
@@ -247,6 +249,7 @@ describe('InventoryTabs', () => {
         assignee_id: null,
         due_date: '2024-05-10',
         notes: null,
+        created_at: '2024-05-09T00:00:00Z',
       },
       error: null,
     })
@@ -299,6 +302,7 @@ describe('InventoryTabs', () => {
           assignee_id: null,
           due_date: '2024-05-10',
           notes: null,
+          created_at: '2024-05-09T00:00:00Z',
         },
       ],
       error: null,
@@ -312,6 +316,7 @@ describe('InventoryTabs', () => {
         assignee_id: null,
         due_date: '2024-05-15',
         notes: null,
+        created_at: '2024-05-09T00:00:00Z',
       },
       error: null,
     })
@@ -351,6 +356,7 @@ describe('InventoryTabs', () => {
           title: 'Просмотр',
           status: 'запланировано',
           due_date: '2024-05-10',
+          created_at: '2024-05-09T00:00:00Z',
         },
       ],
       error: null,
@@ -374,7 +380,14 @@ describe('InventoryTabs', () => {
 
   it('синхронизирует список задач при обновлении и удалении', async () => {
     mockFetchTasksApi.mockResolvedValue({
-      data: [{ id: 't1', title: 'Задача 1', status: 'запланировано' }],
+      data: [
+        {
+          id: 't1',
+          title: 'Задача 1',
+          status: 'запланировано',
+          created_at: '2024-05-09T00:00:00Z',
+        },
+      ],
       error: null,
     })
 
@@ -394,7 +407,12 @@ describe('InventoryTabs', () => {
     act(() => {
       taskHandler({
         eventType: 'UPDATE',
-        new: { id: 't1', title: 'Обновлено', status: 'в процессе' },
+        new: {
+          id: 't1',
+          title: 'Обновлено',
+          status: 'в процессе',
+          created_at: '2024-05-09T00:00:00Z',
+        },
       })
     })
 
