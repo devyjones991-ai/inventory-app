@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
 import { useNavigate } from 'react-router-dom'
+import logger from '../utils/logger'
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
@@ -45,7 +46,7 @@ export default function AuthPage() {
       error instanceof TypeError ||
       (error.message && error.message.toLowerCase().includes('failed to fetch'))
     ) {
-      console.error(error)
+      logger.error(error)
       return 'Не удалось подключиться к серверу. Попробуйте позже.'
     }
     return error.message
@@ -101,7 +102,7 @@ export default function AuthPage() {
           }
         }))
       } catch (error) {
-        console.error(error)
+        logger.error(error)
         setUserError('Не удалось получить сессию. Попробуйте позже.')
         return
       }

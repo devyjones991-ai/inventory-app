@@ -1,3 +1,5 @@
+import logger from './logger'
+
 let audioCtx
 function playTone(frequency) {
   if (typeof window === 'undefined') return
@@ -22,7 +24,7 @@ export function requestNotificationPermission() {
     try {
       Notification.requestPermission()
     } catch (err) {
-      console.error('Notification permission error:', err)
+      logger.error('Notification permission error:', err)
     }
   }
 }
@@ -34,7 +36,7 @@ export function pushNotification(title, body) {
     try {
       new Notification(title, { body })
     } catch (err) {
-      console.error('Notification error:', err)
+      logger.error('Notification error:', err)
     }
   }
 }

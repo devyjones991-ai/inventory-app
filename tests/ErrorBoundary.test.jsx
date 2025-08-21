@@ -1,6 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import logger from '../src/utils/logger.js'
 
 function ProblemComponent() {
   throw new Error('Test error')
@@ -8,7 +9,7 @@ function ProblemComponent() {
 
 describe('ErrorBoundary', () => {
   it('перехватывает ошибки и отображает резервный UI', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const spy = jest.spyOn(logger, 'error').mockImplementation(() => {})
 
     render(
       <ErrorBoundary>

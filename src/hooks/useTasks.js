@@ -1,6 +1,7 @@
 import { supabase } from '../supabaseClient'
 import { handleSupabaseError } from '../utils/handleSupabaseError'
 import { useNavigate } from 'react-router-dom'
+import logger from '../utils/logger'
 
 export function useTasks() {
   const navigate = useNavigate()
@@ -28,7 +29,7 @@ export function useTasks() {
       if (result.error) throw result.error
       return result
     } catch (error) {
-      console.error('fetchTasks failed', error)
+      logger.error('fetchTasks failed', error)
       await handleSupabaseError(error, navigate, 'Ошибка загрузки задач')
       return { data: null, error }
     }
