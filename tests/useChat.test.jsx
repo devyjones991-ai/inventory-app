@@ -1,5 +1,6 @@
 // Move mocks before imports to avoid initialization errors
 let mockSupabase
+let onPayload
 
 jest.mock('../src/supabaseClient.js', () => ({
   get supabase() {
@@ -16,15 +17,26 @@ const updateChain = {
   })),
 }
 
+const insertFn = jest.fn(() => Promise.resolve({ error: null }))
+
 mockSupabase = {
-  from: jest.fn(() => ({ update: jest.fn(() => updateChain) })),
-  channel: jest.fn(() => ({
-    on: jest.fn().mockReturnThis(),
-    subscribe: jest.fn((cb) => {
-      cb('SUBSCRIBED')
-      return { unsubscribe: jest.fn() }
-    }),
+  from: jest.fn(() => ({
+    update: jest.fn(() => updateChain),
+    insert: insertFn,
   })),
+  channel: jest.fn(() => {
+    const channelObj = {
+      on: jest.fn((event, filter, cb) => {
+        onPayload = cb
+        return channelObj
+      }),
+      subscribe: jest.fn((cb) => {
+        cb('SUBSCRIBED')
+        return { unsubscribe: jest.fn() }
+      }),
+    }
+    return channelObj
+  }),
   removeChannel: jest.fn(),
 }
 
@@ -83,6 +95,7 @@ import { handleSupabaseError as mockHandleSupabaseError } from '../src/utils/han
 describe('useChat markMessagesAsRead', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    onPayload = null
   })
 
   it('загружает сообщения с учётом смещения без аргументов', async () => {
@@ -121,5 +134,68 @@ describe('useChat markMessagesAsRead', () => {
       null,
       'Ошибка отметки сообщений как прочитанных',
     )
+  })
+
+  it('удаляет дубли при отправке одинаковых сообщений подряд', async () => {
+    mockFetchMessages.mockReset()
+    mockFetchMessages.mockResolvedValue({ data: [], error: null })
+
+    const { result } = renderHook(() =>
+      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+    )
+
+    await waitFor(() => expect(mockFetchMessages).toHaveBeenCalled())
+
+    await act(async () => {
+      result.current.setNewMessage('hi')
+    })
+    await act(async () => {
+      await result.current.handleSend()
+    })
+
+    expect(result.current.messages).toHaveLength(1)
+    const firstId = result.current.messages[0].client_generated_id
+
+    act(() => {
+      onPayload({
+        eventType: 'INSERT',
+        new: {
+          id: '10',
+          object_id: '1',
+          sender: 'me@example.com',
+          content: 'hi',
+          created_at: new Date().toISOString(),
+          client_generated_id: firstId,
+        },
+      })
+    })
+
+    await act(async () => {
+      result.current.setNewMessage('hi')
+    })
+    await act(async () => {
+      await result.current.handleSend()
+    })
+
+    expect(result.current.messages).toHaveLength(2)
+    const secondOptimistic = result.current.messages.find((m) => m._optimistic)
+    const secondId = secondOptimistic.client_generated_id
+
+    act(() => {
+      onPayload({
+        eventType: 'INSERT',
+        new: {
+          id: '11',
+          object_id: '1',
+          sender: 'me@example.com',
+          content: 'hi',
+          created_at: new Date().toISOString(),
+          client_generated_id: secondId,
+        },
+      })
+    })
+
+    expect(result.current.messages.filter((m) => m._optimistic)).toHaveLength(0)
+    expect(result.current.messages).toHaveLength(2)
   })
 })
