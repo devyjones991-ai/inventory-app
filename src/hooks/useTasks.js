@@ -13,7 +13,7 @@ export function useTasks() {
   const fetchTasks = async (objectId, offset = 0, limit = 20) => {
     try {
       const baseFields =
-        'id, title, status, assignee, assignee_id, due_date, notes'
+        'id, title, status, assignee, assignee_id, due_date, notes, created_at'
       const baseQuery = supabase
         .from('tasks')
         .select(baseFields)
@@ -38,7 +38,7 @@ export function useTasks() {
   const insertTask = async (data) => {
     try {
       const baseFields =
-        'id, title, status, assignee, assignee_id, due_date, notes'
+        'id, title, status, assignee, assignee_id, due_date, notes, created_at'
       const {
         planned_date: _planned_date,
         plan_date: _plan_date,
@@ -60,7 +60,7 @@ export function useTasks() {
   const updateTask = async (id, data) => {
     try {
       const baseFields =
-        'id, title, status, assignee, assignee_id, due_date, notes'
+        'id, title, status, assignee, assignee_id, due_date, notes, created_at'
       const {
         planned_date: _planned_date,
         plan_date: _plan_date,

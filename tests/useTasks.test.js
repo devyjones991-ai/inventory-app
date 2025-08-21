@@ -63,6 +63,7 @@ describe('useTasks', () => {
             title: 't',
             assignee: 'a',
             assignee_id: 10,
+            created_at: '2024-05-09T00:00:00Z',
           },
         ],
         error: null,
@@ -77,6 +78,7 @@ describe('useTasks', () => {
         title: 't',
         assignee: 'a',
         assignee_id: 10,
+        created_at: '2024-05-09T00:00:00Z',
       },
     ])
     expect(mockSelect).toHaveBeenCalledTimes(1)
