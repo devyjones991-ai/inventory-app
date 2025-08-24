@@ -204,7 +204,7 @@ function ChatTab({ selected = null, userEmail }) {
         </div>
         <div className="flex justify-end">
           <button
-            className="btn btn-primary"
+            className="btn btn-primary sm:btn-sm"
             disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
