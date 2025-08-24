@@ -20,50 +20,29 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
           <span>Установка: {item.install_status}</span>
         </div>
 
-      </div>
-      {!!user && (
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onEdit}
-            className="flex items-center gap-1 w-full sm:w-auto"
-          >
-            <PencilIcon className="w-4 h-4" />
-            Изменить
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={onDelete}
-            className="flex items-center gap-1 w-full sm:w-auto"
-          >
-            <TrashIcon className="w-4 h-4" />
-            Удалить
-          </Button>
-        </div>
-      )}
-
         {!!user && (
           <div className="flex flex-col sm:flex-row gap-2">
-            <button
+            <Button
+              size="sm"
+              variant="outline"
               onClick={onEdit}
-              className="btn btn-sm btn-outline flex items-center gap-1 w-full sm:w-auto"
+              className="flex items-center gap-1 w-full sm:w-auto"
             >
               <PencilIcon className="w-4 h-4" />
               Изменить
-            </button>
-            <button
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
               onClick={onDelete}
-              className="btn btn-sm btn-error flex items-center gap-1 w-full sm:w-auto"
+              className="flex items-center gap-1 w-full sm:w-auto"
             >
               <TrashIcon className="w-4 h-4" />
               Удалить
-            </button>
+            </Button>
           </div>
         )}
       </CardContent>
-
     </Card>
   )
 }
