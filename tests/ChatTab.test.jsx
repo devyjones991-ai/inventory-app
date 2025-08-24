@@ -23,9 +23,19 @@ var mockInsert
 var mockFetchMessages
 
 jest.mock('../src/supabaseClient.js', () => {
-  mockInsert = jest.fn(() =>
-    Promise.resolve({ data: { id: '3' }, error: null }),
-  )
+  mockInsert = jest.fn((records) => {
+    const record = records[0]
+    return {
+      select: jest.fn(() => ({
+        single: jest.fn(() =>
+          Promise.resolve({
+            data: { id: '3', created_at: new Date().toISOString(), ...record },
+            error: null,
+          }),
+        ),
+      })),
+    }
+  })
   const mockUpdate = jest.fn(() => ({
     is: jest.fn(() => ({
       eq: jest.fn(() => ({
