@@ -12,6 +12,13 @@ import { linkifyText } from '../utils/linkify'
 import { useHardware } from '../hooks/useHardware'
 import { useObjects } from '../hooks/useObjects'
 import { useAuth } from '../hooks/useAuth'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
 
@@ -242,70 +249,70 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
           <ChatTab selected={selected} userEmail={user?.email} />
         )}
       </div>
-      {isHWModalOpen && (
-        <div className="modal modal-open">
-          <div className="modal-box space-y-4">
-            <h3 className="font-bold text-lg">
+      <Dialog open={isHWModalOpen} onOpenChange={setIsHWModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
               {editingHW ? 'Изменить оборудование' : 'Добавить оборудование'}
-            </h3>
-            <form onSubmit={handleHWSubmit} className="space-y-2">
-              <div>
-                <input
-                  className="input input-bordered w-full"
-                  placeholder="Название"
-                  {...register('name')}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-sm">{errors.name.message}</p>
-                )}
-              </div>
-              <div>
-                <input
-                  className="input input-bordered w-full"
-                  placeholder="Расположение"
-                  {...register('location')}
-                />
-              </div>
-              <div>
-                <select
-                  className="select select-bordered w-full"
-                  {...register('purchase_status')}
-                >
-                  <option value="не оплачен">не оплачен</option>
-                  <option value="оплачен">оплачен</option>
-                </select>
-                {errors.purchase_status && (
-                  <p className="text-red-500 text-sm">
-                    {errors.purchase_status.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <select
-                  className="select select-bordered w-full"
-                  {...register('install_status')}
-                >
-                  <option value="не установлен">не установлен</option>
-                  <option value="установлен">установлен</option>
-                </select>
-                {errors.install_status && (
-                  <p className="text-red-500 text-sm">
-                    {errors.install_status.message}
-                  </p>
-                )}
-              </div>
-              <div className="modal-action">
-                <button type="button" className="btn" onClick={closeHWModal}>
-                  Отмена
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Сохранить
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleHWSubmit} className="space-y-2">
+            <div>
+              <input
+                className="input input-bordered w-full"
+                placeholder="Название"
+                {...register('name')}
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm">{errors.name.message}</p>
+              )}
+            </div>
+            <div>
+              <input
+                className="input input-bordered w-full"
+                placeholder="Расположение"
+                {...register('location')}
+              />
+            </div>
+            <div>
+              <select
+                className="select select-bordered w-full"
+                {...register('purchase_status')}
+              >
+                <option value="не оплачен">не оплачен</option>
+                <option value="оплачен">оплачен</option>
+              </select>
+              {errors.purchase_status && (
+                <p className="text-red-500 text-sm">
+                  {errors.purchase_status.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <select
+                className="select select-bordered w-full"
+                {...register('install_status')}
+              >
+                <option value="не установлен">не установлен</option>
+                <option value="установлен">установлен</option>
+              </select>
+              {errors.install_status && (
+                <p className="text-red-500 text-sm">
+                  {errors.install_status.message}
+                </p>
+              )}
+            </div>
+            <DialogFooter>
+              <button type="button" className="btn" onClick={closeHWModal}>
+                Отмена
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Сохранить
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
