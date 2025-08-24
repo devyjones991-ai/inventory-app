@@ -1,24 +1,23 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import TaskCard from './TaskCard'
-import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
 import { useTasks } from '../hooks/useTasks'
 
 const PAGE_SIZE = 20
 
-function TasksTab({ selected, user }) {
+function TasksTab({ selected }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [page, setPage] = useState(0)
-  const [hasMore, setHasMore] = useState(true)
+  const [_page, _setPage] = useState(0)
+  const [_hasMore, _setHasMore] = useState(true)
   const [taskForm, setTaskForm] = useState({
     title: '',
     assignee: '',
     due_date: '',
     status: 'pending',
-    notes: ''
+    notes: '',
   })
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
@@ -26,7 +25,7 @@ function TasksTab({ selected, user }) {
   const [taskDeleteId, setTaskDeleteId] = useState(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [importFile, setImportFile] = useState(null)
-  
+
   const {
     tasks: hookTasks,
     loading: hookLoading,
@@ -35,7 +34,7 @@ function TasksTab({ selected, user }) {
     createTask,
     updateTask,
     deleteTask,
-    importTasks
+    importTasks,
   } = useTasks(selected?.id)
 
   useEffect(() => {
@@ -56,7 +55,7 @@ function TasksTab({ selected, user }) {
       assignee: '',
       due_date: '',
       status: 'pending',
-      notes: ''
+      notes: '',
     })
     setEditingTask(null)
     setIsTaskModalOpen(true)
@@ -76,19 +75,22 @@ function TasksTab({ selected, user }) {
     setImportFile(null)
   }, [])
 
-  const handleTaskSubmit = useCallback(async (e) => {
-    e.preventDefault()
-    try {
-      if (editingTask) {
-        await updateTask(editingTask.id, taskForm)
-      } else {
-        await createTask(taskForm)
+  const handleTaskSubmit = useCallback(
+    async (e) => {
+      e.preventDefault()
+      try {
+        if (editingTask) {
+          await updateTask(editingTask.id, taskForm)
+        } else {
+          await createTask(taskForm)
+        }
+        closeTaskModal()
+      } catch (error) {
+        console.error('Error saving task:', error)
       }
-      closeTaskModal()
-    } catch (error) {
-      console.error('Error saving task:', error)
-    }
-  }, [taskForm, editingTask, createTask, updateTask, closeTaskModal])
+    },
+    [taskForm, editingTask, createTask, updateTask, closeTaskModal],
+  )
 
   const handleEditTask = useCallback((task) => {
     setTaskForm({
@@ -96,7 +98,7 @@ function TasksTab({ selected, user }) {
       assignee: task.assignee || '',
       due_date: task.due_date || '',
       status: task.status || 'pending',
-      notes: task.notes || ''
+      notes: task.notes || '',
     })
     setEditingTask(task)
     setIsTaskModalOpen(true)
@@ -143,7 +145,13 @@ function TasksTab({ selected, user }) {
   }
 
   if (loading) {
-    return <Spinner />
+    return (
+      <div className="space-y-2">
+        <div className="h-10 bg-muted rounded" />
+        <div className="h-10 bg-muted rounded" />
+        <div className="h-10 bg-muted rounded" />
+      </div>
+    )
   }
 
   if (error) {
@@ -155,16 +163,10 @@ function TasksTab({ selected, user }) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <h3 className="text-lg font-semibold">Задачи ({tasks.length})</h3>
         <div className="flex gap-2">
-          <button
-            className="btn btn-sm btn-outline"
-            onClick={openImportModal}
-          >
+          <button className="btn btn-sm btn-outline" onClick={openImportModal}>
             Импорт
           </button>
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={openTaskModal}
-          >
+          <button className="btn btn-sm btn-primary" onClick={openTaskModal}>
             + Добавить
           </button>
         </div>
@@ -172,14 +174,14 @@ function TasksTab({ selected, user }) {
 
       {tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">
-          Задач пока нет. Добавьте первую задачу!
+          Нет данных. Нажмите «Добавить».
         </div>
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
-              task={task}
+              item={task}
               onEdit={handleEditTask}
               onDelete={handleDeleteTask}
               onView={setViewingTask}
@@ -210,7 +212,9 @@ function TasksTab({ selected, user }) {
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.title}
-                  onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, title: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -222,7 +226,9 @@ function TasksTab({ selected, user }) {
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.assignee}
-                  onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, assignee: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -233,7 +239,9 @@ function TasksTab({ selected, user }) {
                   type="date"
                   className="input input-bordered w-full"
                   value={taskForm.due_date}
-                  onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, due_date: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -243,7 +251,9 @@ function TasksTab({ selected, user }) {
                 <select
                   className="select select-bordered w-full"
                   value={taskForm.status}
-                  onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, status: e.target.value })
+                  }
                 >
                   <option value="pending">В ожидании</option>
                   <option value="in_progress">В работе</option>
@@ -259,14 +269,20 @@ function TasksTab({ selected, user }) {
                   className="textarea textarea-bordered w-full"
                   rows="3"
                   value={taskForm.notes}
-                  onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, notes: e.target.value })
+                  }
                 ></textarea>
               </div>
               <div className="modal-action flex space-x-2">
                 <button type="submit" className="btn btn-primary">
                   {editingTask ? 'Сохранить' : 'Добавить'}
                 </button>
-                <button type="button" className="btn btn-ghost" onClick={closeTaskModal}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={closeTaskModal}
+                >
                   Отмена
                 </button>
               </div>
@@ -351,7 +367,6 @@ function TasksTab({ selected, user }) {
 
 TasksTab.propTypes = {
   selected: PropTypes.object,
-  user: PropTypes.object
 }
 
 export default TasksTab
