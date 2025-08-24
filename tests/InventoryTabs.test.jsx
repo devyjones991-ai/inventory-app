@@ -1,12 +1,12 @@
 // Tests for InventoryTabs component
 import '@testing-library/jest-dom'
 
-let mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
+var mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
 
 jest.mock('../src/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
   mockFetchHardwareApi = jest.fn().mockResolvedValue({ data: [], error: null })
-  
+
   return {
     useHardware: () => ({
       hardware: [],
@@ -61,10 +61,9 @@ jest.mock('react-router-dom', () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import InventoryTabs from '../src/components/InventoryTabs.jsx'
-import { toast } from 'react-hot-toast'
 
 describe('InventoryTabs', () => {
   const selected = { id: '1', name: 'Объект 1' }
