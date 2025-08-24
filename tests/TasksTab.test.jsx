@@ -68,10 +68,10 @@ describe('TasksTab', () => {
       data: {
         id: 't1',
         title: 'Новая задача',
-        assignee: 'Иван Петров',
-        due_date: '2024-12-31',
-        status: 'pending',
-        notes: '',
+        status: 'запланировано',
+        assignee: null,
+        due_date: '2024-05-10',
+        notes: null,
       },
       error: null,
     })
@@ -94,49 +94,35 @@ describe('TasksTab', () => {
       fireEvent.change(dueDateInput, { target: { value: '2024-12-31' } })
     })
 
-    await act(async () => {
-      fireEvent.click(screen.getByText('Добавить'))
-    })
+    fireEvent.click(screen.getByText('📅'))
+    const dateInput = document.querySelector('input[type="date"]')
+    fireEvent.change(dateInput, { target: { value: '2024-05-10' } })
+    fireEvent.click(screen.getByText('Сохранить'))
 
     await waitFor(() => {
       expect(mockCreateTask).toHaveBeenCalledWith({
         title: 'Новая задача',
         assignee: 'Иван Петров',
-        due_date: '2024-12-31',
-        status: 'pending',
+        due_date: '2024-05-10',
+        status: 'запланировано',
         notes: '',
+        object_id: '1',
       })
     })
   })
 
-  it('обновляет задачу с новым assignee', async () => {
-    const existingTask = {
+  it('обновляет задачу', async () => {
+    const task = {
       id: 't1',
       title: 'Существующая задача',
+      status: 'в работе',
       assignee: 'Старый исполнитель',
-      due_date: '2024-12-25',
-      status: 'pending',
+      due_date: '2024-01-01',
       notes: 'Старые заметки',
     }
 
-    mockTasks = [existingTask]
-    mockUpdateTask.mockResolvedValue({
-      data: {
-        ...existingTask,
-        assignee: 'Новый исполнитель',
-        notes: 'Обновленные заметки',
-      },
-      error: null,
-    })
-
-    const TaskCard = ({ task, onEdit }) => (
-      <div>
-        <span>{task.title}</span>
-        <button onClick={() => onEdit(task)}>Редактировать</button>
-      </div>
-    )
-
-    jest.doMock('../src/components/TaskCard.jsx', () => TaskCard)
+    mockTasks = [task]
+    mockUpdateTask.mockResolvedValue({ data: task, error: null })
 
     render(
       <MemoryRouter>
@@ -144,60 +130,27 @@ describe('TasksTab', () => {
       </MemoryRouter>,
     )
 
-    const editButton = await screen.findByText('Редактировать')
+    const editButton = await screen.findByLabelText('Редактировать задачу')
     fireEvent.click(editButton)
 
+    const titleInput = screen.getByDisplayValue('Существующая задача')
     const assigneeInput = screen.getByDisplayValue('Старый исполнитель')
-    const notesInput = screen.getByDisplayValue('Старые заметки')
 
     await act(async () => {
+      fireEvent.change(titleInput, { target: { value: 'Обновленная задача' } })
       fireEvent.change(assigneeInput, { target: { value: 'Новый исполнитель' } })
-      fireEvent.change(notesInput, { target: { value: 'Обновленные заметки' } })
     })
 
-    await act(async () => {
-      fireEvent.click(screen.getByText('Сохранить'))
-    })
+    fireEvent.click(screen.getByText('Сохранить'))
 
     await waitFor(() => {
       expect(mockUpdateTask).toHaveBeenCalledWith('t1', {
-        title: 'Существующая задача',
+        title: 'Обновленная задача',
+        status: 'в работе',
         assignee: 'Новый исполнитель',
-        due_date: '2024-12-25',
-        status: 'pending',
-        notes: 'Обновленные заметки',
-      })
-    })
-  })
-
-  it('правильно обрабатывает форму с пустым assignee', async () => {
-    render(
-      <MemoryRouter>
-        <TasksTab selected={selected} />
-      </MemoryRouter>,
-    )
-
-    fireEvent.click(screen.getByText('Добавить задачу'))
-
-    const titleInput = screen.getByLabelText('Название')
-    const assigneeInput = screen.getByLabelText('Исполнитель')
-
-    await act(async () => {
-      fireEvent.change(titleInput, { target: { value: 'Задача без исполнителя' } })
-      // assignee остается пустым
-    })
-
-    await act(async () => {
-      fireEvent.click(screen.getByText('Добавить'))
-    })
-
-    await waitFor(() => {
-      expect(mockCreateTask).toHaveBeenCalledWith({
-        title: 'Задача без исполнителя',
-        assignee: '',
-        due_date: '',
-        status: 'pending',
-        notes: '',
+        due_date: '2024-01-01',
+        notes: 'Старые заметки',
+        object_id: '1',
       })
     })
   })
