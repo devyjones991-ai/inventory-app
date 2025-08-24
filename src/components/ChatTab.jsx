@@ -67,7 +67,7 @@ function ChatTab({ selected = null, userEmail }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <div className="px-3 py-2">
         <button
           type="button"
@@ -145,7 +145,7 @@ function ChatTab({ selected = null, userEmail }) {
                         <div className="chat-header">{m.sender || 'user'}</div>
                       )}
                       <div
-                        className={`chat-bubble whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
+                        className={`chat-bubble max-w-[80%] sm:max-w-[60%] whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
                           isOwn
                             ? 'bg-primary text-primary-content'
                             : 'bg-base-100 text-base-content'
@@ -175,7 +175,6 @@ function ChatTab({ selected = null, userEmail }) {
           )}
         </div>
       </ScrollArea>
-
       <div className="p-3 border-t space-y-2">
         {file && filePreview && <AttachmentPreview url={filePreview} />}
         <div className="flex items-center gap-2">
@@ -207,7 +206,7 @@ function ChatTab({ selected = null, userEmail }) {
         </div>
         <div className="flex justify-end">
           <button
-            className="btn btn-primary"
+            className="btn btn-primary sm:btn-sm"
             disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
