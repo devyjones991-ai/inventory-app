@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
@@ -35,8 +34,6 @@ import {
 } from '@/components/ui/dialog'
 
 import { Button } from '@/components/ui/button'
-
-
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
 
@@ -150,7 +147,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   useEffect(() => {
     if (selected) {
-
       setDescription(selected.description || '')
     }
   }, [selected])
@@ -167,18 +163,9 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   }, [tab, onTabChange])
 
   return (
-
     <Tabs value={tab} onValueChange={setTab} className="flex flex-col h-full">
       <TabsList className="mb-4 flex gap-2">
         <TabsTrigger value="desc" className="tab tab-bordered">
-
-    <div className="flex flex-col h-full w-full">
-      <div className="tabs mb-4">
-        <button
-          className={`tab tab-bordered ${tab === 'desc' ? 'tab-active' : ''}`}
-          onClick={showDesc}
-        >
-
           Описание
         </TabsTrigger>
         <TabsTrigger value="hw" className="tab tab-bordered">
@@ -189,99 +176,58 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         </TabsTrigger>
         <TabsTrigger value="chat" className="tab tab-bordered">
           Чат
-
         </TabsTrigger>
       </TabsList>
+
       <TabsContent value="desc" className="flex-1 overflow-auto">
         <div className="space-y-2">
           {isEditingDesc ? (
             <div className="space-y-2">
-              <textarea
+              <Textarea
                 className="textarea textarea-bordered w-full"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
               <div className="flex gap-2">
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={saveDescription}
-                >
+                <Button size="sm" onClick={saveDescription}>
                   Сохранить
-                </button>
-                <button
-                  className="btn btn-sm"
-                  onClick={() => setIsEditingDesc(false)}
-                >
+                </Button>
+                <Button size="sm" onClick={() => setIsEditingDesc(false)}>
                   Отмена
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-2">
               <div className="whitespace-pre-wrap break-words">
                 {description ? linkifyText(description) : 'Нет описания'}
-
-        </button>
-      </div>
-      <div className="flex-1 overflow-auto">
-        {tab === 'desc' && (
-          <div className="space-y-2">
-            {isEditingDesc ? (
-              <div className="space-y-2">
-                <Textarea
-                  className="textarea textarea-bordered w-full"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={saveDescription}>
-                    Сохранить
-                  </Button>
-                  <Button size="sm" onClick={() => setIsEditingDesc(false)}>
-                    Отмена
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="whitespace-pre-wrap break-words">
-                  {description ? linkifyText(description) : 'Нет описания'}
-                </div>
-                {user && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsEditingDesc(true)}
-                  >
-                    Изменить
-                  </Button>
-                )}
-
               </div>
               {user && (
-
-                <button
-                  className="btn btn-sm btn-outline"
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => setIsEditingDesc(true)}
                 >
                   Изменить
-                </button>
+                </Button>
               )}
             </div>
           )}
         </div>
       </TabsContent>
+
       <TabsContent value="hw" className="flex-1 overflow-auto">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Оборудование</h2>
             {user && (
-              <button
-                className="btn btn-sm btn-primary flex items-center gap-1"
+              <Button
+                size="sm"
+                className="flex items-center gap-1"
                 onClick={openHWModal}
               >
                 <PlusIcon className="w-4 h-4" /> Добавить
-              </button>
+              </Button>
             )}
           </div>
           {hardware.length === 0 ? (
@@ -303,69 +249,24 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
           )}
         </div>
       </TabsContent>
+
       <TabsContent value="tasks" className="flex-1 overflow-auto">
         <TasksTab selected={selected} user={user} />
       </TabsContent>
       <TabsContent value="chat" className="flex-1 overflow-auto">
         <ChatTab selected={selected} userEmail={user?.email} />
       </TabsContent>
-      {isHWModalOpen && (
-        <div className="modal modal-open">
-          <div className="modal-box space-y-4">
-            <h3 className="font-bold text-lg">
 
-                <Button
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={openHWModal}
-                >
-                  <PlusIcon className="w-4 h-4" /> Добавить
-                </Button>
-              )}
-            </div>
-            {isHWLoading ? (
-              <div className="space-y-2">
-                <div className="h-10 bg-muted rounded"></div>
-                <div className="h-10 bg-muted rounded"></div>
-                <div className="h-10 bg-muted rounded"></div>
-              </div>
-            ) : hardware.length === 0 ? (
-              <div className="text-center text-gray-500">
-                Нет данных. Нажмите «Добавить».
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {hardware.map((item) => (
-
-                  <HardwareCard
-                    key={item.id}
-                    item={item}
-                    onEdit={() => handleEditHW(item)}
-                    onDelete={() => handleDeleteHW(item)}
-                    user={user}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        {tab === 'tasks' && <TasksTab selected={selected} />}
-        {tab === 'chat' && (
-          <ChatTab selected={selected} userEmail={user?.email} />
-        )}
-      </div>
       <Dialog open={isHWModalOpen} onOpenChange={setIsHWModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-
               {editingHW ? 'Изменить оборудование' : 'Добавить оборудование'}
-
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleHWSubmit} className="space-y-2">
             <div>
-              <input
+              <Input
                 className="input input-bordered w-full"
                 placeholder="Название"
                 {...register('name')}
@@ -375,20 +276,25 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
               )}
             </div>
             <div>
-              <input
+              <Input
                 className="input input-bordered w-full"
                 placeholder="Расположение"
                 {...register('location')}
               />
             </div>
             <div>
-              <select
-                className="select select-bordered w-full"
-                {...register('purchase_status')}
+              <Select
+                value={purchaseStatus}
+                onValueChange={(value) => setValue('purchase_status', value)}
               >
-                <option value="не оплачен">не оплачен</option>
-                <option value="оплачен">оплачен</option>
-              </select>
+                <SelectTrigger className="w-full h-9">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="не оплачен">не оплачен</SelectItem>
+                  <SelectItem value="оплачен">оплачен</SelectItem>
+                </SelectContent>
+              </Select>
               {errors.purchase_status && (
                 <p className="text-red-500 text-sm">
                   {errors.purchase_status.message}
@@ -396,13 +302,18 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
               )}
             </div>
             <div>
-              <select
-                className="select select-bordered w-full"
-                {...register('install_status')}
+              <Select
+                value={installStatus}
+                onValueChange={(value) => setValue('install_status', value)}
               >
-                <option value="не установлен">не установлен</option>
-                <option value="установлен">установлен</option>
-              </select>
+                <SelectTrigger className="w-full h-9">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="не установлен">не установлен</SelectItem>
+                  <SelectItem value="установлен">установлен</SelectItem>
+                </SelectContent>
+              </Select>
               {errors.install_status && (
                 <p className="text-red-500 text-sm">
                   {errors.install_status.message}
@@ -410,90 +321,15 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
               )}
             </div>
             <DialogFooter>
-              <button type="button" className="btn" onClick={closeHWModal}>
+              <Button type="button" onClick={closeHWModal}>
                 Отмена
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Сохранить
-              </button>
+              </Button>
+              <Button type="submit">Сохранить</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-
-            </h3>
-            <form onSubmit={handleHWSubmit} className="space-y-2">
-              <div>
-                <Input
-                  className="input input-bordered w-full"
-                  placeholder="Название"
-                  {...register('name')}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-sm">{errors.name.message}</p>
-                )}
-              </div>
-              <div>
-                <Input
-                  className="input input-bordered w-full"
-                  placeholder="Расположение"
-                  {...register('location')}
-                />
-              </div>
-              <div>
-                <Select
-                  value={purchaseStatus}
-                  onValueChange={(value) => setValue('purchase_status', value)}
-                >
-                  <SelectTrigger className="w-full h-9">
-                    <SelectValue placeholder="" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="не оплачен">не оплачен</SelectItem>
-                    <SelectItem value="оплачен">оплачен</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.purchase_status && (
-                  <p className="text-red-500 text-sm">
-                    {errors.purchase_status.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Select
-                  value={installStatus}
-                  onValueChange={(value) => setValue('install_status', value)}
-                >
-                  <SelectTrigger className="w-full h-9">
-                    <SelectValue placeholder="" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="не установлен">не установлен</SelectItem>
-                    <SelectItem value="установлен">установлен</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.install_status && (
-                  <p className="text-red-500 text-sm">
-                    {errors.install_status.message}
-                  </p>
-                )}
-              </div>
-              <div className="modal-action">
-                <Button type="button" onClick={closeHWModal}>
-                  Отмена
-                </Button>
-                <Button type="submit">Сохранить</Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
     </Tabs>
-
-
-    </div>
-
   )
 }
 
@@ -508,4 +344,3 @@ InventoryTabs.propTypes = {
 }
 
 export default InventoryTabs
-
