@@ -8,11 +8,16 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from '../components/ThemeToggle'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { exportInventory, importInventory } from '../utils/exportImport'
-import logger from '../utils/logger'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 export default function DashboardPage() {
   const { user, isAdmin, isManager } = useAuth()
@@ -210,38 +215,32 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {isObjectModalOpen && (
-          <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="modal-box relative w-full max-w-md">
-              <button
-                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
-                onClick={closeObjectModal}
-              >
-                ✕
-              </button>
-              <h3 className="font-bold text-lg mb-4">
+        <Dialog open={isObjectModalOpen} onOpenChange={closeObjectModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
                 {editingObject ? 'Редактировать объект' : 'Добавить объект'}
-              </h3>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="Название"
-                  value={objectName}
-                  onChange={(e) => setObjectName(e.target.value)}
-                />
-              </div>
-              <div className="modal-action flex space-x-2">
-                <button className="btn btn-primary" onClick={onSaveObject}>
-                  Сохранить
-                </button>
-                <button className="btn btn-ghost" onClick={closeObjectModal}>
-                  Отмена
-                </button>
-              </div>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                placeholder="Название"
+                value={objectName}
+                onChange={(e) => setObjectName(e.target.value)}
+              />
             </div>
-          </div>
-        )}
+            <DialogFooter>
+              <button className="btn btn-primary" onClick={onSaveObject}>
+                Сохранить
+              </button>
+              <button className="btn btn-ghost" onClick={closeObjectModal}>
+                Отмена
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <ConfirmModal
           open={!!deleteCandidate}
