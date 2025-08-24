@@ -6,7 +6,11 @@ import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
 import { useNavigate } from 'react-router-dom'
 import logger from '../utils/logger'
 import { useAuth } from '../hooks/useAuth'
+
 import { Input } from '@/components/ui/input'
+
+import { Button } from '@/components/ui/button'
+
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
@@ -148,18 +152,19 @@ export default function AuthPage() {
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary w-full">
+            <Button type="submit" className="w-full">
               {isRegister ? 'Зарегистрироваться' : 'Войти'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-link w-full"
+              variant="link"
+              className="w-full"
               onClick={() => setIsRegister(!isRegister)}
             >
               {isRegister
                 ? 'Уже есть аккаунт? Войти'
                 : 'Нет аккаунта? Регистрация'}
-            </button>
+            </Button>
           </form>
         </div>
       </div>

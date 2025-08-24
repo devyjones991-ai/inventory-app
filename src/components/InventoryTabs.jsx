@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
@@ -21,6 +22,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+
+import { Button } from '@/components/ui/button'
+
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
 
@@ -102,7 +114,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     reset(defaultHWForm)
     setEditingHW(null)
     setIsHWModalOpen(true)
-  }, [reset])
+  }, [reset, defaultHWForm])
 
   const closeHWModal = useCallback(() => {
     setIsHWModalOpen(false)
@@ -139,6 +151,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   useEffect(() => {
     if (selected) {
+
       setDescription(selected.description || '')
     }
   }, [selected])
@@ -155,7 +168,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   }, [tab, onTabChange])
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <div className="tabs mb-4">
         <button
           className={`tab tab-bordered ${tab === 'desc' ? 'tab-active' : ''}`}
@@ -193,18 +206,12 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                   onChange={(e) => setDescription(e.target.value)}
                 />
                 <div className="flex gap-2">
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={saveDescription}
-                  >
+                  <Button size="sm" onClick={saveDescription}>
                     Сохранить
-                  </button>
-                  <button
-                    className="btn btn-sm"
-                    onClick={() => setIsEditingDesc(false)}
-                  >
+                  </Button>
+                  <Button size="sm" onClick={() => setIsEditingDesc(false)}>
                     Отмена
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -213,12 +220,13 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                   {description ? linkifyText(description) : 'Нет описания'}
                 </div>
                 {user && (
-                  <button
-                    className="btn btn-sm btn-outline"
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => setIsEditingDesc(true)}
                   >
                     Изменить
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -229,21 +237,29 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">Оборудование</h2>
               {user && (
-                <button
-                  className="btn btn-sm btn-primary flex items-center gap-1"
+                <Button
+                  size="sm"
+                  className="flex items-center gap-1"
                   onClick={openHWModal}
                 >
                   <PlusIcon className="w-4 h-4" /> Добавить
-                </button>
+                </Button>
               )}
             </div>
-            {hardware.length === 0 ? (
+            {isHWLoading ? (
+              <div className="space-y-2">
+                <div className="h-10 bg-muted rounded"></div>
+                <div className="h-10 bg-muted rounded"></div>
+                <div className="h-10 bg-muted rounded"></div>
+              </div>
+            ) : hardware.length === 0 ? (
               <div className="text-center text-gray-500">
-                Оборудование не найдено
+                Нет данных. Нажмите «Добавить».
               </div>
             ) : (
               <div className="space-y-2">
                 {hardware.map((item) => (
+
                   <HardwareCard
                     key={item.id}
                     item={item}
@@ -256,16 +272,77 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             )}
           </div>
         )}
-        {tab === 'tasks' && <TasksTab selected={selected} user={user} />}
+        {tab === 'tasks' && <TasksTab selected={selected} />}
         {tab === 'chat' && (
           <ChatTab selected={selected} userEmail={user?.email} />
         )}
       </div>
-      {isHWModalOpen && (
-        <div className="modal modal-open">
-          <div className="modal-box space-y-4">
-            <h3 className="font-bold text-lg">
+      <Dialog open={isHWModalOpen} onOpenChange={setIsHWModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
               {editingHW ? 'Изменить оборудование' : 'Добавить оборудование'}
+
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleHWSubmit} className="space-y-2">
+            <div>
+              <input
+                className="input input-bordered w-full"
+                placeholder="Название"
+                {...register('name')}
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm">{errors.name.message}</p>
+              )}
+            </div>
+            <div>
+              <input
+                className="input input-bordered w-full"
+                placeholder="Расположение"
+                {...register('location')}
+              />
+            </div>
+            <div>
+              <select
+                className="select select-bordered w-full"
+                {...register('purchase_status')}
+              >
+                <option value="не оплачен">не оплачен</option>
+                <option value="оплачен">оплачен</option>
+              </select>
+              {errors.purchase_status && (
+                <p className="text-red-500 text-sm">
+                  {errors.purchase_status.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <select
+                className="select select-bordered w-full"
+                {...register('install_status')}
+              >
+                <option value="не установлен">не установлен</option>
+                <option value="установлен">установлен</option>
+              </select>
+              {errors.install_status && (
+                <p className="text-red-500 text-sm">
+                  {errors.install_status.message}
+                </p>
+              )}
+            </div>
+            <DialogFooter>
+              <button type="button" className="btn" onClick={closeHWModal}>
+                Отмена
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Сохранить
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
             </h3>
             <form onSubmit={handleHWSubmit} className="space-y-2">
               <div>
@@ -324,17 +401,16 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                 )}
               </div>
               <div className="modal-action">
-                <button type="button" className="btn" onClick={closeHWModal}>
+                <Button type="button" onClick={closeHWModal}>
                   Отмена
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Сохранить
-                </button>
+                </Button>
+                <Button type="submit">Сохранить</Button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   )
 }
@@ -350,3 +426,6 @@ InventoryTabs.propTypes = {
 }
 
 export default InventoryTabs
+
+                  <HardwareCard
+
