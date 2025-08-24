@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 import usePersistedForm from '../hooks/usePersistedForm'
@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import HardwareCard from './HardwareCard'
 import ChatTab from './ChatTab'
 import TasksTab from './TasksTab'
-import { PlusIcon } from '@heroicons/react/24/outline'
 import { linkifyText } from '../utils/linkify'
 import { useHardware } from '../hooks/useHardware'
 import { useObjects } from '../hooks/useObjects'
@@ -15,7 +14,13 @@ import { useAuth } from '../hooks/useAuth'
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
 
-function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
+function InventoryTabs({
+  selected,
+  onUpdateSelected,
+  onTabChange = () => {},
+  setAddAction,
+  openAddObject,
+}) {
   const { user } = useAuth()
 
   // --- вкладки и описание ---
@@ -83,7 +88,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     reset(defaultHWForm)
     setEditingHW(null)
     setIsHWModalOpen(true)
-  }, [reset])
+  }, [reset, defaultHWForm])
 
   const closeHWModal = useCallback(() => {
     setIsHWModalOpen(false)
@@ -115,6 +120,29 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     },
     [deleteHardware],
   )
+
+  const taskAddHandlerRef = useRef(() => {})
+
+  const registerTaskAddHandler = useCallback(
+    (handler) => {
+      taskAddHandlerRef.current = handler
+      if (tab === 'tasks' && setAddAction) {
+        setAddAction(() => handler)
+      }
+    },
+    [tab, setAddAction],
+  )
+
+  useEffect(() => {
+    if (!setAddAction) return
+    if (tab === 'hw') {
+      setAddAction(() => openHWModal)
+    } else if (tab === 'tasks') {
+      setAddAction(() => taskAddHandlerRef.current)
+    } else {
+      setAddAction(() => openAddObject)
+    }
+  }, [tab, setAddAction, openHWModal, openAddObject])
 
   const { updateObject } = useObjects()
 
@@ -207,17 +235,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         )}
         {tab === 'hw' && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Оборудование</h2>
-              {user && (
-                <button
-                  className="btn btn-sm btn-primary flex items-center gap-1"
-                  onClick={openHWModal}
-                >
-                  <PlusIcon className="w-4 h-4" /> Добавить
-                </button>
-              )}
-            </div>
+            <h2 className="text-lg font-semibold">Оборудование</h2>
             {hardware.length === 0 ? (
               <div className="text-center text-gray-500">
                 Оборудование не найдено
@@ -237,7 +255,13 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             )}
           </div>
         )}
-        {tab === 'tasks' && <TasksTab selected={selected} user={user} />}
+        {tab === 'tasks' && (
+          <TasksTab
+            selected={selected}
+            user={user}
+            registerAddHandler={registerTaskAddHandler}
+          />
+        )}
         {tab === 'chat' && (
           <ChatTab selected={selected} userEmail={user?.email} />
         )}
@@ -318,6 +342,8 @@ InventoryTabs.propTypes = {
   }),
   onUpdateSelected: PropTypes.func.isRequired,
   onTabChange: PropTypes.func,
+  setAddAction: PropTypes.func,
+  openAddObject: PropTypes.func,
 }
 
 export default InventoryTabs

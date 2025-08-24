@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import InventorySidebar from '../components/InventorySidebar'
 import InventoryTabs from '../components/InventoryTabs'
@@ -48,6 +48,12 @@ export default function DashboardPage() {
     openEditModal,
     closeObjectModal,
   } = useDashboardModals()
+
+  const [addAction, setAddAction] = useState(() => openAddModal)
+
+  useEffect(() => {
+    setAddAction(() => openAddModal)
+  }, [openAddModal])
 
   const importInputRef = useRef(null)
 
@@ -154,7 +160,7 @@ export default function DashboardPage() {
               </button>
               <button
                 className="btn btn-primary btn-md md:btn-sm flex items-center gap-1"
-                onClick={openAddModal}
+                onClick={addAction}
               >
                 <PlusIcon className="w-4 h-4" /> Добавить
               </button>
@@ -204,6 +210,8 @@ export default function DashboardPage() {
               selected={selected}
               onUpdateSelected={onUpdateSelected}
               onTabChange={onTabChange}
+              setAddAction={setAddAction}
+              openAddObject={openAddModal}
             />
           </div>
         </div>
