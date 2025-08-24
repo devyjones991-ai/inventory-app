@@ -12,11 +12,9 @@ export function useTasks() {
 
   const fetchTasks = async (objectId, offset = 0, limit = 20) => {
     try {
-      const baseFields =
-        'id, title, status, assignee, due_date, notes, created_at'
       const baseQuery = supabase
         .from('tasks')
-        .select(baseFields)
+        .select('*')
         .eq('object_id', objectId)
       let result = await baseQuery
         .order('created_at')
@@ -37,8 +35,6 @@ export function useTasks() {
 
   const insertTask = async (data) => {
     try {
-      const baseFields =
-        'id, title, status, assignee, due_date, notes, created_at'
       const {
         planned_date: _planned_date,
         plan_date: _plan_date,
@@ -62,7 +58,7 @@ export function useTasks() {
       const result = await supabase
         .from('tasks')
         .insert([taskData])
-        .select(baseFields)
+        .select('*')
         .single()
       if (result.error) throw result.error
       return result
@@ -74,8 +70,6 @@ export function useTasks() {
 
   const updateTask = async (id, data) => {
     try {
-      const baseFields =
-        'id, title, status, assignee, due_date, notes, created_at'
       const {
         planned_date: _planned_date,
         plan_date: _plan_date,
@@ -100,7 +94,7 @@ export function useTasks() {
         .from('tasks')
         .update(taskData)
         .eq('id', id)
-        .select(baseFields)
+        .select('*')
         .single()
       if (result.error) throw result.error
       return result
