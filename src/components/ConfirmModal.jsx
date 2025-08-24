@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Button } from '@/components/ui/button'
 
 export default function ConfirmModal({
   open,
@@ -7,7 +8,7 @@ export default function ConfirmModal({
   message = '',
   confirmLabel = 'OK',
   cancelLabel = 'Отмена',
-  confirmClass = 'btn-error',
+  confirmVariant = 'destructive',
   onConfirm,
   onCancel,
 }) {
@@ -18,12 +19,10 @@ export default function ConfirmModal({
         {title && <h3 className="font-bold text-lg mb-4">{title}</h3>}
         {message && <p className="mb-4">{message}</p>}
         <div className="modal-action flex space-x-2">
-          <button className={`btn ${confirmClass}`} onClick={onConfirm}>
+          <Button variant={confirmVariant} onClick={onConfirm}>
             {confirmLabel}
-          </button>
-          <button className="btn" onClick={onCancel}>
-            {cancelLabel}
-          </button>
+          </Button>
+          <Button onClick={onCancel}>{cancelLabel}</Button>
         </div>
       </div>
     </div>
@@ -36,7 +35,7 @@ ConfirmModal.propTypes = {
   message: PropTypes.string,
   confirmLabel: PropTypes.node,
   cancelLabel: PropTypes.node,
-  confirmClass: PropTypes.string,
+  confirmVariant: PropTypes.string,
   onConfirm: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
 }

@@ -8,11 +8,10 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from '../components/ThemeToggle'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { exportInventory, importInventory } from '../utils/exportImport'
-import logger from '../utils/logger'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
+import { Button } from '@/components/ui/button'
 
 export default function DashboardPage() {
   const { user, isAdmin, isManager } = useAuth()
@@ -130,12 +129,13 @@ export default function DashboardPage() {
               onClick={toggleSidebar}
             />
             <aside className="relative z-20 w-72 bg-base-200 p-4 shadow-lg overflow-y-auto transition-colors">
-              <button
-                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
+              <Button
+                size="icon"
+                className="absolute right-2 top-2"
                 onClick={toggleSidebar}
               >
                 ✕
-              </button>
+              </Button>
               <InventorySidebar
                 objects={objects}
                 selected={selected}
@@ -154,26 +154,23 @@ export default function DashboardPage() {
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰
               </button>
-              <button
-                className="btn btn-primary btn-md md:btn-sm flex items-center gap-1"
+              <Button
+                className="flex items-center gap-1"
                 onClick={openAddModal}
               >
                 <PlusIcon className="w-4 h-4" /> Добавить
-              </button>
+              </Button>
               {(isAdmin || isManager) && (
                 <>
-                  <button
-                    className="btn btn-secondary btn-md md:btn-sm"
+                  <Button
+                    variant="secondary"
                     onClick={() => importInputRef.current?.click()}
                   >
                     Импорт
-                  </button>
-                  <button
-                    className="btn btn-secondary btn-md md:btn-sm"
-                    onClick={exportToFile}
-                  >
+                  </Button>
+                  <Button variant="secondary" onClick={exportToFile}>
                     Экспорт
-                  </button>
+                  </Button>
                   <input
                     type="file"
                     accept=".csv"
@@ -186,18 +183,18 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <button
-                className="btn btn-md md:btn-sm p-2 text-lg md:text-sm"
+              <Button
+                className="p-2 text-lg md:text-sm"
                 onClick={() => setIsAccountModalOpen(true)}
               >
                 {user.user_metadata?.username || 'Аккаунт'}
-              </button>
-              <button
-                className="btn btn-md md:btn-sm p-2 text-lg md:text-sm"
+              </Button>
+              <Button
+                className="p-2 text-lg md:text-sm"
                 onClick={() => supabase.auth.signOut()}
               >
                 Выйти
-              </button>
+              </Button>
             </div>
           </header>
 
@@ -213,12 +210,13 @@ export default function DashboardPage() {
         {isObjectModalOpen && (
           <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="modal-box relative w-full max-w-md">
-              <button
-                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
+              <Button
+                size="icon"
+                className="absolute right-2 top-2"
                 onClick={closeObjectModal}
               >
                 ✕
-              </button>
+              </Button>
               <h3 className="font-bold text-lg mb-4">
                 {editingObject ? 'Редактировать объект' : 'Добавить объект'}
               </h3>
@@ -232,12 +230,10 @@ export default function DashboardPage() {
                 />
               </div>
               <div className="modal-action flex space-x-2">
-                <button className="btn btn-primary" onClick={onSaveObject}>
-                  Сохранить
-                </button>
-                <button className="btn btn-ghost" onClick={closeObjectModal}>
+                <Button onClick={onSaveObject}>Сохранить</Button>
+                <Button variant="ghost" onClick={closeObjectModal}>
                   Отмена
-                </button>
+                </Button>
               </div>
             </div>
           </div>

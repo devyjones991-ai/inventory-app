@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useAccount } from '../hooks/useAccount'
 import { toast } from 'react-hot-toast'
+import { Button } from '@/components/ui/button'
 
 export default function AccountModal({ user, onClose, onUpdated }) {
   const [username, setUsername] = useState(user.user_metadata?.username || '')
@@ -24,12 +25,13 @@ export default function AccountModal({ user, onClose, onUpdated }) {
   return (
     <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto">
-        <button
-          className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
+        <Button
+          size="icon"
+          className="absolute right-2 top-2"
           onClick={onClose}
         >
           ✕
-        </button>
+        </Button>
         <h3 className="font-bold text-lg mb-4">Редактирование аккаунта</h3>
         <div className="space-y-4">
           <div className="form-control">
@@ -45,12 +47,12 @@ export default function AccountModal({ user, onClose, onUpdated }) {
           </div>
         </div>
         <div className="modal-action flex space-x-2">
-          <button className="btn btn-primary" onClick={save} disabled={saving}>
+          <Button onClick={save} disabled={saving}>
             Сохранить
-          </button>
-          <button className="btn btn-ghost" onClick={onClose}>
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
             Отмена
-          </button>
+          </Button>
         </div>
       </div>
     </div>
