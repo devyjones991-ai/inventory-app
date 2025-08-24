@@ -8,8 +8,6 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from '../components/ThemeToggle'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { exportInventory, importInventory } from '../utils/exportImport'
-import logger from '../utils/logger'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
@@ -113,7 +111,7 @@ export default function DashboardPage() {
   return (
     <>
       <div className="flex h-screen bg-base-100 transition-colors">
-        <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto transition-colors">
+        <aside className="hidden md:flex flex-col w-72 bg-white p-4 border-r shadow-sm overflow-y-auto transition-colors">
           <InventorySidebar
             objects={objects}
             selected={selected}
@@ -129,7 +127,7 @@ export default function DashboardPage() {
               className="fixed inset-0 bg-black bg-opacity-50"
               onClick={toggleSidebar}
             />
-            <aside className="relative z-20 w-72 bg-base-200 p-4 shadow-lg overflow-y-auto transition-colors">
+            <aside className="relative z-20 w-72 bg-white p-4 shadow-sm overflow-y-auto transition-colors">
               <button
                 className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
                 onClick={toggleSidebar}
