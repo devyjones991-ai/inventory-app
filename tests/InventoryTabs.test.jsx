@@ -76,7 +76,7 @@ import { MemoryRouter } from 'react-router-dom'
 import InventoryTabs from '../src/components/InventoryTabs.jsx'
 
 describe('InventoryTabs', () => {
-  const selected = { id: '1', name: 'Объект 1' }
+  const selected = { id: 1, name: 'Объект 1' }
 
   beforeEach(() => {
     jest.clearAllMocks()

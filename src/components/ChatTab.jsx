@@ -281,7 +281,7 @@ export default memo(ChatTab)
 
 ChatTab.propTypes = {
   selected: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
   }),
   userEmail: PropTypes.string.isRequired,
 }

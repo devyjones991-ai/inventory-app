@@ -60,14 +60,14 @@ jest.mock('../src/utils/handleSupabaseError', () => ({
 const page1 = [
   {
     id: '1',
-    object_id: '1',
+    object_id: 1,
     sender: 'a',
     content: 'm1',
     created_at: new Date().toISOString(),
   },
   {
     id: '2',
-    object_id: '1',
+    object_id: 1,
     sender: 'b',
     content: 'm2',
     created_at: new Date().toISOString(),
@@ -76,7 +76,7 @@ const page1 = [
 const page2 = [
   {
     id: '3',
-    object_id: '1',
+    object_id: 1,
     sender: 'a',
     content: 'm3',
     created_at: new Date().toISOString(),
@@ -112,11 +112,11 @@ describe('useChat markMessagesAsRead', () => {
 
   it('загружает сообщения с учётом смещения без аргументов', async () => {
     const { result } = renderHook(() =>
-      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+      useChat({ objectId: 1, userEmail: 'me@example.com' }),
     )
 
     await waitFor(() => expect(mockFetchMessages).toHaveBeenCalledTimes(1))
-    expect(mockFetchMessages).toHaveBeenCalledWith('1', {
+    expect(mockFetchMessages).toHaveBeenCalledWith(1, {
       limit: 20,
       offset: 0,
     })
@@ -126,7 +126,7 @@ describe('useChat markMessagesAsRead', () => {
     })
 
     expect(mockFetchMessages).toHaveBeenCalledTimes(2)
-    expect(mockFetchMessages).toHaveBeenLastCalledWith('1', {
+    expect(mockFetchMessages).toHaveBeenLastCalledWith(1, {
       limit: 20,
       offset: page1.length,
     })
@@ -135,7 +135,7 @@ describe('useChat markMessagesAsRead', () => {
 
   it('обрабатывает ошибку при отметке сообщений прочитанными', async () => {
     const { result } = renderHook(() =>
-      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+      useChat({ objectId: 1, userEmail: 'me@example.com' }),
     )
     await waitFor(() => result.current.messages.length > 0)
     await act(async () => {
@@ -153,7 +153,7 @@ describe('useChat markMessagesAsRead', () => {
     mockFetchMessages.mockResolvedValue({ data: [], error: null })
 
     const { result } = renderHook(() =>
-      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+      useChat({ objectId: 1, userEmail: 'me@example.com' }),
     )
 
     await waitFor(() => expect(mockFetchMessages).toHaveBeenCalled())
@@ -173,7 +173,7 @@ describe('useChat markMessagesAsRead', () => {
         eventType: 'INSERT',
         new: {
           id: '10',
-          object_id: '1',
+          object_id: 1,
           sender: 'me@example.com',
           content: 'hi',
           created_at: new Date().toISOString(),
@@ -197,7 +197,7 @@ describe('useChat markMessagesAsRead', () => {
         eventType: 'INSERT',
         new: {
           id: '11',
-          object_id: '1',
+          object_id: 1,
           sender: 'me@example.com',
           content: 'hi',
           created_at: new Date().toISOString(),
@@ -217,7 +217,7 @@ describe('useChat markMessagesAsRead', () => {
       .mockResolvedValue({ data: [], error: null })
 
     const { result } = renderHook(() =>
-      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+      useChat({ objectId: 1, userEmail: 'me@example.com' }),
     )
 
     await waitFor(() =>

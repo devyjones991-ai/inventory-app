@@ -4,7 +4,7 @@ import ChatTab from '../src/components/ChatTab.jsx'
 const mockMessages = [
   {
     id: '1',
-    object_id: '1',
+    object_id: 1,
     sender: 'me@example.com',
     content: 'Привет',
     created_at: new Date().toISOString(),
@@ -12,7 +12,7 @@ const mockMessages = [
   },
   {
     id: '2',
-    object_id: '1',
+    object_id: 1,
     sender: 'other@example.com',
     content: 'Здравствуйте',
     created_at: new Date().toISOString(),
@@ -88,14 +88,14 @@ describe('ChatTab', () => {
   it('отображает последнее сообщение после загрузки', async () => {
     const manyMessages = Array.from({ length: 25 }, (_, i) => ({
       id: `${i + 1}`,
-      object_id: '1',
+      object_id: 1,
       sender: 'other@example.com',
       content: `msg${i + 1}`,
       created_at: new Date(Date.now() + i).toISOString(),
     }))
     mockFetchMessages.mockResolvedValueOnce({ data: manyMessages, error: null })
 
-    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
+    render(<ChatTab selected={{ id: 1 }} userEmail="me@example.com" />)
 
     expect(await screen.findByText('msg25')).toBeInTheDocument()
   })
@@ -103,7 +103,7 @@ describe('ChatTab', () => {
   it('автоскроллит контейнер вниз при загрузке длинного списка сообщений', async () => {
     const manyMessages = Array.from({ length: 50 }, (_, i) => ({
       id: `${i + 1}`,
-      object_id: '1',
+      object_id: 1,
       sender: 'other@example.com',
       content: `msg${i + 1}`,
       created_at: new Date(Date.now() + i).toISOString(),
@@ -142,7 +142,7 @@ describe('ChatTab', () => {
     })
 
     const { container } = render(
-      <ChatTab selected={{ id: '1' }} userEmail="me@example.com" />,
+      <ChatTab selected={{ id: 1 }} userEmail="me@example.com" />,
     )
 
     expect(await screen.findByText('msg50')).toBeInTheDocument()
@@ -175,7 +175,7 @@ describe('ChatTab', () => {
   })
 
   it('отображает сообщения и корректно определяет свои по e-mail', async () => {
-    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
+    render(<ChatTab selected={{ id: 1 }} userEmail="me@example.com" />)
 
     for (const msg of mockMessages) {
       expect(await screen.findByText(msg.content)).toBeInTheDocument()
@@ -210,7 +210,7 @@ describe('ChatTab', () => {
 
   it('отправляет файл с указанием e-mail отправителя', async () => {
     const { container } = render(
-      <ChatTab selected={{ id: '1' }} userEmail="me@example.com" />,
+      <ChatTab selected={{ id: 1 }} userEmail="me@example.com" />,
     )
 
     const labelButton = screen.getByRole('button', { name: 'Прикрепить файл' })
@@ -237,7 +237,7 @@ describe('ChatTab', () => {
   it('подгружает дополнительные сообщения по кнопке', async () => {
     const page1 = Array.from({ length: 20 }, (_, i) => ({
       id: `${i + 1}`,
-      object_id: '1',
+      object_id: 1,
       sender: 'other@example.com',
       content: `msg${i + 1}`,
       created_at: new Date(Date.now() + i).toISOString(),
@@ -245,7 +245,7 @@ describe('ChatTab', () => {
     const page2 = [
       {
         id: '21',
-        object_id: '1',
+        object_id: 1,
         sender: 'other@example.com',
         content: 'msg21',
         created_at: new Date().toISOString(),
@@ -255,7 +255,7 @@ describe('ChatTab', () => {
       .mockResolvedValueOnce({ data: page1, error: null })
       .mockResolvedValueOnce({ data: page2, error: null })
 
-    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
+    render(<ChatTab selected={{ id: 1 }} userEmail="me@example.com" />)
 
     const loadBtn = await screen.findByText('Загрузить ещё')
     fireEvent.click(loadBtn)
@@ -267,7 +267,7 @@ describe('ChatTab', () => {
   it('фильтрует сообщения по поиску и показывает предупреждение при отсутствии', async () => {
     jest.useFakeTimers()
     mockFetchMessages.mockResolvedValueOnce({ data: mockMessages, error: null })
-    render(<ChatTab selected={{ id: '1' }} userEmail="me@example.com" />)
+    render(<ChatTab selected={{ id: 1 }} userEmail="me@example.com" />)
     await screen.findByText('Привет')
 
     const searchBtn = screen.getByRole('button', { name: 'Поиск' })

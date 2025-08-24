@@ -499,7 +499,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
 InventoryTabs.propTypes = {
   selected: PropTypes.shape({
-    id: PropTypes.string,
+    id: PropTypes.number,
     name: PropTypes.string,
     description: PropTypes.string,
   }),
@@ -508,6 +508,4 @@ InventoryTabs.propTypes = {
 }
 
 export default InventoryTabs
-
-                  <HardwareCard
 
