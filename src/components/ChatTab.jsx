@@ -66,7 +66,7 @@ function ChatTab({ selected = null, userEmail }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <div className="px-3 py-2">
         <button
           type="button"

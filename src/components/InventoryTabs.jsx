@@ -136,7 +136,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   }, [tab, onTabChange])
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <div className="tabs mb-4">
         <button
           className={`tab tab-bordered ${tab === 'desc' ? 'tab-active' : ''}`}
