@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
 
@@ -93,85 +94,87 @@ function ChatTab({ selected = null, userEmail }) {
           )}
         </div>
       </div>
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-base-200 rounded-2xl"
-      >
-        {loadError ? (
-          <div className="text-center">
-            <p className="mb-2 text-error">Не удалось загрузить сообщения</p>
-            <button className="btn btn-sm" onClick={() => loadMore(true)}>
-              Повторить
-            </button>
-          </div>
-        ) : (
-          <>
-            {hasMore && (
-              <div className="text-center">
-                <button className="btn btn-sm" onClick={() => loadMore()}>
-                  Загрузить ещё
-                </button>
-              </div>
-            )}
-            {messages.length === 0 ? (
-              searchQuery ? (
-                <div className="text-sm text-gray-400">
-                  Сообщения не найдены
+      <ScrollArea className="h-full">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-4 space-y-3 bg-base-200 rounded-2xl"
+        >
+          {loadError ? (
+            <div className="text-center">
+              <p className="mb-2 text-error">Не удалось загрузить сообщения</p>
+              <button className="btn btn-sm" onClick={() => loadMore(true)}>
+                Повторить
+              </button>
+            </div>
+          ) : (
+            <>
+              {hasMore && (
+                <div className="text-center">
+                  <button className="btn btn-sm" onClick={() => loadMore()}>
+                    Загрузить ещё
+                  </button>
                 </div>
-              ) : (
-                <div className="text-sm text-gray-400">
-                  Сообщений пока нет — напиши первым.
-                </div>
-              )
-            ) : (
-              messages.map((m) => {
-                const isOwn =
-                  (m.sender || '').trim().toLowerCase() ===
-                  (userEmail || '').trim().toLowerCase()
-                const dt = new Date(m.created_at)
-                const date = dt.toLocaleDateString()
-                const time = dt.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-                return (
-                  <div
-                    key={m.id}
-                    className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
-                  >
-                    {!isOwn && (
-                      <div className="chat-header">{m.sender || 'user'}</div>
-                    )}
-                    <div
-                      className={`chat-bubble whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
-                        isOwn
-                          ? 'bg-primary text-primary-content'
-                          : 'bg-base-100 text-base-content'
-                      }`}
-                    >
-                      {m.content && (
-                        <span className="whitespace-pre-wrap break-words">
-                          {linkifyText(m.content)}
-                        </span>
-                      )}
-                      {m.file_url && (
-                        <div className="mt-2">
-                          <AttachmentPreview url={m.file_url} />
-                        </div>
-                      )}
-                      <span className="self-end mt-1 text-xs opacity-60">
-                        {`${date} ${time}`}
-                        {m.read_at ? ' ✓' : ''}
-                        {m._optimistic ? ' • отправка…' : ''}
-                      </span>
-                    </div>
+              )}
+              {messages.length === 0 ? (
+                searchQuery ? (
+                  <div className="text-sm text-gray-400">
+                    Сообщения не найдены
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400">
+                    Сообщений пока нет — напиши первым.
                   </div>
                 )
-              })
-            )}
-          </>
-        )}
-      </div>
+              ) : (
+                messages.map((m) => {
+                  const isOwn =
+                    (m.sender || '').trim().toLowerCase() ===
+                    (userEmail || '').trim().toLowerCase()
+                  const dt = new Date(m.created_at)
+                  const date = dt.toLocaleDateString()
+                  const time = dt.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                  return (
+                    <div
+                      key={m.id}
+                      className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
+                    >
+                      {!isOwn && (
+                        <div className="chat-header">{m.sender || 'user'}</div>
+                      )}
+                      <div
+                        className={`chat-bubble whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
+                          isOwn
+                            ? 'bg-primary text-primary-content'
+                            : 'bg-base-100 text-base-content'
+                        }`}
+                      >
+                        {m.content && (
+                          <span className="whitespace-pre-wrap break-words">
+                            {linkifyText(m.content)}
+                          </span>
+                        )}
+                        {m.file_url && (
+                          <div className="mt-2">
+                            <AttachmentPreview url={m.file_url} />
+                          </div>
+                        )}
+                        <span className="self-end mt-1 text-xs opacity-60">
+                          {`${date} ${time}`}
+                          {m.read_at ? ' ✓' : ''}
+                          {m._optimistic ? ' • отправка…' : ''}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </>
+          )}
+        </div>
+      </ScrollArea>
 
       <div className="p-3 border-t space-y-2">
         {file && filePreview && <AttachmentPreview url={filePreview} />}
