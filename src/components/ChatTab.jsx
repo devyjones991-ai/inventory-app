@@ -4,6 +4,9 @@ import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null
@@ -82,7 +85,7 @@ function ChatTab({ selected = null, userEmail }) {
           }`}
         >
           {isSearchOpen && (
-            <input
+            <Input
               type="text"
               className="input input-bordered input-sm w-full"
               placeholder="Поиск сообщений"
@@ -176,7 +179,7 @@ function ChatTab({ selected = null, userEmail }) {
       <div className="p-3 border-t space-y-2">
         {file && filePreview && <AttachmentPreview url={filePreview} />}
         <div className="flex items-center gap-2">
-          <label
+          <Label
             htmlFor="chat-file-input"
             className="btn btn-ghost"
             data-testid="file-label"
@@ -186,15 +189,15 @@ function ChatTab({ selected = null, userEmail }) {
             tabIndex={0}
           >
             <PaperClipIcon className="w-6 h-6" />
-          </label>
-          <input
+          </Label>
+          <Input
             id="chat-file-input"
             type="file"
             className="hidden"
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          <textarea
+          <Textarea
             className="textarea textarea-bordered w-full min-h-24"
             placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
             value={newMessage}

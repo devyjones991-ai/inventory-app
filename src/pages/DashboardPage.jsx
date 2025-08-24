@@ -8,11 +8,10 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from '../components/ThemeToggle'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { exportInventory, importInventory } from '../utils/exportImport'
-import logger from '../utils/logger'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
+import { Input } from '@/components/ui/input'
 
 export default function DashboardPage() {
   const { user, isAdmin, isManager } = useAuth()
@@ -174,7 +173,7 @@ export default function DashboardPage() {
                   >
                     Экспорт
                   </button>
-                  <input
+                  <Input
                     type="file"
                     accept=".csv"
                     ref={importInputRef}
@@ -223,7 +222,7 @@ export default function DashboardPage() {
                 {editingObject ? 'Редактировать объект' : 'Добавить объект'}
               </h3>
               <div className="space-y-4">
-                <input
+                <Input
                   type="text"
                   className="input input-bordered w-full"
                   placeholder="Название"

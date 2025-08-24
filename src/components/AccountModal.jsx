@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useAccount } from '../hooks/useAccount'
 import { toast } from 'react-hot-toast'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function AccountModal({ user, onClose, onUpdated }) {
   const [username, setUsername] = useState(user.user_metadata?.username || '')
@@ -33,10 +35,10 @@ export default function AccountModal({ user, onClose, onUpdated }) {
         <h3 className="font-bold text-lg mb-4">Редактирование аккаунта</h3>
         <div className="space-y-4">
           <div className="form-control">
-            <label className="label">
+            <Label className="label">
               <span className="label-text">Никнейм</span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               className="input input-bordered w-full"
               value={username}

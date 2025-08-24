@@ -1,24 +1,32 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import TaskCard from './TaskCard'
 import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
 import { useTasks } from '../hooks/useTasks'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const PAGE_SIZE = 20
 
-function TasksTab({ selected, user }) {
+function TasksTab({ selected }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [page, setPage] = useState(0)
-  const [hasMore, setHasMore] = useState(true)
   const [taskForm, setTaskForm] = useState({
     title: '',
     assignee: '',
     due_date: '',
     status: 'pending',
-    notes: ''
+    notes: '',
   })
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
@@ -26,7 +34,7 @@ function TasksTab({ selected, user }) {
   const [taskDeleteId, setTaskDeleteId] = useState(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [importFile, setImportFile] = useState(null)
-  
+
   const {
     tasks: hookTasks,
     loading: hookLoading,
@@ -35,7 +43,7 @@ function TasksTab({ selected, user }) {
     createTask,
     updateTask,
     deleteTask,
-    importTasks
+    importTasks,
   } = useTasks(selected?.id)
 
   useEffect(() => {
@@ -56,7 +64,7 @@ function TasksTab({ selected, user }) {
       assignee: '',
       due_date: '',
       status: 'pending',
-      notes: ''
+      notes: '',
     })
     setEditingTask(null)
     setIsTaskModalOpen(true)
@@ -76,19 +84,22 @@ function TasksTab({ selected, user }) {
     setImportFile(null)
   }, [])
 
-  const handleTaskSubmit = useCallback(async (e) => {
-    e.preventDefault()
-    try {
-      if (editingTask) {
-        await updateTask(editingTask.id, taskForm)
-      } else {
-        await createTask(taskForm)
+  const handleTaskSubmit = useCallback(
+    async (e) => {
+      e.preventDefault()
+      try {
+        if (editingTask) {
+          await updateTask(editingTask.id, taskForm)
+        } else {
+          await createTask(taskForm)
+        }
+        closeTaskModal()
+      } catch (error) {
+        console.error('Error saving task:', error)
       }
-      closeTaskModal()
-    } catch (error) {
-      console.error('Error saving task:', error)
-    }
-  }, [taskForm, editingTask, createTask, updateTask, closeTaskModal])
+    },
+    [taskForm, editingTask, createTask, updateTask, closeTaskModal],
+  )
 
   const handleEditTask = useCallback((task) => {
     setTaskForm({
@@ -96,7 +107,7 @@ function TasksTab({ selected, user }) {
       assignee: task.assignee || '',
       due_date: task.due_date || '',
       status: task.status || 'pending',
-      notes: task.notes || ''
+      notes: task.notes || '',
     })
     setEditingTask(task)
     setIsTaskModalOpen(true)
@@ -155,16 +166,10 @@ function TasksTab({ selected, user }) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <h3 className="text-lg font-semibold">Задачи ({tasks.length})</h3>
         <div className="flex gap-2">
-          <button
-            className="btn btn-sm btn-outline"
-            onClick={openImportModal}
-          >
+          <button className="btn btn-sm btn-outline" onClick={openImportModal}>
             Импорт
           </button>
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={openTaskModal}
-          >
+          <button className="btn btn-sm btn-primary" onClick={openTaskModal}>
             + Добавить
           </button>
         </div>
@@ -203,70 +208,88 @@ function TasksTab({ selected, user }) {
             </h3>
             <form onSubmit={handleTaskSubmit} className="space-y-4">
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Название *</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.title}
-                  onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, title: e.target.value })
+                  }
                   required
                 />
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Исполнитель</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.assignee}
-                  onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, assignee: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Дата выполнения</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="date"
                   className="input input-bordered w-full"
                   value={taskForm.due_date}
-                  onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, due_date: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Статус</span>
-                </label>
-                <select
-                  className="select select-bordered w-full"
+                </Label>
+                <Select
                   value={taskForm.status}
-                  onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value })}
+                  onValueChange={(value) =>
+                    setTaskForm({ ...taskForm, status: value })
+                  }
                 >
-                  <option value="pending">В ожидании</option>
-                  <option value="in_progress">В работе</option>
-                  <option value="completed">Выполнено</option>
-                  <option value="cancelled">Отменено</option>
-                </select>
+                  <SelectTrigger className="w-full h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">В ожидании</SelectItem>
+                    <SelectItem value="in_progress">В работе</SelectItem>
+                    <SelectItem value="completed">Выполнено</SelectItem>
+                    <SelectItem value="cancelled">Отменено</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Заметки</span>
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   className="textarea textarea-bordered w-full"
                   rows="3"
                   value={taskForm.notes}
-                  onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
-                ></textarea>
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, notes: e.target.value })
+                  }
+                />
               </div>
               <div className="modal-action flex space-x-2">
                 <button type="submit" className="btn btn-primary">
                   {editingTask ? 'Сохранить' : 'Добавить'}
                 </button>
-                <button type="button" className="btn btn-ghost" onClick={closeTaskModal}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={closeTaskModal}
+                >
                   Отмена
                 </button>
               </div>
@@ -329,7 +352,7 @@ function TasksTab({ selected, user }) {
               ✕
             </button>
             <h3 className="font-bold text-lg mb-4">Импорт задач</h3>
-            <input
+            <Input
               type="file"
               className="file-input file-input-bordered w-full"
               onChange={(e) => setImportFile(e.target.files[0])}
@@ -351,7 +374,6 @@ function TasksTab({ selected, user }) {
 
 TasksTab.propTypes = {
   selected: PropTypes.object,
-  user: PropTypes.object
 }
 
 export default TasksTab

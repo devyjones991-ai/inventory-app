@@ -12,6 +12,15 @@ import { linkifyText } from '../utils/linkify'
 import { useHardware } from '../hooks/useHardware'
 import { useObjects } from '../hooks/useObjects'
 import { useAuth } from '../hooks/useAuth'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
 
@@ -53,6 +62,8 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = usePersistedForm(
     selected ? HW_FORM_KEY(selected.id) : null,
@@ -60,6 +71,14 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     isHWModalOpen,
     { resolver: zodResolver(hardwareSchema) },
   )
+
+  useEffect(() => {
+    register('purchase_status')
+    register('install_status')
+  }, [register])
+
+  const purchaseStatus = watch('purchase_status')
+  const installStatus = watch('install_status')
 
   const {
     hardware: loadedHardware = [],
@@ -168,7 +187,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
           <div className="space-y-2">
             {isEditingDesc ? (
               <div className="space-y-2">
-                <textarea
+                <Textarea
                   className="textarea textarea-bordered w-full"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -250,7 +269,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             </h3>
             <form onSubmit={handleHWSubmit} className="space-y-2">
               <div>
-                <input
+                <Input
                   className="input input-bordered w-full"
                   placeholder="Название"
                   {...register('name')}
@@ -260,20 +279,25 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                 )}
               </div>
               <div>
-                <input
+                <Input
                   className="input input-bordered w-full"
                   placeholder="Расположение"
                   {...register('location')}
                 />
               </div>
               <div>
-                <select
-                  className="select select-bordered w-full"
-                  {...register('purchase_status')}
+                <Select
+                  value={purchaseStatus}
+                  onValueChange={(value) => setValue('purchase_status', value)}
                 >
-                  <option value="не оплачен">не оплачен</option>
-                  <option value="оплачен">оплачен</option>
-                </select>
+                  <SelectTrigger className="w-full h-9">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="не оплачен">не оплачен</SelectItem>
+                    <SelectItem value="оплачен">оплачен</SelectItem>
+                  </SelectContent>
+                </Select>
                 {errors.purchase_status && (
                   <p className="text-red-500 text-sm">
                     {errors.purchase_status.message}
@@ -281,13 +305,18 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                 )}
               </div>
               <div>
-                <select
-                  className="select select-bordered w-full"
-                  {...register('install_status')}
+                <Select
+                  value={installStatus}
+                  onValueChange={(value) => setValue('install_status', value)}
                 >
-                  <option value="не установлен">не установлен</option>
-                  <option value="установлен">установлен</option>
-                </select>
+                  <SelectTrigger className="w-full h-9">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="не установлен">не установлен</SelectItem>
+                    <SelectItem value="установлен">установлен</SelectItem>
+                  </SelectContent>
+                </Select>
                 {errors.install_status && (
                   <p className="text-red-500 text-sm">
                     {errors.install_status.message}

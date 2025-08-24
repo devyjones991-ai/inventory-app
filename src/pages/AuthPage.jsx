@@ -6,6 +6,7 @@ import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
 import { useNavigate } from 'react-router-dom'
 import logger from '../utils/logger'
 import { useAuth } from '../hooks/useAuth'
+import { Input } from '@/components/ui/input'
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
@@ -104,7 +105,7 @@ export default function AuthPage() {
             {info && <div className="text-blue-500 text-sm">{info}</div>}
 
             <div>
-              <input
+              <Input
                 type="email"
                 className="input input-bordered w-full"
                 placeholder="Email"
@@ -119,7 +120,7 @@ export default function AuthPage() {
 
             {isRegister && (
               <div>
-                <input
+                <Input
                   type="text"
                   className="input input-bordered w-full"
                   placeholder="Имя пользователя"
@@ -134,7 +135,7 @@ export default function AuthPage() {
             )}
 
             <div>
-              <input
+              <Input
                 type="password"
                 className="input input-bordered w-full"
                 placeholder="Пароль"
