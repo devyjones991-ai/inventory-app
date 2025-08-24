@@ -15,20 +15,17 @@ jest.mock('../src/components/ConfirmModal.jsx', () => () => null)
 jest.mock('../src/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
   mockFetchHardwareApi = jest.fn().mockResolvedValue({ data: [], error: null })
-  const hardware = []
-  const mocked = {
-    hardware,
-    loading: false,
-    error: null,
-    loadHardware: mockLoadHardware,
-    fetchHardwareApi: mockFetchHardwareApi,
-    createHardware: jest.fn(),
-    updateHardware: jest.fn(),
-    deleteHardware: jest.fn(),
-  }
 
   return {
-    useHardware: () => mocked,
+    useHardware: () => ({
+      hardware: [],
+      loading: false,
+      error: null,
+      loadHardware: mockLoadHardware,
+      createHardware: jest.fn(),
+      updateHardware: jest.fn(),
+      deleteHardware: jest.fn(),
+    }),
   }
 })
 
@@ -83,7 +80,6 @@ describe('InventoryTabs', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockFetchHardwareApi.mockResolvedValue({ data: [], error: null })
   })
 
   it('переключает вкладки "Железо" и "Задачи"', async () => {
@@ -93,6 +89,8 @@ describe('InventoryTabs', () => {
           selected={selected}
           onUpdateSelected={jest.fn()}
           onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
         />
       </MemoryRouter>,
     )
@@ -113,6 +111,8 @@ describe('InventoryTabs', () => {
           selected={selected}
           onUpdateSelected={jest.fn()}
           onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
         />
       </MemoryRouter>,
     )
@@ -121,5 +121,22 @@ describe('InventoryTabs', () => {
     expect(
       await screen.findByText('Нет данных. Нажмите «Добавить».'),
     ).toBeInTheDocument()
+  })
+
+  it('отображает чат', async () => {
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByText(/Чат/))
+    expect(screen.getByText(/Чат для/)).toBeInTheDocument()
   })
 })

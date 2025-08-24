@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import TaskCard from './TaskCard'
-import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
+import ConfirmModal from './ConfirmModal'
 import { useTasks } from '../hooks/useTasks'
 import ConfirmModal from './ConfirmModal'
 
 const PAGE_SIZE = 20
 
-function TasksTab({ selected }) {
+function TasksTab({ selected, registerAddHandler }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -61,6 +61,10 @@ function TasksTab({ selected }) {
     setIsTaskModalOpen(true)
   }, [])
 
+  useEffect(() => {
+    registerAddHandler?.(openTaskModal)
+  }, [registerAddHandler, openTaskModal])
+
   const closeTaskModal = useCallback(() => {
     setIsTaskModalOpen(false)
     setEditingTask(null)
@@ -104,10 +108,6 @@ function TasksTab({ selected }) {
     setIsTaskModalOpen(true)
   }, [])
 
-  const handleDeleteTask = useCallback((taskId) => {
-    setTaskDeleteId(taskId)
-  }, [])
-
   const confirmDeleteTask = useCallback(async () => {
     if (taskDeleteId) {
       try {
@@ -125,27 +125,32 @@ function TasksTab({ selected }) {
         await importTasks(importFile)
         closeImportModal()
       } catch (error) {
-        console.error('Error importing tasks:', error)
+        console.error('Import failed:', error)
       }
     }
   }, [importFile, importTasks, closeImportModal])
 
-  const formatDate = (dateString) => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ru-RU')
+  const formatDate = (date) => {
+    if (!date) return ''
+    return new Date(date).toLocaleDateString('ru-RU')
   }
 
   if (!selected) {
     return (
-      <div className="text-gray-500 text-center py-8">
+      <div className="text-center py-8 text-gray-500">
         Выберите объект для просмотра задач
       </div>
     )
   }
 
   if (loading) {
-    return <Spinner />
+    return (
+      <div className="space-y-2">
+        <div className="h-10 bg-muted rounded" />
+        <div className="h-10 bg-muted rounded" />
+        <div className="h-10 bg-muted rounded" />
+      </div>
+    )
   }
 
   if (error) {
@@ -153,9 +158,11 @@ function TasksTab({ selected }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <h3 className="text-lg font-semibold">Задачи ({tasks.length})</h3>
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">
+          Задачи для {selected.name}
+        </h2>
         <div className="flex gap-2">
           <button className="btn btn-sm btn-outline" onClick={openImportModal}>
             Импорт
@@ -171,20 +178,20 @@ function TasksTab({ selected }) {
           Нет данных. Нажмите «Добавить».
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid gap-4">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
-              task={task}
+              item={task}
               onEdit={handleEditTask}
-              onDelete={handleDeleteTask}
+              onDelete={(id) => setTaskDeleteId(id)}
               onView={setViewingTask}
             />
           ))}
         </div>
       )}
 
-      {/* Task Modal */}
+      {/* Add Task Modal */}
       {isTaskModalOpen && (
         <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
@@ -195,12 +202,12 @@ function TasksTab({ selected }) {
               ✕
             </button>
             <h3 className="font-bold text-lg mb-4">
-              {editingTask ? 'Редактировать задачу' : 'Добавить задачу'}
+              {editingTask ? 'Редактировать задачу' : 'Новая задача'}
             </h3>
             <form onSubmit={handleTaskSubmit} className="space-y-4">
               <div>
                 <label className="label">
-                  <span className="label-text">Название *</span>
+                  <span className="label-text">Название</span>
                 </label>
                 <input
                   type="text"
@@ -250,9 +257,8 @@ function TasksTab({ selected }) {
                   }
                 >
                   <option value="pending">В ожидании</option>
-                  <option value="in_progress">В работе</option>
-                  <option value="completed">Выполнено</option>
-                  <option value="cancelled">Отменено</option>
+                  <option value="in_progress">В процессе</option>
+                  <option value="completed">Завершено</option>
                 </select>
               </div>
               <div>
@@ -261,12 +267,10 @@ function TasksTab({ selected }) {
                 </label>
                 <textarea
                   className="textarea textarea-bordered w-full"
-                  rows="3"
+                  rows={3}
                   value={taskForm.notes}
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, notes: e.target.value })
-                  }
-                ></textarea>
+                  onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
+                />
               </div>
               <div className="modal-action flex space-x-2">
                 <button type="submit" className="btn btn-primary">
@@ -361,7 +365,7 @@ function TasksTab({ selected }) {
 
 TasksTab.propTypes = {
   selected: PropTypes.object,
-  user: PropTypes.object,
+  registerAddHandler: PropTypes.func,
 }
 
 export default TasksTab
