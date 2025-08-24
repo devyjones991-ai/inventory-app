@@ -63,6 +63,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   const {
     hardware: loadedHardware = [],
+    loading: isHWLoading = false,
     loadHardware,
     createHardware,
     updateHardware,
@@ -218,9 +219,15 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                 </button>
               )}
             </div>
-            {hardware.length === 0 ? (
+            {isHWLoading ? (
+              <div className="space-y-2">
+                <div className="h-10 bg-muted rounded" />
+                <div className="h-10 bg-muted rounded" />
+                <div className="h-10 bg-muted rounded" />
+              </div>
+            ) : hardware.length === 0 ? (
               <div className="text-center text-gray-500">
-                Оборудование не найдено
+                Нет данных. Нажмите «Добавить».
               </div>
             ) : (
               <div className="space-y-2">
