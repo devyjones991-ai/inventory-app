@@ -1,6 +1,6 @@
 import { memo, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import Card from './Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 
@@ -32,6 +32,14 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
 
   const dueDate = useMemo(() => item.due_date, [item.due_date])
 
+  const handleView = useCallback(
+    (e) => {
+      e.stopPropagation()
+      onView()
+    },
+    [onView],
+  )
+
   const handleEdit = useCallback(
     (e) => {
       e.stopPropagation()
@@ -53,10 +61,12 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
   return (
     <Card
       className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-base-200 transition-colors animate-fade-in"
-      onClick={onView}
+      onClick={handleView}
     >
-      <div className="flex-1">
-        <p className="break-words whitespace-pre-wrap">{item.title}</p>
+      <CardHeader className="flex-1">
+        <CardTitle className="break-words whitespace-pre-wrap">
+          {item.title}
+        </CardTitle>
         {(assignee || dueDate) && (
           <p className="text-sm text-base-content/70 transition-colors">
             {assignee && <span>👤 {assignee}</span>}
@@ -64,8 +74,8 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
             {dueDate && <span>📅 {formatDate(dueDate)}</span>}
           </p>
         )}
-      </div>
-      <div className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
+      </CardHeader>
+      <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
         <span className={`badge ${badgeClass}`}>{item.status}</span>
         {canManage && (
           <>
@@ -89,7 +99,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
             </Button>
           </>
         )}
-      </div>
+      </CardContent>
     </Card>
   )
 }

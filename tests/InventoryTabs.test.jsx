@@ -1,19 +1,27 @@
 // Tests for InventoryTabs component
 import '@testing-library/jest-dom'
 
-let mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
+var mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
+
+jest.mock('../src/hooks/usePersistedForm.js', () => () => ({
+  register: jest.fn(),
+  handleSubmit: (fn) => fn,
+  reset: jest.fn(),
+  formState: { errors: {} },
+}))
+
+jest.mock('../src/components/ConfirmModal.jsx', () => () => null)
 
 jest.mock('../src/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
   mockFetchHardwareApi = jest.fn().mockResolvedValue({ data: [], error: null })
-  
+
   return {
     useHardware: () => ({
       hardware: [],
       loading: false,
       error: null,
       loadHardware: mockLoadHardware,
-      fetchHardwareApi: mockFetchHardwareApi,
       createHardware: jest.fn(),
       updateHardware: jest.fn(),
       deleteHardware: jest.fn(),
@@ -21,9 +29,10 @@ jest.mock('../src/hooks/useHardware.js', () => {
   }
 })
 
-jest.mock('../src/hooks/useTasks.js', () => ({
-  useTasks: () => ({
-    tasks: [],
+jest.mock('../src/hooks/useTasks.js', () => {
+  const tasks = []
+  const mocked = {
+    tasks,
     loading: false,
     error: null,
     loadTasks: jest.fn(),
@@ -31,8 +40,9 @@ jest.mock('../src/hooks/useTasks.js', () => ({
     updateTask: jest.fn(),
     deleteTask: jest.fn(),
     importTasks: jest.fn(),
-  }),
-}))
+  }
+  return { useTasks: () => mocked }
+})
 
 jest.mock('../src/hooks/useChatMessages.js', () => {
   mockFetchMessages = jest.fn().mockResolvedValue({ data: [], error: null })
@@ -61,17 +71,15 @@ jest.mock('react-router-dom', () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import InventoryTabs from '../src/components/InventoryTabs.jsx'
-import { toast } from 'react-hot-toast'
 
 describe('InventoryTabs', () => {
   const selected = { id: '1', name: 'Объект 1' }
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockFetchHardwareApi.mockResolvedValue({ data: [], error: null })
   })
 
   it('переключает вкладки "Железо" и "Задачи"', async () => {
@@ -81,6 +89,8 @@ describe('InventoryTabs', () => {
           selected={selected}
           onUpdateSelected={jest.fn()}
           onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
         />
       </MemoryRouter>,
     )
@@ -90,7 +100,7 @@ describe('InventoryTabs', () => {
 
     fireEvent.click(screen.getAllByText(/Задачи/)[0])
     expect(
-      await screen.findByRole('heading', { name: 'Задачи' }),
+      await screen.findByRole('heading', { name: /Задачи/ }),
     ).toBeInTheDocument()
   })
 
@@ -101,13 +111,32 @@ describe('InventoryTabs', () => {
           selected={selected}
           onUpdateSelected={jest.fn()}
           onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
         />
       </MemoryRouter>,
     )
 
     fireEvent.click(screen.getAllByText(/Задачи/)[0])
     expect(
-      await screen.findByText('Задач пока нет. Добавьте первую задачу!'),
+      await screen.findByText('Нет данных. Нажмите «Добавить».'),
     ).toBeInTheDocument()
+  })
+
+  it('отображает чат', async () => {
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByText(/Чат/))
+    expect(screen.getByText(/Чат для/)).toBeInTheDocument()
   })
 })

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
@@ -121,6 +122,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   useEffect(() => {
     if (selected) {
+
       setDescription(selected.description || '')
     }
   }, [selected])
@@ -137,7 +139,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   }, [tab, onTabChange])
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <div className="tabs mb-4">
         <button
           className={`tab tab-bordered ${tab === 'desc' ? 'tab-active' : ''}`}
@@ -215,13 +217,20 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                 </Button>
               )}
             </div>
-            {hardware.length === 0 ? (
+            {isHWLoading ? (
+              <div className="space-y-2">
+                <div className="h-10 bg-muted rounded"></div>
+                <div className="h-10 bg-muted rounded"></div>
+                <div className="h-10 bg-muted rounded"></div>
+              </div>
+            ) : hardware.length === 0 ? (
               <div className="text-center text-gray-500">
-                Оборудование не найдено
+                Нет данных. Нажмите «Добавить».
               </div>
             ) : (
               <div className="space-y-2">
                 {hardware.map((item) => (
+
                   <HardwareCard
                     key={item.id}
                     item={item}
@@ -316,3 +325,6 @@ InventoryTabs.propTypes = {
 }
 
 export default InventoryTabs
+
+                  <HardwareCard
+
