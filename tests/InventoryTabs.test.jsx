@@ -3,6 +3,15 @@ import '@testing-library/jest-dom'
 
 var mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
 
+jest.mock('../src/hooks/usePersistedForm.js', () => () => ({
+  register: jest.fn(),
+  handleSubmit: (fn) => fn,
+  reset: jest.fn(),
+  formState: { errors: {} },
+}))
+
+jest.mock('../src/components/ConfirmModal.jsx', () => () => null)
+
 jest.mock('../src/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
   mockFetchHardwareApi = jest.fn().mockResolvedValue({ data: [], error: null })
@@ -20,9 +29,10 @@ jest.mock('../src/hooks/useHardware.js', () => {
   }
 })
 
-jest.mock('../src/hooks/useTasks.js', () => ({
-  useTasks: () => ({
-    tasks: [],
+jest.mock('../src/hooks/useTasks.js', () => {
+  const tasks = []
+  const mocked = {
+    tasks,
     loading: false,
     error: null,
     loadTasks: jest.fn(),
@@ -30,8 +40,9 @@ jest.mock('../src/hooks/useTasks.js', () => ({
     updateTask: jest.fn(),
     deleteTask: jest.fn(),
     importTasks: jest.fn(),
-  }),
-}))
+  }
+  return { useTasks: () => mocked }
+})
 
 jest.mock('../src/hooks/useChatMessages.js', () => {
   mockFetchMessages = jest.fn().mockResolvedValue({ data: [], error: null })
@@ -108,7 +119,7 @@ describe('InventoryTabs', () => {
 
     fireEvent.click(screen.getAllByText(/Задачи/)[0])
     expect(
-      await screen.findByText('Нет задач для этого объекта.'),
+      await screen.findByText('Нет данных. Нажмите «Добавить».'),
     ).toBeInTheDocument()
   })
 

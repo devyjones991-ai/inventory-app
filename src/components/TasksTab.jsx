@@ -4,6 +4,7 @@ import TaskCard from './TaskCard'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '../hooks/useTasks'
+import ConfirmModal from './ConfirmModal'
 
 const PAGE_SIZE = 20
 
@@ -212,7 +213,9 @@ function TasksTab({ selected, registerAddHandler }) {
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.title}
-                  onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, title: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -224,7 +227,9 @@ function TasksTab({ selected, registerAddHandler }) {
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.assignee}
-                  onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, assignee: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -235,7 +240,9 @@ function TasksTab({ selected, registerAddHandler }) {
                   type="date"
                   className="input input-bordered w-full"
                   value={taskForm.due_date}
-                  onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, due_date: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -245,7 +252,9 @@ function TasksTab({ selected, registerAddHandler }) {
                 <select
                   className="select select-bordered w-full"
                   value={taskForm.status}
-                  onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value })}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, status: e.target.value })
+                  }
                 >
                   <option value="pending">В ожидании</option>
                   <option value="in_progress">В процессе</option>
