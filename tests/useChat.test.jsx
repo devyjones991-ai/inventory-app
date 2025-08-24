@@ -17,7 +17,19 @@ const updateChain = {
   })),
 }
 
-const insertFn = jest.fn(() => Promise.resolve({ error: null }))
+const insertFn = jest.fn((records) => {
+  const record = records[0]
+  return {
+    select: jest.fn(() => ({
+      single: jest.fn(() =>
+        Promise.resolve({
+          data: { id: '10', created_at: new Date().toISOString(), ...record },
+          error: null,
+        }),
+      ),
+    })),
+  }
+})
 
 mockSupabase = {
   from: jest.fn(() => ({
@@ -178,8 +190,7 @@ describe('useChat markMessagesAsRead', () => {
     })
 
     expect(result.current.messages).toHaveLength(2)
-    const secondOptimistic = result.current.messages.find((m) => m._optimistic)
-    const secondId = secondOptimistic.client_generated_id
+    const secondId = result.current.messages[1].client_generated_id
 
     act(() => {
       onPayload({
