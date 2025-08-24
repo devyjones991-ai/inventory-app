@@ -4,6 +4,7 @@ import TaskCard from './TaskCard'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '../hooks/useTasks'
+import { Button } from '@/components/ui/button'
 
 import {
   Dialog,
@@ -21,7 +22,11 @@ import ConfirmModal from './ConfirmModal'
 
 const PAGE_SIZE = 20
 
+
+function TasksTab({ selected }) {
+
 function TasksTab({ selected, registerAddHandler }) {
+
 
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -178,12 +183,19 @@ function TasksTab({ selected, registerAddHandler }) {
           Задачи для {selected.name}
         </h2>
         <div className="flex gap-2">
+
+          <Button size="sm" variant="outline" onClick={openImportModal}>
+            Импорт
+          </Button>
+          <Button size="sm" onClick={openTaskModal}>
+
           <button className="btn btn-sm btn-outline" onClick={openImportModal}>
             Импорт
           </button>
           <button className="btn btn-sm btn-primary" onClick={openTaskModal}>
+
             + Добавить
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -316,12 +328,13 @@ function TasksTab({ selected, registerAddHandler }) {
       {isTaskModalOpen && (
         <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
-            <button
-              className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
+            <Button
+              size="icon"
+              className="absolute right-2 top-2"
               onClick={closeTaskModal}
             >
               ✕
-            </button>
+            </Button>
             <h3 className="font-bold text-lg mb-4">
               {editingTask ? 'Редактировать задачу' : 'Новая задача'}
             </h3>
@@ -390,20 +403,32 @@ function TasksTab({ selected, registerAddHandler }) {
                   className="textarea textarea-bordered w-full"
                   rows={3}
                   value={taskForm.notes}
+
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, notes: e.target.value })
+                  }
+                ></textarea>
+
                   onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
                 />
+
               </div>
               <div className="modal-action flex space-x-2">
-                <button type="submit" className="btn btn-primary">
+                <Button type="submit">
                   {editingTask ? 'Сохранить' : 'Добавить'}
+
+                </Button>
+                <Button type="button" variant="ghost" onClick={closeTaskModal}>
+
                 </button>
                 <button
                   type="button"
                   className="btn btn-ghost"
                   onClick={closeTaskModal}
                 >
+
                   Отмена
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -412,6 +437,30 @@ function TasksTab({ selected, registerAddHandler }) {
 
 
       {/* View Task Modal */}
+
+      {viewingTask && (
+        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
+            <Button
+              size="icon"
+              className="absolute right-2 top-2"
+              onClick={() => setViewingTask(null)}
+            >
+              ✕
+            </Button>
+            <h3 className="font-bold text-lg mb-4">{viewingTask.title}</h3>
+            <div className="space-y-2">
+              {viewingTask.assignee && (
+                <p>
+                  <strong>Исполнитель:</strong> {viewingTask.assignee}
+                </p>
+              )}
+              {viewingTask.due_date && (
+                <p>
+                  <strong>Дата:</strong> {formatDate(viewingTask.due_date)}
+                </p>
+              )}
+
       <Dialog
         open={!!viewingTask}
         onOpenChange={(open) => {
@@ -430,6 +479,7 @@ function TasksTab({ selected, registerAddHandler }) {
           </DialogHeader>
           <div className="space-y-2">
             {viewingTask?.assignee && (
+
               <p>
                 <strong>Исполнитель:</strong> {viewingTask.assignee}
               </p>
@@ -460,6 +510,33 @@ function TasksTab({ selected, registerAddHandler }) {
       />
 
       {/* Import Modal */}
+
+      {isImportModalOpen && (
+        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
+            <Button
+              size="icon"
+              className="absolute right-2 top-2"
+              onClick={closeImportModal}
+            >
+              ✕
+            </Button>
+            <h3 className="font-bold text-lg mb-4">Импорт задач</h3>
+            <input
+              type="file"
+              className="file-input file-input-bordered w-full"
+              onChange={(e) => setImportFile(e.target.files[0])}
+            />
+            <div className="modal-action flex space-x-2">
+              <Button onClick={handleImport}>Загрузить</Button>
+              <Button variant="ghost" onClick={closeImportModal}>
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Dialog
         open={isImportModalOpen}
         onOpenChange={(open) => {
@@ -491,6 +568,7 @@ function TasksTab({ selected, registerAddHandler }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   )
 }
@@ -498,9 +576,11 @@ function TasksTab({ selected, registerAddHandler }) {
 TasksTab.propTypes = {
   selected: PropTypes.object,
 
+
   user: PropTypes.object,
 
   registerAddHandler: PropTypes.func,
+
 
 }
 

@@ -2,6 +2,7 @@ import { memo, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button'
 
 /**
  * Format date string into locale friendly format.
@@ -78,20 +79,24 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         <span className={`badge ${badgeClass}`}>{item.status}</span>
         {canManage && (
           <>
-            <button
-              className="btn btn-sm btn-ghost w-full xs:w-auto"
+            <Button
+              size="sm"
+              variant="ghost"
+              className="w-full xs:w-auto"
               title="Редактировать"
               onClick={handleEdit}
             >
               <PencilIcon className="w-4 h-4" />
-            </button>
-            <button
-              className="btn btn-sm btn-ghost w-full xs:w-auto"
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="w-full xs:w-auto"
               title="Удалить"
               onClick={handleDelete}
             >
               <TrashIcon className="w-4 h-4" />
-            </button>
+            </Button>
           </>
         )}
       </CardContent>

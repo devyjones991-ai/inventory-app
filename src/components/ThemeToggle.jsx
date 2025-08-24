@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button'
 
 const THEME_KEY = 'theme'
 const DEFAULT_THEME = 'light'
@@ -25,8 +26,9 @@ export default function ThemeToggle() {
   }
 
   return (
-    <button
-      className="btn btn-sm transition-colors"
+    <Button
+      size="sm"
+      className="transition-colors"
       onClick={toggleTheme}
       aria-label="Переключить тему"
     >
@@ -35,6 +37,6 @@ export default function ThemeToggle() {
       ) : (
         <SunIcon className="w-4 h-4" />
       )}
-    </button>
+    </Button>
   )
 }

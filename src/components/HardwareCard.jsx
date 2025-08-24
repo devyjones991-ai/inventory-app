@@ -3,6 +3,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button'
 
 export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
   return (
@@ -18,6 +19,31 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
           <span>Покупка: {item.purchase_status}</span>
           <span>Установка: {item.install_status}</span>
         </div>
+
+      </div>
+      {!!user && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onEdit}
+            className="flex items-center gap-1 w-full sm:w-auto"
+          >
+            <PencilIcon className="w-4 h-4" />
+            Изменить
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={onDelete}
+            className="flex items-center gap-1 w-full sm:w-auto"
+          >
+            <TrashIcon className="w-4 h-4" />
+            Удалить
+          </Button>
+        </div>
+      )}
+
         {!!user && (
           <div className="flex flex-col sm:flex-row gap-2">
             <button
@@ -37,6 +63,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
           </div>
         )}
       </CardContent>
+
     </Card>
   )
 }
