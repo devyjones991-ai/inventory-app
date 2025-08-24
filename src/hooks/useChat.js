@@ -135,9 +135,12 @@ export default function useChat({ objectId, userEmail, search }) {
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setMessages((prev) => {
+              if (prev.some((m) => m.id === payload.new.id)) {
+                return prev
+              }
+
               const existingIndex = prev.findIndex(
                 (m) =>
-                  m._optimistic &&
                   m.client_generated_id === payload.new.client_generated_id,
               )
 
@@ -248,27 +251,50 @@ export default function useChat({ objectId, userEmail, search }) {
     offsetRef.current += 1
     setMessages((prev) => [...prev, optimistic])
 
-    const { error } = await supabase.from('chat_messages').insert([
-      {
-        object_id: objectId,
-        sender: userEmail,
-        content: newMessage.trim(),
-        client_generated_id: optimisticId,
-      },
-    ])
+    optimisticTimersRef.current[optimisticId] = setTimeout(() => {
+      setMessages((prev) =>
+        prev.filter((m) => m.client_generated_id !== optimisticId),
+      )
+      offsetRef.current -= 1
+      delete optimisticTimersRef.current[optimisticId]
+    }, 5000)
+
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .insert([
+        {
+          object_id: objectId,
+          sender: userEmail,
+          content: newMessage.trim(),
+          client_generated_id: optimisticId,
+        },
+      ])
+      .select()
+      .single()
+
+    const timer = optimisticTimersRef.current[optimisticId]
 
     if (error) {
       await handleSupabaseError(error, null, 'Ошибка отправки')
-      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id))
+      if (timer) {
+        clearTimeout(timer)
+        delete optimisticTimersRef.current[optimisticId]
+      }
+      setMessages((prev) =>
+        prev.filter((m) => m.client_generated_id !== optimisticId),
+      )
       offsetRef.current -= 1
     } else {
-      optimisticTimersRef.current[optimisticId] = setTimeout(() => {
-        setMessages((prev) =>
-          prev.filter((m) => m.client_generated_id !== optimisticId),
-        )
-        offsetRef.current -= 1
+      if (timer) {
+        clearTimeout(timer)
         delete optimisticTimersRef.current[optimisticId]
-      }, 5000)
+      }
+      setMessages((prev) =>
+        [
+          ...prev.filter((m) => m.client_generated_id !== optimisticId),
+          data,
+        ].sort(sortByCreatedAt),
+      )
     }
     setNewMessage('')
     setSending(false)

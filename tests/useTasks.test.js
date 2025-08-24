@@ -62,7 +62,6 @@ describe('useTasks', () => {
             id: 1,
             title: 't',
             assignee: 'a',
-            assignee_id: 10,
             created_at: '2024-05-09T00:00:00Z',
           },
         ],
@@ -77,7 +76,6 @@ describe('useTasks', () => {
         id: 1,
         title: 't',
         assignee: 'a',
-        assignee_id: 10,
         created_at: '2024-05-09T00:00:00Z',
       },
     ])

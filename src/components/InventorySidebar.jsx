@@ -30,9 +30,7 @@ function InventorySidebar({
             <button
               onClick={o.select}
               className={`flex-1 text-left px-3 py-2 rounded hover:bg-primary/10 ${
-                selected?.id === o.id
-                  ? 'border-b-2 border-primary font-medium'
-                  : ''
+                selected?.id === o.id ? 'bg-primary/10 font-medium' : ''
               }`}
             >
               {o.name}
