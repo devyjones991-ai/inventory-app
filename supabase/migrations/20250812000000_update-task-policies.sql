@@ -11,12 +11,12 @@ create policy "allow_authenticated_read_tasks" on tasks
 create policy "allow_authenticated_insert_tasks" on tasks
   for insert with check (auth.role() = 'authenticated');
 
--- Allow users to modify only tasks assigned to them
-create policy "Users can update own tasks" on tasks
-  for update using (assignee_id = auth.uid());
+-- Allow authenticated users to modify tasks
+create policy "allow_authenticated_update_tasks" on tasks
+  for update using (auth.role() = 'authenticated');
 
-create policy "Users can delete own tasks" on tasks
-  for delete using (assignee_id = auth.uid());
+create policy "allow_authenticated_delete_tasks" on tasks
+  for delete using (auth.role() = 'authenticated');
 
 -- Allow admins full control over tasks
 create policy "Admins can manage tasks" on tasks

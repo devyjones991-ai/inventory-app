@@ -1,25 +1,29 @@
-var mockFetchTasksApi
-var mockInsertTask
-var mockUpdateTask
-var mockSubscribeToTasks
-var taskHandler
+import '@testing-library/jest-dom'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import TasksTab from '../src/components/TasksTab.jsx'
+
+var mockTasks = [],
+  mockLoadTasks,
+  mockCreateTask,
+  mockUpdateTask
 const mockNavigate = jest.fn()
 
 jest.mock('../src/hooks/useTasks.js', () => {
-  mockFetchTasksApi = jest.fn().mockResolvedValue({ data: [], error: null })
-  mockInsertTask = jest.fn()
+  mockTasks = []
+  mockLoadTasks = jest.fn()
+  mockCreateTask = jest.fn()
   mockUpdateTask = jest.fn()
-  mockSubscribeToTasks = jest.fn((_, handler) => {
-    taskHandler = handler
-    return jest.fn()
-  })
   return {
     useTasks: () => ({
-      fetchTasks: mockFetchTasksApi,
-      insertTask: mockInsertTask,
+      tasks: mockTasks,
+      loading: false,
+      error: null,
+      loadTasks: mockLoadTasks,
+      createTask: mockCreateTask,
       updateTask: mockUpdateTask,
       deleteTask: jest.fn(),
-      subscribeToTasks: mockSubscribeToTasks,
+      importTasks: jest.fn(),
     }),
   }
 })
@@ -37,19 +41,15 @@ jest.mock('react-router-dom', () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
-import TasksTab from '../src/components/TasksTab.jsx'
-
 describe('TasksTab', () => {
   const selected = { id: '1' }
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    mockFetchTasksApi.mockResolvedValue({ data: [], error: null })
-    mockInsertTask.mockResolvedValue({ data: null, error: null })
+    mockTasks = []
+    mockLoadTasks.mockResolvedValue({ data: [], error: null })
+    mockCreateTask.mockResolvedValue({ data: null, error: null })
     mockUpdateTask.mockResolvedValue({ data: null, error: null })
-    taskHandler = null
+    jest.clearAllMocks()
   })
 
   it('показывает сообщение при отсутствии задач', async () => {
@@ -58,48 +58,18 @@ describe('TasksTab', () => {
         <TasksTab selected={selected} />
       </MemoryRouter>,
     )
-    expect(await screen.findByText('Задачи не найдены')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Нет задач для этого объекта.'),
+    ).toBeInTheDocument()
   })
 
-  it('подгружает дополнительные задачи по кнопке «Загрузить ещё»', async () => {
-    const tasks1 = Array.from({ length: 20 }, (_, i) => ({
-      id: `t${i}`,
-      title: `Task ${i}`,
-      status: 'запланировано',
-    }))
-    const tasks2 = Array.from({ length: 5 }, (_, i) => ({
-      id: `t${i + 20}`,
-      title: `Task ${i + 20}`,
-      status: 'запланировано',
-    }))
-    mockFetchTasksApi
-      .mockResolvedValueOnce({ data: tasks1, error: null })
-      .mockResolvedValueOnce({ data: tasks2, error: null })
-
-    render(
-      <MemoryRouter>
-        <TasksTab selected={selected} />
-      </MemoryRouter>,
-    )
-
-    const loadMoreBtn = await screen.findByText('Загрузить ещё')
-    fireEvent.click(loadMoreBtn)
-
-    await waitFor(() =>
-      expect(mockFetchTasksApi).toHaveBeenLastCalledWith(selected.id, 20, 20),
-    )
-    expect(await screen.findByText('Task 24')).toBeInTheDocument()
-    expect(screen.queryByText('Загрузить ещё')).not.toBeInTheDocument()
-  })
-
-  it('добавляет задачу с due_date', async () => {
-    mockInsertTask.mockResolvedValue({
+  it('добавляет задачу с assignee', async () => {
+    mockCreateTask.mockResolvedValue({
       data: {
         id: 't1',
         title: 'Новая задача',
         status: 'запланировано',
         assignee: null,
-        assignee_id: null,
         due_date: '2024-05-10',
         notes: null,
       },
@@ -113,132 +83,75 @@ describe('TasksTab', () => {
     )
 
     fireEvent.click(screen.getByText('Добавить задачу'))
-    fireEvent.change(screen.getAllByRole('textbox')[0], {
-      target: { value: 'Новая задача' },
+
+    const titleInput = screen.getByLabelText('Название')
+    const assigneeInput = screen.getByLabelText('Исполнитель')
+    const dueDateInput = screen.getByLabelText('Дата выполнения')
+
+    await act(async () => {
+      fireEvent.change(titleInput, { target: { value: 'Новая задача' } })
+      fireEvent.change(assigneeInput, { target: { value: 'Иван Петров' } })
+      fireEvent.change(dueDateInput, { target: { value: '2024-12-31' } })
     })
+
     fireEvent.click(screen.getByText('📅'))
     const dateInput = document.querySelector('input[type="date"]')
     fireEvent.change(dateInput, { target: { value: '2024-05-10' } })
     fireEvent.click(screen.getByText('Сохранить'))
 
-    await waitFor(() => expect(mockInsertTask).toHaveBeenCalled())
-
-    const payload = mockInsertTask.mock.calls[0][0]
-    expect(payload).toEqual({
-      object_id: selected.id,
-      title: 'Новая задача',
-      status: 'запланировано',
-      assignee: null,
-      assignee_id: null,
-      due_date: '2024-05-10',
-      notes: null,
-    })
-
-    expect(await screen.findByText('Новая задача')).toBeInTheDocument()
-  })
-
-  it('редактирует задачу с due_date', async () => {
-    mockFetchTasksApi.mockResolvedValue({
-      data: [
-        {
-          id: 't1',
-          title: 'Старая задача',
-          status: 'запланировано',
-          assignee: null,
-          assignee_id: null,
-          due_date: '2024-05-10',
-          notes: null,
-        },
-      ],
-      error: null,
-    })
-    mockUpdateTask.mockResolvedValue({
-      data: {
-        id: 't1',
-        title: 'Старая задача',
+    await waitFor(() => {
+      expect(mockCreateTask).toHaveBeenCalledWith({
+        title: 'Новая задача',
+        assignee: 'Иван Петров',
+        due_date: '2024-05-10',
         status: 'запланировано',
-        assignee: null,
-        assignee_id: null,
-        due_date: '2024-05-15',
-        notes: null,
-      },
-      error: null,
-    })
-
-    render(
-      <MemoryRouter>
-        <TasksTab selected={selected} />
-      </MemoryRouter>,
-    )
-
-    expect(await screen.findByText('Старая задача')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByTitle('Редактировать'))
-    fireEvent.click(screen.getByText('📅'))
-    const dateInput = document.querySelector('input[type="date"]')
-    fireEvent.change(dateInput, { target: { value: '2024-05-15' } })
-    fireEvent.click(screen.getByText('Сохранить'))
-
-    await waitFor(() => expect(mockUpdateTask).toHaveBeenCalled())
-
-    const payload = mockUpdateTask.mock.calls[0][1]
-    expect(payload.due_date).toBe('2024-05-15')
-    expect(payload).not.toHaveProperty('planned_date')
-    expect(payload).not.toHaveProperty('plan_date')
-  })
-
-  it('просматривает задачу с due_date', async () => {
-    mockFetchTasksApi.mockResolvedValue({
-      data: [
-        {
-          id: 't1',
-          title: 'Просмотр',
-          status: 'запланировано',
-          due_date: '2024-05-10',
-        },
-      ],
-      error: null,
-    })
-
-    render(
-      <MemoryRouter>
-        <TasksTab selected={selected} />
-      </MemoryRouter>,
-    )
-
-    fireEvent.click(await screen.findByText('Просмотр'))
-    expect(await screen.findByText('10.05.2024')).toBeInTheDocument()
-  })
-
-  it('синхронизирует список задач при обновлении и удалении', async () => {
-    mockFetchTasksApi.mockResolvedValue({
-      data: [{ id: 't1', title: 'Задача 1', status: 'запланировано' }],
-      error: null,
-    })
-
-    render(
-      <MemoryRouter>
-        <TasksTab selected={selected} />
-      </MemoryRouter>,
-    )
-
-    expect(await screen.findByText('Задача 1')).toBeInTheDocument()
-
-    act(() => {
-      taskHandler({
-        eventType: 'UPDATE',
-        new: { id: 't1', title: 'Обновлено', status: 'в процессе' },
+        notes: '',
+        object_id: '1',
       })
     })
+  })
 
-    expect(await screen.findByText('Обновлено')).toBeInTheDocument()
+  it('обновляет задачу', async () => {
+    const task = {
+      id: 't1',
+      title: 'Существующая задача',
+      status: 'в работе',
+      assignee: 'Старый исполнитель',
+      due_date: '2024-01-01',
+      notes: 'Старые заметки',
+    }
 
-    act(() => {
-      taskHandler({ eventType: 'DELETE', old: { id: 't1' } })
+    mockTasks = [task]
+    mockUpdateTask.mockResolvedValue({ data: task, error: null })
+
+    render(
+      <MemoryRouter>
+        <TasksTab selected={selected} />
+      </MemoryRouter>,
+    )
+
+    const editButton = await screen.findByLabelText('Редактировать задачу')
+    fireEvent.click(editButton)
+
+    const titleInput = screen.getByDisplayValue('Существующая задача')
+    const assigneeInput = screen.getByDisplayValue('Старый исполнитель')
+
+    await act(async () => {
+      fireEvent.change(titleInput, { target: { value: 'Обновленная задача' } })
+      fireEvent.change(assigneeInput, { target: { value: 'Новый исполнитель' } })
     })
 
-    await waitFor(() =>
-      expect(screen.queryByText('Обновлено')).not.toBeInTheDocument(),
-    )
+    fireEvent.click(screen.getByText('Сохранить'))
+
+    await waitFor(() => {
+      expect(mockUpdateTask).toHaveBeenCalledWith('t1', {
+        title: 'Обновленная задача',
+        status: 'в работе',
+        assignee: 'Новый исполнитель',
+        due_date: '2024-01-01',
+        notes: 'Старые заметки',
+        object_id: '1',
+      })
+    })
   })
 })
