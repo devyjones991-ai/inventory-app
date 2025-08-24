@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
+import { Input } from '@/components/ui/input'
 
 function ObjectList({
   objects = [],
@@ -20,7 +21,7 @@ function ObjectList({
 
   return (
     <div>
-      <input
+      <Input
         aria-label="Поиск"
         placeholder="Поиск"
         value={filter}

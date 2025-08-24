@@ -7,6 +7,11 @@ import { useNavigate } from 'react-router-dom'
 import logger from '../utils/logger'
 import { useAuth } from '../hooks/useAuth'
 
+import { Input } from '@/components/ui/input'
+
+import { Button } from '@/components/ui/button'
+
+
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
   const [userError, setUserError] = useState(null)
@@ -104,7 +109,7 @@ export default function AuthPage() {
             {info && <div className="text-blue-500 text-sm">{info}</div>}
 
             <div>
-              <input
+              <Input
                 type="email"
                 className="input input-bordered w-full"
                 placeholder="Email"
@@ -119,7 +124,7 @@ export default function AuthPage() {
 
             {isRegister && (
               <div>
-                <input
+                <Input
                   type="text"
                   className="input input-bordered w-full"
                   placeholder="Имя пользователя"
@@ -134,7 +139,7 @@ export default function AuthPage() {
             )}
 
             <div>
-              <input
+              <Input
                 type="password"
                 className="input input-bordered w-full"
                 placeholder="Пароль"
@@ -147,18 +152,19 @@ export default function AuthPage() {
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary w-full">
+            <Button type="submit" className="w-full">
               {isRegister ? 'Зарегистрироваться' : 'Войти'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-link w-full"
+              variant="link"
+              className="w-full"
               onClick={() => setIsRegister(!isRegister)}
             >
               {isRegister
                 ? 'Уже есть аккаунт? Войти'
                 : 'Нет аккаунта? Регистрация'}
-            </button>
+            </Button>
           </form>
         </div>
       </div>

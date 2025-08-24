@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 
 export default function AttachmentPreview({ url, onImageClick = null }) {
   const [open, setOpen] = useState(false)
@@ -33,21 +34,15 @@ export default function AttachmentPreview({ url, onImageClick = null }) {
           onClick={handleOpen}
           data-testid="attachment-image"
         />
-        {open && !onImageClick && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-            data-testid="image-modal"
-          >
-            <div className="relative">
-              <button
-                onClick={handleClose}
-                className="absolute top-2 right-2 bg-base-100 px-2 py-1 rounded transition-colors"
-              >
-                Закрыть
-              </button>
+        {!onImageClick && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent data-testid="image-modal">
               <img src={url} alt="full" className="max-h-screen" />
-            </div>
-          </div>
+              <DialogFooter>
+                <button onClick={handleClose}>Закрыть</button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </>
     )
@@ -63,22 +58,14 @@ export default function AttachmentPreview({ url, onImageClick = null }) {
           onClick={() => setOpen(true)}
           data-testid="attachment-video"
         />
-        {open && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-            data-testid="video-modal"
-          >
-            <div className="relative">
-              <button
-                onClick={handleClose}
-                className="absolute top-2 right-2 bg-base-100 px-2 py-1 rounded transition-colors"
-              >
-                Закрыть
-              </button>
-              <video src={url} controls autoPlay className="max-h-screen" />
-            </div>
-          </div>
-        )}
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent data-testid="video-modal">
+            <video src={url} controls autoPlay className="max-h-screen" />
+            <DialogFooter>
+              <button onClick={handleClose}>Закрыть</button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </>
     )
   }
