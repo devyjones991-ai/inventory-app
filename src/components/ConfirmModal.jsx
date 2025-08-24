@@ -11,9 +11,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-
 export default function ConfirmModal({
-  open,
+  open = false,
   title = '',
   message = '',
   confirmLabel = 'OK',
@@ -23,21 +22,14 @@ export default function ConfirmModal({
   onCancel,
 }) {
   return (
-
-    <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="modal-box relative w-full max-w-sm">
-        {title && <h3 className="font-bold text-lg mb-4">{title}</h3>}
-        {message && <p className="mb-4">{message}</p>}
-        <div className="modal-action flex space-x-2">
-          <Button variant={confirmVariant} onClick={onConfirm}>
-            {confirmLabel}
-          </Button>
-          <Button onClick={onCancel}>{cancelLabel}</Button>
-        </div>
-      </div>
-    </div>
-
-    <Dialog open={open} onOpenChange={onCancel}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          onCancel()
+        }
+      }}
+    >
       <DialogContent>
         {title && (
           <DialogHeader>
@@ -46,21 +38,18 @@ export default function ConfirmModal({
         )}
         {message && <p>{message}</p>}
         <DialogFooter>
-          <button className={`btn ${confirmClass}`} onClick={onConfirm}>
+          <Button variant={confirmVariant} onClick={onConfirm}>
             {confirmLabel}
-          </button>
-          <button className="btn" onClick={onCancel}>
-            {cancelLabel}
-          </button>
+          </Button>
+          <Button onClick={onCancel}>{cancelLabel}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
   )
 }
 
 ConfirmModal.propTypes = {
-  open: PropTypes.bool.isRequired,
+  open: PropTypes.bool,
   title: PropTypes.string,
   message: PropTypes.string,
   confirmLabel: PropTypes.node,
