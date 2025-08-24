@@ -143,7 +143,7 @@ function ChatTab({ selected = null, userEmail }) {
                       <div className="chat-header">{m.sender || 'user'}</div>
                     )}
                     <div
-                      className={`chat-bubble whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
+                      className={`chat-bubble max-w-[80%] sm:max-w-[60%] whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
                         isOwn
                           ? 'bg-primary text-primary-content'
                           : 'bg-base-100 text-base-content'
