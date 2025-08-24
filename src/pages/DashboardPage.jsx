@@ -116,8 +116,8 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="flex h-screen w-full bg-base-100 transition-colors">
-        <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto transition-colors">
+      <div className="flex h-screen bg-base-100 transition-colors">
+        <aside className="hidden md:flex flex-col w-72 bg-white p-4 border-r shadow-sm overflow-y-auto transition-colors">
           <InventorySidebar
             objects={objects}
             selected={selected}
@@ -127,19 +127,11 @@ export default function DashboardPage() {
             notifications={notifications}
           />
         </aside>
+        
+        {/* Mobile sidebar overlay */}
         {isSidebarOpen && (
-          <div className="fixed inset-0 z-10 flex">
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50"
-              onClick={toggleSidebar}
-            />
-            <aside className="relative z-20 w-72 bg-base-200 p-4 shadow-lg overflow-y-auto transition-colors">
-              <button
-                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
-                onClick={toggleSidebar}
-              >
-                ✕
-              </button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden" onClick={() => setIsSidebarOpen(false)}>
+            <aside className="fixed left-0 top-0 h-full w-72 bg-white p-4 shadow-lg z-20">
               <InventorySidebar
                 objects={objects}
                 selected={selected}
@@ -151,124 +143,97 @@ export default function DashboardPage() {
             </aside>
           </div>
         )}
-
-        <div className="flex-1 flex flex-col">
-          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-base-100 transition-colors">
-            <div className="flex items-center gap-2">
-              <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
-                ☰
-              </button>
-              <button
-                className="btn btn-primary btn-md md:btn-sm flex items-center gap-1"
-                onClick={addAction}
-              >
-                <PlusIcon className="w-4 h-4" /> Добавить
-              </button>
-              {(isAdmin || isManager) && (
-                <>
-                  <button
-                    className="btn btn-secondary btn-md md:btn-sm"
-                    onClick={() => importInputRef.current?.click()}
-                  >
-                    Импорт
-                  </button>
-                  <button
-                    className="btn btn-secondary btn-md md:btn-sm"
-                    onClick={exportToFile}
-                  >
-                    Экспорт
-                  </button>
-                  <input
-                    type="file"
-                    accept=".csv"
-                    ref={importInputRef}
-                    className="hidden"
-                    onChange={handleImport}
-                  />
-                </>
-              )}
-            </div>
+        
+        {/* Main content */}
+        <div className="flex-1 flex flex-col bg-base-100">
+          {/* Mobile header */}
+          <div className="md:hidden flex items-center justify-between p-4 border-b">
+            <button onClick={toggleSidebar} className="btn btn-ghost btn-sm">
+              ☰
+            </button>
+            <h1 className="text-lg font-semibold">Inventory</h1>
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <button
-                className="btn btn-md md:btn-sm p-2 text-lg md:text-sm"
                 onClick={() => setIsAccountModalOpen(true)}
+                className="btn btn-ghost btn-sm"
               >
-                {user.user_metadata?.username || 'Аккаунт'}
-              </button>
-              <button
-                className="btn btn-md md:btn-sm p-2 text-lg md:text-sm"
-                onClick={() => supabase.auth.signOut()}
-              >
-                Выйти
+                👤
               </button>
             </div>
-          </header>
-
-          <div className="flex-1 overflow-auto">
+          </div>
+          
+          {/* Desktop header */}
+          <div className="hidden md:flex items-center justify-between p-4 border-b">
+            <h1 className="text-xl font-semibold">{selected?.name || 'Inventory'}</h1>
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                ref={importInputRef}
+                onChange={handleImport}
+                accept=".json"
+                className="hidden"
+              />
+              <button
+                onClick={() => importInputRef.current?.click()}
+                className="btn btn-outline btn-sm"
+              >
+                Import
+              </button>
+              <button
+                onClick={exportToFile}
+                className="btn btn-outline btn-sm"
+              >
+                Export
+              </button>
+              {(isAdmin || isManager) && (
+                <button onClick={addAction} className="btn btn-primary btn-sm">
+                  <PlusIcon className="w-4 h-4" />
+                  Add Object
+                </button>
+              )}
+              <ThemeToggle />
+              <button
+                onClick={() => setIsAccountModalOpen(true)}
+                className="btn btn-ghost btn-sm"
+              >
+                👤
+              </button>
+            </div>
+          </div>
+          
+          {/* Content area */}
+          <div className="flex-1 p-4">
             <InventoryTabs
+              activeTab={activeTab}
+              onTabChange={onTabChange}
               selected={selected}
               onUpdateSelected={onUpdateSelected}
-              onTabChange={onTabChange}
-              setAddAction={setAddAction}
-              openAddObject={openAddModal}
+              user={user}
+              isAdmin={isAdmin}
+              isManager={isManager}
+              addAction={addAction}
             />
           </div>
         </div>
-
-        {isObjectModalOpen && (
-          <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="modal-box relative w-full max-w-md">
-              <button
-                className="btn btn-circle btn-md md:btn-sm absolute right-2 top-2"
-                onClick={closeObjectModal}
-              >
-                ✕
-              </button>
-              <h3 className="font-bold text-lg mb-4">
-                {editingObject ? 'Редактировать объект' : 'Добавить объект'}
-              </h3>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="Название"
-                  value={objectName}
-                  onChange={(e) => setObjectName(e.target.value)}
-                />
-              </div>
-              <div className="modal-action flex space-x-2">
-                <button className="btn btn-primary" onClick={onSaveObject}>
-                  Сохранить
-                </button>
-                <button className="btn btn-ghost" onClick={closeObjectModal}>
-                  Отмена
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <ConfirmModal
-          open={!!deleteCandidate}
-          title="Удалить объект?"
-          confirmLabel={
-            <>
-              <TrashIcon className="w-4 h-4" /> Удалить
-            </>
-          }
-          onConfirm={onConfirmDelete}
-          onCancel={() => setDeleteCandidate(null)}
-        />
-
-        {isAccountModalOpen && (
-          <AccountModal
-            user={user}
-            onClose={() => setIsAccountModalOpen(false)}
-            onUpdated={() => {}}
-          />
-        )}
       </div>
+      
+      {/* Modals */}
+      <AccountModal
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+        user={user}
+        isAdmin={isAdmin}
+        isManager={isManager}
+      />
+      
+      <ConfirmModal
+        isOpen={!!deleteCandidate}
+        onClose={() => setDeleteCandidate(null)}
+        onConfirm={onConfirmDelete}
+        title="Delete Object"
+        message={`Are you sure you want to delete "${deleteCandidate?.name}"?`}
+      />
     </>
   )
 }
