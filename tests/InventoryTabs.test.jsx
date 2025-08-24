@@ -13,7 +13,6 @@ jest.mock('../src/hooks/useHardware.js', () => {
       loading: false,
       error: null,
       loadHardware: mockLoadHardware,
-      fetchHardwareApi: mockFetchHardwareApi,
       createHardware: jest.fn(),
       updateHardware: jest.fn(),
       deleteHardware: jest.fn(),
@@ -70,7 +69,6 @@ describe('InventoryTabs', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockFetchHardwareApi.mockResolvedValue({ data: [], error: null })
   })
 
   it('переключает вкладки "Железо" и "Задачи"', async () => {
@@ -80,6 +78,8 @@ describe('InventoryTabs', () => {
           selected={selected}
           onUpdateSelected={jest.fn()}
           onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
         />
       </MemoryRouter>,
     )
@@ -89,7 +89,7 @@ describe('InventoryTabs', () => {
 
     fireEvent.click(screen.getAllByText(/Задачи/)[0])
     expect(
-      await screen.findByRole('heading', { name: 'Задачи' }),
+      await screen.findByRole('heading', { name: /Задачи/ }),
     ).toBeInTheDocument()
   })
 
@@ -100,13 +100,32 @@ describe('InventoryTabs', () => {
           selected={selected}
           onUpdateSelected={jest.fn()}
           onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
         />
       </MemoryRouter>,
     )
 
     fireEvent.click(screen.getAllByText(/Задачи/)[0])
     expect(
-      await screen.findByText('Задач пока нет. Добавьте первую задачу!'),
+      await screen.findByText('Нет задач для этого объекта.'),
     ).toBeInTheDocument()
+  })
+
+  it('отображает чат', async () => {
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByText(/Чат/))
+    expect(screen.getByText(/Чат для/)).toBeInTheDocument()
   })
 })
