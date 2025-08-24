@@ -42,8 +42,23 @@ export function useTasks() {
       const {
         planned_date: _planned_date,
         plan_date: _plan_date,
-        ...taskData
+        executor,
+        assignee_id,
+        assignee,
+        title,
+        status,
+        due_date,
+        notes,
+        object_id,
       } = data
+      const taskData = {
+        title,
+        status,
+        due_date,
+        notes,
+        object_id,
+        assignee: assignee ?? executor ?? assignee_id ?? null,
+      }
       const result = await supabase
         .from('tasks')
         .insert([taskData])
@@ -64,8 +79,23 @@ export function useTasks() {
       const {
         planned_date: _planned_date,
         plan_date: _plan_date,
-        ...taskData
+        executor,
+        assignee_id,
+        assignee,
+        title,
+        status,
+        due_date,
+        notes,
+        object_id,
       } = data
+      const taskData = {
+        title,
+        status,
+        due_date,
+        notes,
+        object_id,
+        assignee: assignee ?? executor ?? assignee_id ?? null,
+      }
       const result = await supabase
         .from('tasks')
         .update(taskData)

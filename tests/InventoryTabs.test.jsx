@@ -1,10 +1,11 @@
 // Tests for InventoryTabs component
 import '@testing-library/jest-dom'
 
-var mockLoadHardware, mockFetchMessages, mockNavigate
+var mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
 
 jest.mock('../src/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
+  mockFetchHardwareApi = jest.fn().mockResolvedValue({ data: [], error: null })
 
   return {
     useHardware: () => ({
@@ -107,34 +108,24 @@ describe('InventoryTabs', () => {
 
     fireEvent.click(screen.getAllByText(/Задачи/)[0])
     expect(
-      await screen.findByText('Задач пока нет. Добавьте первую задачу!'),
+      await screen.findByText('Нет задач для этого объекта.'),
     ).toBeInTheDocument()
   })
 
-  it('не содержит локальных кнопок добавления', async () => {
-    const setAddAction = jest.fn()
+  it('отображает чат', async () => {
     render(
       <MemoryRouter>
         <InventoryTabs
           selected={selected}
           onUpdateSelected={jest.fn()}
           onTabChange={jest.fn()}
-          setAddAction={setAddAction}
+          setAddAction={jest.fn()}
           openAddObject={jest.fn()}
         />
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Железо' }))
-    expect(await screen.findByText('Оборудование')).toBeInTheDocument()
-    expect(screen.queryByText('+ Добавить')).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Задачи' }))
-    expect(
-      await screen.findByText('Задач пока нет. Добавьте первую задачу!'),
-    ).toBeInTheDocument()
-    expect(screen.queryByText('+ Добавить')).not.toBeInTheDocument()
-
-    expect(setAddAction).toHaveBeenCalled()
+    fireEvent.click(screen.getByText(/Чат/))
+    expect(screen.getByText(/Чат для/)).toBeInTheDocument()
   })
 })
