@@ -8,8 +8,6 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from '../components/ThemeToggle'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { exportInventory, importInventory } from '../utils/exportImport'
-import logger from '../utils/logger'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
@@ -112,7 +110,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="flex h-screen bg-base-100 transition-colors">
+      <div className="flex h-screen w-full bg-base-100 transition-colors">
         <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto transition-colors">
           <InventorySidebar
             objects={objects}
