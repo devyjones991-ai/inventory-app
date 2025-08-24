@@ -1,5 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 export default function ConfirmModal({
   open,
@@ -11,22 +18,25 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }) {
-  if (!open) return null
   return (
-    <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="modal-box relative w-full max-w-sm">
-        {title && <h3 className="font-bold text-lg mb-4">{title}</h3>}
-        {message && <p className="mb-4">{message}</p>}
-        <div className="modal-action flex space-x-2">
+    <Dialog open={open} onOpenChange={onCancel}>
+      <DialogContent>
+        {title && (
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+        )}
+        {message && <p>{message}</p>}
+        <DialogFooter>
           <button className={`btn ${confirmClass}`} onClick={onConfirm}>
             {confirmLabel}
           </button>
           <button className="btn" onClick={onCancel}>
             {cancelLabel}
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
