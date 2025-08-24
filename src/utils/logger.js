@@ -12,7 +12,7 @@ function getEnvLevel() {
     import.meta.env?.VITE_LOG_LEVEL ||
     process?.env?.LOG_LEVEL ||
     process?.env?.VITE_LOG_LEVEL
-  return level || 'info'
+  return (level || 'info').toLowerCase()
 }
 
 function shouldLog(level) {
