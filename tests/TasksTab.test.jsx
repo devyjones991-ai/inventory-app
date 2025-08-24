@@ -42,7 +42,7 @@ jest.mock('react-router-dom', () => {
 })
 
 describe('TasksTab', () => {
-  const selected = { id: '1' }
+  const selected = { id: 1 }
 
   beforeEach(() => {
     mockTasks = []
@@ -106,7 +106,7 @@ describe('TasksTab', () => {
         due_date: '2024-05-10',
         status: 'запланировано',
         notes: '',
-        object_id: '1',
+        object_id: 1,
       })
     })
   })
@@ -150,7 +150,7 @@ describe('TasksTab', () => {
         assignee: 'Новый исполнитель',
         due_date: '2024-01-01',
         notes: 'Старые заметки',
-        object_id: '1',
+        object_id: 1,
       })
     })
   })

@@ -53,7 +53,7 @@ describe('useChatMessages', () => {
       type: 'application/octet-stream',
     })
     const { error } = await result.current.sendMessage({
-      objectId: '1',
+      objectId: 1,
       sender: 'user@example.com',
       content: 'msg',
       file,
@@ -68,7 +68,7 @@ describe('useChatMessages', () => {
     const big = new Uint8Array(6 * 1024 * 1024)
     const file = new File([big], 'big.png', { type: 'image/png' })
     const { error } = await result.current.sendMessage({
-      objectId: '1',
+      objectId: 1,
       sender: 'user@example.com',
       content: 'msg',
       file,
@@ -83,7 +83,7 @@ describe('useChatMessages', () => {
     mockSingle.mockResolvedValueOnce({ data: null, error: mockError })
     const { result } = renderHook(() => useChatMessages())
     const { error } = await result.current.sendMessage({
-      objectId: '1',
+      objectId: 1,
       sender: 'user@example.com',
       content: 'msg',
     })
