@@ -4,6 +4,7 @@ import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
+import { Button } from '@/components/ui/button'
 
 function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null
@@ -203,13 +204,13 @@ function ChatTab({ selected = null, userEmail }) {
           />
         </div>
         <div className="flex justify-end">
-          <button
-            className="btn btn-primary"
+          <Button
+            size="sm"
             disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
             {sending ? 'Отправка…' : 'Отправить'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
