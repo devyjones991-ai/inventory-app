@@ -1,28 +1,56 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import PropTypes from 'prop-types'
 
-export function Card({ className = '', children, ...props }) {
-  return (
+const Card = forwardRef(({ className = '', children, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}
+    {...props}
+  >
+    {children}
+  </div>
+))
+
+const CardHeader = forwardRef(({ className = '', children, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`p-4 ${className}`}
+    {...props}
+  >
+    {children}
+  </div>
+))
+
+const CardTitle = forwardRef(({ className = '', children, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={`text-lg font-semibold ${className}`}
+    {...props}
+  >
+    {children}
+  </h3>
+))
+
+const CardContent = forwardRef(
+  ({ className = '', children, ...props }, ref) => (
     <div
-      className={`rounded-2xl shadow-md bg-base-100 transition-colors ${className}`}
+      ref={ref}
+      className={`p-4 ${className}`}
       {...props}
     >
       {children}
     </div>
-  )
-}
+  ),
+)
+
+Card.displayName = 'Card'
+CardHeader.displayName = 'CardHeader'
+CardTitle.displayName = 'CardTitle'
+CardContent.displayName = 'CardContent'
 
 Card.propTypes = {
   className: PropTypes.string,
-  children: PropTypes.node.isRequired,
-}
-
-export function CardHeader({ className = '', children, ...props }) {
-  return (
-    <div className={`p-4 pb-0 ${className}`} {...props}>
-      {children}
-    </div>
-  )
+  children: PropTypes.node,
 }
 
 CardHeader.propTypes = {
@@ -30,25 +58,9 @@ CardHeader.propTypes = {
   children: PropTypes.node,
 }
 
-export function CardTitle({ className = '', children, ...props }) {
-  return (
-    <h3 className={`text-lg font-bold ${className}`} {...props}>
-      {children}
-    </h3>
-  )
-}
-
 CardTitle.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
-}
-
-export function CardContent({ className = '', children, ...props }) {
-  return (
-    <div className={`p-4 pt-0 ${className}`} {...props}>
-      {children}
-    </div>
-  )
 }
 
 CardContent.propTypes = {
@@ -56,4 +68,4 @@ CardContent.propTypes = {
   children: PropTypes.node,
 }
 
-export default Card
+export { Card, CardHeader, CardTitle, CardContent }
