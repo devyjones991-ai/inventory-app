@@ -13,6 +13,9 @@ import { linkifyText } from '../utils/linkify'
 import { useHardware } from '../hooks/useHardware'
 import { useObjects } from '../hooks/useObjects'
 import { useAuth } from '../hooks/useAuth'
+
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -34,6 +37,7 @@ import {
 import { Button } from '@/components/ui/button'
 
 
+
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
 
 function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
@@ -43,11 +47,6 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const [tab, setTab] = useState('desc')
   const [description, setDescription] = useState('')
   const [isEditingDesc, setIsEditingDesc] = useState(false)
-
-  const showDesc = useCallback(() => setTab('desc'), [])
-  const showHW = useCallback(() => setTab('hw'), [])
-  const showTasks = useCallback(() => setTab('tasks'), [])
-  const showChat = useCallback(() => setTab('chat'), [])
 
   // --- оборудование ---
   const [hardware, setHardware] = useState([])
@@ -168,31 +167,60 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   }, [tab, onTabChange])
 
   return (
+
+    <Tabs value={tab} onValueChange={setTab} className="flex flex-col h-full">
+      <TabsList className="mb-4 flex gap-2">
+        <TabsTrigger value="desc" className="tab tab-bordered">
+
     <div className="flex flex-col h-full w-full">
       <div className="tabs mb-4">
         <button
           className={`tab tab-bordered ${tab === 'desc' ? 'tab-active' : ''}`}
           onClick={showDesc}
         >
+
           Описание
-        </button>
-        <button
-          className={`tab tab-bordered ${tab === 'hw' ? 'tab-active' : ''}`}
-          onClick={showHW}
-        >
+        </TabsTrigger>
+        <TabsTrigger value="hw" className="tab tab-bordered">
           Железо
-        </button>
-        <button
-          className={`tab tab-bordered ${tab === 'tasks' ? 'tab-active' : ''}`}
-          onClick={showTasks}
-        >
+        </TabsTrigger>
+        <TabsTrigger value="tasks" className="tab tab-bordered">
           Задачи
-        </button>
-        <button
-          className={`tab tab-bordered ${tab === 'chat' ? 'tab-active' : ''}`}
-          onClick={showChat}
-        >
+        </TabsTrigger>
+        <TabsTrigger value="chat" className="tab tab-bordered">
           Чат
+
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="desc" className="flex-1 overflow-auto">
+        <div className="space-y-2">
+          {isEditingDesc ? (
+            <div className="space-y-2">
+              <textarea
+                className="textarea textarea-bordered w-full"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={saveDescription}
+                >
+                  Сохранить
+                </button>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => setIsEditingDesc(false)}
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="whitespace-pre-wrap break-words">
+                {description ? linkifyText(description) : 'Нет описания'}
+
         </button>
       </div>
       <div className="flex-1 overflow-auto">
@@ -228,15 +256,64 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
                     Изменить
                   </Button>
                 )}
+
               </div>
+              {user && (
+
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => setIsEditingDesc(true)}
+                >
+                  Изменить
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </TabsContent>
+      <TabsContent value="hw" className="flex-1 overflow-auto">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Оборудование</h2>
+            {user && (
+              <button
+                className="btn btn-sm btn-primary flex items-center gap-1"
+                onClick={openHWModal}
+              >
+                <PlusIcon className="w-4 h-4" /> Добавить
+              </button>
             )}
           </div>
-        )}
-        {tab === 'hw' && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Оборудование</h2>
-              {user && (
+          {hardware.length === 0 ? (
+            <div className="text-center text-gray-500">
+              Оборудование не найдено
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {hardware.map((item) => (
+                <HardwareCard
+                  key={item.id}
+                  item={item}
+                  onEdit={() => handleEditHW(item)}
+                  onDelete={() => handleDeleteHW(item)}
+                  user={user}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </TabsContent>
+      <TabsContent value="tasks" className="flex-1 overflow-auto">
+        <TasksTab selected={selected} user={user} />
+      </TabsContent>
+      <TabsContent value="chat" className="flex-1 overflow-auto">
+        <ChatTab selected={selected} userEmail={user?.email} />
+      </TabsContent>
+      {isHWModalOpen && (
+        <div className="modal modal-open">
+          <div className="modal-box space-y-4">
+            <h3 className="font-bold text-lg">
+
                 <Button
                   size="sm"
                   className="flex items-center gap-1"
@@ -281,6 +358,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
+
               {editingHW ? 'Изменить оборудование' : 'Добавить оборудование'}
 
             </DialogTitle>
@@ -411,7 +489,11 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
         </div>
       )}
 
+    </Tabs>
+
+
     </div>
+
   )
 }
 
