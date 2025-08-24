@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import InventorySidebar from '../components/InventorySidebar'
 import InventoryTabs from '../components/InventoryTabs'
@@ -8,8 +8,6 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from '../components/ThemeToggle'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { exportInventory, importInventory } from '../utils/exportImport'
-import logger from '../utils/logger'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
@@ -50,6 +48,12 @@ export default function DashboardPage() {
     openEditModal,
     closeObjectModal,
   } = useDashboardModals()
+
+  const [addAction, setAddAction] = useState(() => openAddModal)
+
+  useEffect(() => {
+    setAddAction(() => openAddModal)
+  }, [openAddModal])
 
   const importInputRef = useRef(null)
 
@@ -112,7 +116,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="flex h-screen bg-base-100 transition-colors">
+      <div className="flex h-screen w-full bg-base-100 transition-colors">
         <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto transition-colors">
           <InventorySidebar
             objects={objects}
@@ -156,7 +160,7 @@ export default function DashboardPage() {
               </button>
               <button
                 className="btn btn-primary btn-md md:btn-sm flex items-center gap-1"
-                onClick={openAddModal}
+                onClick={addAction}
               >
                 <PlusIcon className="w-4 h-4" /> Добавить
               </button>
@@ -206,6 +210,8 @@ export default function DashboardPage() {
               selected={selected}
               onUpdateSelected={onUpdateSelected}
               onTabChange={onTabChange}
+              setAddAction={setAddAction}
+              openAddObject={openAddModal}
             />
           </div>
         </div>
