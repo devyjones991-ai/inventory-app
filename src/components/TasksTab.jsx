@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import TaskCard from './TaskCard'
-import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '../hooks/useTasks'
@@ -145,8 +144,10 @@ function TasksTab({ selected, registerAddHandler }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <Spinner />
+      <div className="space-y-2">
+        <div className="h-10 bg-muted rounded" />
+        <div className="h-10 bg-muted rounded" />
+        <div className="h-10 bg-muted rounded" />
       </div>
     )
   }
@@ -162,31 +163,25 @@ function TasksTab({ selected, registerAddHandler }) {
           Задачи для {selected.name}
         </h2>
         <div className="flex gap-2">
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={openTaskModal}
-          >
-            Добавить задачу
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={openImportModal}
-          >
+          <button className="btn btn-sm btn-outline" onClick={openImportModal}>
             Импорт
+          </button>
+          <button className="btn btn-sm btn-primary" onClick={openTaskModal}>
+            + Добавить
           </button>
         </div>
       </div>
 
       {tasks.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          Нет задач для этого объекта.
+        <div className="text-gray-500 text-center py-8">
+          Нет данных. Нажмите «Добавить».
         </div>
       ) : (
         <div className="grid gap-4">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
-              task={task}
+              item={task}
               onEdit={handleEditTask}
               onDelete={(id) => setTaskDeleteId(id)}
               onView={setViewingTask}
@@ -217,7 +212,7 @@ function TasksTab({ selected, registerAddHandler }) {
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.title}
-                  onChange={(e) => setTaskForm({...taskForm, title: e.target.value})}
+                  onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
                   required
                 />
               </div>
@@ -229,7 +224,7 @@ function TasksTab({ selected, registerAddHandler }) {
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.assignee}
-                  onChange={(e) => setTaskForm({...taskForm, assignee: e.target.value})}
+                  onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
                 />
               </div>
               <div>
@@ -240,7 +235,7 @@ function TasksTab({ selected, registerAddHandler }) {
                   type="date"
                   className="input input-bordered w-full"
                   value={taskForm.due_date}
-                  onChange={(e) => setTaskForm({...taskForm, due_date: e.target.value})}
+                  onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })}
                 />
               </div>
               <div>
@@ -250,7 +245,7 @@ function TasksTab({ selected, registerAddHandler }) {
                 <select
                   className="select select-bordered w-full"
                   value={taskForm.status}
-                  onChange={(e) => setTaskForm({...taskForm, status: e.target.value})}
+                  onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value })}
                 >
                   <option value="pending">В ожидании</option>
                   <option value="in_progress">В процессе</option>
@@ -265,7 +260,7 @@ function TasksTab({ selected, registerAddHandler }) {
                   className="textarea textarea-bordered w-full"
                   rows={3}
                   value={taskForm.notes}
-                  onChange={(e) => setTaskForm({...taskForm, notes: e.target.value})}
+                  onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
                 />
               </div>
               <div className="modal-action flex space-x-2">
