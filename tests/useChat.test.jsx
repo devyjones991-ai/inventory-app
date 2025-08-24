@@ -198,4 +198,27 @@ describe('useChat markMessagesAsRead', () => {
     expect(result.current.messages.filter((m) => m._optimistic)).toHaveLength(0)
     expect(result.current.messages).toHaveLength(2)
   })
+
+  it('игнорирует повторные INSERT события с существующим id', async () => {
+    mockFetchMessages.mockReset()
+    mockFetchMessages
+      .mockResolvedValueOnce({ data: page1, error: null })
+      .mockResolvedValue({ data: [], error: null })
+
+    const { result } = renderHook(() =>
+      useChat({ objectId: '1', userEmail: 'me@example.com' }),
+    )
+
+    await waitFor(() =>
+      expect(result.current.messages).toHaveLength(page1.length),
+    )
+
+    const prevMessages = result.current.messages
+    act(() => {
+      onPayload({ eventType: 'INSERT', new: { ...page1[0] } })
+    })
+
+    expect(result.current.messages).toBe(prevMessages)
+    expect(result.current.messages).toHaveLength(page1.length)
+  })
 })

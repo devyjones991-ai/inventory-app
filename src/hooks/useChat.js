@@ -135,6 +135,10 @@ export default function useChat({ objectId, userEmail, search }) {
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setMessages((prev) => {
+              if (prev.some((m) => m.id === payload.new.id)) {
+                return prev
+              }
+
               const existingIndex = prev.findIndex(
                 (m) =>
                   m._optimistic &&
