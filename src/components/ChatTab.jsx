@@ -5,7 +5,13 @@ import AttachmentPreview from './AttachmentPreview.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
+
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+
 import { Button } from '@/components/ui/button'
+
 
 function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null
@@ -84,7 +90,7 @@ function ChatTab({ selected = null, userEmail }) {
           }`}
         >
           {isSearchOpen && (
-            <input
+            <Input
               type="text"
               className="input input-bordered input-sm w-full"
               placeholder="Поиск сообщений"
@@ -206,6 +212,20 @@ function ChatTab({ selected = null, userEmail }) {
       <div className="p-3 border-t space-y-2">
         {file && filePreview && <AttachmentPreview url={filePreview} />}
         <div className="flex items-center gap-2">
+
+          <Label
+            htmlFor="chat-file-input"
+            className="btn btn-ghost"
+            data-testid="file-label"
+            aria-label="Прикрепить файл"
+            title="Прикрепить файл"
+            role="button"
+            tabIndex={0}
+          >
+            <PaperClipIcon className="w-6 h-6" />
+          </Label>
+          <Input
+
           <Button variant="ghost" asChild>
             <label
               htmlFor="chat-file-input"
@@ -219,13 +239,14 @@ function ChatTab({ selected = null, userEmail }) {
             </label>
           </Button>
           <input
+
             id="chat-file-input"
             type="file"
             className="hidden"
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          <textarea
+          <Textarea
             className="textarea textarea-bordered w-full min-h-24"
             placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
             value={newMessage}

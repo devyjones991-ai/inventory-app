@@ -4,6 +4,22 @@ import TaskCard from './TaskCard'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '../hooks/useTasks'
+
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const PAGE_SIZE = 20
+
+function TasksTab({ selected }) {
+
 import { Button } from '@/components/ui/button'
 
 import {
@@ -26,6 +42,7 @@ const PAGE_SIZE = 20
 function TasksTab({ selected }) {
 
 function TasksTab({ selected, registerAddHandler }) {
+
 
 
   const [tasks, setTasks] = useState([])
@@ -184,10 +201,13 @@ function TasksTab({ selected, registerAddHandler }) {
         </h2>
         <div className="flex gap-2">
 
+
+
           <Button size="sm" variant="outline" onClick={openImportModal}>
             Импорт
           </Button>
           <Button size="sm" onClick={openTaskModal}>
+
 
           <button className="btn btn-sm btn-outline" onClick={openImportModal}>
             Импорт
@@ -340,10 +360,17 @@ function TasksTab({ selected, registerAddHandler }) {
             </h3>
             <form onSubmit={handleTaskSubmit} className="space-y-4">
               <div>
+
+                <Label className="label">
+                  <span className="label-text">Название *</span>
+                </Label>
+                <Input
+
                 <label className="label">
                   <span className="label-text">Название</span>
                 </label>
                 <input
+
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.title}
@@ -354,10 +381,10 @@ function TasksTab({ selected, registerAddHandler }) {
                 />
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Исполнитель</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   className="input input-bordered w-full"
                   value={taskForm.assignee}
@@ -367,10 +394,10 @@ function TasksTab({ selected, registerAddHandler }) {
                 />
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Дата выполнения</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="date"
                   className="input input-bordered w-full"
                   value={taskForm.due_date}
@@ -380,12 +407,27 @@ function TasksTab({ selected, registerAddHandler }) {
                 />
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Статус</span>
-                </label>
-                <select
-                  className="select select-bordered w-full"
+                </Label>
+                <Select
                   value={taskForm.status}
+
+                  onValueChange={(value) =>
+                    setTaskForm({ ...taskForm, status: value })
+                  }
+                >
+                  <SelectTrigger className="w-full h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">В ожидании</SelectItem>
+                    <SelectItem value="in_progress">В работе</SelectItem>
+                    <SelectItem value="completed">Выполнено</SelectItem>
+                    <SelectItem value="cancelled">Отменено</SelectItem>
+                  </SelectContent>
+                </Select>
+
                   onChange={(e) =>
                     setTaskForm({ ...taskForm, status: e.target.value })
                   }
@@ -394,15 +436,22 @@ function TasksTab({ selected, registerAddHandler }) {
                   <option value="in_progress">В процессе</option>
                   <option value="completed">Завершено</option>
                 </select>
+
               </div>
               <div>
-                <label className="label">
+                <Label className="label">
                   <span className="label-text">Заметки</span>
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   className="textarea textarea-bordered w-full"
                   rows={3}
                   value={taskForm.notes}
+
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, notes: e.target.value })
+                  }
+                />
+
 
                   onChange={(e) =>
                     setTaskForm({ ...taskForm, notes: e.target.value })
@@ -411,6 +460,7 @@ function TasksTab({ selected, registerAddHandler }) {
 
                   onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
                 />
+
 
               </div>
               <div className="modal-action flex space-x-2">
@@ -522,7 +572,7 @@ function TasksTab({ selected, registerAddHandler }) {
               ✕
             </Button>
             <h3 className="font-bold text-lg mb-4">Импорт задач</h3>
-            <input
+            <Input
               type="file"
               className="file-input file-input-bordered w-full"
               onChange={(e) => setImportFile(e.target.files[0])}
@@ -577,9 +627,12 @@ TasksTab.propTypes = {
   selected: PropTypes.object,
 
 
+
+
   user: PropTypes.object,
 
   registerAddHandler: PropTypes.func,
+
 
 
 }

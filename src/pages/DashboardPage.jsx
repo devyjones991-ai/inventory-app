@@ -12,7 +12,9 @@ import { useAuth } from '../hooks/useAuth'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+
 
 export default function DashboardPage() {
   const { user, isAdmin, isManager } = useAuth()
@@ -171,8 +173,13 @@ export default function DashboardPage() {
                   </Button>
                   <Button variant="secondary" onClick={exportToFile}>
                     Экспорт
+
+                  </button>
+                  <Input
+
                   </Button>
                   <input
+
                     type="file"
                     accept=".csv"
                     ref={importInputRef}
@@ -222,7 +229,7 @@ export default function DashboardPage() {
                 {editingObject ? 'Редактировать объект' : 'Добавить объект'}
               </h3>
               <div className="space-y-4">
-                <input
+                <Input
                   type="text"
                   className="input input-bordered w-full"
                   placeholder="Название"

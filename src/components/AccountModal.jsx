@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useAccount } from '../hooks/useAccount'
 import { toast } from 'react-hot-toast'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 import {
   Dialog,
@@ -53,10 +55,10 @@ export default function AccountModal({ user, onClose, onUpdated }) {
 
         <div className="space-y-4">
           <div className="form-control">
-            <label className="label">
+            <Label className="label">
               <span className="label-text">Никнейм</span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               className="input input-bordered w-full"
               value={username}
