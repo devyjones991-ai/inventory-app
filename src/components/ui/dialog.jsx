@@ -1,16 +1,7 @@
-
 import React from 'react'
 import PropTypes from 'prop-types'
-import { cn } from '../../utils/cn'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-
-import React from 'react'
-
-import PropTypes from 'prop-types'
-import React from 'react'
-
-
 import { cn } from '@/lib/utils'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 
 export const Dialog = DialogPrimitive.Root
 export const DialogTrigger = DialogPrimitive.Trigger
@@ -21,7 +12,6 @@ const DialogOverlay = React.forwardRef(function DialogOverlay(
   ref,
 ) {
   return (
-
     <DialogPrimitive.Overlay
       ref={ref}
       className={cn(
@@ -30,23 +20,9 @@ const DialogOverlay = React.forwardRef(function DialogOverlay(
       )}
       {...props}
     />
-
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      onClick={handleClick}
-      {...props}
-    >
-      <div className="absolute inset-0 bg-black/50" />
-      {children}
-    </div>
-
   )
 })
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
-
-
 
 export const DialogContent = React.forwardRef(function DialogContent(
   { className, children, ...props },
@@ -69,80 +45,28 @@ export const DialogContent = React.forwardRef(function DialogContent(
   )
 })
 DialogContent.displayName = DialogPrimitive.Content.displayName
-DialogContent.propTypes = {
-  className: PropTypes.string,
 
+export const DialogHeader = ({ className, ...props }) => (
+  <div
+    className={cn(
+      'flex flex-col space-y-1.5 text-center sm:text-left',
+      className,
+    )}
+    {...props}
+  />
+)
+DialogHeader.displayName = 'DialogHeader'
 
-Dialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onOpenChange: PropTypes.func,
-
-  children: PropTypes.node,
-}
-
-
-export function DialogContent({ children, className, ...props }) {
-  const stop = (e) => e.stopPropagation()
-  return (
-    <div
-      className={cn(
-        'relative z-50 w-full max-w-md rounded-md bg-base-100 p-4 shadow-lg',
-        className,
-      )}
-      onClick={stop}
-
-export function DialogHeader({ className, ...props }) {
-  return (
-    <div
-
-      className={cn(
-        'flex flex-col space-y-1.5 text-center sm:text-left',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-      className="relative z-50 w-full max-w-md rounded-md bg-base-100 p-4 shadow-lg"
-      onClick={(e) => e.stopPropagation()}
-
-      {...props}
-    >
-      {children}
-    </div>
-  )
-}
-
-DialogContent.propTypes = {
-  children: PropTypes.node,
-  className: PropTypes.string,
-}
-
-export function DialogHeader({ children, className, ...props }) {
-  return (
-    <div className={cn('mb-4', className)} {...props}>
-      {children}
-    </div>
-  )
-}
-
-
-DialogHeader.propTypes = {
-  className: PropTypes.string,
-  children: PropTypes.node,
-  className: PropTypes.string,
-}
-
-
-export function DialogTitle({ children, className, ...props }) {
-  return (
-    <h3 className={cn('font-bold text-lg', className)} {...props}>
-      {children}
-    </h3>
-  )
-}
-
+export const DialogFooter = ({ className, ...props }) => (
+  <div
+    className={cn(
+      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
+      className,
+    )}
+    {...props}
+  />
+)
+DialogFooter.displayName = 'DialogFooter'
 
 export const DialogTitle = React.forwardRef(function DialogTitle(
   { className, ...props },
@@ -151,46 +75,48 @@ export const DialogTitle = React.forwardRef(function DialogTitle(
   return (
     <DialogPrimitive.Title
       ref={ref}
-      className={cn('text-lg font-semibold', className)}
+      className={cn(
+        'text-lg font-semibold leading-none tracking-tight',
+        className,
+      )}
       {...props}
     />
   )
 })
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
-DialogTitle.propTypes = {
-  className: PropTypes.string,
-  children: PropTypes.node,
-  className: PropTypes.string,
-}
-
-
-export function DialogFooter({ children, className, ...props }) {
+export const DialogDescription = React.forwardRef(function DialogDescription(
+  { className, ...props },
+  ref,
+) {
   return (
-    <div className={cn('mt-4 flex space-x-2', className)} {...props}>
-      {children}
-    </div>
-
-export function DialogFooter({ className, ...props }) {
-  return (
-    <div
-      className={cn(
-        'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
-        className,
-      )}
+    <DialogPrimitive.Description
+      ref={ref}
+      className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
-
   )
+})
+DialogDescription.displayName = DialogPrimitive.Description.displayName
 
-export function DialogFooter({ children }) {
-  return <div className="mt-4 flex space-x-2">{children}</div>
-
-}
-DialogFooter.propTypes = {
+// PropTypes
+DialogContent.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
+}
+
+DialogHeader.propTypes = {
   className: PropTypes.string,
 }
 
-export default Dialog
+DialogFooter.propTypes = {
+  className: PropTypes.string,
+}
+
+DialogTitle.propTypes = {
+  className: PropTypes.string,
+}
+
+DialogDescription.propTypes = {
+  className: PropTypes.string,
+}
