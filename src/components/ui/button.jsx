@@ -1,6 +1,6 @@
-
 import React from 'react'
 import PropTypes from 'prop-types'
+import { cn } from '../../utils/cn'
 
 const baseClasses =
   'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none'
@@ -24,7 +24,7 @@ const sizes = {
 const Button = React.forwardRef(
   (
     {
-      className = '',
+      className,
       variant = 'default',
       size = 'default',
       asChild = false,
@@ -33,20 +33,11 @@ const Button = React.forwardRef(
     },
     ref,
   ) => {
-    const classes = [
-      baseClasses,
-      variants[variant] || variants.default,
-      sizes[size] || sizes.default,
-      className,
-    ]
-      .filter(Boolean)
-      .join(' ')
+    const classes = cn(baseClasses, variants[variant], sizes[size], className)
 
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children, {
-        className: [classes, children.props.className]
-          .filter(Boolean)
-          .join(' '),
+        className: cn(classes, children.props.className),
         ref,
         ...props,
       })
@@ -71,28 +62,3 @@ Button.propTypes = {
 }
 
 export { Button }
-
-import PropTypes from 'prop-types'
-
-export function Button({
-  size = 'default',
-  variant = 'primary',
-  className = '',
-  ...props
-}) {
-  const sizeClass = size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : ''
-  const variantClass = variant ? `btn-${variant}` : ''
-  const combined = ['btn', sizeClass, variantClass, className]
-    .filter(Boolean)
-    .join(' ')
-  return <button className={combined} {...props} />
-}
-
-Button.propTypes = {
-  size: PropTypes.oneOf(['sm', 'lg', 'default']),
-  variant: PropTypes.string,
-  className: PropTypes.string,
-  disabled: PropTypes.bool,
-  onClick: PropTypes.func,
-}
-
