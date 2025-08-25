@@ -63,8 +63,8 @@ Button.displayName = 'Button'
 
 Button.propTypes = {
   className: PropTypes.string,
-  variant: PropTypes.string,
-  size: PropTypes.string,
+  variant: PropTypes.oneOf(Object.keys(variants)),
+  size: PropTypes.oneOf(Object.keys(sizes)),
   asChild: PropTypes.bool,
   children: PropTypes.node,
 }
