@@ -1,4 +1,8 @@
+
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+
+import React from 'react'
+
 import PropTypes from 'prop-types'
 import React from 'react'
 
@@ -13,6 +17,7 @@ const DialogOverlay = React.forwardRef(function DialogOverlay(
   ref,
 ) {
   return (
+
     <DialogPrimitive.Overlay
       ref={ref}
       className={cn(
@@ -21,9 +26,22 @@ const DialogOverlay = React.forwardRef(function DialogOverlay(
       )}
       {...props}
     />
+
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={handleClick}
+      {...props}
+    >
+      <div className="absolute inset-0 bg-black/50" />
+      {children}
+    </div>
+
   )
 })
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
+
 
 export const DialogContent = React.forwardRef(function DialogContent(
   { className, children, ...props },
@@ -48,12 +66,18 @@ export const DialogContent = React.forwardRef(function DialogContent(
 DialogContent.displayName = DialogPrimitive.Content.displayName
 DialogContent.propTypes = {
   className: PropTypes.string,
+
+Dialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onOpenChange: PropTypes.func,
+
   children: PropTypes.node,
 }
 
 export function DialogHeader({ className, ...props }) {
   return (
     <div
+
       className={cn(
         'flex flex-col space-y-1.5 text-center sm:text-left',
         className,
@@ -62,6 +86,25 @@ export function DialogHeader({ className, ...props }) {
     />
   )
 }
+
+      className="relative z-50 w-full max-w-md rounded-md bg-base-100 p-4 shadow-lg"
+      onClick={(e) => e.stopPropagation()}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+DialogContent.propTypes = {
+  children: PropTypes.node,
+}
+
+export function DialogHeader({ children }) {
+  return <div className="mb-4">{children}</div>
+}
+
+
 DialogHeader.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
@@ -85,6 +128,7 @@ DialogTitle.propTypes = {
   children: PropTypes.node,
 }
 
+
 export function DialogFooter({ className, ...props }) {
   return (
     <div
@@ -95,6 +139,10 @@ export function DialogFooter({ className, ...props }) {
       {...props}
     />
   )
+
+export function DialogFooter({ children }) {
+  return <div className="mt-4 flex space-x-2">{children}</div>
+
 }
 DialogFooter.propTypes = {
   className: PropTypes.string,
