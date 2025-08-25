@@ -91,13 +91,10 @@ describe('TasksTab', () => {
     await act(async () => {
       fireEvent.change(titleInput, { target: { value: 'Новая задача' } })
       fireEvent.change(assigneeInput, { target: { value: 'Иван Петров' } })
-      fireEvent.change(dueDateInput, { target: { value: '2024-12-31' } })
+      fireEvent.change(dueDateInput, { target: { value: '2024-05-10' } })
     })
 
-    fireEvent.click(screen.getByText('📅'))
-    const dateInput = document.querySelector('input[type="date"]')
-    fireEvent.change(dateInput, { target: { value: '2024-05-10' } })
-    fireEvent.click(screen.getByText('Сохранить'))
+    fireEvent.click(screen.getByText('Добавить'))
 
     await waitFor(() => {
       expect(mockCreateTask).toHaveBeenCalledWith({
@@ -138,7 +135,9 @@ describe('TasksTab', () => {
 
     await act(async () => {
       fireEvent.change(titleInput, { target: { value: 'Обновленная задача' } })
-      fireEvent.change(assigneeInput, { target: { value: 'Новый исполнитель' } })
+      fireEvent.change(assigneeInput, {
+        target: { value: 'Новый исполнитель' },
+      })
     })
 
     fireEvent.click(screen.getByText('Сохранить'))
