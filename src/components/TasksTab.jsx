@@ -15,13 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-
-const PAGE_SIZE = 20
-
-function TasksTab({ selected }) {
-
 import { Button } from '@/components/ui/button'
-
 import {
   Dialog,
   DialogContent,
@@ -32,19 +26,7 @@ import {
 
 const PAGE_SIZE = 20
 
-function TasksTab({ selected }) {
-
-import ConfirmModal from './ConfirmModal'
-
-const PAGE_SIZE = 20
-
-
-function TasksTab({ selected }) {
-
 function TasksTab({ selected, registerAddHandler }) {
-
-
-
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -200,45 +182,30 @@ function TasksTab({ selected, registerAddHandler }) {
           Задачи для {selected.name}
         </h2>
         <div className="flex gap-2">
-
-
-
           <Button size="sm" variant="outline" onClick={openImportModal}>
             Импорт
-          </Button>
-          <Button size="sm" onClick={openTaskModal}>
-
-
-          <button className="btn btn-sm btn-outline" onClick={openImportModal}>
-            Импорт
-          </button>
-          <button className="btn btn-sm btn-primary" onClick={openTaskModal}>
-
-            + Добавить
           </Button>
         </div>
       </div>
 
       {tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">
-          Нет данных. Нажмите «Добавить».
+          Задач пока нет. Добавьте первую задачу!
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-3">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
               item={task}
-              onEdit={handleEditTask}
-              onDelete={(id) => setTaskDeleteId(id)}
-              onView={setViewingTask}
+              onEdit={() => handleEditTask(task)}
+              onDelete={() => setTaskDeleteId(task.id)}
+              onView={() => setViewingTask(task)}
             />
           ))}
         </div>
       )}
 
-
-      {/* Task Modal */}
       <Dialog
         open={isTaskModalOpen}
         onOpenChange={(open) => {
@@ -246,25 +213,16 @@ function TasksTab({ selected, registerAddHandler }) {
         }}
       >
         <DialogContent>
-          <button
-            className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
-            onClick={closeTaskModal}
-          >
-            ✕
-          </button>
           <DialogHeader>
             <DialogTitle>
               {editingTask ? 'Редактировать задачу' : 'Добавить задачу'}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
-            <div>
-              <label className="label">
-                <span className="label-text">Название *</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered w-full"
+            <div className="space-y-2">
+              <Label htmlFor="task-title">Название *</Label>
+              <Input
+                id="task-title"
                 value={taskForm.title}
                 onChange={(e) =>
                   setTaskForm({ ...taskForm, title: e.target.value })
@@ -272,244 +230,68 @@ function TasksTab({ selected, registerAddHandler }) {
                 required
               />
             </div>
-            <div>
-              <label className="label">
-                <span className="label-text">Исполнитель</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered w-full"
+            <div className="space-y-2">
+              <Label htmlFor="task-assignee">Исполнитель</Label>
+              <Input
+                id="task-assignee"
                 value={taskForm.assignee}
                 onChange={(e) =>
                   setTaskForm({ ...taskForm, assignee: e.target.value })
                 }
               />
             </div>
-            <div>
-              <label className="label">
-                <span className="label-text">Дата выполнения</span>
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="task-due-date">Дата выполнения</Label>
+              <Input
+                id="task-due-date"
                 type="date"
-                className="input input-bordered w-full"
                 value={taskForm.due_date}
                 onChange={(e) =>
                   setTaskForm({ ...taskForm, due_date: e.target.value })
                 }
               />
             </div>
-            <div>
-              <label className="label">
-                <span className="label-text">Статус</span>
-              </label>
-              <select
-                className="select select-bordered w-full"
+            <div className="space-y-2">
+              <Label>Статус</Label>
+              <Select
                 value={taskForm.status}
-                onChange={(e) =>
-                  setTaskForm({ ...taskForm, status: e.target.value })
+                onValueChange={(value) =>
+                  setTaskForm({ ...taskForm, status: value })
                 }
               >
-                <option value="pending">В ожидании</option>
-                <option value="in_progress">В работе</option>
-                <option value="completed">Выполнено</option>
-                <option value="cancelled">Отменено</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите статус" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">В ожидании</SelectItem>
+                  <SelectItem value="in_progress">В работе</SelectItem>
+                  <SelectItem value="completed">Выполнено</SelectItem>
+                  <SelectItem value="cancelled">Отменено</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <label className="label">
-                <span className="label-text">Заметки</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered w-full"
-                rows="3"
+            <div className="space-y-2">
+              <Label htmlFor="task-notes">Заметки</Label>
+              <Textarea
+                id="task-notes"
+                rows={3}
                 value={taskForm.notes}
                 onChange={(e) =>
                   setTaskForm({ ...taskForm, notes: e.target.value })
                 }
-              ></textarea>
+              />
             </div>
             <DialogFooter>
-              <button type="submit" className="btn btn-primary">
+              <Button type="submit">
                 {editingTask ? 'Сохранить' : 'Добавить'}
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={closeTaskModal}
-              >
+              </Button>
+              <Button type="button" variant="ghost" onClick={closeTaskModal}>
                 Отмена
-              </button>
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* Add Task Modal */}
-      {isTaskModalOpen && (
-        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
-            <Button
-              size="icon"
-              className="absolute right-2 top-2"
-              onClick={closeTaskModal}
-            >
-              ✕
-            </Button>
-            <h3 className="font-bold text-lg mb-4">
-              {editingTask ? 'Редактировать задачу' : 'Новая задача'}
-            </h3>
-            <form onSubmit={handleTaskSubmit} className="space-y-4">
-              <div>
-
-                <Label className="label">
-                  <span className="label-text">Название *</span>
-                </Label>
-                <Input
-
-                <label className="label">
-                  <span className="label-text">Название</span>
-                </label>
-                <input
-
-                  type="text"
-                  className="input input-bordered w-full"
-                  value={taskForm.title}
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, title: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label className="label">
-                  <span className="label-text">Исполнитель</span>
-                </Label>
-                <Input
-                  type="text"
-                  className="input input-bordered w-full"
-                  value={taskForm.assignee}
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, assignee: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label className="label">
-                  <span className="label-text">Дата выполнения</span>
-                </Label>
-                <Input
-                  type="date"
-                  className="input input-bordered w-full"
-                  value={taskForm.due_date}
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, due_date: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label className="label">
-                  <span className="label-text">Статус</span>
-                </Label>
-                <Select
-                  value={taskForm.status}
-
-                  onValueChange={(value) =>
-                    setTaskForm({ ...taskForm, status: value })
-                  }
-                >
-                  <SelectTrigger className="w-full h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">В ожидании</SelectItem>
-                    <SelectItem value="in_progress">В работе</SelectItem>
-                    <SelectItem value="completed">Выполнено</SelectItem>
-                    <SelectItem value="cancelled">Отменено</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, status: e.target.value })
-                  }
-                >
-                  <option value="pending">В ожидании</option>
-                  <option value="in_progress">В процессе</option>
-                  <option value="completed">Завершено</option>
-                </select>
-
-              </div>
-              <div>
-                <Label className="label">
-                  <span className="label-text">Заметки</span>
-                </Label>
-                <Textarea
-                  className="textarea textarea-bordered w-full"
-                  rows={3}
-                  value={taskForm.notes}
-
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, notes: e.target.value })
-                  }
-                />
-
-
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, notes: e.target.value })
-                  }
-                ></textarea>
-
-                  onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
-                />
-
-
-              </div>
-              <div className="modal-action flex space-x-2">
-                <Button type="submit">
-                  {editingTask ? 'Сохранить' : 'Добавить'}
-
-                </Button>
-                <Button type="button" variant="ghost" onClick={closeTaskModal}>
-
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={closeTaskModal}
-                >
-
-                  Отмена
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-
-      {/* View Task Modal */}
-
-      {viewingTask && (
-        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
-            <Button
-              size="icon"
-              className="absolute right-2 top-2"
-              onClick={() => setViewingTask(null)}
-            >
-              ✕
-            </Button>
-            <h3 className="font-bold text-lg mb-4">{viewingTask.title}</h3>
-            <div className="space-y-2">
-              {viewingTask.assignee && (
-                <p>
-                  <strong>Исполнитель:</strong> {viewingTask.assignee}
-                </p>
-              )}
-              {viewingTask.due_date && (
-                <p>
-                  <strong>Дата:</strong> {formatDate(viewingTask.due_date)}
-                </p>
-              )}
 
       <Dialog
         open={!!viewingTask}
@@ -518,18 +300,11 @@ function TasksTab({ selected, registerAddHandler }) {
         }}
       >
         <DialogContent>
-          <button
-            className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
-            onClick={() => setViewingTask(null)}
-          >
-            ✕
-          </button>
           <DialogHeader>
             <DialogTitle>{viewingTask?.title}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
             {viewingTask?.assignee && (
-
               <p>
                 <strong>Исполнитель:</strong> {viewingTask.assignee}
               </p>
@@ -551,41 +326,12 @@ function TasksTab({ selected, registerAddHandler }) {
         </DialogContent>
       </Dialog>
 
-      {/* Confirm Delete Modal */}
       <ConfirmModal
         open={!!taskDeleteId}
         title="Удалить задачу?"
         onConfirm={confirmDeleteTask}
         onCancel={() => setTaskDeleteId(null)}
       />
-
-      {/* Import Modal */}
-
-      {isImportModalOpen && (
-        <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto animate-fade-in">
-            <Button
-              size="icon"
-              className="absolute right-2 top-2"
-              onClick={closeImportModal}
-            >
-              ✕
-            </Button>
-            <h3 className="font-bold text-lg mb-4">Импорт задач</h3>
-            <Input
-              type="file"
-              className="file-input file-input-bordered w-full"
-              onChange={(e) => setImportFile(e.target.files[0])}
-            />
-            <div className="modal-action flex space-x-2">
-              <Button onClick={handleImport}>Загрузить</Button>
-              <Button variant="ghost" onClick={closeImportModal}>
-                Отмена
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <Dialog
         open={isImportModalOpen}
@@ -594,47 +340,29 @@ function TasksTab({ selected, registerAddHandler }) {
         }}
       >
         <DialogContent>
-          <button
-            className="btn btn-circle absolute right-2 top-2 xs:btn-md md:btn-sm"
-            onClick={closeImportModal}
-          >
-            ✕
-          </button>
           <DialogHeader>
             <DialogTitle>Импорт задач</DialogTitle>
           </DialogHeader>
-          <input
+          <Input
             type="file"
-            className="file-input file-input-bordered w-full"
             onChange={(e) => setImportFile(e.target.files[0])}
           />
           <DialogFooter>
-            <button className="btn btn-primary" onClick={handleImport}>
-              Загрузить
-            </button>
-            <button className="btn btn-ghost" onClick={closeImportModal}>
+            <Button onClick={handleImport}>Загрузить</Button>
+            <Button variant="ghost" onClick={closeImportModal}>
               Отмена
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   )
 }
 
 TasksTab.propTypes = {
   selected: PropTypes.object,
-
-
-
-
-  user: PropTypes.object,
-
   registerAddHandler: PropTypes.func,
-
-
-
 }
 
 export default TasksTab
+
