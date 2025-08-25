@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 
 export default function ConfirmModal({
-  open,
+  open = false,
   title = '',
   message = '',
   confirmLabel = 'OK',
@@ -21,7 +21,14 @@ export default function ConfirmModal({
   onCancel,
 }) {
   return (
-    <Dialog open={open} onOpenChange={onCancel}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          onCancel()
+        }
+      }}
+    >
       <DialogContent>
         {title && (
           <DialogHeader>
@@ -43,7 +50,7 @@ export default function ConfirmModal({
 }
 
 ConfirmModal.propTypes = {
-  open: PropTypes.bool.isRequired,
+  open: PropTypes.bool,
   title: PropTypes.string,
   message: PropTypes.string,
   confirmLabel: PropTypes.node,
