@@ -1,47 +1,37 @@
 import React, { forwardRef } from 'react'
 import PropTypes from 'prop-types'
+import { cn } from '../../utils/cn'
 
-const Card = forwardRef(({ className = '', children, ...props }, ref) => (
+const Card = forwardRef(({ className, children, ...props }, ref) => (
   <div
     ref={ref}
-    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}
+    className={cn(
+      'rounded-lg border bg-card text-card-foreground shadow-sm',
+      className,
+    )}
     {...props}
   >
     {children}
   </div>
 ))
 
-const CardHeader = forwardRef(({ className = '', children, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={`p-4 ${className}`}
-    {...props}
-  >
+const CardHeader = forwardRef(({ className, children, ...props }, ref) => (
+  <div ref={ref} className={cn('p-4', className)} {...props}>
     {children}
   </div>
 ))
 
-const CardTitle = forwardRef(({ className = '', children, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={`text-lg font-semibold ${className}`}
-    {...props}
-  >
+const CardTitle = forwardRef(({ className, children, ...props }, ref) => (
+  <h3 ref={ref} className={cn('text-lg font-semibold', className)} {...props}>
     {children}
   </h3>
 ))
 
-const CardContent = forwardRef(
-  ({ className = '', children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={`p-4 ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
-  ),
-)
+const CardContent = forwardRef(({ className, children, ...props }, ref) => (
+  <div ref={ref} className={cn('p-4', className)} {...props}>
+    {children}
+  </div>
+))
 
 Card.displayName = 'Card'
 CardHeader.displayName = 'CardHeader'
