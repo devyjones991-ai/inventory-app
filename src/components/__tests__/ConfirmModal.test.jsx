@@ -1,6 +1,8 @@
 /* eslint-env jest */
+import '@testing-library/jest-dom'
 import { describe, test, expect, jest } from '@jest/globals'
 import { render, screen, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 jest.mock('@/components/ui/button', () => ({
   Button: ({ children, ...props }) => <button {...props}>{children}</button>,
@@ -47,5 +49,39 @@ describe('ConfirmModal', () => {
     render(<ConfirmModal open onConfirm={() => {}} onCancel={handleCancel} />)
     fireEvent.click(screen.getByText('Отмена'))
     expect(handleCancel).toHaveBeenCalled()
+  })
+
+  test('открывается, обрабатывает кнопки и фокус', async () => {
+    const onConfirm = jest.fn()
+    const onCancel = jest.fn()
+
+    render(
+      <ConfirmModal
+        open
+        title="Подтверждение"
+        message="Вы уверены?"
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />,
+    )
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toBeInTheDocument()
+
+    const confirmBtn = screen.getByRole('button', { name: 'OK' })
+    expect(confirmBtn).toHaveFocus()
+
+    await userEvent.click(confirmBtn)
+    expect(onConfirm).toHaveBeenCalled()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Отмена' }))
+    expect(onCancel).toHaveBeenCalled()
+  })
+
+  test('не отображается, когда закрыт', () => {
+    render(
+      <ConfirmModal open={false} onConfirm={() => {}} onCancel={() => {}} />,
+    )
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

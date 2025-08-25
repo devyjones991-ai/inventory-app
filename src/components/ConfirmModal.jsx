@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import { Button } from '@/components/ui/button'
-
 import {
   Dialog,
   DialogContent,
@@ -38,10 +37,12 @@ export default function ConfirmModal({
         )}
         {message && <p>{message}</p>}
         <DialogFooter>
-          <Button variant={confirmVariant} onClick={onConfirm}>
+          <Button autoFocus variant={confirmVariant} onClick={onConfirm}>
             {confirmLabel}
           </Button>
-          <Button onClick={onCancel}>{cancelLabel}</Button>
+          <Button variant="ghost" onClick={onCancel}>
+            {cancelLabel}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
