@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import { Button } from '@/components/ui/button'
-
 import {
   Dialog,
   DialogContent,
@@ -10,7 +9,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-
 
 export default function ConfirmModal({
   open,
@@ -23,20 +21,6 @@ export default function ConfirmModal({
   onCancel,
 }) {
   return (
-
-    <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="modal-box relative w-full max-w-sm">
-        {title && <h3 className="font-bold text-lg mb-4">{title}</h3>}
-        {message && <p className="mb-4">{message}</p>}
-        <div className="modal-action flex space-x-2">
-          <Button variant={confirmVariant} onClick={onConfirm}>
-            {confirmLabel}
-          </Button>
-          <Button onClick={onCancel}>{cancelLabel}</Button>
-        </div>
-      </div>
-    </div>
-
     <Dialog open={open} onOpenChange={onCancel}>
       <DialogContent>
         {title && (
@@ -46,16 +30,15 @@ export default function ConfirmModal({
         )}
         {message && <p>{message}</p>}
         <DialogFooter>
-          <button className={`btn ${confirmClass}`} onClick={onConfirm}>
+          <Button autoFocus variant={confirmVariant} onClick={onConfirm}>
             {confirmLabel}
-          </button>
-          <button className="btn" onClick={onCancel}>
+          </Button>
+          <Button variant="ghost" onClick={onCancel}>
             {cancelLabel}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
   )
 }
 

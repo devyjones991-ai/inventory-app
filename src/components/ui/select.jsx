@@ -1,4 +1,5 @@
 import React from 'react'
+import { cn } from '../../utils/cn'
 
 export function Select({ value, onValueChange, children }) {
   const items = []
@@ -19,7 +20,7 @@ export function Select({ value, onValueChange, children }) {
     <select
       value={value}
       onChange={(e) => onValueChange && onValueChange(e.target.value)}
-      className={triggerProps.className}
+      className={cn(triggerProps.className)}
     >
       {triggerProps.children &&
         React.Children.map(triggerProps.children, (child) =>

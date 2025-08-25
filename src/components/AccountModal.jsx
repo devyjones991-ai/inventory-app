@@ -15,7 +15,6 @@ import {
 
 import { Button } from '@/components/ui/button'
 
-
 export default function AccountModal({ user, onClose, onUpdated }) {
   const [username, setUsername] = useState(user.user_metadata?.username || '')
   const [saving, setSaving] = useState(false)
@@ -35,59 +34,44 @@ export default function AccountModal({ user, onClose, onUpdated }) {
   }
 
   return (
-
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Редактирование аккаунта</DialogTitle>
         </DialogHeader>
-
-    <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="modal-box relative w-full max-w-md p-4 max-h-screen overflow-y-auto">
-        <Button
-          size="icon"
-          className="absolute right-2 top-2"
-          onClick={onClose}
-        >
-          ✕
-        </Button>
-        <h3 className="font-bold text-lg mb-4">Редактирование аккаунта</h3>
-
         <div className="space-y-4">
-          <div className="form-control">
-            <Label className="label">
-              <span className="label-text">Никнейм</span>
-            </Label>
+
+          <div>
+            <Label htmlFor="username">Никнейм</Label>
             <Input
+              id="username"
               type="text"
-              className="input input-bordered w-full"
+
+          <div className="grid gap-2">
+            <Label htmlFor="username">Никнейм</Label>
+            <Input
+              id="username"
+
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              autoFocus
             />
           </div>
         </div>
-
         <DialogFooter>
-          <button className="btn btn-primary" onClick={save} disabled={saving}>
-
-        <div className="modal-action flex space-x-2">
           <Button onClick={save} disabled={saving}>
 
-            Сохранить
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
-            Отмена
+            {saving ? 'Сохранение...' : 'Сохранить'}
 
-          </button>
+            Сохранить
+
+          </Button>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            Отмена
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
-          </Button>
-        </div>
-      </div>
-    </div>
-
   )
 }
 
