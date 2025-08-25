@@ -3,7 +3,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { unparse } from 'https://esm.sh/papaparse@5.4.1'
 import ExcelJS from 'https://esm.sh/exceljs@4?target=deno'
 
-serve(async (req: Request) => {
+const ALLOWED_TABLES = [
+  'objects',
+  'hardware',
+  'tasks',
+  'chat_messages',
+] as const
+const FILTER_KEY_PATTERN = /^[a-zA-Z0-9_]+$/
+
+export async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url)
   const segments = url.pathname.split('/').filter(Boolean)
   // Expected path: /export/:table/:format
@@ -13,12 +21,20 @@ serve(async (req: Request) => {
   const table = segments[1]
   const format = segments[2]
 
+  if (!ALLOWED_TABLES.includes(table as (typeof ALLOWED_TABLES)[number])) {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   const columnsParam = url.searchParams.get('columns')
   const selectedColumns = columnsParam?.split(',')
   const filters: Record<string, string> = {}
-  url.searchParams.forEach((value, key) => {
-    if (key !== 'columns') filters[key] = value
-  })
+  for (const [key, value] of url.searchParams.entries()) {
+    if (key === 'columns') continue
+    if (!FILTER_KEY_PATTERN.test(key)) {
+      return new Response('Forbidden', { status: 403 })
+    }
+    filters[key] = value
+  }
 
   const authHeader = req.headers.get('Authorization') || ''
   const token = authHeader.replace('Bearer ', '')
@@ -124,4 +140,8 @@ serve(async (req: Request) => {
   }
 
   return new Response('Invalid format', { status: 400 })
-})
+}
+
+if (import.meta.main) {
+  serve(handler)
+}
