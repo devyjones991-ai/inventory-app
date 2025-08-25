@@ -177,14 +177,14 @@ function TasksTab({ selected, registerAddHandler }) {
           Нет задач для этого объекта.
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-3">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
               item={task}
-              onEdit={handleEditTask}
-              onDelete={(id) => setTaskDeleteId(id)}
-              onView={setViewingTask}
+              onEdit={() => handleEditTask(task)}
+              onDelete={() => setTaskDeleteId(task.id)}
+              onView={() => setViewingTask(task)}
             />
           ))}
         </div>
@@ -202,10 +202,10 @@ function TasksTab({ selected, registerAddHandler }) {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="title">Название</Label>
+            <div className="space-y-2">
+              <Label htmlFor="task-title">Название *</Label>
               <Input
-                id="title"
+                id="task-title"
                 value={taskForm.title}
                 onChange={(e) =>
                   setTaskForm({ ...taskForm, title: e.target.value })
@@ -213,48 +213,37 @@ function TasksTab({ selected, registerAddHandler }) {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="assignee">Исполнитель</Label>
+            <div className="space-y-2">
+              <Label htmlFor="task-assignee">Исполнитель</Label>
               <Input
-                id="assignee"
+                id="task-assignee"
                 value={taskForm.assignee}
                 onChange={(e) =>
                   setTaskForm({ ...taskForm, assignee: e.target.value })
                 }
               />
             </div>
-            <div>
-              <Label htmlFor="due_date">Дата выполнения</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="due_date"
-                  type="date"
-                  value={taskForm.due_date}
-                  onChange={(e) =>
-                    setTaskForm({ ...taskForm, due_date: e.target.value })
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    document.getElementById('due_date')?.showPicker?.()
-                  }
-                >
-                  📅
-                </Button>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-due-date">Дата выполнения</Label>
+              <Input
+                id="task-due-date"
+                type="date"
+                value={taskForm.due_date}
+                onChange={(e) =>
+                  setTaskForm({ ...taskForm, due_date: e.target.value })
+                }
+              />
             </div>
-            <div>
-              <Label htmlFor="status">Статус</Label>
+            <div className="space-y-2">
+              <Label>Статус</Label>
               <Select
                 value={taskForm.status}
                 onValueChange={(value) =>
                   setTaskForm({ ...taskForm, status: value })
                 }
               >
-                <SelectTrigger id="status">
-                  <SelectValue />
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите статус" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="запланировано">запланировано</SelectItem>
@@ -264,10 +253,10 @@ function TasksTab({ selected, registerAddHandler }) {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="notes">Заметки</Label>
+            <div className="space-y-2">
+              <Label htmlFor="task-notes">Заметки</Label>
               <Textarea
-                id="notes"
+                id="task-notes"
                 rows={3}
                 value={taskForm.notes}
                 onChange={(e) =>
@@ -276,7 +265,9 @@ function TasksTab({ selected, registerAddHandler }) {
               />
             </div>
             <DialogFooter>
-              <Button type="submit">Сохранить</Button>
+              <Button type="submit">
+                {editingTask ? 'Сохранить' : 'Добавить'}
+              </Button>
               <Button type="button" variant="ghost" onClick={closeTaskModal}>
                 Отмена
               </Button>
@@ -317,7 +308,6 @@ function TasksTab({ selected, registerAddHandler }) {
         </DialogContent>
       </Dialog>
 
-      {/* Confirm Delete Modal */}
       <ConfirmModal
         open={!!taskDeleteId}
         title="Удалить задачу?"
