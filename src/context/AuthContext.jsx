@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
       setIsLoading(true)
       const { user: currentUser, error: sessionError } = await fetchSession()
       if (sessionError) {
-        console.error('Ошибка получения сессии:', sessionError)
+        logger.error('Ошибка получения сессии:', sessionError)
         toast.error('Ошибка получения сессии: ' + sessionError.message)
         setUser(null)
         setRole(null)
