@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
+
 import TaskCard from './TaskCard'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '../hooks/useTasks'
 
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from './ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -15,14 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from './ui/dialog'
 
 const PAGE_SIZE = 20
 
@@ -34,15 +35,13 @@ function TasksTab({ selected, registerAddHandler }) {
     title: '',
     assignee: '',
     due_date: '',
-    status: 'pending',
+    status: 'запланировано',
     notes: '',
   })
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [viewingTask, setViewingTask] = useState(null)
   const [taskDeleteId, setTaskDeleteId] = useState(null)
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
-  const [importFile, setImportFile] = useState(null)
 
   const {
     tasks: hookTasks,
@@ -52,12 +51,11 @@ function TasksTab({ selected, registerAddHandler }) {
     createTask,
     updateTask,
     deleteTask,
-    importTasks,
   } = useTasks(selected?.id)
 
   useEffect(() => {
     if (selected?.id) {
-      loadTasks()
+      loadTasks({ limit: PAGE_SIZE })
     }
   }, [selected?.id, loadTasks])
 
@@ -72,7 +70,7 @@ function TasksTab({ selected, registerAddHandler }) {
       title: '',
       assignee: '',
       due_date: '',
-      status: 'pending',
+      status: 'запланировано',
       notes: '',
     })
     setEditingTask(null)
@@ -88,30 +86,29 @@ function TasksTab({ selected, registerAddHandler }) {
     setEditingTask(null)
   }, [])
 
-  const openImportModal = useCallback(() => {
-    setIsImportModalOpen(true)
-  }, [])
-
-  const closeImportModal = useCallback(() => {
-    setIsImportModalOpen(false)
-    setImportFile(null)
-  }, [])
-
   const handleTaskSubmit = useCallback(
     async (e) => {
       e.preventDefault()
+      const payload = { ...taskForm, object_id: selected?.id }
       try {
         if (editingTask) {
-          await updateTask(editingTask.id, taskForm)
+          await updateTask(editingTask.id, payload)
         } else {
-          await createTask(taskForm)
+          await createTask(payload)
         }
         closeTaskModal()
-      } catch (error) {
-        console.error('Error saving task:', error)
+      } catch (err) {
+        console.error('Error saving task:', err)
       }
     },
-    [taskForm, editingTask, createTask, updateTask, closeTaskModal],
+    [
+      taskForm,
+      editingTask,
+      selected?.id,
+      createTask,
+      updateTask,
+      closeTaskModal,
+    ],
   )
 
   const handleEditTask = useCallback((task) => {
@@ -119,7 +116,7 @@ function TasksTab({ selected, registerAddHandler }) {
       title: task.title || '',
       assignee: task.assignee || '',
       due_date: task.due_date || '',
-      status: task.status || 'pending',
+      status: task.status || 'запланировано',
       notes: task.notes || '',
     })
     setEditingTask(task)
@@ -131,27 +128,14 @@ function TasksTab({ selected, registerAddHandler }) {
       try {
         await deleteTask(taskDeleteId)
         setTaskDeleteId(null)
-      } catch (error) {
-        console.error('Error deleting task:', error)
+      } catch (err) {
+        console.error('Error deleting task:', err)
       }
     }
   }, [taskDeleteId, deleteTask])
 
-  const handleImport = useCallback(async () => {
-    if (importFile) {
-      try {
-        await importTasks(importFile)
-        closeImportModal()
-      } catch (error) {
-        console.error('Import failed:', error)
-      }
-    }
-  }, [importFile, importTasks, closeImportModal])
-
-  const formatDate = (date) => {
-    if (!date) return ''
-    return new Date(date).toLocaleDateString('ru-RU')
-  }
+  const formatDate = (date) =>
+    date ? new Date(date).toLocaleDateString('ru-RU') : ''
 
   if (!selected) {
     return (
@@ -182,15 +166,15 @@ function TasksTab({ selected, registerAddHandler }) {
           Задачи для {selected.name}
         </h2>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={openImportModal}>
-            Импорт
+          <Button size="sm" onClick={openTaskModal}>
+            Добавить задачу
           </Button>
         </div>
       </div>
 
       {tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">
-          Задач пока нет. Добавьте первую задачу!
+          Нет задач для этого объекта.
         </div>
       ) : (
         <div className="space-y-3">
@@ -206,16 +190,15 @@ function TasksTab({ selected, registerAddHandler }) {
         </div>
       )}
 
+      {/* Task Modal */}
       <Dialog
         open={isTaskModalOpen}
-        onOpenChange={(open) => {
-          if (!open) closeTaskModal()
-        }}
+        onOpenChange={(open) => !open && closeTaskModal()}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingTask ? 'Редактировать задачу' : 'Добавить задачу'}
+              {editingTask ? 'Редактировать задачу' : 'Новая задача'}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
@@ -263,10 +246,10 @@ function TasksTab({ selected, registerAddHandler }) {
                   <SelectValue placeholder="Выберите статус" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">В ожидании</SelectItem>
-                  <SelectItem value="in_progress">В работе</SelectItem>
-                  <SelectItem value="completed">Выполнено</SelectItem>
-                  <SelectItem value="cancelled">Отменено</SelectItem>
+                  <SelectItem value="запланировано">запланировано</SelectItem>
+                  <SelectItem value="в работе">в работе</SelectItem>
+                  <SelectItem value="выполнено">выполнено</SelectItem>
+                  <SelectItem value="отменено">отменено</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -293,11 +276,10 @@ function TasksTab({ selected, registerAddHandler }) {
         </DialogContent>
       </Dialog>
 
+      {/* View Task Modal */}
       <Dialog
         open={!!viewingTask}
-        onOpenChange={(open) => {
-          if (!open) setViewingTask(null)
-        }}
+        onOpenChange={(open) => !open && setViewingTask(null)}
       >
         <DialogContent>
           <DialogHeader>
@@ -332,29 +314,6 @@ function TasksTab({ selected, registerAddHandler }) {
         onConfirm={confirmDeleteTask}
         onCancel={() => setTaskDeleteId(null)}
       />
-
-      <Dialog
-        open={isImportModalOpen}
-        onOpenChange={(open) => {
-          if (!open) closeImportModal()
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Импорт задач</DialogTitle>
-          </DialogHeader>
-          <Input
-            type="file"
-            onChange={(e) => setImportFile(e.target.files[0])}
-          />
-          <DialogFooter>
-            <Button onClick={handleImport}>Загрузить</Button>
-            <Button variant="ghost" onClick={closeImportModal}>
-              Отмена
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
@@ -365,4 +324,3 @@ TasksTab.propTypes = {
 }
 
 export default TasksTab
-
