@@ -1,7 +1,9 @@
 // Tests for InventoryTabs component
 import '@testing-library/jest-dom'
 
-var mockLoadHardware, mockFetchHardwareApi, mockFetchMessages, mockNavigate
+/* eslint-env jest */
+
+var mockLoadHardware, mockFetchMessages, mockNavigate
 
 jest.mock('../src/hooks/usePersistedForm.js', () => () => ({
   register: jest.fn(),
@@ -10,11 +12,8 @@ jest.mock('../src/hooks/usePersistedForm.js', () => () => ({
   formState: { errors: {} },
 }))
 
-jest.mock('../src/components/ConfirmModal.jsx', () => () => null)
-
 jest.mock('../src/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
-  mockFetchHardwareApi = jest.fn().mockResolvedValue({ data: [], error: null })
 
   return {
     useHardware: () => ({
@@ -95,12 +94,12 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByText(/Железо/))
+    fireEvent.click(screen.getByRole('tab', { name: 'Железо' }))
     expect(await screen.findByText('Оборудование')).toBeInTheDocument()
 
-    fireEvent.click(screen.getAllByText(/Задачи/)[0])
+    fireEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
     expect(
-      await screen.findByRole('heading', { name: /Задачи/ }),
+      await screen.findByRole('heading', { name: 'Задачи' }),
     ).toBeInTheDocument()
   })
 
@@ -117,7 +116,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getAllByText(/Задачи/)[0])
+    fireEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
     expect(
       await screen.findByText('Нет данных. Нажмите «Добавить».'),
     ).toBeInTheDocument()
@@ -136,7 +135,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByText(/Чат/))
+    fireEvent.click(screen.getByRole('tab', { name: 'Чат' }))
     expect(screen.getByText(/Чат для/)).toBeInTheDocument()
   })
 })
