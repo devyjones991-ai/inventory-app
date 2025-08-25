@@ -23,7 +23,9 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
       ({
         запланировано: 'badge-info',
         'в процессе': 'badge-warning',
+        'в работе': 'badge-warning',
         завершено: 'badge-success',
+        отменено: 'badge-error',
       })[item.status] || 'badge',
     [item.status],
   )
@@ -84,6 +86,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
               variant="ghost"
               className="w-full xs:w-auto"
               title="Редактировать"
+              aria-label="Редактировать задачу"
               onClick={handleEdit}
             >
               <PencilIcon className="w-4 h-4" />
@@ -93,6 +96,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
               variant="ghost"
               className="w-full xs:w-auto"
               title="Удалить"
+              aria-label="Удалить задачу"
               onClick={handleDelete}
             >
               <TrashIcon className="w-4 h-4" />
