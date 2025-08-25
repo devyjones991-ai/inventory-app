@@ -40,10 +40,18 @@ export default function AccountModal({ user, onClose, onUpdated }) {
           <DialogTitle>Редактирование аккаунта</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+
+          <div>
+            <Label htmlFor="username">Никнейм</Label>
+            <Input
+              id="username"
+              type="text"
+
           <div className="grid gap-2">
             <Label htmlFor="username">Никнейм</Label>
             <Input
               id="username"
+
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoFocus
@@ -52,9 +60,13 @@ export default function AccountModal({ user, onClose, onUpdated }) {
         </div>
         <DialogFooter>
           <Button onClick={save} disabled={saving}>
+
+            {saving ? 'Сохранение...' : 'Сохранить'}
+
             Сохранить
+
           </Button>
-          <Button variant="ghost" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
             Отмена
           </Button>
         </DialogFooter>
