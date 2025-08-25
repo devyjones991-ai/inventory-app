@@ -1,20 +1,6 @@
 import React from 'react'
-
-
-export function Dialog({ open, onOpenChange, children }) {
-  if (!open) return null
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-      onClick={() => onOpenChange && onOpenChange(false)}
-    >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? React.cloneElement(child, { onOpenChange })
-          : child,
-      )}
-
 import PropTypes from 'prop-types'
+import { cn } from '../../utils/cn'
 
 export function Dialog({ open, onOpenChange, children, ...props }) {
   if (!open) return null
@@ -31,23 +17,11 @@ export function Dialog({ open, onOpenChange, children, ...props }) {
       onClick={handleClick}
       {...props}
     >
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={() => onOpenChange(false)}
-      />
+      <div className="absolute inset-0 bg-black/50" />
       {children}
-
     </div>
   )
 }
-
-
-export function DialogContent({ children, className = '' }) {
-  const stop = (e) => e.stopPropagation()
-  return (
-    <div
-      className={`relative w-full max-w-md p-4 max-h-screen overflow-y-auto bg-base-100 rounded shadow ${className}`}
-      onClick={stop}
 
 Dialog.propTypes = {
   open: PropTypes.bool.isRequired,
@@ -55,57 +29,56 @@ Dialog.propTypes = {
   children: PropTypes.node,
 }
 
-export function DialogContent({ children, ...props }) {
+export function DialogContent({ children, className, ...props }) {
+  const stop = (e) => e.stopPropagation()
   return (
-    <div 
-      className="relative z-50 w-full max-w-md rounded-md bg-base-100 p-4 shadow-lg"
-      onClick={(e) => e.stopPropagation()}
+    <div
+      className={cn(
+        'relative z-50 w-full max-w-md rounded-md bg-base-100 p-4 shadow-lg',
+        className,
+      )}
+      onClick={stop}
       {...props}
-
     >
       {children}
     </div>
   )
 }
 
-
-export function DialogHeader({ children, className = '' }) {
-  return <div className={`mb-4 ${className}`}>{children}</div>
-}
-
-export function DialogTitle({ children, className = '' }) {
-  return <h3 className={`font-bold text-lg ${className}`}>{children}</h3>
-}
-
-export function DialogFooter({ children, className = '' }) {
-  return <div className={`mt-4 flex space-x-2 ${className}`}>{children}</div>
-}
-
-export default Dialog
-
 DialogContent.propTypes = {
   children: PropTypes.node,
+  className: PropTypes.string,
 }
 
-export function DialogHeader({ children }) {
-  return <div className="mb-4">{children}</div>
+export function DialogHeader({ children, className, ...props }) {
+  return (
+    <div className={cn('mb-4', className)} {...props}>
+      {children}
+    </div>
+  )
 }
 
 DialogHeader.propTypes = {
   children: PropTypes.node,
+  className: PropTypes.string,
 }
 
-export function DialogTitle({ children }) {
-  return <h3 className="font-bold text-lg">{children}</h3>
+export function DialogTitle({ children, className, ...props }) {
+  return (
+    <h3 className={cn('font-bold text-lg', className)} {...props}>
+      {children}
+    </h3>
+  )
 }
 
 DialogTitle.propTypes = {
   children: PropTypes.node,
+  className: PropTypes.string,
 }
 
-export function DialogFooter({ children, ...props }) {
+export function DialogFooter({ children, className, ...props }) {
   return (
-    <div className="mt-2 text-right" {...props}>
+    <div className={cn('mt-4 flex space-x-2', className)} {...props}>
       {children}
     </div>
   )
@@ -113,7 +86,7 @@ export function DialogFooter({ children, ...props }) {
 
 DialogFooter.propTypes = {
   children: PropTypes.node,
+  className: PropTypes.string,
 }
 
 export default Dialog
-
