@@ -8,12 +8,13 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
 
   useEffect(() => {
     let active = true
+    const controller = new AbortController()
     setIsLoading(true)
     setIsError(null)
 
     async function run() {
       try {
-        const { data, error } = await queryBuilder(supabase)
+        const { data, error } = await queryBuilder(supabase, controller.signal)
         if (!active) return
         if (error) {
           setIsError(error)
@@ -22,6 +23,7 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
           setData(data)
         }
       } catch (err) {
+        if (err?.name === 'AbortError') return
         if (active) {
           setIsError(err)
           setData(null)
@@ -34,6 +36,7 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
     run()
     return () => {
       active = false
+      controller.abort()
     }
   }, deps)
 
