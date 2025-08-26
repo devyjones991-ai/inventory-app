@@ -23,6 +23,7 @@ export default function DashboardPage() {
     objects,
     selected,
     fetchError,
+    isEmpty,
     handleSelect,
     handleUpdateSelected,
     saveObject,
@@ -103,6 +104,13 @@ export default function DashboardPage() {
   }
 
   if (!selected) {
+    if (isEmpty) {
+      return (
+        <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-gray-500">
+          Объекты отсутствуют
+        </div>
+      )
+    }
     return (
       <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-gray-500">
         Загрузка объектов...
