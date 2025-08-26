@@ -18,38 +18,44 @@ export function useObjectList() {
   }, [])
 
   async function fetchObjects() {
-    const { data, error } = await supabase
-      .from('objects')
-      .select('id, name, description')
-      .order('created_at', { ascending: true })
-    if (error) {
-      if (error.status === 401) {
-        await supabase.auth.signOut()
-        navigate('/auth')
+    try {
+      const { data, error } = await supabase
+        .from('objects')
+        .select('id, name, description')
+        .order('created_at', { ascending: true })
+      if (error) {
+        if (error.status === 401) {
+          await supabase.auth.signOut()
+          navigate('/auth')
+          return
+        }
+        if (error.status === 403) {
+          toast.error('Недостаточно прав')
+          setFetchError('Недостаточно прав')
+          return
+        }
+        console.error('Ошибка загрузки объектов:', error)
+        toast.error('Ошибка загрузки объектов: ' + error.message)
+        await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')
+        setFetchError('Ошибка загрузки объектов: ' + error.message)
         return
       }
-      if (error.status === 403) {
-        toast.error('Недостаточно прав')
-        setFetchError('Недостаточно прав')
-        return
+      setObjects(data)
+      const savedId =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem(SELECTED_OBJECT_KEY)
+          : null
+      if (savedId) {
+        const saved = data.find((o) => o.id === Number(savedId))
+        if (saved) setSelected(saved)
+        else if (!selected && data.length) setSelected(data[0])
+      } else if (!selected && data.length) {
+        setSelected(data[0])
       }
-      console.error('Ошибка загрузки объектов:', error)
-      toast.error('Ошибка загрузки объектов: ' + error.message)
-      await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')
-      setFetchError('Ошибка загрузки объектов: ' + error.message)
-      return
-    }
-    setObjects(data)
-    const savedId =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(SELECTED_OBJECT_KEY)
-        : null
-    if (savedId) {
-      const saved = data.find((o) => o.id === Number(savedId))
-      if (saved) setSelected(saved)
-      else if (!selected && data.length) setSelected(data[0])
-    } else if (!selected && data.length) {
-      setSelected(data[0])
+    } catch (err) {
+      console.error('Ошибка загрузки объектов:', err)
+      toast.error('Ошибка загрузки объектов: ' + err.message)
+      setFetchError('Ошибка загрузки объектов: ' + err.message)
     }
   }
 
