@@ -19,28 +19,37 @@ export function useObjectList() {
   }, [])
 
   async function fetchObjects() {
-    const { data, error } = await supabase
-      .from('objects')
-      .select('id, name, description')
-      .order('created_at', { ascending: true })
-    if (error) {
-      if (error.status === 401) {
-        await supabase.auth.signOut()
-        navigate('/auth')
+    let data
+    try {
+      const { data: fetchedData, error } = await supabase
+        .from('objects')
+        .select('id, name, description')
+        .order('created_at', { ascending: true })
+      if (error) {
+        if (error.status === 401) {
+          await supabase.auth.signOut()
+          navigate('/auth')
+          return
+        }
+        if (error.status === 403) {
+          toast.error('Недостаточно прав')
+          setFetchError('Недостаточно прав')
+          return
+        }
+        console.error('Ошибка загрузки объектов:', error)
+        toast.error('Ошибка загрузки объектов: ' + error.message)
+        await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')
+        setFetchError('Ошибка загрузки объектов: ' + error.message)
         return
       }
-      if (error.status === 403) {
-        toast.error('Недостаточно прав')
-        setFetchError('Недостаточно прав')
-        return
-      }
-      console.error('Ошибка загрузки объектов:', error)
-      toast.error('Ошибка загрузки объектов: ' + error.message)
-      await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')
-      setFetchError('Ошибка загрузки объектов: ' + error.message)
+      data = fetchedData
+      setObjects(data)
+    } catch (err) {
+      console.error('Ошибка загрузки объектов:', err)
+      toast.error('Ошибка загрузки объектов: ' + err.message)
+      setFetchError('Ошибка загрузки объектов: ' + err.message)
       return
     }
-    setObjects(data)
     if (data.length === 0) {
       setIsEmpty(true)
       setSelected(null)
