@@ -4,6 +4,8 @@ import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null
@@ -82,9 +84,9 @@ function ChatTab({ selected = null, userEmail }) {
           }`}
         >
           {isSearchOpen && (
-            <input
+            <Input
               type="text"
-              className="input input-bordered input-sm w-full"
+              className="w-full h-8 text-sm"
               placeholder="Поиск сообщений"
               value={searchInput}
               onChange={handleSearchChange}
@@ -194,8 +196,8 @@ function ChatTab({ selected = null, userEmail }) {
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          <textarea
-            className="textarea textarea-bordered w-full min-h-24"
+          <Textarea
+            className="w-full min-h-24"
             placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
             value={newMessage}
             onChange={handleMessageChange}
