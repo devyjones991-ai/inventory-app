@@ -45,15 +45,23 @@ export function useObjectList() {
       setIsEmpty(true)
       setSelected(null)
       if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(SELECTED_OBJECT_KEY)
+        try {
+          localStorage.removeItem(SELECTED_OBJECT_KEY)
+        } catch {
+          /* empty */
+        }
       }
       return
     }
     setIsEmpty(false)
-    const savedId =
-      typeof localStorage !== 'undefined'
-        ? localStorage.getItem(SELECTED_OBJECT_KEY)
-        : null
+    let savedId = null
+    if (typeof localStorage !== 'undefined') {
+      try {
+        savedId = localStorage.getItem(SELECTED_OBJECT_KEY)
+      } catch {
+        savedId = null
+      }
+    }
     if (savedId) {
       const saved = data.find((o) => o.id === Number(savedId))
       if (saved) setSelected(saved)
@@ -99,7 +107,11 @@ export function useObjectList() {
       setSelected(data)
       setIsEmpty(false)
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(SELECTED_OBJECT_KEY, data.id)
+        try {
+          localStorage.setItem(SELECTED_OBJECT_KEY, data.id)
+        } catch {
+          /* empty */
+        }
       }
       return true
     }
@@ -119,8 +131,12 @@ export function useObjectList() {
         const next = updated[0] || null
         setSelected(next)
         if (typeof localStorage !== 'undefined') {
-          if (next) localStorage.setItem(SELECTED_OBJECT_KEY, next.id)
-          else localStorage.removeItem(SELECTED_OBJECT_KEY)
+          try {
+            if (next) localStorage.setItem(SELECTED_OBJECT_KEY, next.id)
+            else localStorage.removeItem(SELECTED_OBJECT_KEY)
+          } catch {
+            /* empty */
+          }
         }
       }
       if (updated.length === 0) {
@@ -135,14 +151,22 @@ export function useObjectList() {
   function handleSelect(obj) {
     setSelected(obj)
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(SELECTED_OBJECT_KEY, obj.id)
+      try {
+        localStorage.setItem(SELECTED_OBJECT_KEY, obj.id)
+      } catch {
+        /* empty */
+      }
     }
   }
 
   function handleUpdateSelected(updated) {
     setSelected(updated)
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(SELECTED_OBJECT_KEY, updated.id)
+      try {
+        localStorage.setItem(SELECTED_OBJECT_KEY, updated.id)
+      } catch {
+        /* empty */
+      }
     }
     setObjects((prev) => prev.map((o) => (o.id === updated.id ? updated : o)))
   }
