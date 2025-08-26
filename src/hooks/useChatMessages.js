@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { supabase } from '../supabaseClient'
-import { handleSupabaseError } from '../utils/handleSupabaseError'
+import { supabase } from '@/supabaseClient'
+import { handleSupabaseError } from '@/utils/handleSupabaseError'
 import { useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
 import { toast } from 'react-hot-toast'

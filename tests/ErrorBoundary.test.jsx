@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import logger from '../src/utils/logger.js'
+import logger from '@/utils/logger.js'
 
 function ProblemComponent() {
   throw new Error('Test error')

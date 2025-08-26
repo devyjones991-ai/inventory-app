@@ -1,12 +1,17 @@
+import React from 'react'
 import PropTypes from 'prop-types'
-import { forwardRef } from 'react'
-import { cn } from '../../utils/cn'
+import { cn } from '@/lib/utils'
 
-const ScrollArea = forwardRef(({ className, children, ...props }, ref) => (
-  <div ref={ref} className={cn(className)} {...props}>
-    {children}
-  </div>
-))
+const ScrollArea = React.forwardRef(function ScrollArea(
+  { className, children, ...props },
+  ref,
+) {
+  return (
+    <div ref={ref} className={cn(className)} {...props}>
+      {children}
+    </div>
+  )
+})
 
 ScrollArea.displayName = 'ScrollArea'
 

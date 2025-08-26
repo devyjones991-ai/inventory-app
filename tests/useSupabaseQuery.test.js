@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals'
 import { renderHook, act } from '@testing-library/react'
-import { useSupabaseQuery } from '../src/utils/useSupabaseQuery.js'
+import { useSupabaseQuery } from '@/utils/useSupabaseQuery.js'
 
 describe('useSupabaseQuery', () => {
   it('не выставляет ошибку при отмене запроса', async () => {

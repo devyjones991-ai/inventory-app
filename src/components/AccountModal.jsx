@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { useAccount } from '../hooks/useAccount'
+import { useAccount } from '@/hooks/useAccount'
 import { toast } from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

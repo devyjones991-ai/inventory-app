@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
-import usePersistedForm from '../hooks/usePersistedForm'
+import usePersistedForm from '@/hooks/usePersistedForm'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import HardwareCard from './HardwareCard'
 import ChatTab from './ChatTab'
 import TasksTab from './TasksTab'
 import { PlusIcon } from '@heroicons/react/24/outline'
-import { linkifyText } from '../utils/linkify'
-import { useHardware } from '../hooks/useHardware'
-import { useObjects } from '../hooks/useObjects'
-import { useAuth } from '../hooks/useAuth'
+import { linkifyText } from '@/utils/linkify'
+import { useHardware } from '@/hooks/useHardware'
+import { useObjects } from '@/hooks/useObjects'
+import { useAuth } from '@/hooks/useAuth'
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
@@ -267,7 +267,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
           <form onSubmit={handleHWSubmit} className="space-y-2">
             <div>
               <Input
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Название"
                 {...register('name')}
               />
@@ -277,7 +277,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             </div>
             <div>
               <Input
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Расположение"
                 {...register('location')}
               />

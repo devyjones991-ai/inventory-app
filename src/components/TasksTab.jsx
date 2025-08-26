@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import TaskCard from './TaskCard'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
-import { useTasks } from '../hooks/useTasks'
+import { useTasks } from '@/hooks/useTasks'
 
 import { Button } from '@/components/ui/button'
 import {

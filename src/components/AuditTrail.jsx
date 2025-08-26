@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/supabaseClient'
 import Spinner from './Spinner'
 import ErrorMessage from './ErrorMessage'
 

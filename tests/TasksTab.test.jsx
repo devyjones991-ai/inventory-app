@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import TasksTab from '../src/components/TasksTab.jsx'
+import TasksTab from '@/components/TasksTab.jsx'
 
 var mockTasks = [],
   mockLoadTasks,
@@ -9,7 +9,7 @@ var mockTasks = [],
   mockUpdateTask
 const mockNavigate = jest.fn()
 
-jest.mock('../src/hooks/useTasks.js', () => {
+jest.mock('@/hooks/useTasks.js', () => {
   mockTasks = []
   mockLoadTasks = jest.fn()
   mockCreateTask = jest.fn()
@@ -28,7 +28,7 @@ jest.mock('../src/hooks/useTasks.js', () => {
   }
 })
 
-jest.mock('../src/hooks/useAuth.js', () => ({
+jest.mock('@/hooks/useAuth.js', () => ({
   useAuth: () => ({ user: { id: 'u1', email: 'me@example.com' } }),
 }))
 

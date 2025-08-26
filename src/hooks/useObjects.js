@@ -1,6 +1,6 @@
-import { supabase } from '../supabaseClient'
-import { apiBaseUrl, isApiConfigured } from '../apiConfig'
-import logger from '../utils/logger'
+import { supabase } from '@/supabaseClient'
+import { apiBaseUrl, isApiConfigured } from '@/apiConfig'
+import logger from '@/utils/logger'
 
 export function useObjects() {
   if (!isApiConfigured) {

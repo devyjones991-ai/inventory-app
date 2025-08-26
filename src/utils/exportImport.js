@@ -1,5 +1,5 @@
-import { supabase } from '../supabaseClient'
-import { apiBaseUrl, isApiConfigured } from '../apiConfig'
+import { supabase } from '@/supabaseClient'
+import { apiBaseUrl, isApiConfigured } from '@/apiConfig'
 import logger from './logger'
 export async function exportInventory() {
   const { data, error } = await supabase.functions.invoke('export-inventory')

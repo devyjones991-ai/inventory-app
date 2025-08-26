@@ -5,11 +5,11 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 
-import AccountModal from '../AccountModal.jsx'
+import AccountModal from '@/components/AccountModal.jsx'
 
 const mockUpdate = jest.fn()
 
-jest.mock('../../hooks/useAccount', () => ({
+jest.mock('@/hooks/useAccount', () => ({
   useAccount: () => ({ updateProfile: mockUpdate }),
 }))
 

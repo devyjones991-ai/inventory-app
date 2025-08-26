@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { linkifyText } from '../utils/linkify.jsx'
+import { Button, Input } from '@/components/ui'
+import { linkifyText } from '@/utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
@@ -12,10 +13,12 @@ function ChatTab({ selected = null, userEmail }) {
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  
   useEffect(() => {
     const id = setTimeout(() => setSearchQuery(searchInput), 300)
     return () => clearTimeout(id)
   }, [searchInput])
+  
   const {
     messages,
     hasMore,
@@ -205,13 +208,13 @@ function ChatTab({ selected = null, userEmail }) {
           />
         </div>
         <div className="flex justify-end">
-          <button
+          <Button
             className="btn btn-primary"
             disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
             {sending ? 'Отправка…' : 'Отправить'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
