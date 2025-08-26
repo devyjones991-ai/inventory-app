@@ -267,7 +267,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
           <form onSubmit={handleHWSubmit} className="space-y-2">
             <div>
               <Input
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Название"
                 {...register('name')}
               />
@@ -277,7 +277,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
             </div>
             <div>
               <Input
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Расположение"
                 {...register('location')}
               />

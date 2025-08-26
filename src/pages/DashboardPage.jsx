@@ -13,6 +13,13 @@ import { useObjectNotifications } from '@/hooks/useObjectNotifications'
 import { useDashboardModals } from '@/hooks/useDashboardModals'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 export default function DashboardPage() {
   const { user, isAdmin, isManager } = useAuth()
@@ -214,37 +221,44 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {isObjectModalOpen && (
-          <div className="modal modal-open fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="modal-box relative w-full max-w-md">
-              <Button
-                size="icon"
-                className="absolute right-2 top-2"
-                onClick={closeObjectModal}
-              >
-                ✕
-              </Button>
-              <h3 className="font-bold text-lg mb-4">
+        <Dialog
+          open={isObjectModalOpen}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              closeObjectModal()
+            }
+          }}
+        >
+          <DialogContent className="relative w-full max-w-md">
+            <Button
+              size="icon"
+              className="absolute right-2 top-2"
+              onClick={closeObjectModal}
+            >
+              ✕
+            </Button>
+            <DialogHeader>
+              <DialogTitle>
                 {editingObject ? 'Редактировать объект' : 'Добавить объект'}
-              </h3>
-              <div className="space-y-4">
-                <Input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="Название"
-                  value={objectName}
-                  onChange={(e) => setObjectName(e.target.value)}
-                />
-              </div>
-              <div className="modal-action flex space-x-2">
-                <Button onClick={onSaveObject}>Сохранить</Button>
-                <Button variant="ghost" onClick={closeObjectModal}>
-                  Отмена
-                </Button>
-              </div>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                type="text"
+                className="w-full"
+                placeholder="Название"
+                value={objectName}
+                onChange={(e) => setObjectName(e.target.value)}
+              />
             </div>
-          </div>
-        )}
+            <DialogFooter className="flex space-x-2">
+              <Button onClick={onSaveObject}>Сохранить</Button>
+              <Button variant="ghost" onClick={closeObjectModal}>
+                Отмена
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <ConfirmModal
           open={!!deleteCandidate}
