@@ -15,11 +15,11 @@ function formatDate(dateStr) {
 export default function ChatCard({ message }) {
   return (
     <Card className="animate-fade-in">
-      <CardHeader className="p-4 pb-2">
-        <div className="text-sm text-base-content/70 transition-colors">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-normal text-muted-foreground">
           {message.sender}
           {message.created_at && ` • ${formatDate(message.created_at)}`}
-        </div>
+        </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         {message.content && (
@@ -32,7 +32,7 @@ export default function ChatCard({ message }) {
             href={message.file_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 underline break-all"
+            className="text-primary underline break-all"
           >
             Вложение
           </a>

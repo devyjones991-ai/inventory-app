@@ -26,23 +26,23 @@ function InventorySidebar({
     <nav className="flex flex-col space-y-2">
       {items.map((o) => (
         <Card key={o.id}>
-          <CardHeader className="flex items-center justify-between p-2">
-            <div className="flex items-center flex-1">
+          <CardHeader className="p-2">
+            <CardTitle className="p-0 text-base font-normal">
               <button
                 onClick={o.select}
-                className={`flex-1 text-left px-3 py-2 rounded hover:bg-primary/10 ${
+                className={`w-full text-left px-3 py-2 rounded hover:bg-primary/10 ${
                   selected?.id === o.id ? 'bg-primary/10 font-medium' : ''
                 }`}
               >
                 {o.name}
               </button>
-              {notifications[o.id] ? (
-                <span className="badge badge-error ml-2">
-                  {notifications[o.id]}
-                </span>
-              ) : null}
-            </div>
-            <div className="flex items-center">
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-2 pt-0 flex items-center">
+            {notifications[o.id] ? (
+              <span className="badge badge-error">{notifications[o.id]}</span>
+            ) : null}
+            <div className="flex items-center ml-auto">
               <button
                 onClick={o.edit}
                 className="ml-2 text-primary hover:text-primary/70"
@@ -52,13 +52,13 @@ function InventorySidebar({
               </button>
               <button
                 onClick={o.remove}
-                className="ml-2 text-red-500 hover:text-red-700"
+                className="ml-2 text-destructive hover:text-destructive/80"
                 title="Удалить объект"
               >
                 <TrashIcon className="w-4 h-4" />
               </button>
             </div>
-          </CardHeader>
+          </CardContent>
         </Card>
       ))}
     </nav>
