@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react'
-import { supabase } from '../supabaseClient'
 import InventorySidebar from '../components/InventorySidebar'
 import InventoryTabs from '../components/InventoryTabs'
 import AccountModal from '../components/AccountModal'
@@ -8,6 +7,7 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from '../components/ThemeToggle'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
 import { useObjectList } from '../hooks/useObjectList'
 import { useObjectNotifications } from '../hooks/useObjectNotifications'
 import { useDashboardModals } from '../hooks/useDashboardModals'
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 
 export default function DashboardPage() {
   const { user, isAdmin, isManager } = useAuth()
+  const { signOut } = useSupabaseAuth()
   const [activeTab, setActiveTab] = useState('desc')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
@@ -198,10 +199,7 @@ export default function DashboardPage() {
               >
                 {user.user_metadata?.username || 'Аккаунт'}
               </Button>
-              <Button
-                className="p-2 text-lg md:text-sm"
-                onClick={() => supabase.auth.signOut()}
-              >
+              <Button className="p-2 text-lg md:text-sm" onClick={signOut}>
                 Выйти
               </Button>
             </div>
