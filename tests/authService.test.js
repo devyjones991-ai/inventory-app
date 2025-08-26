@@ -6,7 +6,7 @@ const mockEq = jest.fn(() => ({ maybeSingle: mockMaybeSingle }))
 const mockSelect = jest.fn(() => ({ eq: mockEq }))
 const mockFrom = jest.fn(() => ({ select: mockSelect }))
 
-jest.mock('../src/supabaseClient.js', () => ({
+jest.mock('@/supabaseClient.js', () => ({
   supabase: {
     auth: { getSession: mockGetSession },
     from: mockFrom,
@@ -14,7 +14,7 @@ jest.mock('../src/supabaseClient.js', () => ({
   isSupabaseConfigured: true,
 }))
 
-jest.mock('../src/apiConfig.js', () => ({
+jest.mock('@/apiConfig.js', () => ({
   apiBaseUrl: 'http://localhost',
   isApiConfigured: true,
 }))
@@ -24,7 +24,7 @@ let fetchSession, fetchRole, __resetCache
 beforeEach(async () => {
   jest.resetModules()
   globalThis.fetch = jest.fn()
-  const mod = await import('../src/services/authService.js')
+  const mod = await import('@/services/authService.js')
   fetchSession = mod.fetchSession
   fetchRole = mod.fetchRole
   __resetCache = mod.__resetCache
