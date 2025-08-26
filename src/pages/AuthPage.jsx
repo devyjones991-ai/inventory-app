@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 
 import { Button } from '@/components/ui/button'
 
-
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
   const [userError, setUserError] = useState(null)
@@ -111,7 +110,7 @@ export default function AuthPage() {
             <div>
               <Input
                 type="email"
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Email"
                 {...register('email')}
               />
@@ -126,7 +125,7 @@ export default function AuthPage() {
               <div>
                 <Input
                   type="text"
-                  className="input input-bordered w-full"
+                  className="w-full"
                   placeholder="Имя пользователя"
                   {...register('username')}
                 />
@@ -141,7 +140,7 @@ export default function AuthPage() {
             <div>
               <Input
                 type="password"
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Пароль"
                 {...register('password')}
               />
