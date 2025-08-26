@@ -18,7 +18,10 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return
+    if (!isSupabaseConfigured) {
+      setIsLoading(false)
+      return
+    }
     if (!isApiConfigured) {
       logger.error(
         'Не задана переменная окружения VITE_API_BASE_URL. Авторизация через API недоступна.',

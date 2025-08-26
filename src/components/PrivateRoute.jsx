@@ -9,7 +9,12 @@ export default function PrivateRoute({ children }) {
   if (isLoading) {
     return <Spinner />
   }
-  return user ? children : <Navigate to="/auth" replace />
+
+  if (!user) {
+    return <Navigate to="/auth" replace />
+  }
+
+  return children
 }
 
 PrivateRoute.propTypes = {
