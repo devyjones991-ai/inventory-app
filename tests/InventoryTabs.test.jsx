@@ -3,26 +3,37 @@ import '@testing-library/jest-dom'
 
 /* eslint-env jest */
 
-var mockLoadHardware, mockFetchMessages, mockNavigate
+var mockLoadHardware,
+  mockFetchMessages,
+  mockNavigate,
+  mockHardware,
+  mockCreateHardware,
+  mockUpdateHardware
 
 jest.mock('../src/hooks/usePersistedForm.js', () => () => ({
   register: jest.fn(),
   handleSubmit: (fn) => fn,
   reset: jest.fn(),
+  watch: jest.fn((field) =>
+    field === 'purchase_status' ? 'не оплачен' : 'не установлен',
+  ),
   formState: { errors: {} },
 }))
 
 jest.mock('../src/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
+  mockCreateHardware = jest.fn()
+  mockUpdateHardware = jest.fn()
+  mockHardware = []
 
   return {
     useHardware: () => ({
-      hardware: [],
+      hardware: mockHardware,
       loading: false,
       error: null,
       loadHardware: mockLoadHardware,
-      createHardware: jest.fn(),
-      updateHardware: jest.fn(),
+      createHardware: mockCreateHardware,
+      updateHardware: mockUpdateHardware,
       deleteHardware: jest.fn(),
     }),
   }
@@ -79,6 +90,7 @@ describe('InventoryTabs', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockHardware = []
   })
 
   it('переключает вкладки "Железо" и "Задачи"', async () => {
@@ -94,12 +106,12 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Железо' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Железо' }))
     expect(await screen.findByText('Оборудование')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Задачи' }))
     expect(
-      await screen.findByRole('heading', { name: 'Задачи' }),
+      await screen.findByRole('heading', { name: /Задачи/ }),
     ).toBeInTheDocument()
   })
 
@@ -116,9 +128,9 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Задачи' }))
     expect(
-      await screen.findByText('Нет данных. Нажмите «Добавить».'),
+      await screen.findByText('Нет задач для этого объекта.'),
     ).toBeInTheDocument()
   })
 
@@ -135,7 +147,59 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Чат' }))
-    expect(screen.getByText(/Чат для/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Чат' }))
+    expect(
+      screen.getByPlaceholderText(
+        'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('открывает форму добавления оборудования', async () => {
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Железо' }))
+    fireEvent.click(screen.getByRole('button', { name: /Добавить/ }))
+    expect(screen.getByPlaceholderText('Название')).toHaveClass('w-full')
+    expect(screen.getByPlaceholderText('Расположение')).toHaveClass('w-full')
+  })
+
+  it('открывает форму редактирования оборудования', async () => {
+    mockHardware = [
+      {
+        id: 1,
+        name: 'Принтер',
+        location: 'Офис',
+        purchase_status: 'не оплачен',
+        install_status: 'не установлен',
+      },
+    ]
+
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={selected}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Железо' }))
+    const editBtn = await screen.findByRole('button', { name: 'Изменить' })
+    fireEvent.click(editBtn)
+    expect(screen.getByPlaceholderText('Название')).toBeInTheDocument()
   })
 })
