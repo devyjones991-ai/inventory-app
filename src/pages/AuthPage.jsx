@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { useNavigate } from 'react-router-dom'
-import logger from '../utils/logger'
-import { useAuth } from '../hooks/useAuth'
+import logger from '@/utils/logger'
+import { useAuth } from '@/hooks/useAuth'
 
 import { Input } from '@/components/ui/input'
 
 import { Button } from '@/components/ui/button'
-
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
@@ -111,7 +110,7 @@ export default function AuthPage() {
             <div>
               <Input
                 type="email"
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Email"
                 {...register('email')}
               />
@@ -126,7 +125,7 @@ export default function AuthPage() {
               <div>
                 <Input
                   type="text"
-                  className="input input-bordered w-full"
+                  className="w-full"
                   placeholder="Имя пользователя"
                   {...register('username')}
                 />
@@ -141,7 +140,7 @@ export default function AuthPage() {
             <div>
               <Input
                 type="password"
-                className="input input-bordered w-full"
+                className="w-full"
                 placeholder="Пароль"
                 {...register('password')}
               />

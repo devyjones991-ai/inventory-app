@@ -1,14 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, jest } from '@jest/globals'
 import { useContext } from 'react'
-import { AuthProvider, AuthContext } from '../src/context/AuthContext.jsx'
+import { AuthProvider, AuthContext } from '@/context/AuthContext.jsx'
 import { toast } from 'react-hot-toast'
-import logger from '../src/utils/logger.js'
+import logger from '@/utils/logger.js'
 
 const mockGetSession = jest.fn()
 const mockOnAuthStateChange = jest.fn()
 
-jest.mock('../src/supabaseClient.js', () => ({
+jest.mock('@/supabaseClient.js', () => ({
   supabase: {
     auth: {
       getSession: (...args) => mockGetSession(...args),

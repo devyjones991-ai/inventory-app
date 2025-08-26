@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { supabase } from '../supabaseClient'
-import { handleSupabaseError } from '../utils/handleSupabaseError'
+import { supabase } from '@/supabaseClient'
+import { handleSupabaseError } from '@/utils/handleSupabaseError'
 import { useChatMessages } from './useChatMessages.js'
 
 export default function useChat({ objectId, userEmail, search }) {

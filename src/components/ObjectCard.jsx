@@ -1,14 +1,18 @@
 import { memo } from 'react'
 import PropTypes from 'prop-types'
-import Card from './Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 function ObjectCard({ item }) {
   return (
     <Card>
-      <h4 className="font-semibold">{item.name}</h4>
-      <p className="text-base-content/70 transition-colors">
-        {item.description}
-      </p>
+      <CardHeader className="pb-2">
+        <CardTitle>{item.name}</CardTitle>
+      </CardHeader>
+      {item.description && (
+        <CardContent className="pt-0">
+          <p className="text-muted-foreground">{item.description}</p>
+        </CardContent>
+      )}
     </Card>
   )
 }
