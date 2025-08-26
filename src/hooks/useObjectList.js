@@ -12,6 +12,7 @@ export function useObjectList() {
   const [objects, setObjects] = useState([])
   const [selected, setSelected] = useState(null)
   const [fetchError, setFetchError] = useState(null)
+  const [isEmpty, setIsEmpty] = useState(false)
 
   useEffect(() => {
     fetchObjects()
@@ -40,6 +41,15 @@ export function useObjectList() {
       return
     }
     setObjects(data)
+    if (data.length === 0) {
+      setIsEmpty(true)
+      setSelected(null)
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(SELECTED_OBJECT_KEY)
+      }
+      return
+    }
+    setIsEmpty(false)
     const savedId =
       typeof localStorage !== 'undefined'
         ? localStorage.getItem(SELECTED_OBJECT_KEY)
@@ -87,6 +97,7 @@ export function useObjectList() {
       }
       setObjects((prev) => [...prev, data])
       setSelected(data)
+      setIsEmpty(false)
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(SELECTED_OBJECT_KEY, data.id)
       }
@@ -111,6 +122,9 @@ export function useObjectList() {
           if (next) localStorage.setItem(SELECTED_OBJECT_KEY, next.id)
           else localStorage.removeItem(SELECTED_OBJECT_KEY)
         }
+      }
+      if (updated.length === 0) {
+        setIsEmpty(true)
       }
       return updated
     })
@@ -167,6 +181,7 @@ export function useObjectList() {
     objects,
     selected,
     fetchError,
+    isEmpty,
     handleSelect,
     handleUpdateSelected,
     saveObject,
