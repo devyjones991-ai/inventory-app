@@ -1,6 +1,6 @@
 import { useContext } from 'react'
-import { AuthContext } from '../context/AuthContext'
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_USER } from '../constants/roles.js'
+import { AuthContext } from '@/context/AuthContext'
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_USER } from '@/constants/roles.js'
 
 export function useAuth() {
   const { user, role, isLoading } = useContext(AuthContext)

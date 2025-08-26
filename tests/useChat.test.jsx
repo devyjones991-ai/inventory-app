@@ -2,7 +2,7 @@
 let mockSupabase
 let onPayload
 
-jest.mock('../src/supabaseClient.js', () => ({
+jest.mock('@/supabaseClient.js', () => ({
   get supabase() {
     return mockSupabase
   },
@@ -52,7 +52,7 @@ mockSupabase = {
   removeChannel: jest.fn(),
 }
 
-jest.mock('../src/utils/handleSupabaseError', () => ({
+jest.mock('@/utils/handleSupabaseError', () => ({
   handleSupabaseError: jest.fn(),
 }))
 
@@ -91,7 +91,7 @@ const mockFetchMessages = jest
 const mockSendMessage = jest.fn()
 
 // Mock the useChatMessages hook
-jest.mock('../src/hooks/useChatMessages.js', () => ({
+jest.mock('@/hooks/useChatMessages.js', () => ({
   useChatMessages: () => ({
     fetchMessages: mockFetchMessages,
     sendMessage: mockSendMessage,
@@ -101,8 +101,8 @@ jest.mock('../src/hooks/useChatMessages.js', () => ({
 // Now import the components
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
-import useChat from '../src/hooks/useChat.js'
-import { handleSupabaseError as mockHandleSupabaseError } from '../src/utils/handleSupabaseError'
+import useChat from '@/hooks/useChat.js'
+import { handleSupabaseError as mockHandleSupabaseError } from '@/utils/handleSupabaseError'
 
 describe('useChat markMessagesAsRead', () => {
   beforeEach(() => {

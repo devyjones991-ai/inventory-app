@@ -1,5 +1,5 @@
 import React from 'react'
-import { cn } from '../../utils/cn'
+import { cn } from '@/utils/cn'
 
 export function Select({ value, onValueChange, children }) {
   const items = []

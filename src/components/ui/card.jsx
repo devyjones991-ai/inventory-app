@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
 import PropTypes from 'prop-types'
-import { cn } from '../../utils/cn'
+import { cn } from '@/utils/cn'
 
 const Card = forwardRef(({ className, children, ...props }, ref) => (
   <div

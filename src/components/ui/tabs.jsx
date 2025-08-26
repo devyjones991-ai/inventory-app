@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react'
 import PropTypes from 'prop-types'
-import { cn } from '../../utils/cn'
+import { cn } from '@/utils/cn'
 
 const TabsContext = createContext()
 

@@ -1,7 +1,7 @@
 /* eslint-env jest */
 import { describe, test, expect, jest } from '@jest/globals'
 import { render, screen, fireEvent } from '@testing-library/react'
-import ObjectList from '../ObjectList'
+import ObjectList from '@/components/ObjectList'
 
 describe('ObjectList', () => {
   test('рендер пустого списка', () => {

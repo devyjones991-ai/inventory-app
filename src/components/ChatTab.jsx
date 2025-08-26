@@ -1,9 +1,9 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { linkifyText } from '../utils/linkify.jsx'
+import { linkifyText } from '@/utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import useChat from '../hooks/useChat.js'
+import useChat from '@/hooks/useChat.js'
 
 function ChatTab({ selected = null, userEmail }) {
   const objectId = selected?.id || null

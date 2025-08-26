@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Card from './Card'
-import { linkifyText } from '../utils/linkify.jsx'
+import { linkifyText } from '@/utils/linkify.jsx'
 
 function formatDate(dateStr) {
   if (!dateStr) return ''

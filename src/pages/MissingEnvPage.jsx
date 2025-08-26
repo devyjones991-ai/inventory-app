@@ -1,6 +1,6 @@
 import React from 'react'
-import { isApiConfigured } from '../apiConfig'
-import { isSupabaseConfigured } from '../supabaseClient'
+import { isApiConfigured } from '@/apiConfig'
+import { isSupabaseConfigured } from '@/supabaseClient'
 
 export default function MissingEnvPage() {
   const missingVars = []

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/supabaseClient'
 import { toast } from 'react-hot-toast'
-import { handleSupabaseError } from '../utils/handleSupabaseError'
-import { exportInventory, importInventory } from '../utils/exportImport'
+import { handleSupabaseError } from '@/utils/handleSupabaseError'
+import { exportInventory, importInventory } from '@/utils/exportImport'
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
 
