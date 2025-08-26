@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 
 import { Button } from '@/components/ui/button'
 
-
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
   const [userError, setUserError] = useState(null)
@@ -91,11 +90,11 @@ export default function AuthPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-center h-screen bg-base-200 transition-colors">
-        <div className="flex w-full min-h-screen items-center justify-center bg-base-100">
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="flex w-full min-h-screen items-center justify-center bg-background">
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="bg-base-100 p-6 rounded shadow w-full max-w-sm space-y-4 transition-colors"
+            className="bg-card p-6 rounded shadow w-full max-w-sm space-y-4"
           >
             <h2 className="text-lg font-bold text-center">
               {isRegister ? 'Регистрация' : 'Вход'}
@@ -111,7 +110,7 @@ export default function AuthPage() {
             <div>
               <Input
                 type="email"
-                className="input input-bordered w-full"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 placeholder="Email"
                 {...register('email')}
               />
@@ -126,7 +125,7 @@ export default function AuthPage() {
               <div>
                 <Input
                   type="text"
-                  className="input input-bordered w-full"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   placeholder="Имя пользователя"
                   {...register('username')}
                 />
@@ -141,7 +140,7 @@ export default function AuthPage() {
             <div>
               <Input
                 type="password"
-                className="input input-bordered w-full"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 placeholder="Пароль"
                 {...register('password')}
               />

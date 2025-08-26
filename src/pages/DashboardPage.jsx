@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
   if (fetchError) {
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-red-500">
+      <div className="flex w-full min-h-screen items-center justify-center bg-background text-red-500">
         {fetchError}
       </div>
     )
@@ -107,13 +107,13 @@ export default function DashboardPage() {
   if (!selected) {
     if (isEmpty) {
       return (
-        <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-gray-500">
+        <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
           Объекты отсутствуют
         </div>
       )
     }
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-gray-500">
+      <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
         Загрузка объектов...
       </div>
     )
@@ -121,8 +121,8 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="flex h-screen bg-base-100 transition-colors">
-        <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto transition-colors">
+      <div className="flex h-screen bg-background">
+        <aside className="hidden md:flex flex-col w-72 bg-muted p-4 border-r shadow-lg overflow-y-auto">
           <InventorySidebar
             objects={objects}
             selected={selected}
@@ -138,7 +138,7 @@ export default function DashboardPage() {
               className="fixed inset-0 bg-black bg-opacity-50"
               onClick={toggleSidebar}
             />
-            <aside className="relative z-20 w-72 bg-base-200 p-4 shadow-lg overflow-y-auto transition-colors">
+            <aside className="relative z-20 w-72 bg-muted p-4 shadow-lg overflow-y-auto">
               <Button
                 size="icon"
                 className="absolute right-2 top-2"
@@ -159,7 +159,7 @@ export default function DashboardPage() {
         )}
 
         <div className="flex-1 flex flex-col">
-          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-base-100 transition-colors">
+          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-background">
             <div className="flex items-center gap-2">
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰

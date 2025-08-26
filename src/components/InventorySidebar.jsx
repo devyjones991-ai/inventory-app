@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Card from './Card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { Badge } from '@/components/ui/badge'
 
 function InventorySidebar({
   objects,
@@ -36,9 +37,9 @@ function InventorySidebar({
               {o.name}
             </button>
             {notifications[o.id] ? (
-              <span className="badge badge-error ml-2">
+              <Badge variant="destructive" className="ml-2">
                 {notifications[o.id]}
-              </span>
+              </Badge>
             ) : null}
           </div>
           <>

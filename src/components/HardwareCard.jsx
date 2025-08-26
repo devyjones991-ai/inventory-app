@@ -10,9 +10,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
     <Card>
       <CardHeader>
         <CardTitle>{item.name}</CardTitle>
-        <div className="text-sm text-base-content/70 transition-colors">
-          {item.location}
-        </div>
+        <div className="text-sm text-muted-foreground">{item.location}</div>
       </CardHeader>
       <CardContent className="flex justify-between items-center">
         <div className="flex space-x-2 mt-1 text-sm">

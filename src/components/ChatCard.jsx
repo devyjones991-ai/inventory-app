@@ -15,7 +15,7 @@ function formatDate(dateStr) {
 export default function ChatCard({ message }) {
   return (
     <Card className="animate-fade-in">
-      <div className="text-sm text-base-content/70 mb-1 transition-colors">
+      <div className="text-sm text-muted-foreground mb-1">
         {message.sender}
         {message.created_at && ` • ${formatDate(message.created_at)}`}
       </div>
