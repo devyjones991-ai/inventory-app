@@ -164,19 +164,11 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   return (
     <Tabs value={tab} onValueChange={setTab} className="flex flex-col h-full">
-      <TabsList className="mb-4 flex gap-2">
-        <TabsTrigger value="desc" className="tab tab-bordered">
-          Описание
-        </TabsTrigger>
-        <TabsTrigger value="hw" className="tab tab-bordered">
-          Железо
-        </TabsTrigger>
-        <TabsTrigger value="tasks" className="tab tab-bordered">
-          Задачи
-        </TabsTrigger>
-        <TabsTrigger value="chat" className="tab tab-bordered">
-          Чат
-        </TabsTrigger>
+      <TabsList className="mb-4">
+        <TabsTrigger value="desc">Описание</TabsTrigger>
+        <TabsTrigger value="hw">Железо</TabsTrigger>
+        <TabsTrigger value="tasks">Задачи</TabsTrigger>
+        <TabsTrigger value="chat">Чат</TabsTrigger>
       </TabsList>
 
       <TabsContent value="desc" className="flex-1 overflow-auto">
