@@ -34,7 +34,7 @@ export default function ThemeToggle() {
   return (
     <Button
       size="sm"
-      className="transition-colors"
+      className="transition-none"
       onClick={toggleTheme}
       aria-label="Переключить тему"
     >
