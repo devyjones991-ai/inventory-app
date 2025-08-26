@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { toast } from 'react-hot-toast'
@@ -14,11 +14,7 @@ export function useObjectList() {
   const [fetchError, setFetchError] = useState(null)
   const [isEmpty, setIsEmpty] = useState(false)
 
-  useEffect(() => {
-    fetchObjects()
-  }, [])
-
-  async function fetchObjects() {
+  const fetchObjects = useCallback(async () => {
     let data
     try {
       const { data: fetchedData, error } = await supabase
@@ -78,7 +74,11 @@ export function useObjectList() {
     } else if (!selected && data.length) {
       setSelected(data[0])
     }
-  }
+  }, [navigate, selected])
+
+  useEffect(() => {
+    fetchObjects()
+  }, [fetchObjects])
 
   async function saveObject(name, editingObject) {
     if (!name.trim()) return false
