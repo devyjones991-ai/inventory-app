@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { renderHook } from '@testing-library/react'
-import { useChatMessages } from '../src/hooks/useChatMessages.js'
-import { handleSupabaseError as mockHandleSupabaseError } from '../src/utils/handleSupabaseError'
+import { useChatMessages } from '@/hooks/useChatMessages.js'
+import { handleSupabaseError as mockHandleSupabaseError } from '@/utils/handleSupabaseError'
 
-jest.mock('../src/utils/handleSupabaseError', () => ({
+jest.mock('@/utils/handleSupabaseError', () => ({
   handleSupabaseError: jest.fn(),
 }))
 
@@ -23,7 +23,7 @@ var mockSelect
 var mockInsert
 var mockSupabaseFrom
 
-jest.mock('../src/supabaseClient.js', () => {
+jest.mock('@/supabaseClient.js', () => {
   mockUpload = jest.fn(() => Promise.resolve({ data: null, error: null }))
   mockGetPublicUrl = jest.fn(() => ({ data: { publicUrl: 'url' } }))
   mockStorageFrom = jest.fn(() => ({

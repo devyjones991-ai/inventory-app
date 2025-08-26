@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { renderHook } from '@testing-library/react'
-import { useTasks } from '../src/hooks/useTasks.js'
-import { handleSupabaseError as mockHandleSupabaseError } from '../src/utils/handleSupabaseError'
+import { useTasks } from '@/hooks/useTasks.js'
+import { handleSupabaseError as mockHandleSupabaseError } from '@/utils/handleSupabaseError'
 
-jest.mock('../src/utils/handleSupabaseError', () => ({
+jest.mock('@/utils/handleSupabaseError', () => ({
   handleSupabaseError: jest.fn(),
 }))
 
@@ -20,7 +20,7 @@ var mockOrder
 var mockRangeOrder
 var mockRangeBase
 
-jest.mock('../src/supabaseClient.js', () => {
+jest.mock('@/supabaseClient.js', () => {
   mockSingle = jest.fn(() => Promise.resolve({ data: null, error: null }))
   mockRangeOrder = jest.fn(() => Promise.resolve({ data: null, error: null }))
   mockRangeBase = jest.fn(() => Promise.resolve({ data: null, error: null }))

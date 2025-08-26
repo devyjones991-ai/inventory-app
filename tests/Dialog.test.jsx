@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { Dialog, DialogContent } from '../src/components/ui/dialog.jsx'
+import { Dialog, DialogContent } from '@/components/ui/dialog.jsx'
 
 describe('Dialog', () => {
   it('открывается и закрывается через проп open', () => {

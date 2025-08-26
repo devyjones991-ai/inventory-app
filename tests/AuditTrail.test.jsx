@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import AuditTrail from '../src/components/AuditTrail.jsx'
+import AuditTrail from '@/components/AuditTrail.jsx'
 
 const mockLogs = [
   {
@@ -13,7 +13,7 @@ const mockLogs = [
   },
 ]
 
-jest.mock('../src/supabaseClient.js', () => {
+jest.mock('@/supabaseClient.js', () => {
   const mockLimit = jest.fn(() =>
     Promise.resolve({ data: mockLogs, error: null }),
   )
