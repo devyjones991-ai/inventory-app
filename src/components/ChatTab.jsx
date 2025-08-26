@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+import { Button, Input } from '@/components/ui'
 import { linkifyText } from '../utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
@@ -68,23 +69,23 @@ function ChatTab({ selected = null, userEmail }) {
   return (
     <div className="flex flex-col h-full">
       <div className="px-3 py-2">
-        <button
+        <Button
           type="button"
-          className="btn btn-ghost"
+          variant="ghost"
           aria-label="Поиск"
           onClick={handleSearchToggle}
         >
           <MagnifyingGlassIcon className="w-6 h-6" />
-        </button>
+        </Button>
         <div
           className={`transition-all duration-300 overflow-hidden ${
             isSearchOpen ? 'max-h-12 mt-1' : 'max-h-0'
           }`}
         >
           {isSearchOpen && (
-            <input
+            <Input
               type="text"
-              className="input input-bordered input-sm w-full"
+              className="w-full h-8"
               placeholder="Поиск сообщений"
               value={searchInput}
               onChange={handleSearchChange}
@@ -100,17 +101,17 @@ function ChatTab({ selected = null, userEmail }) {
         {loadError ? (
           <div className="text-center">
             <p className="mb-2 text-error">Не удалось загрузить сообщения</p>
-            <button className="btn btn-sm" onClick={() => loadMore(true)}>
+            <Button size="sm" onClick={() => loadMore(true)}>
               Повторить
-            </button>
+            </Button>
           </div>
         ) : (
           <>
             {hasMore && (
               <div className="text-center">
-                <button className="btn btn-sm" onClick={() => loadMore()}>
+                <Button size="sm" onClick={() => loadMore()}>
                   Загрузить ещё
-                </button>
+                </Button>
               </div>
             )}
             {messages.length === 0 ? (
@@ -203,13 +204,12 @@ function ChatTab({ selected = null, userEmail }) {
           />
         </div>
         <div className="flex justify-end">
-          <button
-            className="btn btn-primary"
+          <Button
             disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
             {sending ? 'Отправка…' : 'Отправить'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
