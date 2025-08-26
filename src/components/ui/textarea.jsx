@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import PropTypes from 'prop-types'
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/utils'
 
 const Textarea = forwardRef(function Textarea({ className, ...props }, ref) {
   return (
@@ -11,7 +11,7 @@ const Textarea = forwardRef(function Textarea({ className, ...props }, ref) {
         className,
       )}
       {...props}
-    ></textarea>
+    />
   )
 })
 
