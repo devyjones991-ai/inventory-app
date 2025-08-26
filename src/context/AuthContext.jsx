@@ -1,9 +1,9 @@
 import { createContext, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { supabase, isSupabaseConfigured } from '../supabaseClient'
-import { isApiConfigured } from '../apiConfig'
-import logger from '../utils/logger'
-import { fetchSession, fetchRole } from '../services/authService'
+import { supabase, isSupabaseConfigured } from '@/supabaseClient'
+import { isApiConfigured } from '@/apiConfig'
+import logger from '@/utils/logger'
+import { fetchSession, fetchRole } from '@/services/authService'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext({

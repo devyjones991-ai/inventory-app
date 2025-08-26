@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useSupabaseAuth } from '../hooks/useSupabaseAuth'
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { useNavigate } from 'react-router-dom'
-import logger from '../utils/logger'
-import { useAuth } from '../hooks/useAuth'
+import logger from '@/utils/logger'
+import { useAuth } from '@/hooks/useAuth'
 
 import { Input } from '@/components/ui/input'
 

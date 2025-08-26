@@ -20,7 +20,7 @@ jest.mock('@/components/ui/dialog', () => ({
   DialogFooter: ({ children }) => <div>{children}</div>,
 }))
 
-import ConfirmModal from '../ConfirmModal'
+import ConfirmModal from '@/components/ConfirmModal'
 
 describe('ConfirmModal', () => {
   test('рендер заголовка и сообщения', () => {

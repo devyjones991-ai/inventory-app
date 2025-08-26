@@ -10,7 +10,7 @@ var mockLoadHardware,
   mockCreateHardware,
   mockUpdateHardware
 
-jest.mock('../src/hooks/usePersistedForm.js', () => () => ({
+jest.mock('@/hooks/usePersistedForm.js', () => () => ({
   register: jest.fn(),
   handleSubmit: (fn) => fn,
   reset: jest.fn(),
@@ -20,7 +20,7 @@ jest.mock('../src/hooks/usePersistedForm.js', () => () => ({
   formState: { errors: {} },
 }))
 
-jest.mock('../src/hooks/useHardware.js', () => {
+jest.mock('@/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
   mockCreateHardware = jest.fn()
   mockUpdateHardware = jest.fn()
@@ -39,7 +39,7 @@ jest.mock('../src/hooks/useHardware.js', () => {
   }
 })
 
-jest.mock('../src/hooks/useTasks.js', () => {
+jest.mock('@/hooks/useTasks.js', () => {
   const tasks = []
   const mocked = {
     tasks,
@@ -54,7 +54,7 @@ jest.mock('../src/hooks/useTasks.js', () => {
   return { useTasks: () => mocked }
 })
 
-jest.mock('../src/hooks/useChatMessages.js', () => {
+jest.mock('@/hooks/useChatMessages.js', () => {
   mockFetchMessages = jest.fn().mockResolvedValue({ data: [], error: null })
   return {
     useChatMessages: () => ({
@@ -64,11 +64,11 @@ jest.mock('../src/hooks/useChatMessages.js', () => {
   }
 })
 
-jest.mock('../src/hooks/useObjects.js', () => ({
+jest.mock('@/hooks/useObjects.js', () => ({
   useObjects: () => ({ updateObject: jest.fn() }),
 }))
 
-jest.mock('../src/hooks/useAuth.js', () => ({
+jest.mock('@/hooks/useAuth.js', () => ({
   useAuth: () => ({ user: { id: 'u1', email: 'me@example.com' } }),
 }))
 
@@ -83,7 +83,7 @@ jest.mock('react-router-dom', () => {
 
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import InventoryTabs from '../src/components/InventoryTabs.jsx'
+import InventoryTabs from '@/components/InventoryTabs.jsx'
 
 describe('InventoryTabs', () => {
   const selected = { id: 1, name: 'Объект 1' }

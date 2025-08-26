@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { linkifyText } from '../utils/linkify.jsx'
+import { linkifyText } from '@/utils/linkify.jsx'
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -40,13 +40,4 @@ export default function ChatCard({ message }) {
       </CardContent>
     </Card>
   )
-}
-
-ChatCard.propTypes = {
-  message: PropTypes.shape({
-    sender: PropTypes.string,
-    created_at: PropTypes.string,
-    content: PropTypes.string,
-    file_url: PropTypes.string,
-  }).isRequired,
 }

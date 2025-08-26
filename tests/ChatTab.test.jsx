@@ -1,5 +1,5 @@
 import { render, fireEvent, waitFor, screen, act } from '@testing-library/react'
-import ChatTab from '../src/components/ChatTab.jsx'
+import ChatTab from '@/components/ChatTab.jsx'
 
 const mockMessages = [
   {
@@ -22,7 +22,7 @@ const mockMessages = [
 var mockInsert
 var mockFetchMessages
 
-jest.mock('../src/supabaseClient.js', () => {
+jest.mock('@/supabaseClient.js', () => {
   mockInsert = jest.fn((records) => {
     const record = records[0]
     return {
@@ -64,7 +64,7 @@ jest.mock('../src/supabaseClient.js', () => {
   }
 })
 
-jest.mock('../src/hooks/useChatMessages.js', () => {
+jest.mock('@/hooks/useChatMessages.js', () => {
   mockFetchMessages = jest.fn(() =>
     Promise.resolve({ data: mockMessages, error: null }),
   )

@@ -1,7 +1,7 @@
-import { supabase } from '../supabaseClient'
-import { handleSupabaseError } from '../utils/handleSupabaseError'
+import { supabase } from '@/supabaseClient'
+import { handleSupabaseError } from '@/utils/handleSupabaseError'
 import { useNavigate } from 'react-router-dom'
-import logger from '../utils/logger'
+import logger from '@/utils/logger'
 
 export function useTasks() {
   const navigate = useNavigate()
@@ -112,10 +112,7 @@ export function useTasks() {
 
   const deleteTask = async (id) => {
     try {
-      const result = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', id)
+      const result = await supabase.from('tasks').delete().eq('id', id)
       if (result.error) throw result.error
       return result
     } catch (error) {
