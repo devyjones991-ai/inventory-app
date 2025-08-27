@@ -2,10 +2,7 @@ export default function Spinner() {
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <div className="flex justify-center p-4" data-testid="spinner">
-        <svg
-          className="animate-spin h-5 w-5 text-primary transition-colors"
-          viewBox="0 0 24 24"
-        >
+        <svg className="animate-spin h-5 w-5 text-primary" viewBox="0 0 24 24">
           <circle
             className="opacity-25"
             cx="12"

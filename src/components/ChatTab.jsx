@@ -5,7 +5,6 @@ import { linkifyText } from '@/utils/linkify.jsx'
 import AttachmentPreview from './AttachmentPreview.jsx'
 import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
 function ChatTab({ selected = null, userEmail }) {
@@ -13,12 +12,12 @@ function ChatTab({ selected = null, userEmail }) {
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  
+
   useEffect(() => {
     const id = setTimeout(() => setSearchQuery(searchInput), 300)
     return () => clearTimeout(id)
   }, [searchInput])
-  
+
   const {
     messages,
     hasMore,
@@ -63,11 +62,7 @@ function ChatTab({ selected = null, userEmail }) {
   }, [])
 
   if (!objectId) {
-    return (
-      <div className="p-6 text-sm text-base-content/70 transition-colors">
-        Выбери объект
-      </div>
-    )
+    return <div className="p-6 text-sm text-base-content/70">Выбери объект</div>
   }
 
   return (

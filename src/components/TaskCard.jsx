@@ -62,7 +62,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
 
   return (
     <Card
-      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-base-200 transition-colors animate-fade-in"
+      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-base-200 animate-fade-in"
       onClick={handleView}
     >
       <CardHeader className="flex-1">
@@ -70,7 +70,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           {item.title}
         </CardTitle>
         {(assignee || dueDate) && (
-          <p className="text-sm text-base-content/70 transition-colors">
+          <p className="text-sm text-base-content/70">
             {assignee && <span>👤 {assignee}</span>}
             {assignee && dueDate && ' • '}
             {dueDate && <span>📅 {formatDate(dueDate)}</span>}
