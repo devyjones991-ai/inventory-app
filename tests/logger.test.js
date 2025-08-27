@@ -1,12 +1,9 @@
-/* eslint-env node */
-/* globals process */
-import logger from '@/utils/logger.js'
+import logger, { setLogLevel } from '@/utils/logger.js'
 
 describe('logger', () => {
   let infoSpy
   let warnSpy
   let errorSpy
-  const originalEnv = { ...process.env }
 
   beforeEach(() => {
     infoSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -18,11 +15,10 @@ describe('logger', () => {
     infoSpy.mockRestore()
     warnSpy.mockRestore()
     errorSpy.mockRestore()
-    process.env = { ...originalEnv }
+    setLogLevel(undefined)
   })
 
   test('по умолчанию логирует все уровни', () => {
-    delete process.env.LOG_LEVEL
     logger.info('i')
     logger.warn('w')
     logger.error('e')
@@ -32,7 +28,7 @@ describe('logger', () => {
   })
 
   test('уровень warn отключает info', () => {
-    process.env.LOG_LEVEL = 'warn'
+    setLogLevel('warn')
     logger.info('i')
     logger.warn('w')
     logger.error('e')
@@ -42,7 +38,7 @@ describe('logger', () => {
   })
 
   test('уровень error отключает warn и info', () => {
-    process.env.LOG_LEVEL = 'error'
+    setLogLevel('error')
     logger.info('i')
     logger.warn('w')
     logger.error('e')
@@ -52,7 +48,7 @@ describe('logger', () => {
   })
 
   test('уровень none отключает все', () => {
-    process.env.LOG_LEVEL = 'none'
+    setLogLevel('none')
     logger.info('i')
     logger.warn('w')
     logger.error('e')
