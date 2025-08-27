@@ -81,12 +81,13 @@ jest.mock('react-router-dom', () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import InventoryTabs from '@/components/InventoryTabs.jsx'
 
 describe('InventoryTabs', () => {
-  const selected = { id: 1, name: 'Объект 1' }
+  const selected = { id: '1', name: 'Объект 1' }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -106,10 +107,10 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Железо' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Железо' }))
     expect(await screen.findByText('Оборудование')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Задачи' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
     expect(
       await screen.findByRole('heading', { name: /Задачи/ }),
     ).toBeInTheDocument()
@@ -128,7 +129,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Задачи' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
     expect(
       await screen.findByText('Нет задач для этого объекта.'),
     ).toBeInTheDocument()
@@ -147,7 +148,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Чат' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Чат' }))
     expect(
       screen.getByPlaceholderText(
         'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',
@@ -168,8 +169,8 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Железо' }))
-    fireEvent.click(screen.getByRole('button', { name: /Добавить/ }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Железо' }))
+    await userEvent.click(screen.getByRole('button', { name: /Добавить/ }))
     expect(screen.getByPlaceholderText('Название')).toHaveClass('w-full')
     expect(screen.getByPlaceholderText('Расположение')).toHaveClass('w-full')
   })
@@ -177,7 +178,7 @@ describe('InventoryTabs', () => {
   it('открывает форму редактирования оборудования', async () => {
     mockHardware = [
       {
-        id: 1,
+        id: '1',
         name: 'Принтер',
         location: 'Офис',
         purchase_status: 'не оплачен',
@@ -197,9 +198,9 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Железо' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Железо' }))
     const editBtn = await screen.findByRole('button', { name: 'Изменить' })
-    fireEvent.click(editBtn)
+    await userEvent.click(editBtn)
     expect(screen.getByPlaceholderText('Название')).toBeInTheDocument()
   })
 })
