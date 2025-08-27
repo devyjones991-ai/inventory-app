@@ -153,9 +153,12 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
   const saveDescription = useCallback(async () => {
     if (!selected) return
-    await updateObject(selected.id, { description })
-    onUpdateSelected({ ...selected, description })
-    setIsEditingDesc(false)
+    try {
+      await updateObject(selected.id, { description })
+      onUpdateSelected({ ...selected, description })
+    } finally {
+      setIsEditingDesc(false)
+    }
   }, [selected, description, updateObject, onUpdateSelected])
 
   useEffect(() => {
