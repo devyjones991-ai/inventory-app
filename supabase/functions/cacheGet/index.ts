@@ -11,7 +11,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { status: 200, headers: corsHeaders })
   }
   const url = new URL(req.url)
   const table = url.searchParams.get('table')
