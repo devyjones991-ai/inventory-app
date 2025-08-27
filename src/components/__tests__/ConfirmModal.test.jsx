@@ -9,11 +9,12 @@ jest.mock('@/components/ui/button', () => ({
 }))
 
 jest.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ open, onOpenChange, children }) => (
-    <div data-testid="dialog" onClick={() => onOpenChange?.(false)}>
-      {open ? children : null}
-    </div>
-  ),
+  Dialog: ({ open, onOpenChange, children }) =>
+    open ? (
+      <div data-testid="dialog" onClick={() => onOpenChange?.(false)}>
+        {children}
+      </div>
+    ) : null,
   DialogContent: ({ children }) => <div>{children}</div>,
   DialogHeader: ({ children }) => <div>{children}</div>,
   DialogTitle: ({ children }) => <div>{children}</div>,

@@ -209,4 +209,34 @@ describe('InventoryTabs', () => {
     await userEvent.click(editBtn)
     expect(screen.getByPlaceholderText('Название')).toBeInTheDocument()
   })
+
+  it('скрывает кнопки сохранения описания после сохранения', async () => {
+    render(
+      <MemoryRouter>
+        <InventoryTabs
+          selected={{ id: '1', name: 'Объект', description: 'старое' }}
+          onUpdateSelected={jest.fn()}
+          onTabChange={jest.fn()}
+          setAddAction={jest.fn()}
+          openAddObject={jest.fn()}
+        />
+      </MemoryRouter>,
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Изменить' }))
+    const textarea = screen.getByRole('textbox')
+    await userEvent.clear(textarea)
+    await userEvent.type(textarea, 'новое описание')
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
+
+    expect(
+      await screen.findByRole('button', { name: 'Изменить' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Сохранить' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Отмена' }),
+    ).not.toBeInTheDocument()
+  })
 })
