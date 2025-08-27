@@ -33,6 +33,12 @@ export default function ThemeToggle() {
 
   return (
     <Button size="sm" onClick={toggleTheme} aria-label="Переключить тему">
+   <Button
+      size="sm"
+      className="transition-none"
+      onClick={toggleTheme}
+      aria-label="Переключить тему"
+    >
       {theme === 'light' ? (
         <MoonIcon className="w-4 h-4" />
       ) : (
