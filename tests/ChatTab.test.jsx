@@ -19,23 +19,10 @@ const mockMessages = [
   },
 ]
 
-var mockInsert
 var mockFetchMessages
+var mockSendMessage
 
 jest.mock('@/supabaseClient.js', () => {
-  mockInsert = jest.fn((records) => {
-    const record = records[0]
-    return {
-      select: jest.fn(() => ({
-        single: jest.fn(() =>
-          Promise.resolve({
-            data: { id: '3', created_at: new Date().toISOString(), ...record },
-            error: null,
-          }),
-        ),
-      })),
-    }
-  })
   const mockUpdate = jest.fn(() => ({
     is: jest.fn(() => ({
       eq: jest.fn(() => ({
@@ -44,7 +31,6 @@ jest.mock('@/supabaseClient.js', () => {
     })),
   }))
   const mockFrom = jest.fn(() => ({
-    insert: mockInsert,
     update: mockUpdate,
   }))
   const mockChannel = jest.fn(() => ({
@@ -68,9 +54,23 @@ jest.mock('@/hooks/useChatMessages.js', () => {
   mockFetchMessages = jest.fn(() =>
     Promise.resolve({ data: mockMessages, error: null }),
   )
+  mockSendMessage = jest.fn(() =>
+    Promise.resolve({
+      data: {
+        id: '3',
+        object_id: 1,
+        sender: 'me@example.com',
+        content: '',
+        file_url: null,
+        created_at: new Date().toISOString(),
+      },
+      error: null,
+    }),
+  )
   return {
     useChatMessages: () => ({
       fetchMessages: mockFetchMessages,
+      sendMessage: mockSendMessage,
     }),
   }
 })
@@ -79,10 +79,22 @@ describe('ChatTab', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockFetchMessages.mockReset()
+    mockSendMessage.mockReset()
     window.HTMLElement.prototype.scrollIntoView = jest.fn()
     globalThis.URL.createObjectURL = jest.fn(() => 'blob:preview')
     globalThis.URL.revokeObjectURL = jest.fn()
     mockFetchMessages.mockResolvedValue({ data: mockMessages, error: null })
+    mockSendMessage.mockResolvedValue({
+      data: {
+        id: '3',
+        object_id: 1,
+        sender: 'me@example.com',
+        content: '',
+        file_url: 'blob:preview',
+        created_at: new Date().toISOString(),
+      },
+      error: null,
+    })
   })
 
   it('отображает последнее сообщение после загрузки', async () => {
@@ -204,11 +216,11 @@ describe('ChatTab', () => {
 
     fireEvent.click(screen.getByText('Отправить'))
 
-    await waitFor(() => expect(mockInsert).toHaveBeenCalled())
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled())
     expect(textarea.value).toBe('')
   })
 
-  it('отправляет файл с указанием e-mail отправителя', async () => {
+  it('отправляет файл, очищает состояние и блокирует повторную отправку', async () => {
     const { container } = render(
       <ChatTab selected={{ id: 1 }} userEmail="me@example.com" />,
     )
@@ -222,16 +234,27 @@ describe('ChatTab', () => {
     expect(labelIcon).toBeInTheDocument()
 
     const fileInput = container.querySelector('input[type="file"]')
-    const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+    const file = new File(['content'], 'test.png', { type: 'image/png' })
     fireEvent.change(fileInput, { target: { files: [file] } })
 
-    fireEvent.click(screen.getByText('Отправить'))
+    const sendBtn = screen.getByRole('button', { name: 'Отправить' })
+    fireEvent.click(sendBtn)
 
-    await waitFor(() => expect(mockInsert).toHaveBeenCalled())
-    expect(mockInsert.mock.calls[0][0][0]).toMatchObject({
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalledTimes(1))
+    expect(mockSendMessage).toHaveBeenCalledWith({
+      objectId: 1,
       sender: 'me@example.com',
+      content: '',
+      file,
     })
+
     expect(fileInput.value).toBe('')
+    expect(screen.queryByTestId('attachment-image')).not.toBeInTheDocument()
+    await waitFor(() => expect(sendBtn).toBeDisabled())
+    expect(globalThis.URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview')
+
+    fireEvent.click(sendBtn)
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalledTimes(1))
   })
 
   it('подгружает дополнительные сообщения по кнопке', async () => {

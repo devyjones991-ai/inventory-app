@@ -17,24 +17,9 @@ const updateChain = {
   })),
 }
 
-const insertFn = jest.fn((records) => {
-  const record = records[0]
-  return {
-    select: jest.fn(() => ({
-      single: jest.fn(() =>
-        Promise.resolve({
-          data: { id: '10', created_at: new Date().toISOString(), ...record },
-          error: null,
-        }),
-      ),
-    })),
-  }
-})
-
 mockSupabase = {
   from: jest.fn(() => ({
     update: jest.fn(() => updateChain),
-    insert: insertFn,
   })),
   channel: jest.fn(() => {
     const channelObj = {
@@ -88,7 +73,20 @@ const mockFetchMessages = jest
   .mockResolvedValueOnce({ data: page1, error: null })
   .mockResolvedValueOnce({ data: page2, error: null })
   .mockResolvedValue({ data: [], error: null })
-const mockSendMessage = jest.fn()
+let sendId = 10
+const mockSendMessage = jest.fn(() => {
+  const id = String(sendId++)
+  return Promise.resolve({
+    data: {
+      id,
+      object_id: 1,
+      sender: 'me@example.com',
+      content: 'hi',
+      created_at: new Date().toISOString(),
+    },
+    error: null,
+  })
+})
 
 // Mock the useChatMessages hook
 jest.mock('@/hooks/useChatMessages.js', () => ({
@@ -108,6 +106,7 @@ describe('useChat markMessagesAsRead', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     onPayload = null
+    sendId = 10
   })
 
   it('загружает сообщения с учётом смещения без аргументов', async () => {

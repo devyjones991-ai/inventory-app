@@ -94,4 +94,29 @@ describe('useChatMessages', () => {
       'Ошибка отправки сообщения',
     )
   })
+
+  it('загружает файл и позволяет повторно отправлять без ошибок', async () => {
+    const { result } = renderHook(() => useChatMessages())
+    const file = new File(['data'], 'img.png', { type: 'image/png' })
+    mockSingle.mockResolvedValueOnce({ data: { id: 1 }, error: null })
+    const res1 = await result.current.sendMessage({
+      objectId: 1,
+      sender: 'user@example.com',
+      content: 'msg1',
+      file,
+    })
+    expect(res1.error).toBeNull()
+    expect(mockUpload).toHaveBeenCalledTimes(1)
+    expect(mockInsert).toHaveBeenCalledTimes(1)
+
+    mockSingle.mockResolvedValueOnce({ data: { id: 2 }, error: null })
+    const res2 = await result.current.sendMessage({
+      objectId: 1,
+      sender: 'user@example.com',
+      content: 'msg2',
+    })
+    expect(res2.error).toBeNull()
+    expect(mockUpload).toHaveBeenCalledTimes(1)
+    expect(mockInsert).toHaveBeenCalledTimes(2)
+  })
 })

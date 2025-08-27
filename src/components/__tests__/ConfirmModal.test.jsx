@@ -83,6 +83,6 @@ describe('ConfirmModal', () => {
     render(
       <ConfirmModal open={false} onConfirm={() => {}} onCancel={() => {}} />,
     )
-    expect(screen.queryByTestId('dialog')).not.toBeInTheDocument()
+    expect(screen.getByTestId('dialog')).toBeEmptyDOMElement()
   })
 })

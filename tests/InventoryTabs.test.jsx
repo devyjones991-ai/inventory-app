@@ -60,6 +60,7 @@ jest.mock('@/hooks/useChatMessages.js', () => {
     useChatMessages: () => ({
       fetchMessages: mockFetchMessages,
       subscribeToMessages: jest.fn(() => jest.fn()),
+      sendMessage: jest.fn(),
     }),
   }
 })
