@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { useHardware } from '@/hooks/useHardware.js'
 import { handleSupabaseError as mockHandleSupabaseError } from '@/utils/handleSupabaseError'
 
@@ -33,12 +33,30 @@ describe('useHardware', () => {
     const mockError = new Error('fail')
     mockOrder.mockResolvedValueOnce({ data: null, error: mockError })
     const { result } = renderHook(() => useHardware())
-    const { error } = await result.current.fetchHardware('1')
+    const { error } = await result.current.loadHardware('1')
     expect(error).toBe(mockError)
     expect(mockHandleSupabaseError).toHaveBeenCalledWith(
       mockError,
       expect.any(Function),
       'Ошибка загрузки оборудования',
     )
+  })
+
+  it('обновляет состояние при успешной загрузке', async () => {
+    const data = [
+      {
+        id: 1,
+        name: 'Принтер',
+        location: 'Офис',
+        purchase_status: 'не оплачен',
+        install_status: 'не установлен',
+      },
+    ]
+    mockOrder.mockResolvedValueOnce({ data, error: null })
+    const { result } = renderHook(() => useHardware())
+    await act(async () => {
+      await result.current.loadHardware('1')
+    })
+    expect(result.current.hardware).toEqual(data)
   })
 })
