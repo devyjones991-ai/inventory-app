@@ -2,6 +2,14 @@
 /* globals process, global */
 import '@testing-library/jest-dom'
 
+if (typeof File === 'undefined') {
+  globalThis.File = class File extends Blob {
+    constructor(parts, name, opts) {
+      super(parts, opts)
+      this.name = name
+    }
+  }
+}
 global.DOMException =
   global.DOMException ||
   class DOMException extends Error {
