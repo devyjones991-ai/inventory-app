@@ -282,7 +282,7 @@ describe('ChatTab', () => {
     })
     await waitFor(() =>
       expect(mockFetchMessages).toHaveBeenLastCalledWith(
-        '1',
+        1,
         expect.objectContaining({ search: 'Прив' }),
       ),
     )
@@ -298,7 +298,7 @@ describe('ChatTab', () => {
     })
     await waitFor(() =>
       expect(mockFetchMessages).toHaveBeenLastCalledWith(
-        '1',
+        1,
         expect.objectContaining({ search: 'Не найдено' }),
       ),
     )

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { useTasks } from '@/hooks/useTasks.js'
 import { handleSupabaseError as mockHandleSupabaseError } from '@/utils/handleSupabaseError'
 
@@ -41,7 +41,7 @@ describe('useTasks', () => {
     const mockError = new Error('fail')
     mockSingle.mockResolvedValueOnce({ data: null, error: mockError })
     const { result } = renderHook(() => useTasks())
-    const { error } = await result.current.insertTask({ title: 't' })
+    const { error } = await result.current.createTask({ title: 't' })
     expect(error).toBe(mockError)
     expect(mockHandleSupabaseError).toHaveBeenCalledWith(
       mockError,
@@ -68,10 +68,21 @@ describe('useTasks', () => {
         error: null,
       })
 
-    const { result } = renderHook(() => useTasks())
-    const { data, error } = await result.current.fetchTasks(1, 0, 20)
-    expect(error).toBeNull()
-    expect(data).toEqual([
+    const { result } = renderHook(() => useTasks(1))
+    let response
+    await act(async () => {
+      response = await result.current.loadTasks({ offset: 0, limit: 20 })
+    })
+    expect(response.error).toBeNull()
+    expect(response.data).toEqual([
+      {
+        id: 1,
+        title: 't',
+        assignee: 'a',
+        created_at: '2024-05-09T00:00:00Z',
+      },
+    ])
+    expect(result.current.tasks).toEqual([
       {
         id: 1,
         title: 't',

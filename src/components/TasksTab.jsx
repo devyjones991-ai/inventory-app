@@ -28,9 +28,6 @@ import {
 const PAGE_SIZE = 20
 
 function TasksTab({ selected, registerAddHandler }) {
-  const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [taskForm, setTaskForm] = useState({
     title: '',
     assignee: '',
@@ -44,9 +41,9 @@ function TasksTab({ selected, registerAddHandler }) {
   const [taskDeleteId, setTaskDeleteId] = useState(null)
 
   const {
-    tasks: hookTasks,
-    loading: hookLoading,
-    error: hookError,
+    tasks,
+    loading,
+    error,
     loadTasks,
     createTask,
     updateTask,
@@ -58,12 +55,6 @@ function TasksTab({ selected, registerAddHandler }) {
       loadTasks({ limit: PAGE_SIZE })
     }
   }, [selected?.id, loadTasks])
-
-  useEffect(() => {
-    setTasks(hookTasks)
-    setLoading(hookLoading)
-    setError(hookError)
-  }, [hookTasks, hookLoading, hookError])
 
   const openTaskModal = useCallback(() => {
     setTaskForm({
