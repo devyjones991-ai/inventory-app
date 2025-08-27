@@ -20,9 +20,10 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }) {
+  if (!open) return null
   return (
     <Dialog
-      open={open}
+      open
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           onCancel()
