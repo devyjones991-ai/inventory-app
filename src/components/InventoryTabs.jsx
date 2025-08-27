@@ -327,7 +327,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
 
 InventoryTabs.propTypes = {
   selected: PropTypes.shape({
-    id: PropTypes.number,
+    id: PropTypes.string,
     name: PropTypes.string,
     description: PropTypes.string,
   }),
