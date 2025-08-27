@@ -27,7 +27,7 @@ import {
 
 const PAGE_SIZE = 20
 
-function TasksTab({ selected, registerAddHandler }) {
+function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [taskForm, setTaskForm] = useState({
     title: '',
     assignee: '',
@@ -71,6 +71,10 @@ function TasksTab({ selected, registerAddHandler }) {
   useEffect(() => {
     registerAddHandler?.(openTaskModal)
   }, [registerAddHandler, openTaskModal])
+
+  useEffect(() => {
+    onCountChange?.(tasks.length)
+  }, [tasks, onCountChange])
 
   const closeTaskModal = useCallback(() => {
     setIsTaskModalOpen(false)
@@ -312,6 +316,7 @@ function TasksTab({ selected, registerAddHandler }) {
 TasksTab.propTypes = {
   selected: PropTypes.object,
   registerAddHandler: PropTypes.func,
+  onCountChange: PropTypes.func,
 }
 
 export default TasksTab

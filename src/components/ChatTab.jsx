@@ -7,7 +7,7 @@ import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import useChat from '../hooks/useChat.js'
 import { Textarea } from '@/components/ui/textarea'
 
-function ChatTab({ selected = null, userEmail }) {
+function ChatTab({ selected = null, userEmail, onCountChange }) {
   const objectId = selected?.id || null
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -34,6 +34,10 @@ function ChatTab({ selected = null, userEmail }) {
     scrollRef,
     loadError,
   } = useChat({ objectId, userEmail, search: searchQuery })
+
+  useEffect(() => {
+    onCountChange?.(messages.length)
+  }, [messages, onCountChange])
 
   const handleFileChange = useCallback(
     (e) => setFile(e.target.files[0]),
@@ -223,4 +227,5 @@ ChatTab.propTypes = {
     id: PropTypes.number.isRequired,
   }),
   userEmail: PropTypes.string.isRequired,
+  onCountChange: PropTypes.func,
 }
