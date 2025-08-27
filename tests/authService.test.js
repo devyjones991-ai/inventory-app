@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals'
 
 const mockGetSession = jest.fn()
 const mockMaybeSingle = jest.fn()
@@ -20,6 +27,7 @@ jest.mock('@/apiConfig.js', () => ({
 }))
 
 let fetchSession, fetchRole, __resetCache
+const originalFetch = globalThis.fetch
 
 beforeEach(async () => {
   jest.resetModules()
@@ -34,6 +42,10 @@ beforeEach(async () => {
   mockEq.mockClear()
   mockSelect.mockClear()
   mockFrom.mockClear()
+})
+
+afterEach(() => {
+  globalThis.fetch = originalFetch
 })
 
 describe('authService', () => {
