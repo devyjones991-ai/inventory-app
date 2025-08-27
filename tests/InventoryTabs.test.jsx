@@ -81,6 +81,7 @@ jest.mock('react-router-dom', () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
+import { render, within } from '@testing-library/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -94,8 +95,8 @@ describe('InventoryTabs', () => {
     mockHardware = []
   })
 
-  it('переключает вкладки "Железо" и "Задачи"', async () => {
-    render(
+  it('отображает все вкладки', () => {
+    const { container } = render(
       <MemoryRouter>
         <InventoryTabs
           selected={selected}
@@ -107,6 +108,12 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
+    const tabTexts = within(container)
+      .getAllByRole('tab')
+      .map((el) => el.textContent)
+    expect(tabTexts).toEqual(
+      expect.arrayContaining(['Железо', 'Задачи', 'Чат']),
+    )
     await userEvent.click(screen.getByRole('tab', { name: 'Железо' }))
     expect(await screen.findByText('Оборудование')).toBeInTheDocument()
 
