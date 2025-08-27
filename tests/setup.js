@@ -1,6 +1,15 @@
 /* eslint-env node */
-/* globals process */
+/* globals process, global */
 import '@testing-library/jest-dom'
+
+global.DOMException =
+  global.DOMException ||
+  class DOMException extends Error {
+    constructor(message, name) {
+      super(message)
+      this.name = name
+    }
+  }
 
 process.env.VITE_API_BASE_URL = 'http://localhost'
 process.env.VITE_SUPABASE_URL = 'http://localhost'
