@@ -16,6 +16,7 @@ export function useTasks(objectId) {
 
   const fetchTasks = async (objId, offset = 0, limit = 20) => {
     try {
+      if (!objId) return { data: [], error: null }
       const baseFields =
         'id, title, status, assignee, due_date, notes, created_at'
       const baseQuery = supabase
@@ -128,6 +129,12 @@ export function useTasks(objectId) {
   const loadTasks = useCallback(
     async ({ offset = 0, limit = 20 } = {}) => {
       setLoading(true)
+      if (!objectId) {
+        setTasks([])
+        setError(null)
+        setLoading(false)
+        return { data: [], error: null }
+      }
       const { data, error: err } = await fetchTasks(objectId, offset, limit)
       if (err) {
         setError(err.message || 'Ошибка загрузки задач')
