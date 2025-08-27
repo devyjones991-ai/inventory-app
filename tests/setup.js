@@ -2,6 +2,15 @@
 /* globals process */
 import '@testing-library/jest-dom'
 
+if (typeof File === 'undefined') {
+  globalThis.File = class File extends Blob {
+    constructor(parts, name, opts) {
+      super(parts, opts)
+      this.name = name
+    }
+  }
+}
+
 process.env.VITE_API_BASE_URL = 'http://localhost'
 process.env.VITE_SUPABASE_URL = 'http://localhost'
 process.env.VITE_SUPABASE_ANON_KEY = 'test-key'
