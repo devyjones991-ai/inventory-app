@@ -65,7 +65,7 @@ describe('ConfirmModal', () => {
       />,
     )
 
-    const dialog = screen.getByRole('dialog')
+    const dialog = screen.getByTestId('dialog')
     expect(dialog).toBeInTheDocument()
 
     const confirmBtn = screen.getByRole('button', { name: 'OK' })
@@ -82,6 +82,6 @@ describe('ConfirmModal', () => {
     render(
       <ConfirmModal open={false} onConfirm={() => {}} onCancel={() => {}} />,
     )
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('dialog')).not.toBeInTheDocument()
   })
 })

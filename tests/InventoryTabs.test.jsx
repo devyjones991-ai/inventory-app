@@ -81,8 +81,7 @@ jest.mock('react-router-dom', () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-import { render, within } from '@testing-library/react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import InventoryTabs from '@/components/InventoryTabs.jsx'
@@ -95,7 +94,7 @@ describe('InventoryTabs', () => {
     mockHardware = []
   })
 
-  it('отображает все вкладки', () => {
+  it('отображает все вкладки', async () => {
     const { container } = render(
       <MemoryRouter>
         <InventoryTabs

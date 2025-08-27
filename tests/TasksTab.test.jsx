@@ -84,7 +84,7 @@ describe('TasksTab', () => {
 
     fireEvent.click(screen.getByText('Добавить задачу'))
 
-    const titleInput = screen.getByLabelText('Название')
+    const titleInput = screen.getByLabelText(/Название/)
     const assigneeInput = screen.getByLabelText('Исполнитель')
     const dueDateInput = screen.getByLabelText('Дата выполнения')
 

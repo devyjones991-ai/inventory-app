@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { Dialog, DialogContent } from '@/components/ui/dialog.jsx'
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog.jsx'
 
 describe('Dialog', () => {
   it('открывается и закрывается через проп open', () => {
@@ -21,16 +21,14 @@ describe('Dialog', () => {
     expect(screen.queryByText('Содержимое')).toBeNull()
   })
 
-  it('передает onOpenChange в дочерний компонент', () => {
+  it('вызывает onOpenChange при нажатии кнопки закрытия', () => {
     const handleOpenChange = jest.fn()
-
-    const Child = ({ onOpenChange }) => (
-      <button onClick={() => onOpenChange(false)}>Закрыть</button>
-    )
 
     const { getByText } = render(
       <Dialog open={true} onOpenChange={handleOpenChange}>
-        <Child />
+        <DialogContent>
+          <DialogClose>Закрыть</DialogClose>
+        </DialogContent>
       </Dialog>,
     )
 
