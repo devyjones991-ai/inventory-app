@@ -1,5 +1,3 @@
-/* globals process */
-
 const levels = {
   none: 0,
   error: 1,
@@ -7,11 +5,15 @@ const levels = {
   info: 3,
 }
 
+let forcedLevel
+
+export function setLogLevel(level) {
+  forcedLevel = level
+}
+
 function getEnvLevel() {
-  const level =
-    import.meta.env?.VITE_LOG_LEVEL ||
-    process?.env?.LOG_LEVEL ||
-    process?.env?.VITE_LOG_LEVEL
+  if (forcedLevel) return forcedLevel.toLowerCase()
+  const level = import.meta.env?.VITE_LOG_LEVEL
   return (level || 'info').toLowerCase()
 }
 
