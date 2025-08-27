@@ -111,12 +111,16 @@ describe('InventoryTabs', () => {
       .getAllByRole('tab')
       .map((el) => el.textContent)
     expect(tabTexts).toEqual(
-      expect.arrayContaining(['Железо', 'Задачи', 'Чат']),
+      expect.arrayContaining([
+        expect.stringMatching(/Железо/),
+        expect.stringMatching(/Задачи/),
+        expect.stringMatching(/Чат/),
+      ]),
     )
-    await userEvent.click(screen.getByRole('tab', { name: 'Железо' }))
+    await userEvent.click(screen.getByRole('tab', { name: /Железо/ }))
     expect(await screen.findByText('Оборудование')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
+    await userEvent.click(screen.getByRole('tab', { name: /Задачи/ }))
     expect(
       await screen.findByRole('heading', { name: /Задачи/ }),
     ).toBeInTheDocument()
@@ -135,7 +139,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    await userEvent.click(screen.getByRole('tab', { name: 'Задачи' }))
+    await userEvent.click(screen.getByRole('tab', { name: /Задачи/ }))
     expect(
       await screen.findByText('Нет задач для этого объекта.'),
     ).toBeInTheDocument()
@@ -154,7 +158,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    await userEvent.click(screen.getByRole('tab', { name: 'Чат' }))
+    await userEvent.click(screen.getByRole('tab', { name: /Чат/ }))
     expect(
       screen.getByPlaceholderText(
         'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',
@@ -175,7 +179,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    await userEvent.click(screen.getByRole('tab', { name: 'Железо' }))
+    await userEvent.click(screen.getByRole('tab', { name: /Железо/ }))
     await userEvent.click(screen.getByRole('button', { name: /Добавить/ }))
     expect(screen.getByPlaceholderText('Название')).toHaveClass('w-full')
     expect(screen.getByPlaceholderText('Расположение')).toHaveClass('w-full')
@@ -204,7 +208,7 @@ describe('InventoryTabs', () => {
       </MemoryRouter>,
     )
 
-    await userEvent.click(screen.getByRole('tab', { name: 'Железо' }))
+    await userEvent.click(screen.getByRole('tab', { name: /Железо/ }))
     const editBtn = await screen.findByRole('button', { name: 'Изменить' })
     await userEvent.click(editBtn)
     expect(screen.getByPlaceholderText('Название')).toBeInTheDocument()

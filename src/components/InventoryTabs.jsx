@@ -45,8 +45,10 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
   const [description, setDescription] = useState('')
   const [isEditingDesc, setIsEditingDesc] = useState(false)
 
-  // --- оборудование ---
+  // --- оборудование и счётчики ---
   const [hardware, setHardware] = useState([])
+  const [tasksCount, setTasksCount] = useState(0)
+  const [messageCount, setMessageCount] = useState(0)
   const [isHWModalOpen, setIsHWModalOpen] = useState(false)
   const [editingHW, setEditingHW] = useState(null)
   const defaultHWForm = {
@@ -166,9 +168,9 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
     <Tabs value={tab} onValueChange={setTab} className="flex flex-col h-full">
       <TabsList className="mb-4">
         <TabsTrigger value="desc">Описание</TabsTrigger>
-        <TabsTrigger value="hw">Железо</TabsTrigger>
-        <TabsTrigger value="tasks">Задачи</TabsTrigger>
-        <TabsTrigger value="chat">Чат</TabsTrigger>
+        <TabsTrigger value="hw">Железо ({hardware.length})</TabsTrigger>
+        <TabsTrigger value="tasks">Задачи ({tasksCount})</TabsTrigger>
+        <TabsTrigger value="chat">Чат ({messageCount})</TabsTrigger>
       </TabsList>
 
       <TabsContent value="desc" className="flex-1 overflow-auto">
@@ -243,10 +245,18 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       </TabsContent>
 
       <TabsContent value="tasks" className="flex-1 overflow-auto">
-        <TasksTab selected={selected} user={user} />
+        <TasksTab
+          selected={selected}
+          user={user}
+          onCountChange={setTasksCount}
+        />
       </TabsContent>
       <TabsContent value="chat" className="flex-1 overflow-auto">
-        <ChatTab selected={selected} userEmail={user?.email} />
+        <ChatTab
+          selected={selected}
+          userEmail={user?.email}
+          onCountChange={setMessageCount}
+        />
       </TabsContent>
 
       <Dialog open={isHWModalOpen} onOpenChange={setIsHWModalOpen}>
