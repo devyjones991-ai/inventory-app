@@ -18,4 +18,5 @@ export default {
       },
     ],
   },
+  testPathIgnorePatterns: ['<rootDir>/supabase/'],
 }
