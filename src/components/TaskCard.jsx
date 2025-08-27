@@ -22,9 +22,8 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
     () =>
       ({
         запланировано: 'badge-info',
-        'в процессе': 'badge-warning',
         'в работе': 'badge-warning',
-        завершено: 'badge-success',
+        выполнено: 'badge-success',
         отменено: 'badge-error',
       })[item.status] || 'badge',
     [item.status],
