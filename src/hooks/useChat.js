@@ -15,7 +15,7 @@ export default function useChat({ objectId, userEmail, search }) {
   const channelRef = useRef(null)
   const fileInputRef = useRef(null)
   const optimisticTimersRef = useRef({})
-  const { fetchMessages } = useChatMessages()
+  const { fetchMessages, sendMessage } = useChatMessages()
   const LIMIT = 20
 
   const offsetRef = useRef(0)
@@ -259,18 +259,12 @@ export default function useChat({ objectId, userEmail, search }) {
       delete optimisticTimersRef.current[optimisticId]
     }, 5000)
 
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .insert([
-        {
-          object_id: objectId,
-          sender: userEmail,
-          content: newMessage.trim(),
-          client_generated_id: optimisticId,
-        },
-      ])
-      .select()
-      .single()
+    const { data, error } = await sendMessage({
+      objectId,
+      sender: userEmail,
+      content: newMessage.trim(),
+      file,
+    })
 
     const timer = optimisticTimersRef.current[optimisticId]
 
@@ -289,12 +283,19 @@ export default function useChat({ objectId, userEmail, search }) {
         clearTimeout(timer)
         delete optimisticTimersRef.current[optimisticId]
       }
-      setMessages((prev) =>
-        [
-          ...prev.filter((m) => m.client_generated_id !== optimisticId),
-          data,
-        ].sort(sortByCreatedAt),
-      )
+      setMessages((prev) => {
+        const filtered = prev.filter(
+          (m) => m.client_generated_id !== optimisticId,
+        )
+        if (filtered.some((m) => m.id === data.id)) {
+          return filtered.sort(sortByCreatedAt)
+        }
+        return [...filtered, data].sort(sortByCreatedAt)
+      })
+      if (filePreview) URL.revokeObjectURL(filePreview)
+      setFile(null)
+      setFilePreview(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
     setNewMessage('')
     setSending(false)
