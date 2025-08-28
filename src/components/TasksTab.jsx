@@ -74,6 +74,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
 
   useEffect(() => {
     registerAddHandler?.(openTaskModal)
+    return () => registerAddHandler?.(null)
   }, [registerAddHandler, openTaskModal])
 
   useEffect(() => {

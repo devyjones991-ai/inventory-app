@@ -37,7 +37,12 @@ import { Button } from '@/components/ui/button'
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
 
-function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
+function InventoryTabs({
+  selected,
+  onUpdateSelected,
+  onTabChange = () => {},
+  registerAddHandler,
+}) {
   const { user } = useAuth()
 
   // --- вкладки и описание ---
@@ -250,7 +255,7 @@ function InventoryTabs({ selected, onUpdateSelected, onTabChange = () => {} }) {
       <TabsContent value="tasks" className="flex-1 overflow-auto">
         <TasksTab
           selected={selected}
-          user={user}
+          registerAddHandler={registerAddHandler}
           onCountChange={setTasksCount}
         />
       </TabsContent>
@@ -346,6 +351,7 @@ InventoryTabs.propTypes = {
   }),
   onUpdateSelected: PropTypes.func.isRequired,
   onTabChange: PropTypes.func,
+  registerAddHandler: PropTypes.func,
 }
 
 export default InventoryTabs

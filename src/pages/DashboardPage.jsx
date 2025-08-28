@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import InventorySidebar from '@/components/InventorySidebar'
 import InventoryTabs from '@/components/InventoryTabs'
 import AccountModal from '@/components/AccountModal'
@@ -59,6 +59,14 @@ export default function DashboardPage() {
     openEditModal,
     closeObjectModal,
   } = useDashboardModals()
+
+  const [addHandler, setAddHandler] = useState(() => openAddModal)
+  const registerAddHandler = useCallback(
+    (handler) => {
+      setAddHandler(() => handler || openAddModal)
+    },
+    [openAddModal],
+  )
 
   const importInputRef = useRef(null)
 
@@ -171,10 +179,7 @@ export default function DashboardPage() {
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰
               </button>
-              <Button
-                className="flex items-center gap-1"
-                onClick={openAddModal}
-              >
+              <Button className="flex items-center gap-1" onClick={addHandler}>
                 <PlusIcon className="w-4 h-4" /> Добавить
               </Button>
               {(isAdmin || isManager) && (
@@ -217,6 +222,7 @@ export default function DashboardPage() {
               selected={selected}
               onUpdateSelected={onUpdateSelected}
               onTabChange={onTabChange}
+              registerAddHandler={registerAddHandler}
             />
           </div>
         </div>
