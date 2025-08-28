@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/supabaseClient'
 import { handleSupabaseError } from '@/utils/handleSupabaseError'
+import logger from '@/utils/logger'
 import { useChatMessages } from './useChatMessages.js'
 
 export default function useChat({ objectId, userEmail, search }) {
@@ -35,7 +36,7 @@ export default function useChat({ objectId, userEmail, search }) {
       const { data, error } = await fetchMessages(objectId, params)
       if (currentSearch !== activeSearchRef.current) return
       if (error) {
-        console.error('loadMore error', {
+        logger.error('loadMore error', {
           name: error.name,
           message: error.message,
           stack: error.stack,
@@ -176,7 +177,7 @@ export default function useChat({ objectId, userEmail, search }) {
         },
       )
       .subscribe((status) => {
-        console.log('Channel status:', status)
+        logger.info('Channel status:', status)
         if (status === 'SUBSCRIBED') {
           loadMore().then(() => {
             setTimeout(() => autoScrollToBottom(true), 0)

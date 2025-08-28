@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/supabaseClient'
 import { toast } from 'react-hot-toast'
 import { handleSupabaseError } from '@/utils/handleSupabaseError'
+import logger from '@/utils/logger'
 import { exportInventory, importInventory } from '@/utils/exportImport'
 
 const SELECTED_OBJECT_KEY = 'selectedObjectId'
@@ -32,7 +33,7 @@ export function useObjectList() {
           setFetchError('Недостаточно прав')
           return
         }
-        console.error('Ошибка загрузки объектов:', error)
+        logger.error('Ошибка загрузки объектов:', error)
         toast.error('Ошибка загрузки объектов: ' + error.message)
         await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')
         setFetchError('Ошибка загрузки объектов: ' + error.message)
@@ -41,7 +42,7 @@ export function useObjectList() {
       data = fetchedData
       setObjects(data)
     } catch (err) {
-      console.error('Ошибка загрузки объектов:', err)
+      logger.error('Ошибка загрузки объектов:', err)
       toast.error('Ошибка загрузки объектов: ' + err.message)
       setFetchError('Ошибка загрузки объектов: ' + err.message)
       return
