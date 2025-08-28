@@ -5,6 +5,7 @@ import TaskCard from './TaskCard'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '@/hooks/useTasks'
+import { useAuth } from '@/hooks/useAuth'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -49,6 +50,9 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     updateTask,
     deleteTask,
   } = useTasks(selected?.id)
+
+  const { isAdmin, isManager } = useAuth()
+  const canManage = isAdmin || isManager
 
   useEffect(() => {
     if (selected?.id) {
@@ -180,6 +184,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               onEdit={() => handleEditTask(task)}
               onDelete={() => setTaskDeleteId(task.id)}
               onView={() => setViewingTask(task)}
+              canManage={canManage}
             />
           ))}
         </div>
