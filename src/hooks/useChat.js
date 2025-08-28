@@ -190,6 +190,10 @@ export default function useChat({ objectId, userEmail, search }) {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
       }
+      Object.values(optimisticTimersRef.current).forEach((timer) => {
+        clearTimeout(timer)
+      })
+      optimisticTimersRef.current = {}
     }
   }, [objectId, loadMore, autoScrollToBottom])
 
