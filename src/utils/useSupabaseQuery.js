@@ -10,21 +10,21 @@ import { supabase } from '@/supabaseClient'
 export function useSupabaseQuery(queryBuilder, deps = []) {
   const [data, setData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isError, setIsError] = useState(null)
+  const [error, setError] = useState(null)
 
   // queryBuilder присутствует в массиве зависимостей; указывайте дополнительные deps через параметр
   useEffect(() => {
     let active = true
     const controller = new AbortController()
     setIsLoading(true)
-    setIsError(null)
+    setError(null)
 
     async function run() {
       try {
         const { data, error } = await queryBuilder(supabase, controller.signal)
         if (!active) return
         if (error) {
-          setIsError(error)
+          setError(error)
           setData(null)
         } else {
           setData(data)
@@ -32,7 +32,7 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
       } catch (err) {
         if (err?.name === 'AbortError') return
         if (active) {
-          setIsError(err)
+          setError(err)
           setData(null)
         }
       } finally {
@@ -48,5 +48,5 @@ export function useSupabaseQuery(queryBuilder, deps = []) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryBuilder, ...deps])
 
-  return { data, isLoading, isError }
+  return { data, isLoading, error }
 }
