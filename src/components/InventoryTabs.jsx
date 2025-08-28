@@ -114,10 +114,15 @@ function InventoryTabs({
   }, [loadedHardware])
 
   const openHWModal = useCallback(() => {
-    reset(defaultHWForm)
+    reset({
+      name: '',
+      location: '',
+      purchase_status: '�?�� �?���>���ؐ�?',
+      install_status: "�?�� �?�?�'���?�?�?�>��?",
+    })
     setEditingHW(null)
     setIsHWModalOpen(true)
-  }, [reset, defaultHWForm])
+  }, [reset])
 
   const closeHWModal = useCallback(() => {
     setIsHWModalOpen(false)
@@ -131,7 +136,12 @@ function InventoryTabs({
       await createHardware({ ...data, object_id: selected.id })
     }
     setIsHWModalOpen(false)
-    reset(defaultHWForm)
+    reset({
+      name: '',
+      location: '',
+      purchase_status: '�?�� �?���>���ؐ�?',
+      install_status: "�?�� �?�?�'���?�?�?�>��?",
+    })
   })
 
   const handleEditHW = useCallback(
