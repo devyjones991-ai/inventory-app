@@ -194,20 +194,24 @@ describe('ChatTab', () => {
     }
 
     const firstFooter = (await screen.findByText(mockMessages[0].content))
-      .closest('.chat')
+      .closest('[data-testid="chat-message"]')
       .querySelector('.text-xs')
     expect(firstFooter.textContent).toContain('✓')
 
     const secondFooter = (await screen.findByText(mockMessages[1].content))
-      .closest('.chat')
+      .closest('[data-testid="chat-message"]')
       .querySelector('.text-xs')
     expect(secondFooter.textContent).not.toContain('✓')
 
     const myBubble = await screen.findByText('Привет')
-    expect(myBubble.closest('.chat')).toHaveClass('chat-end')
+    expect(myBubble.closest('[data-testid="chat-message"]')).toHaveClass(
+      'justify-end',
+    )
 
     const otherBubble = await screen.findByText('Здравствуйте')
-    expect(otherBubble.closest('.chat')).toHaveClass('chat-start')
+    expect(otherBubble.closest('[data-testid="chat-message"]')).toHaveClass(
+      'justify-start',
+    )
 
     const textarea = screen.getByPlaceholderText(
       'Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)',
