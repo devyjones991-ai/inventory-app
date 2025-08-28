@@ -74,7 +74,7 @@ describe('TasksTab', () => {
       data: {
         id: 't1',
         title: 'Новая задача',
-        status: 'запланировано',
+        status: 'planned',
         assignee: null,
         due_date: '2024-05-10',
         notes: null,
@@ -107,7 +107,7 @@ describe('TasksTab', () => {
         title: 'Новая задача',
         assignee: 'Иван Петров',
         due_date: '2024-05-10',
-        status: 'запланировано',
+        status: 'planned',
         notes: '',
         object_id: 1,
       })
@@ -118,7 +118,7 @@ describe('TasksTab', () => {
     const task = {
       id: 't1',
       title: 'Существующая задача',
-      status: 'в работе',
+      status: 'in_progress',
       assignee: 'Старый исполнитель',
       due_date: '2024-01-01',
       notes: 'Старые заметки',
@@ -151,7 +151,7 @@ describe('TasksTab', () => {
     await waitFor(() => {
       expect(mockUpdateTask).toHaveBeenCalledWith('t1', {
         title: 'Обновленная задача',
-        status: 'в работе',
+        status: 'in_progress',
         assignee: 'Новый исполнитель',
         due_date: '2024-01-01',
         notes: 'Старые заметки',
@@ -161,7 +161,7 @@ describe('TasksTab', () => {
   })
 
   it('не показывает кнопки редактирования и удаления без прав', () => {
-    const task = { id: 't1', title: 'Задача', status: 'в работе' }
+    const task = { id: 't1', title: 'Задача', status: 'in_progress' }
     mockTasks = [task]
     mockUseAuth.mockReturnValue({
       user: { id: 'u2', email: 'test@example.com' },

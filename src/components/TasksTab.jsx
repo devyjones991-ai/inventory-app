@@ -29,6 +29,17 @@ import {
 
 const PAGE_SIZE = 20
 
+const STATUS_MAP = {
+  запланировано: 'planned',
+  'в работе': 'in_progress',
+  выполнено: 'done',
+  отменено: 'canceled',
+}
+
+const REVERSE_STATUS_MAP = Object.fromEntries(
+  Object.entries(STATUS_MAP).map(([k, v]) => [v, k]),
+)
+
 function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [taskForm, setTaskForm] = useState({
     title: '',
@@ -90,7 +101,11 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const handleTaskSubmit = useCallback(
     async (e) => {
       e.preventDefault()
-      const payload = { ...taskForm, object_id: selected?.id }
+      const payload = {
+        ...taskForm,
+        object_id: selected?.id,
+        status: STATUS_MAP[taskForm.status],
+      }
       try {
         if (editingTask) {
           await updateTask(editingTask.id, payload)
@@ -117,7 +132,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       title: task.title || '',
       assignee: task.assignee || '',
       due_date: task.due_date || '',
-      status: task.status || 'запланировано',
+      status: REVERSE_STATUS_MAP[task.status] || 'запланировано',
       notes: task.notes || '',
     })
     setEditingTask(task)
@@ -299,7 +314,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               </p>
             )}
             <p>
-              <strong>Статус:</strong> {viewingTask?.status}
+              <strong>Статус:</strong>{' '}
+              {REVERSE_STATUS_MAP[viewingTask?.status] || viewingTask?.status}
             </p>
             {viewingTask?.notes && (
               <p className="whitespace-pre-wrap break-words">

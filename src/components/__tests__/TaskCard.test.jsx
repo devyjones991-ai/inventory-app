@@ -9,7 +9,7 @@ import TaskCard from '@/components/TaskCard.jsx'
 const task = {
   id: 't1',
   title: 'Тестовая задача',
-  status: 'запланировано',
+  status: 'planned',
 }
 
 describe('TaskCard', () => {

@@ -17,15 +17,23 @@ function formatDate(dateStr) {
   }
 }
 
+const STATUS_LABELS = {
+  planned: 'запланировано',
+  in_progress: 'в работе',
+  done: 'выполнено',
+  canceled: 'отменено',
+}
+
+const STATUS_CLASSES = {
+  planned: 'badge-info',
+  in_progress: 'badge-warning',
+  done: 'badge-success',
+  canceled: 'badge-error',
+}
+
 function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
   const badgeClass = useMemo(
-    () =>
-      ({
-        запланировано: 'badge-info',
-        'в работе': 'badge-warning',
-        выполнено: 'badge-success',
-        отменено: 'badge-error',
-      })[item.status] || 'badge',
+    () => STATUS_CLASSES[item.status] || 'badge',
     [item.status],
   )
 
@@ -75,7 +83,9 @@ function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
         )}
       </CardHeader>
       <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
-        <span className={`badge ${badgeClass}`}>{item.status}</span>
+        <span className={`badge ${badgeClass}`}>
+          {STATUS_LABELS[item.status] || item.status}
+        </span>
         {canManage && (
           <>
             <Button
