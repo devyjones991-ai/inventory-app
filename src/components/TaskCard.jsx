@@ -32,6 +32,7 @@ const STATUS_CLASSES = {
 }
 
 function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
+  const allowManage = Boolean(canManage)
   const badgeClass = useMemo(
     () => STATUS_CLASSES[item.status] || 'badge',
     [item.status],
@@ -86,7 +87,7 @@ function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
         <span className={`badge ${badgeClass}`}>
           {STATUS_LABELS[item.status] || item.status}
         </span>
-        {canManage && (
+        {allowManage && (
           <>
             <Button
               size="sm"
