@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { supabase } from '@/supabaseClient'
 import { handleSupabaseError } from '@/utils/handleSupabaseError'
+import logger from '@/utils/logger'
 import { useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
 import { toast } from 'react-hot-toast'
@@ -29,7 +30,7 @@ export function useChatMessages() {
             .order('created_at', { ascending: false })
         } catch (error) {
           if (error instanceof TypeError) {
-            console.error('Supabase unavailable', {
+            logger.error('Supabase unavailable', {
               name: error.name,
               message: error.message,
               stack: error.stack,
@@ -57,7 +58,7 @@ export function useChatMessages() {
         if (result.data) result.data.reverse()
         return result
       } catch (error) {
-        console.error('fetchMessages error', {
+        logger.error('fetchMessages error', {
           name: error.name,
           message: error.message,
           stack: error.stack,
@@ -101,7 +102,7 @@ export function useChatMessages() {
             .single()
         } catch (error) {
           if (error instanceof TypeError) {
-            console.error('Supabase unavailable', {
+            logger.error('Supabase unavailable', {
               name: error.name,
               message: error.message,
               stack: error.stack,
@@ -114,7 +115,7 @@ export function useChatMessages() {
         if (result.error) throw result.error
         return result
       } catch (error) {
-        console.error('sendMessage error', {
+        logger.error('sendMessage error', {
           name: error.name,
           message: error.message,
           stack: error.stack,

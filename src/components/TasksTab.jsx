@@ -6,6 +6,7 @@ import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '@/hooks/useTasks'
 import { useAuth } from '@/hooks/useAuth'
+import logger from '@/utils/logger'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -98,7 +99,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         }
         closeTaskModal()
       } catch (err) {
-        console.error('Error saving task:', err)
+        logger.error('Error saving task:', err)
       }
     },
     [
@@ -129,7 +130,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         await deleteTask(taskDeleteId)
         setTaskDeleteId(null)
       } catch (err) {
-        console.error('Error deleting task:', err)
+        logger.error('Error deleting task:', err)
       }
     }
   }, [taskDeleteId, deleteTask])

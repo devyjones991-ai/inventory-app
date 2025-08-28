@@ -36,7 +36,7 @@ export default function useChat({ objectId, userEmail, search }) {
       const { data, error } = await fetchMessages(objectId, params)
       if (currentSearch !== activeSearchRef.current) return
       if (error) {
-        console.error('loadMore error', {
+        logger.error('loadMore error', {
           name: error.name,
           message: error.message,
           stack: error.stack,
