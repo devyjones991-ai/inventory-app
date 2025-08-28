@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '@/supabaseClient'
 import { handleSupabaseError } from '@/utils/handleSupabaseError'
 import { useNavigate } from 'react-router-dom'
@@ -174,6 +174,77 @@ export function useTasks(objectId) {
     }
     return { data: del, error: err }
   }, [])
+
+  // Realtime updates for tasks of the selected object
+  useEffect(() => {
+    if (!objectId) return
+    // Guard for tests or environments without realtime configured
+    if (typeof supabase?.channel !== 'function') return
+
+    const channel = supabase
+      .channel(`tasks:${objectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tasks',
+          filter: `object_id=eq.${objectId}`,
+        },
+        (payload) => {
+          const newTask = payload?.new
+          if (!newTask) return
+          setTasks((prev) => {
+            // Skip if already present (e.g., after local create)
+            const exists = prev.some((t) => t.id === newTask.id)
+            if (exists) {
+              return prev.map((t) => (t.id === newTask.id ? newTask : t))
+            }
+            return [newTask, ...prev]
+          })
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tasks',
+          filter: `object_id=eq.${objectId}`,
+        },
+        (payload) => {
+          const updated = payload?.new
+          if (!updated) return
+          setTasks((prev) =>
+            prev.map((t) => (t.id === updated.id ? updated : t)),
+          )
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'tasks',
+          filter: `object_id=eq.${objectId}`,
+        },
+        (payload) => {
+          const old = payload?.old
+          if (!old) return
+          setTasks((prev) => prev.filter((t) => t.id !== old.id))
+        },
+      )
+
+    channel.subscribe()
+
+    return () => {
+      try {
+        supabase.removeChannel(channel)
+      } catch {
+        // ignore
+      }
+    }
+  }, [objectId])
 
   return {
     tasks,
