@@ -17,7 +17,7 @@ function formatDate(dateStr) {
   }
 }
 
-function TaskCard({ item, onEdit, onDelete, onView }) {
+function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
   const badgeClass = useMemo(
     () =>
       ({
@@ -56,8 +56,6 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
     },
     [onDelete],
   )
-
-  const canManage = true
 
   return (
     <Card
@@ -119,4 +117,5 @@ TaskCard.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onView: PropTypes.func.isRequired,
+  canManage: PropTypes.bool,
 }
