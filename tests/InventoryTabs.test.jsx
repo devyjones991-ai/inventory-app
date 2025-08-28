@@ -8,17 +8,22 @@ var mockLoadHardware,
   mockNavigate,
   mockHardware,
   mockCreateHardware,
-  mockUpdateHardware
+  mockUpdateHardware,
+  mockReset
 
-jest.mock('@/hooks/usePersistedForm.js', () => () => ({
-  register: jest.fn(),
-  handleSubmit: (fn) => fn,
-  reset: jest.fn(),
-  watch: jest.fn((field) =>
-    field === 'purchase_status' ? 'не оплачен' : 'не установлен',
-  ),
-  formState: { errors: {} },
-}))
+jest.mock('@/hooks/usePersistedForm.js', () => () => {
+  mockReset = jest.fn()
+  return {
+    register: jest.fn(),
+    handleSubmit: (fn) => fn,
+    reset: mockReset,
+    setValue: jest.fn(),
+    watch: jest.fn((field) =>
+      field === 'purchase_status' ? 'не оплачен' : 'не установлен',
+    ),
+    formState: { errors: {} },
+  }
+})
 
 jest.mock('@/hooks/useHardware.js', () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null })
@@ -212,7 +217,8 @@ describe('InventoryTabs', () => {
     await userEvent.click(screen.getByRole('tab', { name: /Железо/ }))
     const editBtn = await screen.findByRole('button', { name: 'Изменить' })
     await userEvent.click(editBtn)
-    expect(screen.getByPlaceholderText('Название')).toBeInTheDocument()
+    await screen.findByPlaceholderText('Название')
+    expect(mockReset).toHaveBeenLastCalledWith(mockHardware[0])
   })
 
   it('скрывает кнопки сохранения описания после сохранения', async () => {
