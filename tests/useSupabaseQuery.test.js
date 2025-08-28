@@ -23,6 +23,6 @@ describe('useSupabaseQuery', () => {
     })
 
     expect(signal.aborted).toBe(true)
-    expect(result.current.isError).toBeNull()
+    expect(result.current.error).toBeNull()
   })
 })
