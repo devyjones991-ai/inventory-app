@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/supabaseClient'
 import { handleSupabaseError } from '@/utils/handleSupabaseError'
+import logger from '@/utils/logger'
 import { useChatMessages } from './useChatMessages.js'
 
 export default function useChat({ objectId, userEmail, search }) {
@@ -98,7 +99,7 @@ export default function useChat({ objectId, userEmail, search }) {
     }
   }, [])
 
-  // Handle file preview
+  // Предпросмотр файла
   useEffect(() => {
     if (!file) {
       setFilePreview(null)
@@ -176,7 +177,7 @@ export default function useChat({ objectId, userEmail, search }) {
         },
       )
       .subscribe((status) => {
-        console.log('Channel status:', status)
+        logger.info('Channel status:', status)
         if (status === 'SUBSCRIBED') {
           loadMore().then(() => {
             setTimeout(() => autoScrollToBottom(true), 0)
@@ -217,7 +218,7 @@ export default function useChat({ objectId, userEmail, search }) {
     }
   }, [messages, autoScrollToBottom])
 
-  // Markiere Nachrichten als gelesen wenn das Fenster sichtbar ist
+  // Отмечаем сообщения как прочитанные, когда окно видно
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && messages.length > 0) {
