@@ -4,7 +4,6 @@ export default {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  testPathIgnorePatterns: ['<rootDir>/supabase/functions/'],
   transform: {
     '^.+\\.[tj]sx?$': [
       'babel-jest',
