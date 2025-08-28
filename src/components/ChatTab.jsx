@@ -141,18 +141,21 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
                 return (
                   <div
                     key={m.id}
-                    className={`chat ${isOwn ? 'chat-end' : 'chat-start'}`}
+                    data-testid="chat-message"
+                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                   >
-                    {!isOwn && (
-                      <div className="chat-header">{m.sender || 'user'}</div>
-                    )}
                     <div
-                      className={`chat-bubble max-w-[80%] sm:max-w-[60%] whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
+                      className={`max-w-[80%] sm:max-w-[60%] whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
                         isOwn
-                          ? 'bg-primary text-primary-content'
-                          : 'bg-base-100 text-base-content'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
                       }`}
                     >
+                      {!isOwn && (
+                        <span className="mb-1 font-semibold">
+                          {m.sender || 'user'}
+                        </span>
+                      )}
                       {m.content && (
                         <span className="whitespace-pre-wrap break-words">
                           {linkifyText(m.content)}
