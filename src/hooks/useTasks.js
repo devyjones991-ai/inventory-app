@@ -23,12 +23,13 @@ export function useTasks(objectId) {
         .from('tasks')
         .select(baseFields)
         .eq('object_id', objId)
+      // Load newest tasks first
       let result = await baseQuery
-        .order('created_at')
+        .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
       if (isSchemaCacheError(result.error)) {
         result = await baseQuery
-          .order('created_at')
+          .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1)
       }
       if (result.error) throw result.error
@@ -152,7 +153,8 @@ export function useTasks(objectId) {
   const createTask = useCallback(async (data) => {
     const { data: newTask, error: err } = await insertTask(data)
     if (!err && newTask) {
-      setTasks((prev) => [...prev, newTask])
+      // Prepend to show immediately at the top (matches newest-first order)
+      setTasks((prev) => [newTask, ...prev])
     }
     return { data: newTask, error: err }
   }, [])
