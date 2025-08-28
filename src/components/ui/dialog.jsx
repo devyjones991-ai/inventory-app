@@ -25,16 +25,60 @@ const DialogOverlay = React.forwardRef(function DialogOverlay(
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 export const DialogContent = React.forwardRef(function DialogContent(
-  { className, children, ...props },
+  { className, children, draggable = false, ...props },
   ref,
 ) {
+  const contentRef = React.useRef(null)
+  const [position, setPosition] = React.useState({ x: 0, y: 0 })
+  const dragStart = React.useRef(null)
+
+  React.useImperativeHandle(ref, () => contentRef.current)
+
+  const isPointerFine =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(pointer: fine)').matches
+
+  const handleMouseDown = (e) => {
+    if (!draggable || !isPointerFine) return
+    if (!e.target.closest('[data-dialog-handle]')) return
+    dragStart.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const handleMouseMove = (e) => {
+    if (!dragStart.current) return
+    setPosition({
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y,
+    })
+  }
+
+  const handleMouseUp = () => {
+    dragStart.current = null
+    window.removeEventListener('mousemove', handleMouseMove)
+    window.removeEventListener('mouseup', handleMouseUp)
+  }
+
+  const transform =
+    draggable && isPointerFine
+      ? `translate(-50%, -50%) translate(${position.x}px, ${position.y}px)`
+      : undefined
+
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
       <DialogPrimitive.Content
-        ref={ref}
+        ref={contentRef}
+        onMouseDown={handleMouseDown}
+        style={transform ? { transform } : undefined}
         className={cn(
-          'fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg max-h-screen overflow-y-auto -translate-x-1/2 -translate-y-1/2 gap-4 rounded-md bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+          'fixed bottom-0 left-1/2 z-50 grid w-full max-h-[80vh] -translate-x-1/2 gap-4 overflow-y-auto rounded-t-md bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:bottom-auto sm:top-1/2 sm:max-h-screen sm:rounded-md sm:-translate-y-1/2',
+          draggable && isPointerFine && 'cursor-move',
           className,
         )}
         {...props}
@@ -103,6 +147,7 @@ DialogDescription.displayName = DialogPrimitive.Description.displayName
 DialogContent.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
+  draggable: PropTypes.bool,
 }
 
 DialogHeader.propTypes = {

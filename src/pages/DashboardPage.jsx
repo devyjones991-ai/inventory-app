@@ -235,7 +235,7 @@ export default function DashboardPage() {
             }
           }}
         >
-          <DialogContent className="relative w-full max-w-md">
+          <DialogContent draggable className="w-full max-w-md">
             <Button
               size="icon"
               className="absolute right-2 top-2"
@@ -243,7 +243,7 @@ export default function DashboardPage() {
             >
               ✕
             </Button>
-            <DialogHeader>
+            <DialogHeader data-dialog-handle>
               <DialogTitle>
                 {editingObject ? 'Редактировать объект' : 'Добавить объект'}
               </DialogTitle>
