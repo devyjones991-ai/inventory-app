@@ -36,6 +36,12 @@ import {
 import { Button } from '@/components/ui/button'
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
+const DEFAULT_HW_FORM = {
+  name: '',
+  location: '',
+  purchase_status: 'не оплачен',
+  install_status: 'не установлен',
+}
 
 function InventoryTabs({
   selected,
@@ -56,12 +62,6 @@ function InventoryTabs({
   const [messageCount, setMessageCount] = useState(0)
   const [isHWModalOpen, setIsHWModalOpen] = useState(false)
   const [editingHW, setEditingHW] = useState(null)
-  const defaultHWForm = {
-    name: '',
-    location: '',
-    purchase_status: 'не оплачен',
-    install_status: 'не установлен',
-  }
   const hardwareSchema = z.object({
     name: z.string().min(1, 'Введите название'),
     location: z.string().optional(),
@@ -82,7 +82,7 @@ function InventoryTabs({
     formState: { errors },
   } = usePersistedForm(
     selected ? HW_FORM_KEY(selected.id) : null,
-    defaultHWForm,
+    DEFAULT_HW_FORM,
     isHWModalOpen,
     { resolver: zodResolver(hardwareSchema) },
   )
@@ -114,12 +114,7 @@ function InventoryTabs({
   }, [loadedHardware])
 
   const openHWModal = useCallback(() => {
-    reset({
-      name: '',
-      location: '',
-      purchase_status: '�?�� �?���>���ؐ�?',
-      install_status: "�?�� �?�?�'���?�?�?�>��?",
-    })
+    reset(DEFAULT_HW_FORM)
     setEditingHW(null)
     setIsHWModalOpen(true)
   }, [reset])
@@ -136,22 +131,19 @@ function InventoryTabs({
       await createHardware({ ...data, object_id: selected.id })
     }
     setIsHWModalOpen(false)
-    reset({
-      name: '',
-      location: '',
-      purchase_status: '�?�� �?���>���ؐ�?',
-      install_status: "�?�� �?�?�'���?�?�?�>��?",
-    })
+    reset(DEFAULT_HW_FORM)
   })
 
-  const handleEditHW = useCallback(
-    (item) => {
-      reset(item)
-      setEditingHW(item)
-      setIsHWModalOpen(true)
-    },
-    [reset],
-  )
+  const handleEditHW = useCallback((item) => {
+    setEditingHW(item)
+    setIsHWModalOpen(true)
+  }, [])
+
+  useEffect(() => {
+    if (isHWModalOpen && editingHW) {
+      reset(editingHW)
+    }
+  }, [isHWModalOpen, editingHW, reset])
 
   const handleDeleteHW = useCallback(
     async (item) => {
