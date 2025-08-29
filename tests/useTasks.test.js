@@ -50,6 +50,22 @@ describe('useTasks', () => {
     )
   })
 
+  it('возвращает ошибку при недопустимом статусе', async () => {
+    const { result } = renderHook(() => useTasks())
+    const { error } = await result.current.createTask({
+      title: 't',
+      status: 'unknown',
+    })
+    expect(error).toBeInstanceOf(Error)
+    expect(error.message).toBe('Недопустимый статус задачи')
+    expect(mockHandleSupabaseError).toHaveBeenCalledWith(
+      error,
+      expect.any(Function),
+      'Недопустимый статус задачи',
+    )
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
   it('успешно загружает задачи при ошибке schema cache', async () => {
     mockRangeOrder
       .mockResolvedValueOnce({

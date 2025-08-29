@@ -3,6 +3,7 @@ import { supabase } from '@/supabaseClient'
 import { handleSupabaseError } from '@/utils/handleSupabaseError'
 import { useNavigate } from 'react-router-dom'
 import logger from '@/utils/logger'
+import { TASK_STATUSES } from '@/constants/taskStatus'
 
 export function useTasks(objectId) {
   const navigate = useNavigate()
@@ -65,6 +66,9 @@ export function useTasks(objectId) {
   const insertTask = useCallback(
     async (data) => {
       try {
+        if (!TASK_STATUSES.includes(data.status)) {
+          throw new Error('Недопустимый статус задачи')
+        }
         const fieldsWithDueDate =
           'id, title, status, assignee, due_date, notes, created_at'
         const fieldsWithoutDueDate =
@@ -109,7 +113,11 @@ export function useTasks(objectId) {
         if (result.error) throw result.error
         return result
       } catch (err) {
-        await handleSupabaseError(err, navigate, 'Ошибка добавления задачи')
+        await handleSupabaseError(
+          err,
+          navigate,
+          err.message || 'Ошибка добавления задачи',
+        )
         return { data: null, error: err }
       }
     },
