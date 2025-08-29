@@ -25,8 +25,7 @@ const STATUS_CLASSES = {
   canceled: 'badge-error',
 }
 
-function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
-  const allowManage = Boolean(canManage)
+function TaskCard({ item, onEdit, onDelete, onView }) {
   const badgeClass = useMemo(
     () => STATUS_CLASSES[item.status] || 'badge',
     [item.status],
@@ -81,30 +80,26 @@ function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
         <span className={`badge ${badgeClass}`}>
           {REVERSE_STATUS_MAP[item.status] || item.status}
         </span>
-        {allowManage && (
-          <>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="w-full xs:w-auto"
-              title="Редактировать"
-              aria-label="Редактировать задачу"
-              onClick={handleEdit}
-            >
-              <PencilIcon className="w-4 h-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="w-full xs:w-auto"
-              title="Удалить"
-              aria-label="Удалить задачу"
-              onClick={handleDelete}
-            >
-              <TrashIcon className="w-4 h-4" />
-            </Button>
-          </>
-        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="w-full xs:w-auto"
+          title="Редактировать"
+          aria-label="Редактировать задачу"
+          onClick={handleEdit}
+        >
+          <PencilIcon className="w-4 h-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="w-full xs:w-auto"
+          title="Удалить"
+          aria-label="Удалить задачу"
+          onClick={handleDelete}
+        >
+          <TrashIcon className="w-4 h-4" />
+        </Button>
       </CardContent>
     </Card>
   )
@@ -122,5 +117,4 @@ TaskCard.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onView: PropTypes.func.isRequired,
-  canManage: PropTypes.bool,
 }
