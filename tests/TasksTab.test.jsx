@@ -8,7 +8,6 @@ var mockTasks = [],
   mockCreateTask,
   mockUpdateTask
 const mockNavigate = jest.fn()
-const mockUseAuth = jest.fn()
 
 jest.mock('@/hooks/useTasks.js', () => {
   mockTasks = []
@@ -30,7 +29,7 @@ jest.mock('@/hooks/useTasks.js', () => {
 })
 
 jest.mock('@/hooks/useAuth.js', () => ({
-  useAuth: () => mockUseAuth(),
+  useAuth: () => ({ user: { id: 'u1', email: 'me@example.com' } }),
 }))
 
 jest.mock('react-hot-toast', () => ({
@@ -51,11 +50,6 @@ describe('TasksTab', () => {
     mockCreateTask.mockResolvedValue({ data: null, error: null })
     mockUpdateTask.mockResolvedValue({ data: null, error: null })
     jest.clearAllMocks()
-    mockUseAuth.mockReturnValue({
-      user: { id: 'u1', email: 'me@example.com' },
-      isAdmin: true,
-      isManager: false,
-    })
   })
 
   it('показывает сообщение при отсутствии задач', async () => {
@@ -160,14 +154,9 @@ describe('TasksTab', () => {
     })
   })
 
-  it('не показывает кнопки редактирования и удаления без прав', () => {
+  it('показывает кнопки редактирования и удаления для всех пользователей', () => {
     const task = { id: 't1', title: 'Задача', status: 'in_progress' }
     mockTasks = [task]
-    mockUseAuth.mockReturnValue({
-      user: { id: 'u2', email: 'test@example.com' },
-      isAdmin: false,
-      isManager: false,
-    })
 
     render(
       <MemoryRouter>
@@ -175,9 +164,7 @@ describe('TasksTab', () => {
       </MemoryRouter>,
     )
 
-    expect(
-      screen.queryByLabelText('Редактировать задачу'),
-    ).not.toBeInTheDocument()
-    expect(screen.queryByLabelText('Удалить задачу')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Редактировать задачу')).toBeInTheDocument()
+    expect(screen.getByLabelText('Удалить задачу')).toBeInTheDocument()
   })
 })

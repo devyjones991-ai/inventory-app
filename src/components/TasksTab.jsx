@@ -5,7 +5,6 @@ import TaskCard from './TaskCard'
 import ErrorMessage from './ErrorMessage'
 import ConfirmModal from './ConfirmModal'
 import { useTasks } from '@/hooks/useTasks'
-import { useAuth } from '@/hooks/useAuth'
 import logger from '@/utils/logger'
 import { STATUS_MAP, REVERSE_STATUS_MAP } from '@/constants/taskStatus'
 
@@ -55,8 +54,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     deleteTask,
   } = useTasks(selected?.id)
 
-  const { isAdmin, isManager } = useAuth()
-  const canManage = isAdmin || isManager
+  const canManage = true
 
   useEffect(() => {
     if (selected?.id) {
