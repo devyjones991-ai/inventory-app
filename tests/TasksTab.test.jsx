@@ -154,6 +154,7 @@ describe('TasksTab', () => {
     })
   })
 
+
   it('показывает кнопки редактирования и удаления для всех пользователей', () => {
     const task = { id: 't1', title: 'Задача', status: 'in_progress' }
     mockTasks = [task]

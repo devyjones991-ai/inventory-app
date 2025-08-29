@@ -54,7 +54,9 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     deleteTask,
   } = useTasks(selected?.id)
 
+
   const canManage = true
+
 
   useEffect(() => {
     if (selected?.id) {
@@ -196,7 +198,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               onEdit={() => handleEditTask(task)}
               onDelete={() => setTaskDeleteId(task.id)}
               onView={() => setViewingTask(task)}
-              canManage={canManage}
+              canManage={true}
             />
           ))}
         </div>
