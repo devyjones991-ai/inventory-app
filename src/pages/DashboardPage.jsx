@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog'
 
 export default function DashboardPage() {
-  const { user, isAdmin, isManager } = useAuth()
+  const { user } = useAuth()
   const { signOut } = useSupabaseAuth()
   const [activeTab, setActiveTab] = useState('desc')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -182,26 +182,24 @@ export default function DashboardPage() {
               <Button className="flex items-center gap-1" onClick={addHandler}>
                 <PlusIcon className="w-4 h-4" /> Добавить
               </Button>
-              {(isAdmin || isManager) && (
-                <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => importInputRef.current?.click()}
-                  >
-                    Импорт
-                  </Button>
-                  <Button variant="secondary" onClick={exportToFile}>
-                    Экспорт
-                  </Button>
-                  <Input
-                    type="file"
-                    accept=".csv"
-                    ref={importInputRef}
-                    className="hidden"
-                    onChange={handleImport}
-                  />
-                </>
-              )}
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => importInputRef.current?.click()}
+                >
+                  Импорт
+                </Button>
+                <Button variant="secondary" onClick={exportToFile}>
+                  Экспорт
+                </Button>
+                <Input
+                  type="file"
+                  accept=".csv"
+                  ref={importInputRef}
+                  className="hidden"
+                  onChange={handleImport}
+                />
+              </>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />

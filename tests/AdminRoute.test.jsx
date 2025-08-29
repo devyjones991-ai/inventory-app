@@ -1,53 +1,13 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth.js'
 import AdminRoute from '@/components/AdminRoute.jsx'
 
-jest.mock('@/hooks/useAuth.js', () => ({
-  useAuth: jest.fn(),
-}))
-
 describe('AdminRoute', () => {
-  it('перенаправляет неадминистратора на страницу входа', () => {
-    useAuth.mockReturnValue({ isAdmin: false })
-
+  it('рендерит дочерние элементы без проверки роли', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <AdminRoute>
-                <div>Секрет</div>
-              </AdminRoute>
-            }
-          />
-          <Route path="/auth" element={<div>Вход</div>} />
-        </Routes>
-      </MemoryRouter>,
-    )
-
-    expect(screen.getByText('Вход')).toBeInTheDocument()
-  })
-
-  it('показывает содержимое администраторам', () => {
-    useAuth.mockReturnValue({ isAdmin: true })
-
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <AdminRoute>
-                <div>Секрет</div>
-              </AdminRoute>
-            }
-          />
-          <Route path="/auth" element={<div>Вход</div>} />
-        </Routes>
-      </MemoryRouter>,
+      <AdminRoute>
+        <div>Секрет</div>
+      </AdminRoute>,
     )
 
     expect(screen.getByText('Секрет')).toBeInTheDocument()

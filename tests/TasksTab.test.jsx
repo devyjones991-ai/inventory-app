@@ -28,6 +28,10 @@ jest.mock('@/hooks/useTasks.js', () => {
   }
 })
 
+jest.mock('@/hooks/useAuth.js', () => ({
+  useAuth: () => ({ user: { id: 'u1', email: 'me@example.com' } }),
+}))
+
 jest.mock('react-hot-toast', () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }))
@@ -148,5 +152,20 @@ describe('TasksTab', () => {
         object_id: 1,
       })
     })
+  })
+
+
+  it('показывает кнопки редактирования и удаления для всех пользователей', () => {
+    const task = { id: 't1', title: 'Задача', status: 'in_progress' }
+    mockTasks = [task]
+
+    render(
+      <MemoryRouter>
+        <TasksTab selected={selected} />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByLabelText('Редактировать задачу')).toBeInTheDocument()
+    expect(screen.getByLabelText('Удалить задачу')).toBeInTheDocument()
   })
 })

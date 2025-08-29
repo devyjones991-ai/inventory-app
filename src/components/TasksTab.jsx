@@ -54,6 +54,10 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     deleteTask,
   } = useTasks(selected?.id)
 
+
+  const canManage = true
+
+
   useEffect(() => {
     if (selected?.id) {
       loadTasks({ limit: PAGE_SIZE })
