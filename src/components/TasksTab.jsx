@@ -7,6 +7,7 @@ import ConfirmModal from './ConfirmModal'
 import { useTasks } from '@/hooks/useTasks'
 import { useAuth } from '@/hooks/useAuth'
 import logger from '@/utils/logger'
+import { STATUS_MAP, REVERSE_STATUS_MAP } from '@/constants/taskStatus'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -29,16 +30,7 @@ import {
 
 const PAGE_SIZE = 20
 
-const STATUS_MAP = {
-  запланировано: 'planned',
-  'в работе': 'in_progress',
-  выполнено: 'done',
-  отменено: 'canceled',
-}
-
-const REVERSE_STATUS_MAP = Object.fromEntries(
-  Object.entries(STATUS_MAP).map(([k, v]) => [v, k]),
-)
+const STATUS_OPTIONS = Object.keys(STATUS_MAP)
 
 function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [taskForm, setTaskForm] = useState({
@@ -101,10 +93,15 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const handleTaskSubmit = useCallback(
     async (e) => {
       e.preventDefault()
+      const statusValue = STATUS_MAP[taskForm.status]
+      if (!statusValue) {
+        logger.error('Unknown status selected:', taskForm.status)
+        return
+      }
       const payload = {
         ...taskForm,
         object_id: selected?.id,
-        status: STATUS_MAP[taskForm.status],
+        status: statusValue,
       }
       try {
         if (editingTask) {
@@ -263,10 +260,11 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                   <SelectValue placeholder="Выберите статус" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="запланировано">запланировано</SelectItem>
-                  <SelectItem value="в работе">в работе</SelectItem>
-                  <SelectItem value="выполнено">выполнено</SelectItem>
-                  <SelectItem value="отменено">отменено</SelectItem>
+                  {STATUS_OPTIONS.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
