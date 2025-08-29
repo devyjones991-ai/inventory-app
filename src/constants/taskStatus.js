@@ -1,3 +1,5 @@
+export const TASK_STATUSES = ['planned', 'in_progress', 'done', 'canceled']
+
 export const STATUS_MAP = {
   запланировано: 'planned',
   'в работе': 'in_progress',
