@@ -3,7 +3,8 @@ import tailwindcssAnimate from 'tailwindcss-animate'
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ['class'],
-  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
+  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx,css}'],
+  safelist: ['bg-background', 'text-foreground'],
   theme: {
     container: {
       center: true,
