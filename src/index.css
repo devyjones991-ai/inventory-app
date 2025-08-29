@@ -123,4 +123,10 @@
   .animate-fade-in {
     animation: fade-in 0.2s ease-out;
   }
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
 }
