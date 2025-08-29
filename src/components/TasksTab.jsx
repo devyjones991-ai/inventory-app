@@ -55,8 +55,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     deleteTask,
   } = useTasks(selected?.id)
 
-  const { user } = useAuth()
-  const canManage = Boolean(user)
+  const { isAdmin, isManager } = useAuth()
+  const canManage = isAdmin || isManager
 
   useEffect(() => {
     if (selected?.id) {

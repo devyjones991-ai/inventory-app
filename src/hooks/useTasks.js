@@ -1,17 +1,18 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '@/supabaseClient'
 import { handleSupabaseError } from '@/utils/handleSupabaseError'
 import { useNavigate } from 'react-router-dom'
 import logger from '@/utils/logger'
 import { TASK_STATUSES } from '@/constants/taskStatus'
 
+const TASK_FIELDS = 'id, title, status, assignee, due_date, notes, created_at'
+const TASK_FIELDS_FALLBACK = 'id, title, status, assignee, notes, created_at'
+
 export function useTasks(objectId) {
   const navigate = useNavigate()
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  // Хранит информацию, поддерживает ли БД поле due_date
-  const supportsDueDate = useRef(true)
 
   const isColumnMissingError = (err) =>
     err?.code === '42703' && err?.message?.toLowerCase?.().includes('due_date')
@@ -24,26 +25,17 @@ export function useTasks(objectId) {
     async (objId, offset = 0, limit = 20) => {
       try {
         if (!objId) return { data: [], error: null }
-        const fieldsWithDueDate =
-          'id, title, status, assignee, due_date, notes, created_at'
-        const fieldsWithoutDueDate =
-          'id, title, status, assignee, notes, created_at'
-        const selectedFields = supportsDueDate.current
-          ? fieldsWithDueDate
-          : fieldsWithoutDueDate
         const baseQuery = supabase
           .from('tasks')
-          .select(selectedFields)
+          .select(TASK_FIELDS)
           .eq('object_id', objId)
-        // Load newest tasks first
         let result = await baseQuery
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1)
         if (isColumnMissingError(result.error)) {
-          supportsDueDate.current = false
           result = await supabase
             .from('tasks')
-            .select(fieldsWithoutDueDate)
+            .select(TASK_FIELDS_FALLBACK)
             .eq('object_id', objId)
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1)
@@ -66,13 +58,6 @@ export function useTasks(objectId) {
   const insertTask = useCallback(
     async (data) => {
       try {
-        if (!TASK_STATUSES.includes(data.status)) {
-          throw new Error('Недопустимый статус задачи')
-        }
-        const fieldsWithDueDate =
-          'id, title, status, assignee, due_date, notes, created_at'
-        const fieldsWithoutDueDate =
-          'id, title, status, assignee, notes, created_at'
         const {
           planned_date: _planned_date,
           plan_date: _plan_date,
@@ -80,11 +65,15 @@ export function useTasks(objectId) {
           assignee_id,
           assignee,
           title,
-          status,
+          status: inputStatus,
           due_date,
           notes,
           object_id,
         } = data
+        const status = inputStatus ?? 'planned'
+        if (!TASK_STATUSES.includes(status)) {
+          throw new Error('Недопустимый статус задачи')
+        }
         const taskDataBase = {
           title,
           status,
@@ -92,32 +81,27 @@ export function useTasks(objectId) {
           object_id,
           assignee: assignee ?? executor ?? assignee_id ?? null,
         }
-        const taskData = supportsDueDate.current
-          ? { ...taskDataBase, due_date }
-          : taskDataBase
+        const taskData = { ...taskDataBase, due_date }
         let result = await supabase
           .from('tasks')
           .insert([taskData])
-          .select(
-            supportsDueDate.current ? fieldsWithDueDate : fieldsWithoutDueDate,
-          )
+          .select(TASK_FIELDS)
           .single()
         if (isColumnMissingError(result.error)) {
-          supportsDueDate.current = false
           result = await supabase
             .from('tasks')
             .insert([taskDataBase])
-            .select(fieldsWithoutDueDate)
+            .select(TASK_FIELDS_FALLBACK)
             .single()
         }
         if (result.error) throw result.error
         return result
       } catch (err) {
-        await handleSupabaseError(
-          err,
-          navigate,
-          err.message || 'Ошибка добавления задачи',
-        )
+        const message =
+          err.message === 'Недопустимый статус задачи'
+            ? 'Недопустимый статус задачи'
+            : 'Ошибка добавления задачи'
+        await handleSupabaseError(err, navigate, message)
         return { data: null, error: err }
       }
     },
@@ -127,10 +111,6 @@ export function useTasks(objectId) {
   const updateTaskInner = useCallback(
     async (id, data) => {
       try {
-        const fieldsWithDueDate =
-          'id, title, status, assignee, due_date, notes, created_at'
-        const fieldsWithoutDueDate =
-          'id, title, status, assignee, notes, created_at'
         const {
           planned_date: _planned_date,
           plan_date: _plan_date,
@@ -150,24 +130,19 @@ export function useTasks(objectId) {
           object_id,
           assignee: assignee ?? executor ?? assignee_id ?? null,
         }
-        const taskData = supportsDueDate.current
-          ? { ...taskDataBase, due_date }
-          : taskDataBase
+        const taskData = { ...taskDataBase, due_date }
         let result = await supabase
           .from('tasks')
           .update(taskData)
           .eq('id', id)
-          .select(
-            supportsDueDate.current ? fieldsWithDueDate : fieldsWithoutDueDate,
-          )
+          .select(TASK_FIELDS)
           .single()
         if (isColumnMissingError(result.error)) {
-          supportsDueDate.current = false
           result = await supabase
             .from('tasks')
             .update(taskDataBase)
             .eq('id', id)
-            .select(fieldsWithoutDueDate)
+            .select(TASK_FIELDS_FALLBACK)
             .single()
         }
         if (result.error) throw result.error
