@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
+import { REVERSE_STATUS_MAP } from '@/constants/taskStatus'
 
 /**
  * Format date string into locale friendly format.
@@ -15,13 +16,6 @@ function formatDate(dateStr) {
   } catch {
     return dateStr
   }
-}
-
-const STATUS_LABELS = {
-  planned: 'запланировано',
-  in_progress: 'в работе',
-  done: 'выполнено',
-  canceled: 'отменено',
 }
 
 const STATUS_CLASSES = {
@@ -84,7 +78,7 @@ function TaskCard({ item, onEdit, onDelete, onView, canManage = false }) {
       </CardHeader>
       <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
         <span className={`badge ${badgeClass}`}>
-          {STATUS_LABELS[item.status] || item.status}
+          {REVERSE_STATUS_MAP[item.status] || item.status}
         </span>
         {canManage && (
           <>
