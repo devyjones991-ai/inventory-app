@@ -103,6 +103,10 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .dark input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.2);
+  }
 }
 
 @layer utilities {
