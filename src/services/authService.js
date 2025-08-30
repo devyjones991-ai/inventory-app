@@ -3,13 +3,20 @@ import { apiBaseUrl, isApiConfigured } from '@/apiConfig'
 
 const DEFAULT_TIMEOUT = 10000
 
-function withTimeout(promise, timeout = DEFAULT_TIMEOUT) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timed out')), timeout),
-    ),
-  ])
+function withTimeout(operation, timeout = DEFAULT_TIMEOUT) {
+  const controller = new AbortController()
+  let timer
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort()
+      reject(new Error('Request timed out'))
+    }, timeout)
+  })
+  return Promise.race([operation(controller.signal), timeoutPromise]).finally(
+    () => {
+      clearTimeout(timer)
+    },
+  )
 }
 
 function formatError(error) {
@@ -23,7 +30,11 @@ export async function checkCacheGet({ timeout } = {}) {
   if (cacheGetAvailable !== null) return cacheGetAvailable
   try {
     const res = await withTimeout(
-      fetch(`${apiBaseUrl}/functions/v1/cacheGet`, { method: 'OPTIONS' }),
+      (signal) =>
+        fetch(`${apiBaseUrl}/functions/v1/cacheGet`, {
+          method: 'OPTIONS',
+          signal,
+        }),
       timeout,
     )
     cacheGetAvailable = res.status !== 404
@@ -37,7 +48,8 @@ export async function fetchRole(id, { timeout } = {}) {
   if (!(await checkCacheGet({ timeout }))) {
     try {
       const { data, error } = await withTimeout(
-        supabase.from('profiles').select('role').eq('id', id).maybeSingle(),
+        () =>
+          supabase.from('profiles').select('role').eq('id', id).maybeSingle(),
         timeout,
       )
       if (error) throw error
@@ -48,9 +60,11 @@ export async function fetchRole(id, { timeout } = {}) {
   }
   try {
     const res = await withTimeout(
-      fetch(
-        `${apiBaseUrl}/functions/v1/cacheGet?table=${encodeURIComponent('profiles')}&id=${encodeURIComponent(id)}`,
-      ),
+      (signal) =>
+        fetch(
+          `${apiBaseUrl}/functions/v1/cacheGet?table=${encodeURIComponent('profiles')}&id=${encodeURIComponent(id)}`,
+          { signal },
+        ),
       timeout,
     )
     if (!res.ok) {
@@ -85,7 +99,7 @@ export async function fetchSession({ timeout } = {}) {
     const {
       data: { session },
       error,
-    } = await withTimeout(supabase.auth.getSession(), timeout)
+    } = await withTimeout(() => supabase.auth.getSession(), timeout)
     if (error) throw error
     return { user: session?.user ?? null }
   } catch (error) {
