@@ -1,21 +1,21 @@
 // src/components/HardwareCard.jsx
-import React from 'react'
-import PropTypes from 'prop-types'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui/button'
+import React from "react";
+import PropTypes from "prop-types";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
 
 export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{item.name}</CardTitle>
-        <div className="text-sm text-base-content/70">{item.location}</div>
+        <div className="text-sm text-foreground/70">{item.location}</div>
       </CardHeader>
       <CardContent className="flex justify-between items-center">
         <div className="flex space-x-2 mt-1 text-sm">
-          <span>Покупка: {item.purchase_status}</span>
-          <span>Установка: {item.install_status}</span>
+          <span>Статус покупки: {item.purchase_status}</span>
+          <span>Статус установки: {item.install_status}</span>
         </div>
 
         {!!user && (
@@ -42,7 +42,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 HardwareCard.propTypes = {
@@ -57,4 +57,4 @@ HardwareCard.propTypes = {
   user: PropTypes.shape({
     id: PropTypes.string,
   }),
-}
+};

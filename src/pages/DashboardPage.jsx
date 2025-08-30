@@ -1,31 +1,31 @@
-import React, { useState, useRef, useCallback } from 'react'
-import InventorySidebar from '@/components/InventorySidebar'
-import InventoryTabs from '@/components/InventoryTabs'
-import AccountModal from '@/components/AccountModal'
-import ConfirmModal from '@/components/ConfirmModal'
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
-import ThemeToggle from '@/components/ThemeToggle'
-import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
-import { useObjectList } from '@/hooks/useObjectList'
-import { useObjectNotifications } from '@/hooks/useObjectNotifications'
-import { useDashboardModals } from '@/hooks/useDashboardModals'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import React, { useState, useRef, useCallback } from "react";
+import InventorySidebar from "@/components/InventorySidebar";
+import InventoryTabs from "@/components/InventoryTabs";
+import AccountModal from "@/components/AccountModal";
+import ConfirmModal from "@/components/ConfirmModal";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import ThemeToggle from "@/components/ThemeToggle";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useObjectList } from "@/hooks/useObjectList";
+import { useObjectNotifications } from "@/hooks/useObjectNotifications";
+import { useDashboardModals } from "@/hooks/useDashboardModals";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 
 export default function DashboardPage() {
-  const { user } = useAuth()
-  const { signOut } = useSupabaseAuth()
-  const [activeTab, setActiveTab] = useState('desc')
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { user } = useAuth();
+  const { signOut } = useSupabaseAuth();
+  const [activeTab, setActiveTab] = useState("desc");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const {
     objects,
@@ -38,13 +38,13 @@ export default function DashboardPage() {
     deleteObject,
     importFromFile,
     exportToFile,
-  } = useObjectList()
+  } = useObjectList();
 
   const { notifications, clearNotifications } = useObjectNotifications(
     selected,
     activeTab,
     user,
-  )
+  );
 
   const {
     isObjectModalOpen,
@@ -58,86 +58,86 @@ export default function DashboardPage() {
     openAddModal,
     openEditModal,
     closeObjectModal,
-  } = useDashboardModals()
+  } = useDashboardModals();
 
-  const [addHandler, setAddHandler] = useState(() => openAddModal)
+  const [addHandler, setAddHandler] = useState(() => openAddModal);
   const registerAddHandler = useCallback(
     (handler) => {
-      setAddHandler(() => handler || openAddModal)
+      setAddHandler(() => handler || openAddModal);
     },
     [openAddModal],
-  )
+  );
 
-  const importInputRef = useRef(null)
+  const importInputRef = useRef(null);
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev)
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   const onSelect = (obj) => {
-    handleSelect(obj)
-    clearNotifications(obj.id)
-    setActiveTab('desc')
-    setIsSidebarOpen(false)
-  }
+    handleSelect(obj);
+    clearNotifications(obj.id);
+    setActiveTab("desc");
+    setIsSidebarOpen(false);
+  };
 
   const onUpdateSelected = (updated) => {
-    handleUpdateSelected(updated)
-    clearNotifications(updated.id)
-  }
+    handleUpdateSelected(updated);
+    clearNotifications(updated.id);
+  };
 
   const onTabChange = (tab) => {
-    setActiveTab(tab)
-    if ((tab === 'tasks' || tab === 'chat') && selected) {
-      clearNotifications(selected.id)
+    setActiveTab(tab);
+    if ((tab === "tasks" || tab === "chat") && selected) {
+      clearNotifications(selected.id);
     }
-  }
+  };
 
   const onSaveObject = async () => {
-    const ok = await saveObject(objectName, editingObject)
-    if (ok) closeObjectModal()
-  }
+    const ok = await saveObject(objectName, editingObject);
+    if (ok) closeObjectModal();
+  };
 
   const onConfirmDelete = async () => {
-    const ok = await deleteObject(deleteCandidate)
-    if (ok) setDeleteCandidate(null)
-  }
+    const ok = await deleteObject(deleteCandidate);
+    if (ok) setDeleteCandidate(null);
+  };
 
   const handleImport = async (e) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      await importFromFile(file)
-      e.target.value = ''
+      await importFromFile(file);
+      e.target.value = "";
     }
-  }
+  };
 
-  if (!user) return <Navigate to="/auth" replace />
+  if (!user) return <Navigate to="/auth" replace />;
 
   if (fetchError) {
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-red-500">
+      <div className="flex w-full min-h-screen items-center justify-center bg-background text-red-500">
         {fetchError}
       </div>
-    )
+    );
   }
 
   if (!selected) {
     if (isEmpty) {
       return (
-        <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-gray-500">
-          Объекты отсутствуют
+        <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
+          Список пуст
         </div>
-      )
+      );
     }
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-base-100 text-gray-500">
-        Загрузка объектов...
+      <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
+        Выберите объект...
       </div>
-    )
+    );
   }
 
   return (
     <>
-      <div className="flex h-screen bg-base-100">
-        <aside className="hidden md:flex flex-col w-72 bg-base-200 p-4 border-r shadow-lg overflow-y-auto">
+      <div className="flex h-screen bg-background">
+        <aside className="hidden md:flex flex-col w-72 bg-muted p-4 border-r shadow-lg overflow-y-auto">
           <InventorySidebar
             objects={objects}
             selected={selected}
@@ -153,7 +153,7 @@ export default function DashboardPage() {
               className="fixed inset-0 bg-black bg-opacity-50"
               onClick={toggleSidebar}
             />
-            <aside className="relative z-20 w-72 bg-base-200 p-4 shadow-lg overflow-y-auto">
+            <aside className="relative z-20 w-72 bg-muted p-4 shadow-lg overflow-y-auto">
               <Button
                 size="icon"
                 className="absolute right-2 top-2"
@@ -174,7 +174,7 @@ export default function DashboardPage() {
         )}
 
         <div className="flex-1 flex flex-col">
-          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-base-100">
+          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-background">
             <div className="flex items-center gap-2">
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰
@@ -207,7 +207,7 @@ export default function DashboardPage() {
                 className="p-2 text-lg md:text-sm"
                 onClick={() => setIsAccountModalOpen(true)}
               >
-                {user.user_metadata?.username || 'Аккаунт'}
+                {user.user_metadata?.username || "Аккаунт"}
               </Button>
               <Button className="p-2 text-lg md:text-sm" onClick={signOut}>
                 Выйти
@@ -229,7 +229,7 @@ export default function DashboardPage() {
           open={isObjectModalOpen}
           onOpenChange={(isOpen) => {
             if (!isOpen) {
-              closeObjectModal()
+              closeObjectModal();
             }
           }}
         >
@@ -243,14 +243,14 @@ export default function DashboardPage() {
             </Button>
             <DialogHeader data-dialog-handle>
               <DialogTitle>
-                {editingObject ? 'Редактировать объект' : 'Добавить объект'}
+                {editingObject ? "Редактировать объект" : "Добавить объект"}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
                 type="text"
                 className="w-full"
-                placeholder="Название"
+                placeholder="Название объекта"
                 value={objectName}
                 onChange={(e) => setObjectName(e.target.value)}
               />
@@ -285,5 +285,5 @@ export default function DashboardPage() {
         )}
       </div>
     </>
-  )
+  );
 }

@@ -1,32 +1,32 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import React from "react";
+import PropTypes from "prop-types";
 
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 
 export default function ConfirmModal({
   open = false,
-  title = '',
-  message = '',
-  confirmLabel = 'OK',
-  cancelLabel = 'Отмена',
-  confirmVariant = 'destructive',
+  title = "",
+  message = "",
+  confirmLabel = "OK",
+  cancelLabel = "Отмена",
+  confirmVariant = "destructive",
   onConfirm,
   onCancel,
 }) {
-  if (!open) return null
+  if (!open) return null;
   return (
     <Dialog
       open
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          onCancel()
+          onCancel();
         }
       }}
     >
@@ -47,7 +47,7 @@ export default function ConfirmModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 ConfirmModal.propTypes = {
@@ -59,4 +59,4 @@ ConfirmModal.propTypes = {
   confirmVariant: PropTypes.string,
   onConfirm: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
-}
+};

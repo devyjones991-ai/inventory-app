@@ -1,22 +1,25 @@
-import { memo, useCallback, useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
-import { Button, Input } from '@/components/ui'
-import { linkifyText } from '@/utils/linkify.jsx'
-import AttachmentPreview from './AttachmentPreview.jsx'
-import { PaperClipIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import useChat from '../hooks/useChat.js'
-import { Textarea } from '@/components/ui/textarea'
+import { memo, useCallback, useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { Button, Input } from "@/components/ui";
+import { linkifyText } from "@/utils/linkify.jsx";
+import AttachmentPreview from "./AttachmentPreview.jsx";
+import {
+  PaperClipIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
+import useChat from "../hooks/useChat.js";
+import { Textarea } from "@/components/ui/textarea";
 
 function ChatTab({ selected = null, userEmail, onCountChange }) {
-  const objectId = selected?.id || null
-  const [searchInput, setSearchInput] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const objectId = selected?.id || null;
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
-    const id = setTimeout(() => setSearchQuery(searchInput), 300)
-    return () => clearTimeout(id)
-  }, [searchInput])
+    const id = setTimeout(() => setSearchQuery(searchInput), 300);
+    return () => clearTimeout(id);
+  }, [searchInput]);
 
   const {
     messages,
@@ -33,40 +36,40 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
     fileInputRef,
     scrollRef,
     loadError,
-  } = useChat({ objectId, userEmail, search: searchQuery })
+  } = useChat({ objectId, userEmail, search: searchQuery });
 
   useEffect(() => {
-    onCountChange?.(messages.length)
-  }, [messages, onCountChange])
+    onCountChange?.(messages.length);
+  }, [messages, onCountChange]);
 
   const handleFileChange = useCallback(
     (e) => setFile(e.target.files[0]),
     [setFile],
-  )
+  );
 
   const handleMessageChange = useCallback(
     (e) => setNewMessage(e.target.value),
     [setNewMessage],
-  )
+  );
 
   const handleSearchChange = useCallback(
     (e) => setSearchInput(e.target.value),
     [],
-  )
+  );
 
   const handleSearchToggle = useCallback(() => {
     setIsSearchOpen((prev) => {
-      const next = !prev
+      const next = !prev;
       if (!next) {
-        setSearchInput('')
-        setSearchQuery('')
+        setSearchInput("");
+        setSearchQuery("");
       }
-      return next
-    })
-  }, [])
+      return next;
+    });
+  }, []);
 
   if (!objectId) {
-    return <div className="p-6 text-sm text-base-content/70">Выбери объект</div>
+    return <div className="p-6 text-sm text-foreground/70">Выбери объект</div>;
   }
 
   return (
@@ -74,7 +77,7 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
       <div className="px-3 py-2">
         <button
           type="button"
-          className="btn btn-ghost"
+          className="p-2 rounded hover:bg-accent"
           aria-label="Поиск"
           onClick={handleSearchToggle}
         >
@@ -82,7 +85,7 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
         </button>
         <div
           className={`transition-all duration-300 overflow-hidden ${
-            isSearchOpen ? 'max-h-12 mt-1' : 'max-h-0'
+            isSearchOpen ? "max-h-12 mt-1" : "max-h-0"
           }`}
         >
           {isSearchOpen && (
@@ -99,12 +102,17 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
       </div>
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-base-200 rounded-2xl"
+        className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted rounded-2xl"
       >
         {loadError ? (
           <div className="text-center">
-            <p className="mb-2 text-error">Не удалось загрузить сообщения</p>
-            <button className="btn btn-sm" onClick={() => loadMore(true)}>
+            <p className="mb-2 text-destructive">
+              Не удалось загрузить сообщения
+            </p>
+            <button
+              className="px-3 py-1.5 text-sm rounded border"
+              onClick={() => loadMore(true)}
+            >
               Повторить
             </button>
           </div>
@@ -112,7 +120,10 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
           <>
             {hasMore && (
               <div className="text-center">
-                <button className="btn btn-sm" onClick={() => loadMore()}>
+                <button
+                  className="px-3 py-1.5 text-sm rounded border"
+                  onClick={() => loadMore()}
+                >
                   Загрузить ещё
                 </button>
               </div>
@@ -130,30 +141,30 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
             ) : (
               messages.map((m) => {
                 const isOwn =
-                  (m.sender || '').trim().toLowerCase() ===
-                  (userEmail || '').trim().toLowerCase()
-                const dt = new Date(m.created_at)
-                const date = dt.toLocaleDateString()
+                  (m.sender || "").trim().toLowerCase() ===
+                  (userEmail || "").trim().toLowerCase();
+                const dt = new Date(m.created_at);
+                const date = dt.toLocaleDateString();
                 const time = dt.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
                 return (
                   <div
                     key={m.id}
                     data-testid="chat-message"
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-[80%] sm:max-w-[60%] whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
                         isOwn
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100"
                       }`}
                     >
                       {!isOwn && (
                         <span className="mb-1 font-semibold">
-                          {m.sender || 'user'}
+                          {m.sender || "user"}
                         </span>
                       )}
                       {m.content && (
@@ -168,12 +179,12 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
                       )}
                       <span className="self-end mt-1 text-xs opacity-60">
                         {`${date} ${time}`}
-                        {m.read_at ? ' ✓' : ''}
-                        {m._optimistic ? ' • отправка…' : ''}
+                        {m.read_at ? " ✓" : ""}
+                        {m._optimistic ? " • отправка…" : ""}
                       </span>
                     </div>
                   </div>
-                )
+                );
               })
             )}
           </>
@@ -185,7 +196,7 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
         <div className="flex items-center gap-2">
           <label
             htmlFor="chat-file-input"
-            className="btn btn-ghost"
+            className="p-2 rounded hover:bg-accent cursor-pointer"
             data-testid="file-label"
             aria-label="Прикрепить файл"
             title="Прикрепить файл"
@@ -211,19 +222,18 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
         </div>
         <div className="flex justify-end">
           <Button
-            className="btn btn-primary"
             disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
-            {sending ? 'Отправка…' : 'Отправить'}
+            {sending ? "Отправка…" : "Отправить"}
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default memo(ChatTab)
+export default memo(ChatTab);
 
 ChatTab.propTypes = {
   selected: PropTypes.shape({
@@ -231,4 +241,4 @@ ChatTab.propTypes = {
   }),
   userEmail: PropTypes.string.isRequired,
   onCountChange: PropTypes.func,
-}
+};

@@ -1,7 +1,8 @@
-import { memo, useMemo } from 'react'
-import PropTypes from 'prop-types'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { memo, useMemo } from "react";
+import PropTypes from "prop-types";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { Badge } from "@/components/ui/badge";
 
 function InventorySidebar({
   objects,
@@ -20,7 +21,7 @@ function InventorySidebar({
         remove: () => onDelete(o.id),
       })),
     [objects, onSelect, onEdit, onDelete],
-  )
+  );
 
   return (
     <nav className="flex flex-col space-y-2">
@@ -31,7 +32,7 @@ function InventorySidebar({
               <button
                 onClick={o.select}
                 className={`w-full text-left px-3 py-2 rounded hover:bg-primary/10 ${
-                  selected?.id === o.id ? 'bg-primary/10 font-medium' : ''
+                  selected?.id === o.id ? "bg-primary/10 font-medium" : ""
                 }`}
               >
                 {o.name}
@@ -40,7 +41,7 @@ function InventorySidebar({
           </CardHeader>
           <CardContent className="p-2 pt-0 flex items-center">
             {notifications[o.id] ? (
-              <span className="badge badge-error">{notifications[o.id]}</span>
+              <Badge variant="destructive">{notifications[o.id]}</Badge>
             ) : null}
             <div className="flex items-center ml-auto">
               <button
@@ -62,10 +63,10 @@ function InventorySidebar({
         </Card>
       ))}
     </nav>
-  )
+  );
 }
 
-export default memo(InventorySidebar)
+export default memo(InventorySidebar);
 
 InventorySidebar.propTypes = {
   objects: PropTypes.arrayOf(
@@ -82,4 +83,4 @@ InventorySidebar.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   notifications: PropTypes.objectOf(PropTypes.number),
-}
+};

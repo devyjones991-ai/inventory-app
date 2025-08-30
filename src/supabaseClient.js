@@ -1,37 +1,37 @@
 /* global process */
-import { createClient } from '@supabase/supabase-js'
-import logger from './utils/logger'
+import { createClient } from "@supabase/supabase-js";
+import logger from "./utils/logger";
 
 const supabaseUrl =
-  import.meta.env?.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  import.meta.env?.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseKey =
-  import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey)
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 
-let supabase
+let supabase;
 
 if (!isSupabaseConfigured) {
   logger.error(
-    'Не заданы переменные окружения VITE_SUPABASE_URL или VITE_SUPABASE_ANON_KEY.',
-  )
+    "Не заданы переменные окружения VITE_SUPABASE_URL или VITE_SUPABASE_ANON_KEY.",
+  );
   const handler = {
     get() {
       return new Proxy(() => {
         logger.error(
-          'Попытка обращения к Supabase при отсутствии конфигурации.',
-        )
-        return Promise.reject(new Error('Supabase не инициализирован'))
-      }, handler)
+          "Попытка обращения к Supabase при отсутствии конфигурации.",
+        );
+        return Promise.reject(new Error("Supabase не инициализирован"));
+      }, handler);
     },
     apply() {
-      logger.error('Попытка обращения к Supabase при отсутствии конфигурации.')
-      return Promise.reject(new Error('Supabase не инициализирован'))
+      logger.error("Попытка обращения к Supabase при отсутствии конфигурации.");
+      return Promise.reject(new Error("Supabase не инициализирован"));
     },
-  }
-  supabase = new Proxy(() => {}, handler)
+  };
+  supabase = new Proxy(() => {}, handler);
 } else {
-  supabase = createClient(supabaseUrl, supabaseKey)
+  supabase = createClient(supabaseUrl, supabaseKey);
 }
 
-export { supabase }
+export { supabase };

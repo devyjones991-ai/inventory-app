@@ -1,67 +1,67 @@
-import { memo, useMemo, useCallback } from 'react'
-import PropTypes from 'prop-types'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui/button'
-import { REVERSE_STATUS_MAP } from '@/constants/taskStatus'
+import { memo, useMemo, useCallback } from "react";
+import PropTypes from "prop-types";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { REVERSE_STATUS_MAP } from "@/constants/taskStatus";
 
 /**
  * Format date string into locale friendly format.
  * Falls back to original value on parse errors.
  */
 function formatDate(dateStr) {
-  if (!dateStr) return ''
+  if (!dateStr) return "";
   try {
-    return new Date(dateStr).toLocaleDateString('ru-RU')
+    return new Date(dateStr).toLocaleDateString("ru-RU");
   } catch {
-    return dateStr
+    return dateStr;
   }
 }
 
-const STATUS_CLASSES = {
-  planned: 'badge-info',
-  in_progress: 'badge-warning',
-  done: 'badge-success',
-  canceled: 'badge-error',
-}
+const STATUS_VARIANTS = {
+  planned: "info",
+  in_progress: "warning",
+  done: "success",
+  canceled: "destructive",
+};
 
 function TaskCard({ item, onEdit, onDelete, onView }) {
-  const badgeClass = useMemo(
-    () => STATUS_CLASSES[item.status] || 'badge',
+  const badgeVariant = useMemo(
+    () => STATUS_VARIANTS[item.status] || "default",
     [item.status],
-  )
+  );
 
-  const assignee = useMemo(() => item.assignee, [item.assignee])
-
-  const dueDate = useMemo(() => item.due_date, [item.due_date])
+  const assignee = useMemo(() => item.assignee, [item.assignee]);
+  const dueDate = useMemo(() => item.due_date, [item.due_date]);
 
   const handleView = useCallback(
     (e) => {
-      e.stopPropagation()
-      onView()
+      e.stopPropagation();
+      onView();
     },
     [onView],
-  )
+  );
 
   const handleEdit = useCallback(
     (e) => {
-      e.stopPropagation()
-      onEdit()
+      e.stopPropagation();
+      onEdit();
     },
     [onEdit],
-  )
+  );
 
   const handleDelete = useCallback(
     (e) => {
-      e.stopPropagation()
-      onDelete()
+      e.stopPropagation();
+      onDelete();
     },
     [onDelete],
-  )
+  );
 
   return (
     <Card
-      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-base-200 animate-fade-in"
+      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-accent/30 animate-fade-in"
       onClick={handleView}
     >
       <CardHeader className="flex-1">
@@ -69,22 +69,22 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           {item.title}
         </CardTitle>
         {(assignee || dueDate) && (
-          <p className="text-sm text-base-content/70">
-            {assignee && <span>👤 {assignee}</span>}
-            {assignee && dueDate && ' • '}
-            {dueDate && <span>📅 {formatDate(dueDate)}</span>}
+          <p className="text-sm text-foreground/70">
+            {assignee && <span>Ответственный: {assignee}</span>}
+            {assignee && dueDate && " • "}
+            {dueDate && <span>Срок: {formatDate(dueDate)}</span>}
           </p>
         )}
       </CardHeader>
       <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
-        <span className={`badge ${badgeClass}`}>
+        <Badge variant={badgeVariant}>
           {REVERSE_STATUS_MAP[item.status] || item.status}
-        </span>
+        </Badge>
         <Button
           size="sm"
           variant="ghost"
           className="w-full xs:w-auto"
-          title="Редактировать"
+          title="Редактировать задачу"
           aria-label="Редактировать задачу"
           onClick={handleEdit}
         >
@@ -94,7 +94,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           size="sm"
           variant="ghost"
           className="w-full xs:w-auto"
-          title="Удалить"
+          title="Удалить задачу"
           aria-label="Удалить задачу"
           onClick={handleDelete}
         >
@@ -102,10 +102,10 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }
 
-export default memo(TaskCard)
+export default memo(TaskCard);
 
 TaskCard.propTypes = {
   item: PropTypes.shape({
@@ -117,4 +117,4 @@ TaskCard.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onView: PropTypes.func.isRequired,
-}
+};
