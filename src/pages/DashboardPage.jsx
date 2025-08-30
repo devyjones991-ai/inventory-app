@@ -151,7 +151,7 @@ export default function DashboardPage() {
         {isSidebarOpen && (
           <div className="fixed inset-0 z-10 flex">
             <div
-              className="fixed inset-0 bg-black bg-opacity-50"
+              className="fixed inset-0 bg-background"
               onClick={toggleSidebar}
             />
             <aside className="relative z-20 w-72 bg-muted p-4 shadow-lg overflow-y-auto">
@@ -181,7 +181,11 @@ export default function DashboardPage() {
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰
               </button>
-              <Button className="flex items-center gap-1" onClick={addHandler}>
+              <Button
+                variant="success"
+                className="flex items-center gap-1"
+                onClick={addHandler}
+              >
                 <PlusIcon className="w-4 h-4" /> {t("dashboard.add")}
               </Button>
               <>

@@ -14,6 +14,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground md:hover:bg-secondary/80",
         destructive:
           "bg-destructive text-destructive-foreground md:hover:bg-destructive/90",
+        success:
+          "bg-green-600 text-white md:hover:bg-green-700 dark:bg-green-500 dark:md:hover:bg-green-600",
         outline:
           "border border-border bg-background md:hover:bg-accent md:hover:text-accent-foreground",
         ghost: "md:hover:bg-accent md:hover:text-accent-foreground",
@@ -52,6 +54,7 @@ Button.propTypes = {
     "default",
     "secondary",
     "destructive",
+    "success",
     "outline",
     "ghost",
     "link",

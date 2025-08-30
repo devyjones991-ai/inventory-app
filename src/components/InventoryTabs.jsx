@@ -227,6 +227,7 @@ function InventoryTabs({
             {user && (
               <Button
                 size="sm"
+                variant="success"
                 className="flex items-center gap-1"
                 onClick={openHWModal}
               >

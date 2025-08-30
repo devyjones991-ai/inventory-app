@@ -83,7 +83,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         <Button
           size="sm"
           variant="ghost"
-          className="w-full xs:w-auto"
+          className="w-full xs:w-auto text-blue-600 dark:text-blue-400"
           title="Редактировать задачу"
           aria-label="Редактировать задачу"
           onClick={handleEdit}
@@ -93,7 +93,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         <Button
           size="sm"
           variant="ghost"
-          className="w-full xs:w-auto"
+          className="w-full xs:w-auto text-red-600 dark:text-red-400"
           title="Удалить задачу"
           aria-label="Удалить задачу"
           onClick={handleDelete}
