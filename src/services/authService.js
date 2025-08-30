@@ -17,14 +17,6 @@ function withTimeout(operation, timeout = DEFAULT_TIMEOUT) {
       clearTimeout(timer)
     },
   )
-function withTimeout(promise, timeout = DEFAULT_TIMEOUT) {
-  let timer
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error('Request timed out')), timeout)
-    }),
-  ]).finally(() => clearTimeout(timer))
 }
 
 function formatError(error) {
