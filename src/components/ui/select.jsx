@@ -1,12 +1,12 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { Check, ChevronDown, ChevronUp } from 'lucide-react'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { cn } from '@/lib/utils'
+import React from "react";
+import PropTypes from "prop-types";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { cn } from "@/lib/utils";
 
-const Select = SelectPrimitive.Root
-const SelectGroup = SelectPrimitive.Group
-const SelectValue = SelectPrimitive.Value
+const Select = SelectPrimitive.Root;
+const SelectGroup = SelectPrimitive.Group;
+const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef(function SelectTrigger(
   { className, children, ...props },
@@ -16,7 +16,7 @@ const SelectTrigger = React.forwardRef(function SelectTrigger(
     <SelectPrimitive.Trigger
       ref={ref}
       className={cn(
-        'flex h-10 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        "flex h-10 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...props}
@@ -26,12 +26,12 @@ const SelectTrigger = React.forwardRef(function SelectTrigger(
         <ChevronDown className="h-4 w-4 opacity-50" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
-  )
-})
-SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
+  );
+});
+SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectContent = React.forwardRef(function SelectContent(
-  { className, children, position = 'popper', ...props },
+  { className, children, position = "popper", ...props },
   ref,
 ) {
   return (
@@ -39,8 +39,8 @@ const SelectContent = React.forwardRef(function SelectContent(
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
-          'relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80',
-          position === 'popper' && 'translate-y-1',
+          "relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80",
+          position === "popper" && "translate-y-1",
           className,
         )}
         position={position}
@@ -51,9 +51,9 @@ const SelectContent = React.forwardRef(function SelectContent(
         </SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport
           className={cn(
-            'p-1',
-            position === 'popper' &&
-              'h-[var(--radix-select-trigger-height)] w-full',
+            "p-1",
+            position === "popper" &&
+              "h-[var(--radix-select-trigger-height)] w-full",
           )}
         >
           {children}
@@ -63,9 +63,9 @@ const SelectContent = React.forwardRef(function SelectContent(
         </SelectPrimitive.ScrollDownButton>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
-  )
-})
-SelectContent.displayName = SelectPrimitive.Content.displayName
+  );
+});
+SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 const SelectLabel = React.forwardRef(function SelectLabel(
   { className, ...props },
@@ -74,12 +74,12 @@ const SelectLabel = React.forwardRef(function SelectLabel(
   return (
     <SelectPrimitive.Label
       ref={ref}
-      className={cn('px-2 py-1.5 text-sm font-semibold', className)}
+      className={cn("px-2 py-1.5 text-sm font-semibold", className)}
       {...props}
     />
-  )
-})
-SelectLabel.displayName = SelectPrimitive.Label.displayName
+  );
+});
+SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 const SelectItem = React.forwardRef(function SelectItem(
   { className, children, ...props },
@@ -89,7 +89,7 @@ const SelectItem = React.forwardRef(function SelectItem(
     <SelectPrimitive.Item
       ref={ref}
       className={cn(
-        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
       )}
       {...props}
@@ -101,9 +101,9 @@ const SelectItem = React.forwardRef(function SelectItem(
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
-  )
-})
-SelectItem.displayName = SelectPrimitive.Item.displayName
+  );
+});
+SelectItem.displayName = SelectPrimitive.Item.displayName;
 
 const SelectSeparator = React.forwardRef(function SelectSeparator(
   { className, ...props },
@@ -112,39 +112,39 @@ const SelectSeparator = React.forwardRef(function SelectSeparator(
   return (
     <SelectPrimitive.Separator
       ref={ref}
-      className={cn('-mx-1 my-1 h-px bg-muted', className)}
+      className={cn("-mx-1 my-1 h-px bg-muted", className)}
       {...props}
     />
-  )
-})
-SelectSeparator.displayName = SelectPrimitive.Separator.displayName
+  );
+});
+SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
 SelectTrigger.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
-}
+};
 
 SelectContent.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
-  position: PropTypes.oneOf(['item-aligned', 'popper']),
-}
+  position: PropTypes.oneOf(["item-aligned", "popper"]),
+};
 
 SelectLabel.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
-}
+};
 
 SelectItem.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
   value: PropTypes.string,
   disabled: PropTypes.bool,
-}
+};
 
 SelectSeparator.propTypes = {
   className: PropTypes.string,
-}
+};
 
 export {
   Select,
@@ -155,4 +155,4 @@ export {
   SelectLabel,
   SelectItem,
   SelectSeparator,
-}
+};

@@ -1,6 +1,6 @@
-import { memo } from 'react'
-import PropTypes from 'prop-types'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { memo } from "react";
+import PropTypes from "prop-types";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 function ObjectCard({ item }) {
   return (
@@ -14,14 +14,14 @@ function ObjectCard({ item }) {
         </CardContent>
       )}
     </Card>
-  )
+  );
 }
 
-export default memo(ObjectCard)
+export default memo(ObjectCard);
 
 ObjectCard.propTypes = {
   item: PropTypes.shape({
     name: PropTypes.string.isRequired,
     description: PropTypes.string,
   }).isRequired,
-}
+};

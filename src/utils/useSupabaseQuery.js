@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '@/supabaseClient'
+import { useEffect, useState } from "react";
+import { supabase } from "@/supabaseClient";
 
 /**
  * Хук для выполнения запроса к Supabase.
@@ -8,45 +8,45 @@ import { supabase } from '@/supabaseClient'
  * Передавайте дополнительные зависимости явно, чтобы избежать устаревших данных.
  */
 export function useSupabaseQuery(queryBuilder, deps = []) {
-  const [data, setData] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // queryBuilder присутствует в массиве зависимостей; указывайте дополнительные deps через параметр
   useEffect(() => {
-    let active = true
-    const controller = new AbortController()
-    setIsLoading(true)
-    setError(null)
+    let active = true;
+    const controller = new AbortController();
+    setIsLoading(true);
+    setError(null);
 
     async function run() {
       try {
-        const { data, error } = await queryBuilder(supabase, controller.signal)
-        if (!active) return
+        const { data, error } = await queryBuilder(supabase, controller.signal);
+        if (!active) return;
         if (error) {
-          setError(error)
-          setData(null)
+          setError(error);
+          setData(null);
         } else {
-          setData(data)
+          setData(data);
         }
       } catch (err) {
-        if (err?.name === 'AbortError') return
+        if (err?.name === "AbortError") return;
         if (active) {
-          setError(err)
-          setData(null)
+          setError(err);
+          setData(null);
         }
       } finally {
-        if (active) setIsLoading(false)
+        if (active) setIsLoading(false);
       }
     }
 
-    run()
+    run();
     return () => {
-      active = false
-      controller.abort()
-    }
+      active = false;
+      controller.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryBuilder, ...deps])
+  }, [queryBuilder, ...deps]);
 
-  return { data, isLoading, error }
+  return { data, isLoading, error };
 }

@@ -1,36 +1,36 @@
-import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
-import { supabase } from '@/supabaseClient'
-import Spinner from './Spinner'
-import ErrorMessage from './ErrorMessage'
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { supabase } from "@/supabaseClient";
+import Spinner from "./Spinner";
+import ErrorMessage from "./ErrorMessage";
 
 export default function AuditTrail({ limit = 50 }) {
-  const [logs, setLogs] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       const { data, error } = await supabase
-        .from('audit_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit)
+        .from("audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
       if (error) {
-        setError(error)
-        setLogs([])
+        setError(error);
+        setLogs([]);
       } else {
-        setLogs(data || [])
-        setError(null)
+        setLogs(data || []);
+        setError(null);
       }
-      setLoading(false)
-    }
-    load()
-  }, [limit])
+      setLoading(false);
+    };
+    load();
+  }, [limit]);
 
-  if (loading) return <Spinner />
+  if (loading) return <Spinner />;
   if (error)
-    return <ErrorMessage error={error} message="Ошибка загрузки логов" />
+    return <ErrorMessage error={error} message="Ошибка загрузки логов" />;
 
   return (
     <div className="overflow-auto">
@@ -50,8 +50,8 @@ export default function AuditTrail({ limit = 50 }) {
             <tr key={log.id}>
               <td>
                 {log.created_at
-                  ? new Date(log.created_at).toLocaleString('ru-RU')
-                  : ''}
+                  ? new Date(log.created_at).toLocaleString("ru-RU")
+                  : ""}
               </td>
               <td>{log.user_id}</td>
               <td>{log.action}</td>
@@ -69,9 +69,9 @@ export default function AuditTrail({ limit = 50 }) {
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
 AuditTrail.propTypes = {
   limit: PropTypes.number,
-}
+};

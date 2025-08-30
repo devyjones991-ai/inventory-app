@@ -1,19 +1,19 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import PrivateRoute from '@/components/PrivateRoute.jsx'
-import { useAuth } from '@/hooks/useAuth.js'
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+import PrivateRoute from "@/components/PrivateRoute.jsx";
+import { useAuth } from "@/hooks/useAuth.js";
 
-jest.mock('@/hooks/useAuth.js', () => ({
+jest.mock("@/hooks/useAuth.js", () => ({
   useAuth: jest.fn(),
-}))
+}));
 
-describe('PrivateRoute', () => {
-  it('показывает индикатор загрузки во время ожидания', () => {
-    useAuth.mockReturnValue({ user: null, role: null, isLoading: true })
+describe("PrivateRoute", () => {
+  it("показывает индикатор загрузки во время ожидания", () => {
+    useAuth.mockReturnValue({ user: null, role: null, isLoading: true });
 
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={["/"]}>
         <Routes>
           <Route
             path="/"
@@ -26,16 +26,16 @@ describe('PrivateRoute', () => {
           <Route path="/auth" element={<div>Вход</div>} />
         </Routes>
       </MemoryRouter>,
-    )
+    );
 
-    expect(screen.getByTestId('spinner')).toBeInTheDocument()
-  })
+    expect(screen.getByTestId("spinner")).toBeInTheDocument();
+  });
 
-  it('перенаправляет на страницу входа при отсутствии пользователя', () => {
-    useAuth.mockReturnValue({ user: null, role: null, isLoading: false })
+  it("перенаправляет на страницу входа при отсутствии пользователя", () => {
+    useAuth.mockReturnValue({ user: null, role: null, isLoading: false });
 
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={["/"]}>
         <Routes>
           <Route
             path="/"
@@ -48,16 +48,20 @@ describe('PrivateRoute', () => {
           <Route path="/auth" element={<div>Вход</div>} />
         </Routes>
       </MemoryRouter>,
-    )
+    );
 
-    expect(screen.getByText('Вход')).toBeInTheDocument()
-  })
+    expect(screen.getByText("Вход")).toBeInTheDocument();
+  });
 
-  it('отображает содержимое для авторизованного пользователя', () => {
-    useAuth.mockReturnValue({ user: { id: '1' }, role: null, isLoading: false })
+  it("отображает содержимое для авторизованного пользователя", () => {
+    useAuth.mockReturnValue({
+      user: { id: "1" },
+      role: null,
+      isLoading: false,
+    });
 
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={["/"]}>
         <Routes>
           <Route
             path="/"
@@ -70,8 +74,8 @@ describe('PrivateRoute', () => {
           <Route path="/auth" element={<div>Вход</div>} />
         </Routes>
       </MemoryRouter>,
-    )
+    );
 
-    expect(screen.getByText('Секрет')).toBeInTheDocument()
-  })
-})
+    expect(screen.getByText("Секрет")).toBeInTheDocument();
+  });
+});

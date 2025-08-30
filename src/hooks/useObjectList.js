@@ -1,168 +1,168 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '@/supabaseClient'
-import { toast } from 'react-hot-toast'
-import { handleSupabaseError } from '@/utils/handleSupabaseError'
-import logger from '@/utils/logger'
-import { exportInventory, importInventory } from '@/utils/exportImport'
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/supabaseClient";
+import { toast } from "react-hot-toast";
+import { handleSupabaseError } from "@/utils/handleSupabaseError";
+import logger from "@/utils/logger";
+import { exportInventory, importInventory } from "@/utils/exportImport";
 
-const SELECTED_OBJECT_KEY = 'selectedObjectId'
+const SELECTED_OBJECT_KEY = "selectedObjectId";
 
 export function useObjectList() {
-  const navigate = useNavigate()
-  const [objects, setObjects] = useState([])
-  const [selected, setSelected] = useState(null)
-  const [fetchError, setFetchError] = useState(null)
-  const [isEmpty, setIsEmpty] = useState(false)
+  const navigate = useNavigate();
+  const [objects, setObjects] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
+  const [isEmpty, setIsEmpty] = useState(false);
 
   const fetchObjects = useCallback(async () => {
-    let data
+    let data;
     try {
       const { data: fetchedData, error } = await supabase
-        .from('objects')
-        .select('id, name, description')
-        .order('created_at', { ascending: true })
+        .from("objects")
+        .select("id, name, description")
+        .order("created_at", { ascending: true });
       if (error) {
         if (error.status === 401) {
-          await supabase.auth.signOut()
-          navigate('/auth')
-          return
+          await supabase.auth.signOut();
+          navigate("/auth");
+          return;
         }
         if (error.status === 403) {
-          toast.error('Недостаточно прав')
-          setFetchError('Недостаточно прав')
-          return
+          toast.error("Недостаточно прав");
+          setFetchError("Недостаточно прав");
+          return;
         }
-        logger.error('Ошибка загрузки объектов:', error)
-        toast.error('Ошибка загрузки объектов: ' + error.message)
-        await handleSupabaseError(error, navigate, 'Ошибка загрузки объектов')
-        setFetchError('Ошибка загрузки объектов: ' + error.message)
-        return
+        logger.error("Ошибка загрузки объектов:", error);
+        toast.error("Ошибка загрузки объектов: " + error.message);
+        await handleSupabaseError(error, navigate, "Ошибка загрузки объектов");
+        setFetchError("Ошибка загрузки объектов: " + error.message);
+        return;
       }
-      data = fetchedData
-      setObjects(data)
+      data = fetchedData;
+      setObjects(data);
     } catch (err) {
-      logger.error('Ошибка загрузки объектов:', err)
-      toast.error('Ошибка загрузки объектов: ' + err.message)
-      setFetchError('Ошибка загрузки объектов: ' + err.message)
-      return
+      logger.error("Ошибка загрузки объектов:", err);
+      toast.error("Ошибка загрузки объектов: " + err.message);
+      setFetchError("Ошибка загрузки объектов: " + err.message);
+      return;
     }
     if (data.length === 0) {
-      setIsEmpty(true)
-      setSelected(null)
-      if (typeof localStorage !== 'undefined') {
+      setIsEmpty(true);
+      setSelected(null);
+      if (typeof localStorage !== "undefined") {
         try {
-          localStorage.removeItem(SELECTED_OBJECT_KEY)
+          localStorage.removeItem(SELECTED_OBJECT_KEY);
         } catch {
           /* empty */
         }
       }
-      return
+      return;
     }
-    setIsEmpty(false)
-    let savedId = null
-    if (typeof localStorage !== 'undefined') {
+    setIsEmpty(false);
+    let savedId = null;
+    if (typeof localStorage !== "undefined") {
       try {
-        savedId = localStorage.getItem(SELECTED_OBJECT_KEY)
+        savedId = localStorage.getItem(SELECTED_OBJECT_KEY);
       } catch {
-        savedId = null
+        savedId = null;
       }
     }
     if (savedId) {
-      const saved = data.find((o) => o.id === Number(savedId))
-      if (saved) setSelected(saved)
-      else if (!selected && data.length) setSelected(data[0])
+      const saved = data.find((o) => o.id === Number(savedId));
+      if (saved) setSelected(saved);
+      else if (!selected && data.length) setSelected(data[0]);
     } else if (!selected && data.length) {
-      setSelected(data[0])
+      setSelected(data[0]);
     }
-  }, [navigate, selected])
+  }, [navigate, selected]);
 
   useEffect(() => {
-    fetchObjects()
-  }, [fetchObjects])
+    fetchObjects();
+  }, [fetchObjects]);
 
   async function saveObject(name, editingObject) {
-    if (!name.trim()) return false
+    if (!name.trim()) return false;
     if (editingObject) {
       const { data, error } = await supabase
-        .from('objects')
+        .from("objects")
         .update({ name })
-        .eq('id', editingObject.id)
-        .select('id, name, description')
-        .single()
+        .eq("id", editingObject.id)
+        .select("id, name, description")
+        .single();
       if (error) {
-        if (error.status === 403) toast.error('Недостаточно прав')
-        else toast.error('Ошибка редактирования: ' + error.message)
-        await handleSupabaseError(error, navigate, 'Ошибка редактирования')
-        return false
+        if (error.status === 403) toast.error("Недостаточно прав");
+        else toast.error("Ошибка редактирования: " + error.message);
+        await handleSupabaseError(error, navigate, "Ошибка редактирования");
+        return false;
       }
       setObjects((prev) =>
         prev.map((o) => (o.id === editingObject.id ? data : o)),
-      )
-      if (selected?.id === editingObject.id) setSelected(data)
-      return true
+      );
+      if (selected?.id === editingObject.id) setSelected(data);
+      return true;
     } else {
       const { data, error } = await supabase
-        .from('objects')
-        .insert([{ name, description: '' }])
-        .select('id, name, description')
-        .single()
+        .from("objects")
+        .insert([{ name, description: "" }])
+        .select("id, name, description")
+        .single();
       if (error) {
-        if (error.status === 403) toast.error('Недостаточно прав')
-        else toast.error('Ошибка добавления: ' + error.message)
-        await handleSupabaseError(error, navigate, 'Ошибка добавления')
-        return false
+        if (error.status === 403) toast.error("Недостаточно прав");
+        else toast.error("Ошибка добавления: " + error.message);
+        await handleSupabaseError(error, navigate, "Ошибка добавления");
+        return false;
       }
-      setObjects((prev) => [...prev, data])
-      setSelected(data)
-      setIsEmpty(false)
-      if (typeof localStorage !== 'undefined') {
+      setObjects((prev) => [...prev, data]);
+      setSelected(data);
+      setIsEmpty(false);
+      if (typeof localStorage !== "undefined") {
         try {
-          localStorage.setItem(SELECTED_OBJECT_KEY, data.id)
+          localStorage.setItem(SELECTED_OBJECT_KEY, data.id);
         } catch {
           /* empty */
         }
       }
-      return true
+      return true;
     }
   }
 
   async function deleteObject(id) {
-    const { error } = await supabase.from('objects').delete().eq('id', id)
+    const { error } = await supabase.from("objects").delete().eq("id", id);
     if (error) {
-      if (error.status === 403) toast.error('Недостаточно прав')
-      else toast.error('Ошибка удаления: ' + error.message)
-      await handleSupabaseError(error, navigate, 'Ошибка удаления')
-      return false
+      if (error.status === 403) toast.error("Недостаточно прав");
+      else toast.error("Ошибка удаления: " + error.message);
+      await handleSupabaseError(error, navigate, "Ошибка удаления");
+      return false;
     }
     setObjects((prev) => {
-      const updated = prev.filter((o) => o.id !== id)
+      const updated = prev.filter((o) => o.id !== id);
       if (selected?.id === id) {
-        const next = updated[0] || null
-        setSelected(next)
-        if (typeof localStorage !== 'undefined') {
+        const next = updated[0] || null;
+        setSelected(next);
+        if (typeof localStorage !== "undefined") {
           try {
-            if (next) localStorage.setItem(SELECTED_OBJECT_KEY, next.id)
-            else localStorage.removeItem(SELECTED_OBJECT_KEY)
+            if (next) localStorage.setItem(SELECTED_OBJECT_KEY, next.id);
+            else localStorage.removeItem(SELECTED_OBJECT_KEY);
           } catch {
             /* empty */
           }
         }
       }
       if (updated.length === 0) {
-        setIsEmpty(true)
+        setIsEmpty(true);
       }
-      return updated
-    })
-    toast.success('Объект удалён')
-    return true
+      return updated;
+    });
+    toast.success("Объект удалён");
+    return true;
   }
 
   function handleSelect(obj) {
-    setSelected(obj)
-    if (typeof localStorage !== 'undefined') {
+    setSelected(obj);
+    if (typeof localStorage !== "undefined") {
       try {
-        localStorage.setItem(SELECTED_OBJECT_KEY, obj.id)
+        localStorage.setItem(SELECTED_OBJECT_KEY, obj.id);
       } catch {
         /* empty */
       }
@@ -170,44 +170,44 @@ export function useObjectList() {
   }
 
   function handleUpdateSelected(updated) {
-    setSelected(updated)
-    if (typeof localStorage !== 'undefined') {
+    setSelected(updated);
+    if (typeof localStorage !== "undefined") {
       try {
-        localStorage.setItem(SELECTED_OBJECT_KEY, updated.id)
+        localStorage.setItem(SELECTED_OBJECT_KEY, updated.id);
       } catch {
         /* empty */
       }
     }
-    setObjects((prev) => prev.map((o) => (o.id === updated.id ? updated : o)))
+    setObjects((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
   }
 
   async function importFromFile(file) {
     try {
-      const res = await importInventory(file)
+      const res = await importInventory(file);
       if (res?.invalidRows) {
-        toast.error(`Невалидных строк: ${res.invalidRows}`)
+        toast.error(`Невалидных строк: ${res.invalidRows}`);
       } else {
-        toast.success('Импорт выполнен')
+        toast.success("Импорт выполнен");
       }
     } catch (err) {
-      toast.error(err.message)
+      toast.error(err.message);
     }
   }
 
   async function exportToFile() {
     try {
-      const blob = await exportInventory()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'inventory.csv'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      window.URL.revokeObjectURL(url)
-      toast.success('Экспорт выполнен')
+      const blob = await exportInventory();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "inventory.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Экспорт выполнен");
     } catch (err) {
-      toast.error(err.message)
+      toast.error(err.message);
     }
   }
 
@@ -222,5 +222,5 @@ export function useObjectList() {
     deleteObject,
     importFromFile,
     exportToFile,
-  }
+  };
 }

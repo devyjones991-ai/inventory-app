@@ -1,29 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import PropTypes from 'prop-types'
+import React, { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 
-import usePersistedForm from '@/hooks/usePersistedForm'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import HardwareCard from './HardwareCard'
-import ChatTab from './ChatTab'
-import TasksTab from './TasksTab'
-import { PlusIcon } from '@heroicons/react/24/outline'
-import { linkifyText } from '@/utils/linkify'
-import { useHardware } from '@/hooks/useHardware'
-import { useObjects } from '@/hooks/useObjects'
-import { useAuth } from '@/hooks/useAuth'
+import usePersistedForm from "@/hooks/usePersistedForm";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import HardwareCard from "./HardwareCard";
+import ChatTab from "./ChatTab";
+import TasksTab from "./TasksTab";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import { linkifyText } from "@/utils/linkify";
+import { useHardware } from "@/hooks/useHardware";
+import { useObjects } from "@/hooks/useObjects";
+import { useAuth } from "@/hooks/useAuth";
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 
 import {
   Dialog,
@@ -31,17 +31,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 
-const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`
+const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`;
 const DEFAULT_HW_FORM = {
-  name: '',
-  location: '',
-  purchase_status: 'не оплачен',
-  install_status: 'не установлен',
-}
+  name: "",
+  location: "",
+  purchase_status: "не оплачен",
+  install_status: "не установлен",
+};
 
 function InventoryTabs({
   selected,
@@ -49,29 +49,29 @@ function InventoryTabs({
   onTabChange = () => {},
   registerAddHandler,
 }) {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   // --- вкладки и описание ---
-  const [tab, setTab] = useState('desc')
-  const [description, setDescription] = useState('')
-  const [isEditingDesc, setIsEditingDesc] = useState(false)
+  const [tab, setTab] = useState("desc");
+  const [description, setDescription] = useState("");
+  const [isEditingDesc, setIsEditingDesc] = useState(false);
 
   // --- оборудование и счётчики ---
-  const [hardware, setHardware] = useState([])
-  const [tasksCount, setTasksCount] = useState(0)
-  const [messageCount, setMessageCount] = useState(0)
-  const [isHWModalOpen, setIsHWModalOpen] = useState(false)
-  const [editingHW, setEditingHW] = useState(null)
+  const [hardware, setHardware] = useState([]);
+  const [tasksCount, setTasksCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
+  const [isHWModalOpen, setIsHWModalOpen] = useState(false);
+  const [editingHW, setEditingHW] = useState(null);
   const hardwareSchema = z.object({
-    name: z.string().min(1, 'Введите название'),
+    name: z.string().min(1, "Введите название"),
     location: z.string().optional(),
-    purchase_status: z.enum(['не оплачен', 'оплачен'], {
-      required_error: 'Выберите статус покупки',
+    purchase_status: z.enum(["не оплачен", "оплачен"], {
+      required_error: "Выберите статус покупки",
     }),
-    install_status: z.enum(['не установлен', 'установлен'], {
-      required_error: 'Выберите статус установки',
+    install_status: z.enum(["не установлен", "установлен"], {
+      required_error: "Выберите статус установки",
     }),
-  })
+  });
 
   const {
     register,
@@ -85,15 +85,15 @@ function InventoryTabs({
     DEFAULT_HW_FORM,
     isHWModalOpen,
     { resolver: zodResolver(hardwareSchema) },
-  )
+  );
 
   useEffect(() => {
-    register('purchase_status')
-    register('install_status')
-  }, [register])
+    register("purchase_status");
+    register("install_status");
+  }, [register]);
 
-  const purchaseStatus = watch('purchase_status')
-  const installStatus = watch('install_status')
+  const purchaseStatus = watch("purchase_status");
+  const installStatus = watch("install_status");
 
   const {
     hardware: loadedHardware = [],
@@ -101,78 +101,78 @@ function InventoryTabs({
     createHardware,
     updateHardware,
     deleteHardware,
-  } = useHardware(selected?.id)
+  } = useHardware(selected?.id);
 
   useEffect(() => {
     if (selected?.id) {
-      loadHardware(selected.id)
+      loadHardware(selected.id);
     }
-  }, [selected?.id, loadHardware])
+  }, [selected?.id, loadHardware]);
 
   useEffect(() => {
-    setHardware(loadedHardware)
-  }, [loadedHardware])
+    setHardware(loadedHardware);
+  }, [loadedHardware]);
 
   const openHWModal = useCallback(() => {
-    reset(DEFAULT_HW_FORM)
-    setEditingHW(null)
-    setIsHWModalOpen(true)
-  }, [reset])
+    reset(DEFAULT_HW_FORM);
+    setEditingHW(null);
+    setIsHWModalOpen(true);
+  }, [reset]);
 
   const closeHWModal = useCallback(() => {
-    setIsHWModalOpen(false)
-  }, [])
+    setIsHWModalOpen(false);
+  }, []);
 
   const handleHWSubmit = handleSubmit(async (data) => {
-    if (!selected?.id) return
+    if (!selected?.id) return;
     if (editingHW) {
-      await updateHardware(editingHW.id, data)
+      await updateHardware(editingHW.id, data);
     } else {
-      await createHardware({ ...data, object_id: selected.id })
+      await createHardware({ ...data, object_id: selected.id });
     }
-    setIsHWModalOpen(false)
-    reset(DEFAULT_HW_FORM)
-  })
+    setIsHWModalOpen(false);
+    reset(DEFAULT_HW_FORM);
+  });
 
   const handleEditHW = useCallback((item) => {
-    setEditingHW(item)
-    setIsHWModalOpen(true)
-  }, [])
+    setEditingHW(item);
+    setIsHWModalOpen(true);
+  }, []);
 
   useEffect(() => {
     if (isHWModalOpen && editingHW) {
-      reset(editingHW)
+      reset(editingHW);
     }
-  }, [isHWModalOpen, editingHW, reset])
+  }, [isHWModalOpen, editingHW, reset]);
 
   const handleDeleteHW = useCallback(
     async (item) => {
-      await deleteHardware(item.id)
+      await deleteHardware(item.id);
     },
     [deleteHardware],
-  )
+  );
 
-  const { updateObject } = useObjects()
+  const { updateObject } = useObjects();
 
   useEffect(() => {
     if (selected) {
-      setDescription(selected.description || '')
+      setDescription(selected.description || "");
     }
-  }, [selected])
+  }, [selected]);
 
   const saveDescription = useCallback(async () => {
-    if (!selected) return
+    if (!selected) return;
     try {
-      await updateObject(selected.id, { description })
-      onUpdateSelected({ ...selected, description })
+      await updateObject(selected.id, { description });
+      onUpdateSelected({ ...selected, description });
     } finally {
-      setIsEditingDesc(false)
+      setIsEditingDesc(false);
     }
-  }, [selected, description, updateObject, onUpdateSelected])
+  }, [selected, description, updateObject, onUpdateSelected]);
 
   useEffect(() => {
-    onTabChange(tab)
-  }, [tab, onTabChange])
+    onTabChange(tab);
+  }, [tab, onTabChange]);
 
   return (
     <Tabs value={tab} onValueChange={setTab} className="flex flex-col h-full">
@@ -204,7 +204,7 @@ function InventoryTabs({
           ) : (
             <div className="space-y-2">
               <div className="whitespace-pre-wrap break-words">
-                {description ? linkifyText(description) : 'Нет описания'}
+                {description ? linkifyText(description) : "Нет описания"}
               </div>
               {user && (
                 <Button
@@ -273,7 +273,7 @@ function InventoryTabs({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingHW ? 'Изменить оборудование' : 'Добавить оборудование'}
+              {editingHW ? "Изменить оборудование" : "Добавить оборудование"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleHWSubmit} className="space-y-2">
@@ -281,7 +281,7 @@ function InventoryTabs({
               <Input
                 className="w-full"
                 placeholder="Название"
-                {...register('name')}
+                {...register("name")}
               />
               {errors.name && (
                 <p className="text-red-500 text-sm">{errors.name.message}</p>
@@ -291,13 +291,13 @@ function InventoryTabs({
               <Input
                 className="w-full"
                 placeholder="Расположение"
-                {...register('location')}
+                {...register("location")}
               />
             </div>
             <div>
               <Select
                 value={purchaseStatus}
-                onValueChange={(value) => setValue('purchase_status', value)}
+                onValueChange={(value) => setValue("purchase_status", value)}
               >
                 <SelectTrigger className="w-full h-9">
                   <SelectValue placeholder="" />
@@ -316,7 +316,7 @@ function InventoryTabs({
             <div>
               <Select
                 value={installStatus}
-                onValueChange={(value) => setValue('install_status', value)}
+                onValueChange={(value) => setValue("install_status", value)}
               >
                 <SelectTrigger className="w-full h-9">
                   <SelectValue placeholder="" />
@@ -342,7 +342,7 @@ function InventoryTabs({
         </DialogContent>
       </Dialog>
     </Tabs>
-  )
+  );
 }
 
 InventoryTabs.propTypes = {
@@ -354,6 +354,6 @@ InventoryTabs.propTypes = {
   onUpdateSelected: PropTypes.func.isRequired,
   onTabChange: PropTypes.func,
   registerAddHandler: PropTypes.func,
-}
+};
 
-export default InventoryTabs
+export default InventoryTabs;

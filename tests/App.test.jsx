@@ -1,13 +1,13 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-jest.mock('@/utils/notifications', () => ({
+import React from "react";
+import { render, screen } from "@testing-library/react";
+jest.mock("@/utils/notifications", () => ({
   requestNotificationPermission: jest.fn(),
   pushNotification: jest.fn(),
   playTaskSound: jest.fn(),
   playMessageSound: jest.fn(),
-}))
-jest.mock('@/supabaseClient.js', () => {
-  const channelMock = { on: jest.fn().mockReturnThis(), subscribe: jest.fn() }
+}));
+jest.mock("@/supabaseClient.js", () => {
+  const channelMock = { on: jest.fn().mockReturnThis(), subscribe: jest.fn() };
   return {
     isSupabaseConfigured: true,
     supabase: {
@@ -24,18 +24,18 @@ jest.mock('@/supabaseClient.js', () => {
         order: jest.fn().mockResolvedValue({ data: [], error: null }),
       })),
     },
-  }
-})
-jest.mock('react-hot-toast', () => ({
+  };
+});
+jest.mock("react-hot-toast", () => ({
   Toaster: () => null,
   toast: { success: jest.fn(), error: jest.fn() },
-}))
-import App from '@/App'
-describe('App', () => {
-  it('отображает индикатор загрузки и страницу авторизации по /auth', async () => {
-    window.history.pushState({}, '', '/auth')
-    render(<App />)
-    expect(screen.getByText(/Loading|Загрузка/i)).toBeInTheDocument()
-    expect(await screen.findByText('Вход')).toBeInTheDocument()
-  })
-})
+}));
+import App from "@/App";
+describe("App", () => {
+  it("отображает индикатор загрузки и страницу авторизации по /auth", async () => {
+    window.history.pushState({}, "", "/auth");
+    render(<App />);
+    expect(screen.getByText(/Loading|Загрузка/i)).toBeInTheDocument();
+    expect(await screen.findByText("Вход")).toBeInTheDocument();
+  });
+});

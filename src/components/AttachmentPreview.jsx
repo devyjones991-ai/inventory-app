@@ -1,28 +1,28 @@
-import React, { useState } from 'react'
-import PropTypes from 'prop-types'
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 
 export default function AttachmentPreview({ url, onImageClick = null }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
-  const cleanUrl = url?.split('?')[0].split('#')[0] || ''
-  const extension = cleanUrl.split('.').pop().toLowerCase()
+  const cleanUrl = url?.split("?")[0].split("#")[0] || "";
+  const extension = cleanUrl.split(".").pop().toLowerCase();
 
-  const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp']
-  const videoExt = ['mp4', 'webm', 'ogg', 'mov']
+  const imageExt = ["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"];
+  const videoExt = ["mp4", "webm", "ogg", "mov"];
 
-  const isImage = imageExt.includes(extension)
-  const isVideo = videoExt.includes(extension)
+  const isImage = imageExt.includes(extension);
+  const isVideo = videoExt.includes(extension);
 
   const handleOpen = () => {
     if (isImage && onImageClick) {
-      onImageClick(url)
+      onImageClick(url);
     } else {
-      setOpen(true)
+      setOpen(true);
     }
-  }
+  };
 
-  const handleClose = () => setOpen(false)
+  const handleClose = () => setOpen(false);
 
   if (isImage) {
     return (
@@ -45,7 +45,7 @@ export default function AttachmentPreview({ url, onImageClick = null }) {
           </Dialog>
         )}
       </>
-    )
+    );
   }
 
   if (isVideo) {
@@ -67,7 +67,7 @@ export default function AttachmentPreview({ url, onImageClick = null }) {
           </DialogContent>
         </Dialog>
       </>
-    )
+    );
   }
 
   return (
@@ -96,10 +96,10 @@ export default function AttachmentPreview({ url, onImageClick = null }) {
         </a>
       </div>
     </>
-  )
+  );
 }
 
 AttachmentPreview.propTypes = {
   url: PropTypes.string.isRequired,
   onImageClick: PropTypes.func,
-}
+};

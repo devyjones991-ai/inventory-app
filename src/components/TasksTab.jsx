@@ -1,48 +1,57 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import PropTypes from 'prop-types'
+import React, { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 
-import TaskCard from './TaskCard'
-import ErrorMessage from './ErrorMessage'
-import ConfirmModal from './ConfirmModal'
-import { useTasks } from '@/hooks/useTasks'
-import logger from '@/utils/logger'
-import { STATUS_MAP, REVERSE_STATUS_MAP } from '@/constants/taskStatus'
+import TaskCard from "./TaskCard";
+import ErrorMessage from "./ErrorMessage";
+import ConfirmModal from "./ConfirmModal";
+import { useTasks } from "@/hooks/useTasks";
+import logger from "@/utils/logger";
+import { STATUS_MAP, REVERSE_STATUS_MAP } from "@/constants/taskStatus";
 
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from './ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+} from "./ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
-const STATUS_OPTIONS = Object.keys(STATUS_MAP)
+const STATUS_OPTIONS = Object.keys(STATUS_MAP);
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  try {
+    return new Date(dateStr).toLocaleDateString("ru-RU");
+  } catch {
+    return dateStr;
+  }
+}
 
 function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [taskForm, setTaskForm] = useState({
-    title: '',
-    assignee: '',
-    due_date: '',
-    status: 'запланировано',
-    notes: '',
-  })
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState(null)
-  const [viewingTask, setViewingTask] = useState(null)
-  const [taskDeleteId, setTaskDeleteId] = useState(null)
+    title: "",
+    assignee: "",
+    due_date: "",
+    status: "запланировано",
+    notes: "",
+  });
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [viewingTask, setViewingTask] = useState(null);
+  const [taskDeleteId, setTaskDeleteId] = useState(null);
 
   const {
     tasks,
@@ -52,66 +61,62 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     createTask,
     updateTask,
     deleteTask,
-  } = useTasks(selected?.id)
-
-
-  const canManage = true
-
+  } = useTasks(selected?.id);
 
   useEffect(() => {
     if (selected?.id) {
-      loadTasks({ limit: PAGE_SIZE })
+      loadTasks({ limit: PAGE_SIZE });
     }
-  }, [selected?.id, loadTasks])
+  }, [selected?.id, loadTasks]);
 
   const openTaskModal = useCallback(() => {
     setTaskForm({
-      title: '',
-      assignee: '',
-      due_date: '',
-      status: 'запланировано',
-      notes: '',
-    })
-    setEditingTask(null)
-    setIsTaskModalOpen(true)
-  }, [])
+      title: "",
+      assignee: "",
+      due_date: "",
+      status: "запланировано",
+      notes: "",
+    });
+    setEditingTask(null);
+    setIsTaskModalOpen(true);
+  }, []);
 
   useEffect(() => {
-    registerAddHandler?.(openTaskModal)
-    return () => registerAddHandler?.(null)
-  }, [registerAddHandler, openTaskModal])
+    registerAddHandler?.(openTaskModal);
+    return () => registerAddHandler?.(null);
+  }, [registerAddHandler, openTaskModal]);
 
   useEffect(() => {
-    onCountChange?.(tasks.length)
-  }, [tasks, onCountChange])
+    onCountChange?.(tasks.length);
+  }, [tasks, onCountChange]);
 
   const closeTaskModal = useCallback(() => {
-    setIsTaskModalOpen(false)
-    setEditingTask(null)
-  }, [])
+    setIsTaskModalOpen(false);
+    setEditingTask(null);
+  }, []);
 
   const handleTaskSubmit = useCallback(
     async (e) => {
-      e.preventDefault()
-      const statusValue = STATUS_MAP[taskForm.status]
+      e.preventDefault();
+      const statusValue = STATUS_MAP[taskForm.status];
       if (!statusValue) {
-        logger.error('Unknown status selected:', taskForm.status)
-        return
+        logger.error("Unknown status selected:", taskForm.status);
+        return;
       }
       const payload = {
         ...taskForm,
         object_id: selected?.id,
         status: statusValue,
-      }
+      };
       try {
         if (editingTask) {
-          await updateTask(editingTask.id, payload)
+          await updateTask(editingTask.id, payload);
         } else {
-          await createTask(payload)
+          await createTask(payload);
         }
-        closeTaskModal()
+        closeTaskModal();
       } catch (err) {
-        logger.error('Error saving task:', err)
+        logger.error("Error saving task:", err);
       }
     },
     [
@@ -122,40 +127,38 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       updateTask,
       closeTaskModal,
     ],
-  )
+  );
 
   const handleEditTask = useCallback((task) => {
     setTaskForm({
-      title: task.title || '',
-      assignee: task.assignee || '',
-      due_date: task.due_date || '',
-      status: REVERSE_STATUS_MAP[task.status] || 'запланировано',
-      notes: task.notes || '',
-    })
-    setEditingTask(task)
-    setIsTaskModalOpen(true)
-  }, [])
+      title: task.title || "",
+      assignee: task.assignee || "",
+      due_date: task.due_date || "",
+      status: REVERSE_STATUS_MAP[task.status] || "запланировано",
+      notes: task.notes || "",
+    });
+    setEditingTask(task);
+    setIsTaskModalOpen(true);
+  }, []);
 
   const confirmDeleteTask = useCallback(async () => {
     if (taskDeleteId) {
       try {
-        await deleteTask(taskDeleteId)
-        setTaskDeleteId(null)
+        await deleteTask(taskDeleteId);
       } catch (err) {
-        logger.error('Error deleting task:', err)
+        logger.error("Error deleting task:", err);
+      } finally {
+        setTaskDeleteId(null);
       }
     }
-  }, [taskDeleteId, deleteTask])
-
-  const formatDate = (date) =>
-    date ? new Date(date).toLocaleDateString('ru-RU') : ''
+  }, [taskDeleteId, deleteTask]);
 
   if (!selected) {
     return (
       <div className="text-center py-8 text-gray-500">
         Выберите объект для просмотра задач
       </div>
-    )
+    );
   }
 
   if (loading) {
@@ -165,18 +168,18 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         <div className="h-10 bg-muted rounded" />
         <div className="h-10 bg-muted rounded" />
       </div>
-    )
+    );
   }
 
   if (error) {
-    return <ErrorMessage message={error} />
+    return <ErrorMessage message={error} />;
   }
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          Задачи для {selected.name}
+          Задачи по {selected.name}
         </h2>
         <div className="flex gap-2">
           <Button size="sm" onClick={openTaskModal}>
@@ -212,7 +215,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingTask ? 'Редактировать задачу' : 'Новая задача'}
+              {editingTask ? "Изменить задачу" : "Добавить задачу"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
@@ -228,7 +231,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-assignee">Исполнитель</Label>
+              <Label htmlFor="task-assignee">Ответственный</Label>
               <Input
                 id="task-assignee"
                 value={taskForm.assignee}
@@ -238,7 +241,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-due-date">Дата выполнения</Label>
+              <Label htmlFor="task-due-date">Дата</Label>
               <Input
                 id="task-due-date"
                 type="date"
@@ -281,7 +284,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             </div>
             <DialogFooter>
               <Button type="submit">
-                {editingTask ? 'Сохранить' : 'Добавить'}
+                {editingTask ? "Сохранить" : "Добавить"}
               </Button>
               <Button type="button" variant="ghost" onClick={closeTaskModal}>
                 Отмена
@@ -303,7 +306,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           <div className="space-y-2">
             {viewingTask?.assignee && (
               <p>
-                <strong>Исполнитель:</strong> {viewingTask.assignee}
+                <strong>Ответственный:</strong> {viewingTask.assignee}
               </p>
             )}
             {viewingTask?.due_date && (
@@ -312,7 +315,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               </p>
             )}
             <p>
-              <strong>Статус:</strong>{' '}
+              <strong>Статус:</strong>{" "}
               {REVERSE_STATUS_MAP[viewingTask?.status] || viewingTask?.status}
             </p>
             {viewingTask?.notes && (
@@ -331,13 +334,13 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         onCancel={() => setTaskDeleteId(null)}
       />
     </div>
-  )
+  );
 }
 
 TasksTab.propTypes = {
   selected: PropTypes.object,
   registerAddHandler: PropTypes.func,
   onCountChange: PropTypes.func,
-}
+};
 
-export default TasksTab
+export default TasksTab;

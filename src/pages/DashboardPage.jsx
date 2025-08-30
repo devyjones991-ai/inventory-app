@@ -5,6 +5,7 @@ import AccountModal from "@/components/AccountModal";
 import ConfirmModal from "@/components/ConfirmModal";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import ThemeToggle from "@/components/ThemeToggle";
+import { t } from "@/i18n";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -123,13 +124,13 @@ export default function DashboardPage() {
     if (isEmpty) {
       return (
         <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
-          Список пуст
+          {t("dashboard.empty")}
         </div>
       );
     }
     return (
       <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
-        Выберите объект...
+        {t("dashboard.selectPrompt")}
       </div>
     );
   }
@@ -158,6 +159,7 @@ export default function DashboardPage() {
                 size="icon"
                 className="absolute right-2 top-2"
                 onClick={toggleSidebar}
+                aria-label="Close"
               >
                 ✕
               </Button>
@@ -175,22 +177,22 @@ export default function DashboardPage() {
 
         <div className="flex-1 flex flex-col">
           <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-background">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 md:gap-4">
               <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
                 ☰
               </button>
               <Button className="flex items-center gap-1" onClick={addHandler}>
-                <PlusIcon className="w-4 h-4" /> Добавить
+                <PlusIcon className="w-4 h-4" /> {t("dashboard.add")}
               </Button>
               <>
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   onClick={() => importInputRef.current?.click()}
                 >
-                  Импорт
+                  {t("dashboard.import")}
                 </Button>
-                <Button variant="secondary" onClick={exportToFile}>
-                  Экспорт
+                <Button variant="outline" onClick={exportToFile}>
+                  {t("dashboard.export")}
                 </Button>
                 <Input
                   type="file"
@@ -201,16 +203,16 @@ export default function DashboardPage() {
                 />
               </>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 md:gap-4">
               <ThemeToggle />
               <Button
                 className="p-2 text-lg md:text-sm"
                 onClick={() => setIsAccountModalOpen(true)}
               >
-                {user.user_metadata?.username || "Аккаунт"}
+                {user.user_metadata?.username || t("common.account")}
               </Button>
               <Button className="p-2 text-lg md:text-sm" onClick={signOut}>
-                Выйти
+                {t("common.logout")}
               </Button>
             </div>
           </header>
@@ -238,27 +240,28 @@ export default function DashboardPage() {
               size="icon"
               className="absolute right-2 top-2"
               onClick={closeObjectModal}
+              aria-label="Close"
             >
               ✕
             </Button>
             <DialogHeader data-dialog-handle>
               <DialogTitle>
-                {editingObject ? "Редактировать объект" : "Добавить объект"}
+                {editingObject ? t("objects.editTitle") : t("objects.addTitle")}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
                 type="text"
                 className="w-full"
-                placeholder="Название объекта"
+                placeholder={t("objects.namePlaceholder")}
                 value={objectName}
                 onChange={(e) => setObjectName(e.target.value)}
               />
             </div>
             <DialogFooter className="flex space-x-2">
-              <Button onClick={onSaveObject}>Сохранить</Button>
+              <Button onClick={onSaveObject}>{t("common.save")}</Button>
               <Button variant="ghost" onClick={closeObjectModal}>
-                Отмена
+                {t("common.cancel")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -266,10 +269,10 @@ export default function DashboardPage() {
 
         <ConfirmModal
           open={!!deleteCandidate}
-          title="Удалить объект?"
+          title={t("objects.confirmDeleteTitle")}
           confirmLabel={
             <>
-              <TrashIcon className="w-4 h-4" /> Удалить
+              <TrashIcon className="w-4 h-4" /> {t("common.delete")}
             </>
           }
           onConfirm={onConfirmDelete}

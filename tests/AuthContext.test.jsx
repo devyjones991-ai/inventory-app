@@ -1,14 +1,14 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, jest } from '@jest/globals'
-import { useContext } from 'react'
-import { AuthProvider, AuthContext } from '@/context/AuthContext.jsx'
-import { toast } from 'react-hot-toast'
-import logger from '@/utils/logger.js'
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, jest } from "@jest/globals";
+import { useContext } from "react";
+import { AuthProvider, AuthContext } from "@/context/AuthContext.jsx";
+import { toast } from "react-hot-toast";
+import logger from "@/utils/logger.js";
 
-const mockGetSession = jest.fn()
-const mockOnAuthStateChange = jest.fn()
+const mockGetSession = jest.fn();
+const mockOnAuthStateChange = jest.fn();
 
-jest.mock('@/supabaseClient.js', () => ({
+jest.mock("@/supabaseClient.js", () => ({
   supabase: {
     auth: {
       getSession: (...args) => mockGetSession(...args),
@@ -16,84 +16,84 @@ jest.mock('@/supabaseClient.js', () => ({
     },
   },
   isSupabaseConfigured: true,
-}))
+}));
 
 mockGetSession.mockResolvedValue({
-  data: { session: { user: { id: '123' } } },
-})
+  data: { session: { user: { id: "123" } } },
+});
 
 mockOnAuthStateChange.mockReturnValue({
   data: { subscription: { unsubscribe: jest.fn() } },
-})
+});
 
 function Consumer() {
-  const { role } = useContext(AuthContext)
-  return <div>{role ?? 'без роли'}</div>
+  const { role } = useContext(AuthContext);
+  return <div>{role ?? "без роли"}</div>;
 }
 
-describe('AuthContext', () => {
-  it('логирует ошибку и оставляет роль null при сбое сети', async () => {
-    const errorText = 'Ошибка сети'
-    const originalFetch = globalThis.fetch
+describe("AuthContext", () => {
+  it("логирует ошибку и оставляет роль null при сбое сети", async () => {
+    const errorText = "Ошибка сети";
+    const originalFetch = globalThis.fetch;
     globalThis.fetch = jest.fn(() =>
       Promise.resolve({
         ok: false,
-        json: () => Promise.reject(new Error('not json')),
+        json: () => Promise.reject(new Error("not json")),
         text: () => Promise.resolve(errorText),
         clone() {
-          return this
+          return this;
         },
       }),
-    )
-    const consoleSpy = jest.spyOn(logger, 'error').mockImplementation(() => {})
+    );
+    const consoleSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
 
     render(
       <AuthProvider>
         <Consumer />
       </AuthProvider>,
-    )
+    );
 
-    await waitFor(() => expect(consoleSpy).toHaveBeenCalled())
+    await waitFor(() => expect(consoleSpy).toHaveBeenCalled());
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Ошибка получения роли:',
+      "Ошибка получения роли:",
       expect.objectContaining({ message: errorText }),
-    )
+    );
 
-    expect(screen.getByText('без роли')).toBeInTheDocument()
+    expect(screen.getByText("без роли")).toBeInTheDocument();
 
-    consoleSpy.mockRestore()
-    globalThis.fetch = originalFetch
-  })
+    consoleSpy.mockRestore();
+    globalThis.fetch = originalFetch;
+  });
 
-  it('использует сообщение из JSON при ошибке API', async () => {
-    const errorMessage = 'Нет доступа'
-    const originalFetch = globalThis.fetch
+  it("использует сообщение из JSON при ошибке API", async () => {
+    const errorMessage = "Нет доступа";
+    const originalFetch = globalThis.fetch;
     globalThis.fetch = jest.fn(() =>
       Promise.resolve({
         ok: false,
         json: () => Promise.resolve({ message: errorMessage }),
-        text: () => Promise.resolve(''),
+        text: () => Promise.resolve(""),
         clone() {
-          return this
+          return this;
         },
       }),
-    )
-    const toastSpy = jest.spyOn(toast, 'error').mockImplementation(() => {})
+    );
+    const toastSpy = jest.spyOn(toast, "error").mockImplementation(() => {});
 
     render(
       <AuthProvider>
         <Consumer />
       </AuthProvider>,
-    )
+    );
 
-    await waitFor(() => expect(toastSpy).toHaveBeenCalled())
+    await waitFor(() => expect(toastSpy).toHaveBeenCalled());
 
     expect(toastSpy).toHaveBeenCalledWith(
-      'Ошибка получения роли: ' + errorMessage,
-    )
+      "Ошибка получения роли: " + errorMessage,
+    );
 
-    toastSpy.mockRestore()
-    globalThis.fetch = originalFetch
-  })
-})
+    toastSpy.mockRestore();
+    globalThis.fetch = originalFetch;
+  });
+});

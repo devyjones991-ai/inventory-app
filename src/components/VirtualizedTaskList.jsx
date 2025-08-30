@@ -1,7 +1,7 @@
-import { FixedSizeList as List } from 'react-window'
-import PropTypes from 'prop-types'
-import { forwardRef } from 'react'
-import TaskCard from './TaskCard'
+import { FixedSizeList as List } from "react-window";
+import PropTypes from "prop-types";
+import { forwardRef } from "react";
+import TaskCard from "./TaskCard";
 
 function VirtualizedTaskList({
   tasks,
@@ -12,7 +12,7 @@ function VirtualizedTaskList({
   itemSize = 120,
 }) {
   const Row = ({ index, style }) => {
-    const task = tasks[index]
+    const task = tasks[index];
     return (
       <div style={style}>
         <TaskCard
@@ -22,12 +22,12 @@ function VirtualizedTaskList({
           onDelete={() => onDelete(task.id)}
         />
       </div>
-    )
-  }
+    );
+  };
 
   const Outer = forwardRef((props, ref) => (
     <div data-testid="task-list" ref={ref} {...props} />
-  ))
+  ));
 
   return (
     <List
@@ -39,7 +39,7 @@ function VirtualizedTaskList({
     >
       {Row}
     </List>
-  )
+  );
 }
 
 VirtualizedTaskList.propTypes = {
@@ -49,6 +49,6 @@ VirtualizedTaskList.propTypes = {
   onDelete: PropTypes.func.isRequired,
   height: PropTypes.number,
   itemSize: PropTypes.number,
-}
+};
 
-export default VirtualizedTaskList
+export default VirtualizedTaskList;

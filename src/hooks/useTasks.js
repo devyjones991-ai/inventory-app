@@ -1,59 +1,65 @@
-import { useState, useCallback, useEffect } from 'react'
-import { supabase } from '@/supabaseClient'
-import { handleSupabaseError } from '@/utils/handleSupabaseError'
-import { useNavigate } from 'react-router-dom'
-import logger from '@/utils/logger'
-import { TASK_STATUSES } from '@/constants/taskStatus'
+﻿import { useState, useCallback, useEffect } from "react";
+import { supabase } from "@/supabaseClient";
+import { handleSupabaseError } from "@/utils/handleSupabaseError";
+import { useNavigate } from "react-router-dom";
+import logger from "@/utils/logger";
+import { TASK_STATUSES } from "@/constants/taskStatus";
 
-const TASK_FIELDS = 'id, title, status, assignee, due_date, notes, created_at'
-const TASK_FIELDS_FALLBACK = 'id, title, status, assignee, notes, created_at'
+const isColumnMissingError = (err) =>
+  err?.code === "42703" && err?.message?.toLowerCase?.().includes("due_date");
+
+const isSchemaCacheError = (err) =>
+  (err?.code === "42703" && !isColumnMissingError(err)) ||
+  err?.message?.toLowerCase?.().includes("schema cache");
+
+const TASK_FIELDS = "id, title, status, assignee, due_date, notes, created_at";
+const TASK_FIELDS_FALLBACK = "id, title, status, assignee, notes, created_at";
 
 export function useTasks(objectId) {
-  const navigate = useNavigate()
-  const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const navigate = useNavigate();
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const isColumnMissingError = (err) =>
-    err?.code === '42703' && err?.message?.toLowerCase?.().includes('due_date')
-
-  const isSchemaCacheError = (err) =>
-    (err?.code === '42703' && !isColumnMissingError(err)) ||
-    err?.message?.toLowerCase?.().includes('schema cache')
+  // helpers moved to module scope to remain stable across renders
 
   const fetchTasks = useCallback(
     async (objId, offset = 0, limit = 20) => {
       try {
-        if (!objId) return { data: [], error: null }
+        if (!objId) return { data: [], error: null };
         const baseQuery = supabase
-          .from('tasks')
+          .from("tasks")
           .select(TASK_FIELDS)
-          .eq('object_id', objId)
+          .eq("object_id", objId);
         let result = await baseQuery
-          .order('created_at', { ascending: false })
-          .range(offset, offset + limit - 1)
+          .order("created_at", { ascending: false })
+          .range(offset, offset + limit - 1);
         if (isColumnMissingError(result.error)) {
           result = await supabase
-            .from('tasks')
+            .from("tasks")
             .select(TASK_FIELDS_FALLBACK)
-            .eq('object_id', objId)
-            .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1)
+            .eq("object_id", objId)
+            .order("created_at", { ascending: false })
+            .range(offset, offset + limit - 1);
         } else if (isSchemaCacheError(result.error)) {
           result = await baseQuery
-            .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1)
+            .order("created_at", { ascending: false })
+            .range(offset, offset + limit - 1);
         }
-        if (result.error) throw result.error
-        return result
+        if (result.error) throw result.error;
+        return result;
       } catch (err) {
-        logger.error('fetchTasks failed', err)
-        await handleSupabaseError(err, navigate, 'Ошибка загрузки задач')
-        return { data: null, error: err }
+        logger.error("fetchTasks failed", err);
+        await handleSupabaseError(
+          err,
+          navigate,
+          "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р·Р°РґР°С‡",
+        );
+        return { data: null, error: err };
       }
     },
     [navigate],
-  )
+  );
 
   const insertTask = useCallback(
     async (data) => {
@@ -69,10 +75,10 @@ export function useTasks(objectId) {
           due_date,
           notes,
           object_id,
-        } = data
-        const status = inputStatus ?? 'planned'
+        } = data;
+        const status = inputStatus ?? "planned";
         if (!TASK_STATUSES.includes(status)) {
-          throw new Error('Недопустимый статус задачи')
+          throw new Error("РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ СЃС‚Р°С‚СѓСЃ Р·Р°РґР°С‡Рё");
         }
         const taskDataBase = {
           title,
@@ -80,33 +86,33 @@ export function useTasks(objectId) {
           notes,
           object_id,
           assignee: assignee ?? executor ?? assignee_id ?? null,
-        }
-        const taskData = { ...taskDataBase, due_date }
+        };
+        const taskData = { ...taskDataBase, due_date };
         let result = await supabase
-          .from('tasks')
+          .from("tasks")
           .insert([taskData])
           .select(TASK_FIELDS)
-          .single()
+          .single();
         if (isColumnMissingError(result.error)) {
           result = await supabase
-            .from('tasks')
+            .from("tasks")
             .insert([taskDataBase])
             .select(TASK_FIELDS_FALLBACK)
-            .single()
+            .single();
         }
-        if (result.error) throw result.error
-        return result
+        if (result.error) throw result.error;
+        return result;
       } catch (err) {
         const message =
-          err.message === 'Недопустимый статус задачи'
-            ? 'Недопустимый статус задачи'
-            : 'Ошибка добавления задачи'
-        await handleSupabaseError(err, navigate, message)
-        return { data: null, error: err }
+          err.message === "РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ СЃС‚Р°С‚СѓСЃ Р·Р°РґР°С‡Рё"
+            ? "РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ СЃС‚Р°С‚СѓСЃ Р·Р°РґР°С‡Рё"
+            : "РћС€РёР±РєР° РґРѕР±Р°РІР»РµРЅРёСЏ Р·Р°РґР°С‡Рё";
+        await handleSupabaseError(err, navigate, message);
+        return { data: null, error: err };
       }
     },
     [navigate],
-  )
+  );
 
   const updateTaskInner = useCallback(
     async (id, data) => {
@@ -122,180 +128,188 @@ export function useTasks(objectId) {
           due_date,
           notes,
           object_id,
-        } = data
+        } = data;
         const taskDataBase = {
           title,
           status,
           notes,
           object_id,
           assignee: assignee ?? executor ?? assignee_id ?? null,
-        }
-        const taskData = { ...taskDataBase, due_date }
+        };
+        const taskData = { ...taskDataBase, due_date };
         let result = await supabase
-          .from('tasks')
+          .from("tasks")
           .update(taskData)
-          .eq('id', id)
+          .eq("id", id)
           .select(TASK_FIELDS)
-          .single()
+          .single();
         if (isColumnMissingError(result.error)) {
           result = await supabase
-            .from('tasks')
+            .from("tasks")
             .update(taskDataBase)
-            .eq('id', id)
+            .eq("id", id)
             .select(TASK_FIELDS_FALLBACK)
-            .single()
+            .single();
         }
-        if (result.error) throw result.error
-        return result
+        if (result.error) throw result.error;
+        return result;
       } catch (err) {
-        await handleSupabaseError(err, navigate, 'Ошибка обновления задачи')
-        return { data: null, error: err }
+        await handleSupabaseError(
+          err,
+          navigate,
+          "РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ Р·Р°РґР°С‡Рё",
+        );
+        return { data: null, error: err };
       }
     },
     [navigate],
-  )
+  );
 
   const deleteTaskInner = useCallback(
     async (id) => {
       try {
-        const result = await supabase.from('tasks').delete().eq('id', id)
-        if (result.error) throw result.error
-        return result
+        const result = await supabase.from("tasks").delete().eq("id", id);
+        if (result.error) throw result.error;
+        return result;
       } catch (err) {
-        await handleSupabaseError(err, navigate, 'Ошибка удаления задачи')
-        return { data: null, error: err }
+        await handleSupabaseError(
+          err,
+          navigate,
+          "РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ Р·Р°РґР°С‡Рё",
+        );
+        return { data: null, error: err };
       }
     },
     [navigate],
-  )
+  );
 
   const loadTasks = useCallback(
     async ({ offset = 0, limit = 20 } = {}) => {
-      setLoading(true)
+      setLoading(true);
       if (!objectId) {
-        setTasks([])
-        setError(null)
-        setLoading(false)
-        return { data: [], error: null }
+        setTasks([]);
+        setError(null);
+        setLoading(false);
+        return { data: [], error: null };
       }
-      const { data, error: err } = await fetchTasks(objectId, offset, limit)
+      const { data, error: err } = await fetchTasks(objectId, offset, limit);
       if (err) {
-        setError(err.message || 'Ошибка загрузки задач')
-        setTasks([])
+        setError(err.message || "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р·Р°РґР°С‡");
+        setTasks([]);
       } else {
-        setTasks(data || [])
-        setError(null)
+        setTasks(data || []);
+        setError(null);
       }
-      setLoading(false)
-      return { data, error: err }
+      setLoading(false);
+      return { data, error: err };
     },
     [objectId, fetchTasks],
-  )
+  );
 
   const createTask = useCallback(
     async (data) => {
-      const { data: newTask, error: err } = await insertTask(data)
+      const { data: newTask, error: err } = await insertTask(data);
       if (!err && newTask) {
         // Prepend to show immediately at the top (matches newest-first order)
-        setTasks((prev) => [newTask, ...prev])
+        setTasks((prev) => [newTask, ...prev]);
       }
-      return { data: newTask, error: err }
+      return { data: newTask, error: err };
     },
     [insertTask],
-  )
+  );
 
   const updateTask = useCallback(
     async (id, data) => {
-      const { data: updated, error: err } = await updateTaskInner(id, data)
+      const { data: updated, error: err } = await updateTaskInner(id, data);
       if (!err && updated) {
-        setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)))
+        setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
       }
-      return { data: updated, error: err }
+      return { data: updated, error: err };
     },
     [updateTaskInner],
-  )
+  );
 
   const deleteTask = useCallback(
     async (id) => {
-      const { data: del, error: err } = await deleteTaskInner(id)
+      const { data: del, error: err } = await deleteTaskInner(id);
       if (!err) {
-        setTasks((prev) => prev.filter((t) => t.id !== id))
+        setTasks((prev) => prev.filter((t) => t.id !== id));
       }
-      return { data: del, error: err }
+      return { data: del, error: err };
     },
     [deleteTaskInner],
-  )
+  );
 
   // Realtime updates for tasks of the selected object
   useEffect(() => {
-    if (!objectId) return
+    if (!objectId) return;
     // Guard for tests or environments without realtime configured
-    if (typeof supabase?.channel !== 'function') return
+    if (typeof supabase?.channel !== "function") return;
 
     const channel = supabase
       .channel(`tasks:${objectId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'tasks',
+          event: "INSERT",
+          schema: "public",
+          table: "tasks",
           filter: `object_id=eq.${objectId}`,
         },
         (payload) => {
-          const newTask = payload?.new
-          if (!newTask) return
+          const newTask = payload?.new;
+          if (!newTask) return;
           setTasks((prev) => {
             // Skip if already present (e.g., after local create)
-            const exists = prev.some((t) => t.id === newTask.id)
+            const exists = prev.some((t) => t.id === newTask.id);
             if (exists) {
-              return prev.map((t) => (t.id === newTask.id ? newTask : t))
+              return prev.map((t) => (t.id === newTask.id ? newTask : t));
             }
-            return [newTask, ...prev]
-          })
+            return [newTask, ...prev];
+          });
         },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'tasks',
+          event: "UPDATE",
+          schema: "public",
+          table: "tasks",
           filter: `object_id=eq.${objectId}`,
         },
         (payload) => {
-          const updated = payload?.new
-          if (!updated) return
+          const updated = payload?.new;
+          if (!updated) return;
           setTasks((prev) =>
             prev.map((t) => (t.id === updated.id ? updated : t)),
-          )
+          );
         },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'tasks',
+          event: "DELETE",
+          schema: "public",
+          table: "tasks",
           filter: `object_id=eq.${objectId}`,
         },
         (payload) => {
-          const old = payload?.old
-          if (!old) return
-          setTasks((prev) => prev.filter((t) => t.id !== old.id))
+          const old = payload?.old;
+          if (!old) return;
+          setTasks((prev) => prev.filter((t) => t.id !== old.id));
         },
-      )
+      );
 
-    channel.subscribe()
+    channel.subscribe();
 
     return () => {
       try {
-        supabase.removeChannel(channel)
+        supabase.removeChannel(channel);
       } catch {
         // ignore
       }
-    }
-  }, [objectId])
+    };
+  }, [objectId]);
 
   return {
     tasks,
@@ -305,5 +319,5 @@ export function useTasks(objectId) {
     createTask,
     updateTask,
     deleteTask,
-  }
+  };
 }

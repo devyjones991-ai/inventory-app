@@ -1,14 +1,14 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { linkifyText } from '@/utils/linkify.jsx'
+import React from "react";
+import PropTypes from "prop-types";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { linkifyText } from "@/utils/linkify.jsx";
 
 function formatDate(dateStr) {
-  if (!dateStr) return ''
+  if (!dateStr) return "";
   try {
-    return new Date(dateStr).toLocaleString('ru-RU')
+    return new Date(dateStr).toLocaleString("ru-RU");
   } catch {
-    return dateStr
+    return dateStr;
   }
 }
 
@@ -39,5 +39,5 @@ export default function ChatCard({ message }) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

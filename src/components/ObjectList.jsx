@@ -1,7 +1,7 @@
-import { memo, useState } from 'react'
-import Spinner from './Spinner'
-import ErrorMessage from './ErrorMessage'
-import { Input } from '@/components/ui/input'
+import { memo, useState } from "react";
+import Spinner from "./Spinner";
+import ErrorMessage from "./ErrorMessage";
+import { Input } from "@/components/ui/input";
 
 function ObjectList({
   objects = [],
@@ -9,15 +9,15 @@ function ObjectList({
   error = null,
   onItemClick = () => {},
 }) {
-  const [filter, setFilter] = useState('')
+  const [filter, setFilter] = useState("");
 
-  if (loading) return <Spinner />
+  if (loading) return <Spinner />;
 
-  if (error) return <ErrorMessage error={error} />
+  if (error) return <ErrorMessage error={error} />;
 
   const filtered = objects.filter((o) =>
     o.name.toLowerCase().includes(filter.toLowerCase()),
-  )
+  );
 
   return (
     <div>
@@ -39,7 +39,7 @@ function ObjectList({
         </ul>
       )}
     </div>
-  )
+  );
 }
 
-export default memo(ObjectList)
+export default memo(ObjectList);

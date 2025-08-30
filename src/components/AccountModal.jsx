@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import PropTypes from 'prop-types'
-import { useAccount } from '@/hooks/useAccount'
-import { toast } from 'react-hot-toast'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useAccount } from "@/hooks/useAccount";
+import { toast } from "react-hot-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import {
   Dialog,
@@ -11,25 +11,25 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 
 export default function AccountModal({ user, onClose, onUpdated }) {
-  const [username, setUsername] = useState(user.user_metadata?.username || '')
-  const [saving, setSaving] = useState(false)
+  const [username, setUsername] = useState(user.user_metadata?.username || "");
+  const [saving, setSaving] = useState(false);
 
-  const { updateProfile } = useAccount()
+  const { updateProfile } = useAccount();
 
   async function save() {
-    setSaving(true)
-    const { data, error } = await updateProfile({ username })
-    setSaving(false)
+    setSaving(true);
+    const { data, error } = await updateProfile({ username });
+    setSaving(false);
     if (error) {
-      toast.error('Ошибка обновления: ' + error.message)
+      toast.error("Ошибка обновления: " + error.message);
     } else {
-      onUpdated(data.user)
-      onClose()
+      onUpdated(data.user);
+      onClose();
     }
   }
 
@@ -53,7 +53,7 @@ export default function AccountModal({ user, onClose, onUpdated }) {
         </div>
         <DialogFooter>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Сохранение...' : 'Сохранить'}
+            {saving ? "Сохранение..." : "Сохранить"}
           </Button>
           <Button variant="ghost" onClick={onClose} disabled={saving}>
             Отмена
@@ -61,7 +61,7 @@ export default function AccountModal({ user, onClose, onUpdated }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 AccountModal.propTypes = {
@@ -72,4 +72,4 @@ AccountModal.propTypes = {
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   onUpdated: PropTypes.func.isRequired,
-}
+};
