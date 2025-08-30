@@ -16,6 +16,9 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground md:hover:bg-destructive/90",
         success:
           "bg-green-600 text-white md:hover:bg-green-700 dark:bg-green-500 dark:md:hover:bg-green-600",
+        info: "bg-blue-600 text-white md:hover:bg-blue-700 dark:bg-blue-500 dark:md:hover:bg-blue-600",
+        warning:
+          "bg-amber-400 text-black md:hover:bg-amber-500 dark:bg-amber-300",
         outline:
           "border border-border bg-background md:hover:bg-accent md:hover:text-accent-foreground",
         ghost: "md:hover:bg-accent md:hover:text-accent-foreground",
@@ -24,8 +27,10 @@ const buttonVariants = cva(
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
+        xs: "h-8 rounded-md px-2",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        iconSm: "h-8 w-8",
       },
     },
     defaultVariants: {
@@ -55,11 +60,13 @@ Button.propTypes = {
     "secondary",
     "destructive",
     "success",
+    "info",
+    "warning",
     "outline",
     "ghost",
     "link",
   ]),
-  size: PropTypes.oneOf(["default", "sm", "lg", "icon"]),
+  size: PropTypes.oneOf(["default", "xs", "sm", "lg", "icon", "iconSm"]),
   asChild: PropTypes.bool,
 };
 export { Button, buttonVariants };

@@ -178,7 +178,10 @@ export default function DashboardPage() {
         <div className="flex-1 flex flex-col">
           <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-background">
             <div className="flex items-center gap-3 md:gap-4">
-              <button className="md:hidden p-2 text-lg" onClick={toggleSidebar}>
+              <button
+                className="md:hidden p-2 text-lg text-blue-600 dark:text-blue-400"
+                onClick={toggleSidebar}
+              >
                 ☰
               </button>
               <Button
@@ -190,12 +193,12 @@ export default function DashboardPage() {
               </Button>
               <>
                 <Button
-                  variant="outline"
+                  variant="warning"
                   onClick={() => importInputRef.current?.click()}
                 >
                   {t("dashboard.import")}
                 </Button>
-                <Button variant="outline" onClick={exportToFile}>
+                <Button variant="info" onClick={exportToFile}>
                   {t("dashboard.export")}
                 </Button>
                 <Input
@@ -215,7 +218,11 @@ export default function DashboardPage() {
               >
                 {user.user_metadata?.username || t("common.account")}
               </Button>
-              <Button className="p-2 text-lg md:text-sm" onClick={signOut}>
+              <Button
+                variant="destructive"
+                className="p-2 text-lg md:text-sm"
+                onClick={signOut}
+              >
                 {t("common.logout")}
               </Button>
             </div>

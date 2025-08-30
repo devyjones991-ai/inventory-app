@@ -24,7 +24,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
               size="sm"
               variant="outline"
               onClick={onEdit}
-              className="flex items-center gap-1 w-full sm:w-auto"
+              className="flex items-center gap-1 w-full sm:w-auto text-blue-600 dark:text-blue-400"
             >
               <PencilIcon className="w-4 h-4" />
               Изменить
