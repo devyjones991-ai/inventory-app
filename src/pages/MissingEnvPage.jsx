@@ -2,6 +2,7 @@ import React from "react";
 import { isApiConfigured } from "@/apiConfig";
 import { isSupabaseConfigured } from "@/supabaseClient";
 import { Alert } from "@/components/ui/alert";
+import { t } from "@/i18n";
 
 export default function MissingEnvPage() {
   const missingVars = [];
@@ -26,15 +27,12 @@ export default function MissingEnvPage() {
         <div className="space-y-4 max-w-md text-center">
           {missingVars.length > 0 && (
             <Alert variant="destructive">
-              {varsText} не заданы. Приложение работает в ограниченном режиме
+              {t("env.missingVarsPrefix")} {varsText}. {t("env.limitedMode")}
               {targets.length ? ` для: ${targetsText}.` : "."}
             </Alert>
           )}
           {!isApiConfigured && (
-            <Alert variant="warning">
-              Без API загрузка и сохранение данных недоступны. Задайте
-              {" VITE_API_BASE_URL."}
-            </Alert>
+            <Alert variant="warning">{t("env.apiUnavailable")}</Alert>
           )}
         </div>
       </div>

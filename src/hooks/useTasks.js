@@ -34,15 +34,14 @@ export function useTasks(objectId) {
         let result = await baseQuery
           .order("created_at", { ascending: false })
           .range(offset, offset + limit - 1);
-        if (isColumnMissingError(result.error)) {
+        if (
+          isColumnMissingError(result.error) ||
+          isSchemaCacheError(result.error)
+        ) {
           result = await supabase
             .from("tasks")
             .select(TASK_FIELDS_FALLBACK)
             .eq("object_id", objId)
-            .order("created_at", { ascending: false })
-            .range(offset, offset + limit - 1);
-        } else if (isSchemaCacheError(result.error)) {
-          result = await baseQuery
             .order("created_at", { ascending: false })
             .range(offset, offset + limit - 1);
         }
@@ -93,7 +92,10 @@ export function useTasks(objectId) {
           .insert([taskData])
           .select(TASK_FIELDS)
           .single();
-        if (isColumnMissingError(result.error)) {
+        if (
+          isColumnMissingError(result.error) ||
+          isSchemaCacheError(result.error)
+        ) {
           result = await supabase
             .from("tasks")
             .insert([taskDataBase])
@@ -143,7 +145,10 @@ export function useTasks(objectId) {
           .eq("id", id)
           .select(TASK_FIELDS)
           .single();
-        if (isColumnMissingError(result.error)) {
+        if (
+          isColumnMissingError(result.error) ||
+          isSchemaCacheError(result.error)
+        ) {
           result = await supabase
             .from("tasks")
             .update(taskDataBase)

@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+﻿import { memo, useMemo } from "react";
 import PropTypes from "prop-types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -31,8 +31,10 @@ function InventorySidebar({
             <CardTitle className="p-0 text-base font-normal">
               <button
                 onClick={o.select}
-                className={`w-full text-left px-3 py-2 rounded hover:bg-primary/10 ${
-                  selected?.id === o.id ? "bg-primary/10 font-medium" : ""
+                className={`w-full text-left px-3 py-2 rounded md:hover:bg-accent/60 md:hover:text-accent-foreground ${
+                  selected?.id === o.id
+                    ? "bg-accent text-accent-foreground font-medium ring-1 ring-ring"
+                    : ""
                 }`}
               >
                 {o.name}
@@ -47,14 +49,14 @@ function InventorySidebar({
               <button
                 onClick={o.edit}
                 className="ml-2 text-primary hover:text-primary/70"
-                title="Редактировать объект"
+                title="Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РѕР±СЉРµРєС‚"
               >
                 <PencilIcon className="w-4 h-4" />
               </button>
               <button
                 onClick={o.remove}
                 className="ml-2 text-destructive hover:text-destructive/80"
-                title="Удалить объект"
+                title="РЈРґР°Р»РёС‚СЊ РѕР±СЉРµРєС‚"
               >
                 <TrashIcon className="w-4 h-4" />
               </button>

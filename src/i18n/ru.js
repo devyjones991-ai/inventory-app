@@ -15,6 +15,12 @@ export const ru = {
     import: "Импорт",
     export: "Экспорт",
   },
+  env: {
+    missingVarsPrefix: "Не заданы переменные:",
+    limitedMode: "Приложение работает в ограниченном режиме",
+    apiUnavailable:
+      "Без API загрузка и сохранение данных недоступны. Задайте VITE_API_BASE_URL.",
+  },
   objects: {
     editTitle: "Редактировать объект",
     addTitle: "Добавить объект",
@@ -43,6 +49,18 @@ export const ru = {
       status: "Статус:",
       notes: "Заметки:",
     },
+  },
+  chat: {
+    chooseObject: "Выбери объект",
+    searchPlaceholder: "Поиск по сообщениям",
+    errorLoad: "Не удалось загрузить сообщения",
+    retry: "Повторить",
+    loadMore: "Загрузить ещё",
+    noResults: "Сообщения не найдены",
+    empty: "Нет сообщений. Напишите первое сообщение.",
+    attachFile: "Прикрепить файл",
+    sending: "Отправка…",
+    send: "Отправить",
   },
   auth: {
     register: "Регистрация",

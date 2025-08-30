@@ -6,6 +6,7 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useNavigate } from "react-router-dom";
 import logger from "@/utils/logger";
 import { useAuth } from "@/hooks/useAuth";
+import { t } from "@/i18n";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,15 +21,15 @@ export default function AuthPage() {
 
   const schema = z
     .object({
-      email: z.string().email("Введите корректный email"),
-      password: z.string().min(6, "Минимальная длина пароля 6 символов"),
+      email: z.string().email(t("auth.email")),
+      password: z.string().min(6, t("auth.password")),
       username: z.string().optional(),
     })
     .superRefine((data, ctx) => {
       if (isRegister && !data.username) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Укажите имя пользователя",
+          message: t("auth.username"),
           path: ["username"],
         });
       }
@@ -46,7 +47,7 @@ export default function AuthPage() {
       (error.message && error.message.toLowerCase().includes("failed to fetch"))
     ) {
       logger.error(error);
-      return "Нет соединения с сервером. Попробуйте позже.";
+      return t("auth.networkError");
     }
     return error.message;
   }
@@ -59,7 +60,7 @@ export default function AuthPage() {
       if (error) {
         setUserError(getNetworkErrorMessage(error));
       } else if (data.user && data.user.confirmed_at === null) {
-        setInfo("Проверьте почту для подтверждения аккаунта");
+        setInfo(t("auth.checkEmail"));
       } else if (!data.session) {
         setInfo("Не удалось создать сессию. Попробуйте позже.");
       } else {
@@ -92,7 +93,7 @@ export default function AuthPage() {
             className="bg-background p-6 rounded shadow w-full max-w-sm space-y-4"
           >
             <h2 className="text-lg font-bold text-center">
-              {isRegister ? "Регистрация" : "Вход"}
+              {isRegister ? t("auth.register") : t("auth.login")}
             </h2>
             {userError && (
               <div className="text-red-500 text-sm">{userError}</div>
@@ -106,7 +107,7 @@ export default function AuthPage() {
               <Input
                 type="email"
                 className="w-full"
-                placeholder="Email"
+                placeholder={t("auth.email")}
                 {...register("email")}
               />
               {errors.email && (
@@ -121,7 +122,7 @@ export default function AuthPage() {
                 <Input
                   type="text"
                   className="w-full"
-                  placeholder="Имя пользователя"
+                  placeholder={t("auth.username")}
                   {...register("username")}
                 />
                 {errors.username && (
@@ -136,7 +137,7 @@ export default function AuthPage() {
               <Input
                 type="password"
                 className="w-full"
-                placeholder="Пароль"
+                placeholder={t("auth.password")}
                 {...register("password")}
               />
               {errors.password && (
@@ -147,7 +148,7 @@ export default function AuthPage() {
             </div>
 
             <Button type="submit" className="w-full">
-              {isRegister ? "Зарегистрироваться" : "Войти"}
+              {isRegister ? t("auth.register") : t("auth.login")}
             </Button>
             <Button
               type="button"
@@ -155,9 +156,7 @@ export default function AuthPage() {
               className="w-full"
               onClick={() => setIsRegister(!isRegister)}
             >
-              {isRegister
-                ? "Уже есть аккаунт? Вход"
-                : "Нет аккаунта? Регистрация"}
+              {isRegister ? t("auth.already") : t("auth.noAccount")}
             </Button>
           </form>
         </div>
