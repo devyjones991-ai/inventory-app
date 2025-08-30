@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState, useMemo } from 'react'
 import { toast } from 'react-hot-toast'
 import { supabase, isSupabaseConfigured } from '@/supabaseClient'
 import { isApiConfigured } from '@/apiConfig'
@@ -75,11 +75,14 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const value = {
-    user,
-    role,
-    isLoading,
-  }
+  const value = useMemo(
+    () => ({
+      user,
+      role,
+      isLoading,
+    }),
+    [user, role, isLoading],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
