@@ -116,7 +116,7 @@ describe('ExportImport utils', () => {
 
 describe('DashboardPage import/export', () => {
   beforeEach(() => {
-    useAuth.mockReturnValue({ user: {} })
+    useAuth.mockReturnValue({ user: {}, role: null, isLoading: false })
   })
 
   it('показывает уведомление об успешном экспорте', async () => {

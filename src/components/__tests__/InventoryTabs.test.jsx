@@ -5,7 +5,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import InventoryTabs from '@/components/InventoryTabs'
 
 jest.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: null }),
+  useAuth: () => ({ user: null, role: null, isLoading: false }),
 }))
 
 jest.mock('@/hooks/useHardware', () => ({

@@ -75,7 +75,11 @@ jest.mock('@/hooks/useObjects.js', () => ({
 }))
 
 jest.mock('@/hooks/useAuth.js', () => ({
-  useAuth: () => ({ user: { id: 'u1', email: 'me@example.com' } }),
+  useAuth: () => ({
+    user: { id: 'u1', email: 'me@example.com' },
+    role: null,
+    isLoading: false,
+  }),
 }))
 
 jest.mock('react-hot-toast', () => ({

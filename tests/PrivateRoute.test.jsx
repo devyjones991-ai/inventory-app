@@ -10,7 +10,7 @@ jest.mock('@/hooks/useAuth.js', () => ({
 
 describe('PrivateRoute', () => {
   it('показывает индикатор загрузки во время ожидания', () => {
-    useAuth.mockReturnValue({ user: null, isLoading: true })
+    useAuth.mockReturnValue({ user: null, role: null, isLoading: true })
 
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -32,7 +32,7 @@ describe('PrivateRoute', () => {
   })
 
   it('перенаправляет на страницу входа при отсутствии пользователя', () => {
-    useAuth.mockReturnValue({ user: null, isLoading: false })
+    useAuth.mockReturnValue({ user: null, role: null, isLoading: false })
 
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -54,7 +54,7 @@ describe('PrivateRoute', () => {
   })
 
   it('отображает содержимое для авторизованного пользователя', () => {
-    useAuth.mockReturnValue({ user: { id: '1' }, isLoading: false })
+    useAuth.mockReturnValue({ user: { id: '1' }, role: null, isLoading: false })
 
     render(
       <MemoryRouter initialEntries={['/']}>

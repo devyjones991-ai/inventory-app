@@ -47,7 +47,7 @@ jest.mock('react-hot-toast', () => ({
 }))
 
 jest.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: {} }),
+  useAuth: () => ({ user: {}, role: null, isLoading: false }),
 }))
 
 import { toast } from 'react-hot-toast'

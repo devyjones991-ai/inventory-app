@@ -29,7 +29,11 @@ jest.mock('@/hooks/useTasks.js', () => {
 })
 
 jest.mock('@/hooks/useAuth.js', () => ({
-  useAuth: () => ({ user: { id: 'u1', email: 'me@example.com' } }),
+  useAuth: () => ({
+    user: { id: 'u1', email: 'me@example.com' },
+    role: null,
+    isLoading: false,
+  }),
 }))
 
 jest.mock('react-hot-toast', () => ({
@@ -153,7 +157,6 @@ describe('TasksTab', () => {
       })
     })
   })
-
 
   it('показывает кнопки редактирования и удаления для всех пользователей', () => {
     const task = { id: 't1', title: 'Задача', status: 'in_progress' }
