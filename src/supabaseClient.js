@@ -12,21 +12,17 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 let supabase;
 
 if (!isSupabaseConfigured) {
-  logger.error(
-    "Не заданы переменные окружения VITE_SUPABASE_URL или VITE_SUPABASE_ANON_KEY.",
-  );
+  logger.error("Не заданы VITE_SUPABASE_URL и/или VITE_SUPABASE_ANON_KEY.");
   const handler = {
     get() {
       return new Proxy(() => {
-        logger.error(
-          "Попытка обращения к Supabase при отсутствии конфигурации.",
-        );
-        return Promise.reject(new Error("Supabase не инициализирован"));
+        logger.error("Попытка обращения к Supabase без конфигурации.");
+        return Promise.reject(new Error("Supabase не сконфигурирован"));
       }, handler);
     },
     apply() {
-      logger.error("Попытка обращения к Supabase при отсутствии конфигурации.");
-      return Promise.reject(new Error("Supabase не инициализирован"));
+      logger.error("Попытка обращения к Supabase без конфигурации.");
+      return Promise.reject(new Error("Supabase не сконфигурирован"));
     },
   };
   supabase = new Proxy(() => {}, handler);

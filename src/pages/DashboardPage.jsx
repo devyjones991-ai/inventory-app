@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import InventorySidebar from "@/components/InventorySidebar";
 import InventoryTabs from "@/components/InventoryTabs";
 import AccountModal from "@/components/AccountModal";
@@ -6,8 +6,10 @@ import ConfirmModal from "@/components/ConfirmModal";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import ThemeToggle from "@/components/ThemeToggle";
 import { t } from "@/i18n";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/supabaseClient";
+import { handleSupabaseError } from "@/utils/handleSupabaseError";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useObjectList } from "@/hooks/useObjectList";
 import { useObjectNotifications } from "@/hooks/useObjectNotifications";
@@ -27,6 +29,8 @@ export default function DashboardPage() {
   const { signOut } = useSupabaseAuth();
   const [activeTab, setActiveTab] = useState("desc");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tasksCount, setTasksCount] = useState(0);
 
   const {
     objects,
@@ -46,6 +50,7 @@ export default function DashboardPage() {
     activeTab,
     user,
   );
+  const chatCount = selected?.id ? chatUnread[selected.id] || 0 : 0;
 
   const {
     isObjectModalOpen,
@@ -91,6 +96,119 @@ export default function DashboardPage() {
       clearNotifications(selected.id);
     }
   };
+
+  // Keep URL in sync with selected object and active tab
+  useEffect(() => {
+    const currentObj = searchParams.get("obj");
+    const currentTab = searchParams.get("tab");
+    const nextObj = selected?.id ? String(selected.id) : null;
+    const nextTab = activeTab;
+
+    let changed = false;
+    const params = new URLSearchParams(searchParams);
+    if (nextObj !== currentObj) {
+      changed = true;
+      if (nextObj) params.set("obj", nextObj);
+      else params.delete("obj");
+    }
+    if (nextTab !== currentTab) {
+      changed = true;
+      params.set("tab", nextTab);
+    }
+    if (changed) setSearchParams(params, { replace: true });
+  }, [selected?.id, activeTab]);
+
+  // Restore selection/tab from URL (and react to browser navigation)
+  useEffect(() => {
+    // tab
+    const tabParam = searchParams.get("tab");
+    const allowedTabs = ["desc", "hw", "tasks", "chat"];
+    if (tabParam && allowedTabs.includes(tabParam) && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+
+    // object by id
+    const objParam = Number(searchParams.get("obj"));
+    if (
+      objects?.length &&
+      objParam &&
+      (!selected || selected.id !== objParam)
+    ) {
+      const found = objects.find((o) => o.id === objParam);
+      if (found) {
+        // Use handleSelect directly to avoid resetting tab to "desc"
+        handleSelect(found);
+      }
+    }
+  }, [searchParams, objects, selected]);
+
+  // Fetch total tasks count for header; keep updated via realtime
+  useEffect(() => {
+    let isCancelled = false;
+    let channel;
+    async function fetchCount(objectId) {
+      try {
+        const { count, error } = await supabase
+          .from("tasks")
+          .select("*", { count: "exact", head: true })
+          .eq("object_id", objectId);
+        if (!isCancelled) {
+          if (error) throw error;
+          setTasksCount(count || 0);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          setTasksCount(0);
+          await handleSupabaseError(
+            err,
+            null,
+            "Не удалось получить количество задач",
+          );
+        }
+      }
+    }
+    if (selected?.id) {
+      fetchCount(selected.id);
+      channel = supabase
+        .channel(`tasks:count:${selected.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "tasks",
+            filter: `object_id=eq.${selected.id}`,
+          },
+          () => setTasksCount((c) => (typeof c === "number" ? c + 1 : 1)),
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "tasks",
+            filter: `object_id=eq.${selected.id}`,
+          },
+          () =>
+            setTasksCount((c) =>
+              Math.max(0, (typeof c === "number" ? c : 0) - 1),
+            ),
+        )
+        .subscribe();
+    } else {
+      setTasksCount(0);
+    }
+    return () => {
+      isCancelled = true;
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, [selected?.id]);
 
   const onSaveObject = async () => {
     const ok = await saveObject(objectName, editingObject);
@@ -234,6 +352,8 @@ export default function DashboardPage() {
               onUpdateSelected={onUpdateSelected}
               onTabChange={onTabChange}
               registerAddHandler={registerAddHandler}
+              tasksCount={tasksCount}
+              chatCount={chatCount}
             />
           </div>
         </div>

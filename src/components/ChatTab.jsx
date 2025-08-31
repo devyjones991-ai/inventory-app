@@ -8,6 +8,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import useChat from "../hooks/useChat.js";
+import { formatDateTime } from "@/utils/date";
 import { Textarea } from "@/components/ui/textarea";
 
 function ChatTab({
@@ -161,12 +162,7 @@ function ChatTab({
                 const isOwn =
                   (m.sender || "").trim().toLowerCase() ===
                   (userEmail || "").trim().toLowerCase();
-                const dt = new Date(m.created_at);
-                const date = dt.toLocaleDateString();
-                const time = dt.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
+                const when = formatDateTime(m.created_at);
                 return (
                   <div
                     key={m.id}
@@ -196,7 +192,7 @@ function ChatTab({
                         </div>
                       )}
                       <span className="self-end mt-1 text-xs opacity-60">
-                        {`${date} ${time}`}
+                        {when}
                         {m.read_at ? " ✓" : ""}
                         {m._optimistic ? " • отправка…" : ""}
                       </span>

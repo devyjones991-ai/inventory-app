@@ -1,14 +1,14 @@
 export const TASK_STATUSES = ["planned", "in_progress", "done", "canceled"];
 
-// Отображение: человекочитаемый статус (RU) -> внутренний ключ
+// Подписи статусов (RU) -> машинные значения
 export const STATUS_MAP = {
-  запланировано: "planned",
-  "в работе": "in_progress",
-  выполнено: "done",
-  отменено: "canceled",
+  Запланирована: "planned",
+  "В работе": "in_progress",
+  Выполнена: "done",
+  Отменена: "canceled",
 };
 
-// Обратное отображение: внутренний ключ -> человекочитаемый статус (RU)
+// Обратное отображение: машинные -> подписи (RU)
 export const REVERSE_STATUS_MAP = Object.fromEntries(
   Object.entries(STATUS_MAP).map(([k, v]) => [v, k]),
 );

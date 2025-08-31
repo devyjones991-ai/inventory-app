@@ -39,7 +39,8 @@ const SelectContent = React.forwardRef(function SelectContent(
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
-          "relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80",
+          // Solid background for readability in light/dark themes
+          "relative z-50 min-w-[8rem] overflow-hidden rounded-md border shadow-lg opacity-100 bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100",
           position === "popper" && "translate-y-1",
           className,
         )}
@@ -51,7 +52,7 @@ const SelectContent = React.forwardRef(function SelectContent(
         </SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport
           className={cn(
-            "p-1",
+            "p-1 bg-inherit",
             position === "popper" &&
               "h-[var(--radix-select-trigger-height)] w-full",
           )}

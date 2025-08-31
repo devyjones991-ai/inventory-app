@@ -5,14 +5,29 @@ import { useNavigate } from "react-router-dom";
 import logger from "@/utils/logger";
 import { TASK_STATUSES } from "@/constants/taskStatus";
 
-const isColumnMissingError = (err) =>
-  err?.code === "42703" && err?.message?.toLowerCase?.().includes("due_date");
+const isColumnMissingError = (err) => {
+  const code = err?.code ? String(err.code) : "";
+  const msg = err?.message?.toLowerCase?.() || "";
+  const mentionsField = msg.includes("due_date") || msg.includes("assigned_at");
+  const looksLikeUnknownColumn =
+    msg.includes("column") ||
+    msg.includes("unknown") ||
+    msg.includes("does not exist") ||
+    msg.includes("not exist") ||
+    msg.includes("not found");
+  const likelyFromPostgrest = code === "42703" || code.startsWith("PGRST");
+  return mentionsField && (likelyFromPostgrest || looksLikeUnknownColumn);
+};
 
-const isSchemaCacheError = (err) =>
-  (err?.code === "42703" && !isColumnMissingError(err)) ||
-  err?.message?.toLowerCase?.().includes("schema cache");
+const isSchemaCacheError = (err) => {
+  const code = err?.code ? String(err.code) : "";
+  const msg = err?.message?.toLowerCase?.() || "";
+  // Treat generic PostgREST code or explicit schema cache mentions as cache-related
+  return code.startsWith("PGRST") || msg.includes("schema cache");
+};
 
-const TASK_FIELDS = "id, title, status, assignee, due_date, notes, created_at";
+const TASK_FIELDS =
+  "id, title, status, assignee, due_date, assigned_at, notes, created_at";
 const TASK_FIELDS_FALLBACK = "id, title, status, assignee, notes, created_at";
 
 export function useTasks(objectId) {
@@ -24,13 +39,20 @@ export function useTasks(objectId) {
   // helpers moved to module scope to remain stable across renders
 
   const fetchTasks = useCallback(
-    async (objId, offset = 0, limit = 20) => {
+    async (objId, { offset = 0, limit = 20, status, assignee } = {}) => {
       try {
         if (!objId) return { data: [], error: null };
-        const baseQuery = supabase
+        let baseQuery = supabase
           .from("tasks")
           .select(TASK_FIELDS)
           .eq("object_id", objId);
+
+        if (status) {
+          baseQuery = baseQuery.eq("status", status);
+        }
+        if (assignee) {
+          baseQuery = baseQuery.ilike("assignee", `%${assignee}%`);
+        }
         let result = await baseQuery
           .order("created_at", { ascending: false })
           .range(offset, offset + limit - 1);
@@ -38,10 +60,17 @@ export function useTasks(objectId) {
           isColumnMissingError(result.error) ||
           isSchemaCacheError(result.error)
         ) {
-          result = await supabase
+          let fbQuery = supabase
             .from("tasks")
             .select(TASK_FIELDS_FALLBACK)
-            .eq("object_id", objId)
+            .eq("object_id", objId);
+          if (status) {
+            fbQuery = fbQuery.eq("status", status);
+          }
+          if (assignee) {
+            fbQuery = fbQuery.ilike("assignee", `%${assignee}%`);
+          }
+          result = await fbQuery
             .order("created_at", { ascending: false })
             .range(offset, offset + limit - 1);
         }
@@ -86,7 +115,12 @@ export function useTasks(objectId) {
           object_id,
           assignee: assignee ?? executor ?? assignee_id ?? null,
         };
-        const taskData = { ...taskDataBase, due_date };
+        const taskData = {
+          ...taskDataBase,
+          due_date,
+          // always set assignment date to now on create (if column exists)
+          assigned_at: new Date().toISOString(),
+        };
         let result = await supabase
           .from("tasks")
           .insert([taskData])
@@ -138,7 +172,10 @@ export function useTasks(objectId) {
           object_id,
           assignee: assignee ?? executor ?? assignee_id ?? null,
         };
-        const taskData = { ...taskDataBase, due_date };
+        const taskData = {
+          ...taskDataBase,
+          due_date,
+        };
         let result = await supabase
           .from("tasks")
           .update(taskData)
@@ -189,7 +226,7 @@ export function useTasks(objectId) {
   );
 
   const loadTasks = useCallback(
-    async ({ offset = 0, limit = 20 } = {}) => {
+    async ({ offset = 0, limit = 20, status, assignee } = {}) => {
       setLoading(true);
       if (!objectId) {
         setTasks([]);
@@ -197,7 +234,12 @@ export function useTasks(objectId) {
         setLoading(false);
         return { data: [], error: null };
       }
-      const { data, error: err } = await fetchTasks(objectId, offset, limit);
+      const { data, error: err } = await fetchTasks(objectId, {
+        offset,
+        limit,
+        status,
+        assignee,
+      });
       if (err) {
         setError(err.message || "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р·Р°РґР°С‡");
         setTasks([]);

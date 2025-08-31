@@ -48,6 +48,8 @@ function InventoryTabs({
   onUpdateSelected,
   onTabChange = () => {},
   registerAddHandler,
+  tasksCount: tasksCountExternal,
+  chatCount: chatCountExternal,
 }) {
   const { user } = useAuth();
 
@@ -62,6 +64,16 @@ function InventoryTabs({
   const [messageCount, setMessageCount] = useState(0);
   const [isHWModalOpen, setIsHWModalOpen] = useState(false);
   const [editingHW, setEditingHW] = useState(null);
+
+  // Allow external counts (from Dashboard) to override before tabs mount
+  useEffect(() => {
+    if (typeof tasksCountExternal === "number")
+      setTasksCount(tasksCountExternal);
+  }, [tasksCountExternal]);
+  useEffect(() => {
+    if (typeof chatCountExternal === "number")
+      setMessageCount(chatCountExternal);
+  }, [chatCountExternal]);
   const hardwareSchema = z.object({
     name: z.string().min(1, "Введите название"),
     location: z.string().optional(),
@@ -255,20 +267,24 @@ function InventoryTabs({
         </div>
       </TabsContent>
 
-      <TabsContent forceMount value="tasks" className="flex-1 overflow-auto">
-        <TasksTab
-          selected={selected}
-          registerAddHandler={registerAddHandler}
-          onCountChange={setTasksCount}
-        />
+      <TabsContent value="tasks" className="flex-1 overflow-auto">
+        {tab === "tasks" ? (
+          <TasksTab
+            selected={selected}
+            registerAddHandler={registerAddHandler}
+            onCountChange={setTasksCount}
+          />
+        ) : null}
       </TabsContent>
-      <TabsContent forceMount value="chat" className="flex-1 overflow-auto">
-        <ChatTab
-          selected={selected}
-          userEmail={user?.email}
-          active={tab === "chat"}
-          onCountChange={setMessageCount}
-        />
+      <TabsContent value="chat" className="flex-1 overflow-auto">
+        {tab === "chat" ? (
+          <ChatTab
+            selected={selected}
+            userEmail={user?.email}
+            active={tab === "chat"}
+            onCountChange={setMessageCount}
+          />
+        ) : null}
       </TabsContent>
 
       <Dialog open={isHWModalOpen} onOpenChange={setIsHWModalOpen}>
@@ -356,6 +372,8 @@ InventoryTabs.propTypes = {
   onUpdateSelected: PropTypes.func.isRequired,
   onTabChange: PropTypes.func,
   registerAddHandler: PropTypes.func,
+  tasksCount: PropTypes.number,
+  chatCount: PropTypes.number,
 };
 
 export default InventoryTabs;

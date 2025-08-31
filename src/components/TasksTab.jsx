@@ -7,6 +7,7 @@ import ConfirmModal from "./ConfirmModal";
 import { useTasks } from "@/hooks/useTasks";
 import logger from "@/utils/logger";
 import { STATUS_MAP, REVERSE_STATUS_MAP } from "@/constants/taskStatus";
+import { formatDate } from "@/utils/date";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,30 +29,28 @@ import {
 } from "@/components/ui/select";
 
 const PAGE_SIZE = 20;
-
 const STATUS_OPTIONS = Object.keys(STATUS_MAP);
 
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  try {
-    return new Date(dateStr).toLocaleDateString("ru-RU");
-  } catch {
-    return dateStr;
-  }
-}
-
-function TasksTab({ selected, registerAddHandler, onCountChange }) {
+export default function TasksTab({
+  selected,
+  registerAddHandler,
+  onCountChange,
+}) {
+  const todayStr = new Date().toISOString().slice(0, 10);
   const [taskForm, setTaskForm] = useState({
     title: "",
     assignee: "",
     due_date: "",
-    status: "запланировано",
+    status: STATUS_OPTIONS[0] || "",
     notes: "",
   });
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [viewingTask, setViewingTask] = useState(null);
   const [taskDeleteId, setTaskDeleteId] = useState(null);
+
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterAssignee, setFilterAssignee] = useState("");
 
   const {
     tasks,
@@ -64,22 +63,24 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   } = useTasks(selected?.id);
 
   useEffect(() => {
-    if (selected?.id) {
-      loadTasks({ limit: PAGE_SIZE });
-    }
-  }, [selected?.id, loadTasks]);
+    if (!selected?.id) return;
+    const statusCode =
+      filterStatus === "all" ? undefined : STATUS_MAP[filterStatus];
+    const assignee = filterAssignee.trim() || undefined;
+    loadTasks({ limit: PAGE_SIZE, status: statusCode, assignee });
+  }, [selected?.id, filterStatus, filterAssignee, loadTasks]);
 
   const openTaskModal = useCallback(() => {
     setTaskForm({
       title: "",
       assignee: "",
-      due_date: "",
-      status: "запланировано",
+      due_date: todayStr,
+      status: STATUS_OPTIONS[0] || "",
       notes: "",
     });
     setEditingTask(null);
     setIsTaskModalOpen(true);
-  }, []);
+  }, [todayStr]);
 
   useEffect(() => {
     registerAddHandler?.(openTaskModal);
@@ -109,11 +110,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         status: statusValue,
       };
       try {
-        if (editingTask) {
-          await updateTask(editingTask.id, payload);
-        } else {
-          await createTask(payload);
-        }
+        if (editingTask) await updateTask(editingTask.id, payload);
+        else await createTask(payload);
         closeTaskModal();
       } catch (err) {
         logger.error("Error saving task:", err);
@@ -134,7 +132,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       title: task.title || "",
       assignee: task.assignee || "",
       due_date: task.due_date || "",
-      status: REVERSE_STATUS_MAP[task.status] || "запланировано",
+      status: REVERSE_STATUS_MAP[task.status] || STATUS_OPTIONS[0] || "",
       notes: task.notes || "",
     });
     setEditingTask(task);
@@ -142,21 +140,20 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   }, []);
 
   const confirmDeleteTask = useCallback(async () => {
-    if (taskDeleteId) {
-      try {
-        await deleteTask(taskDeleteId);
-      } catch (err) {
-        logger.error("Error deleting task:", err);
-      } finally {
-        setTaskDeleteId(null);
-      }
+    if (!taskDeleteId) return;
+    try {
+      await deleteTask(taskDeleteId);
+    } catch (err) {
+      logger.error("Error deleting task:", err);
+    } finally {
+      setTaskDeleteId(null);
     }
   }, [taskDeleteId, deleteTask]);
 
   if (!selected) {
     return (
       <div className="text-center py-8 text-gray-500">
-        Выберите объект для просмотра задач
+        Выберите объект, чтобы просматривать задачи
       </div>
     );
   }
@@ -171,26 +168,63 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     );
   }
 
-  if (error) {
-    return <ErrorMessage message={error} />;
-  }
+  if (error) return <ErrorMessage message={error} />;
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          Задачи по {selected.name}
+          Задачи для {selected.name}
         </h2>
         <div className="flex gap-2">
           <Button size="sm" onClick={openTaskModal}>
-            Добавить задачу
+            Создать задачу
           </Button>
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="flex flex-wrap items-end gap-3 mb-4">
+        <div className="min-w-[180px]">
+          <Label>Статус</Label>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger>
+              <SelectValue placeholder="Выберите" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все</SelectItem>
+              {STATUS_OPTIONS.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="min-w-[220px]">
+          <Label>Исполнитель</Label>
+          <Input
+            value={filterAssignee}
+            onChange={(e) => setFilterAssignee(e.target.value)}
+            placeholder="Имя или email"
+          />
+        </div>
+        {(filterStatus !== "all" || filterAssignee) && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setFilterStatus("all");
+              setFilterAssignee("");
+            }}
+          >
+            Сбросить
+          </Button>
+        )}
+      </div>
+
       {tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">
-          Нет задач для этого объекта.
+          Пока задач нет. Нажмите «Создать задачу».
         </div>
       ) : (
         <div className="space-y-3">
@@ -201,7 +235,6 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               onEdit={() => handleEditTask(task)}
               onDelete={() => setTaskDeleteId(task.id)}
               onView={() => setViewingTask(task)}
-              canManage={true}
             />
           ))}
         </div>
@@ -215,7 +248,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingTask ? "Изменить задачу" : "Добавить задачу"}
+              {editingTask ? "Редактировать задачу" : "Создать задачу"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
@@ -231,7 +264,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-assignee">Ответственный</Label>
+              <Label htmlFor="task-assignee">Исполнитель</Label>
               <Input
                 id="task-assignee"
                 value={taskForm.assignee}
@@ -241,7 +274,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-due-date">Дата</Label>
+              <Label htmlFor="task-due-date">Срок до</Label>
               <Input
                 id="task-due-date"
                 type="date"
@@ -283,9 +316,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               />
             </div>
             <DialogFooter>
-              <Button type="submit">
-                {editingTask ? "Сохранить" : "Добавить"}
-              </Button>
+              <Button type="submit">Сохранить</Button>
               <Button type="button" variant="ghost" onClick={closeTaskModal}>
                 Отмена
               </Button>
@@ -306,18 +337,18 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           <div className="space-y-2">
             {viewingTask?.assignee && (
               <p>
-                <strong>Ответственный:</strong> {viewingTask.assignee}
-              </p>
-            )}
-            {viewingTask?.due_date && (
-              <p>
-                <strong>Дата:</strong> {formatDate(viewingTask.due_date)}
+                <strong>Исполнитель:</strong> {viewingTask.assignee}
               </p>
             )}
             {(viewingTask?.assigned_at || viewingTask?.created_at) && (
               <p>
-                <strong>Назначено:</strong>{" "}
+                <strong>Назначена:</strong>{" "}
                 {formatDate(viewingTask.assigned_at || viewingTask.created_at)}
+              </p>
+            )}
+            {viewingTask?.due_date && (
+              <p>
+                <strong>Срок до:</strong> {formatDate(viewingTask.due_date)}
               </p>
             )}
             <p>
@@ -348,5 +379,3 @@ TasksTab.propTypes = {
   registerAddHandler: PropTypes.func,
   onCountChange: PropTypes.func,
 };
-
-export default TasksTab;

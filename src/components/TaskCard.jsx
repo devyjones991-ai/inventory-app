@@ -1,23 +1,11 @@
-import { memo, useMemo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import PropTypes from "prop-types";
+import { formatDate } from "@/utils/date";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { REVERSE_STATUS_MAP } from "@/constants/taskStatus";
-
-/**
- * Format date string into locale friendly format.
- * Falls back to original value on parse errors.
- */
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  try {
-    return new Date(dateStr).toLocaleDateString("ru-RU");
-  } catch {
-    return dateStr;
-  }
-}
 
 const STATUS_VARIANTS = {
   planned: "info",
@@ -27,17 +15,10 @@ const STATUS_VARIANTS = {
 };
 
 function TaskCard({ item, onEdit, onDelete, onView }) {
-  const badgeVariant = useMemo(
-    () => STATUS_VARIANTS[item.status] || "default",
-    [item.status],
-  );
-
-  const assignee = useMemo(() => item.assignee, [item.assignee]);
-  const dueDate = useMemo(() => item.due_date, [item.due_date]);
-  const assignedAt = useMemo(
-    () => item.assigned_at || item.created_at,
-    [item.assigned_at, item.created_at],
-  );
+  const assignee = item.assignee || null;
+  const dueDate = item.due_date || null;
+  const assignedAt = item.assigned_at || item.created_at || null;
+  const badgeVariant = STATUS_VARIANTS[item.status] || "default";
 
   const handleView = useCallback(
     (e) => {
@@ -72,18 +53,13 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         <CardTitle className="break-words whitespace-pre-wrap">
           {item.title}
         </CardTitle>
-        {(assignee || dueDate) && (
-          <p className="text-sm text-foreground/70">
-            {assignee && <span>Ответственный: {assignee}</span>}
-            {assignee && dueDate && " • "}
-            {dueDate && <span>Срок: {formatDate(dueDate)}</span>}
-          </p>
-        )}
-        {assignedAt && (
-          <p className="text-sm text-foreground/70">
-            Назначено: {formatDate(assignedAt)}
-          </p>
-        )}
+        <p className="text-sm text-foreground/70">
+          {assignee && <span>Исполнитель: {assignee}</span>}
+          {assignee && (assignedAt || dueDate) && " • "}
+          {assignedAt && <span>Назначена: {formatDate(assignedAt)}</span>}
+          {dueDate && (assignedAt || assignee) && " • "}
+          {dueDate && <span>Срок до: {formatDate(dueDate)}</span>}
+        </p>
       </CardHeader>
       <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
         <Badge variant={badgeVariant}>

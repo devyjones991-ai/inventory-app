@@ -23,10 +23,8 @@ export function AuthProvider({ children }) {
       return;
     }
     if (!isApiConfigured) {
-      logger.error(
-        "Не задана переменная окружения VITE_API_BASE_URL. Авторизация через API недоступна.",
-      );
-      toast.error("Роль недоступна: API не сконфигурирован");
+      logger.error("Не задан VITE_API_BASE_URL. API недоступно.");
+      toast.error("Конфигурация: не установлен VITE_API_BASE_URL");
     }
 
     const loadSession = async () => {
