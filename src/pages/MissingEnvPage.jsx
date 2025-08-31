@@ -19,7 +19,7 @@ export default function MissingEnvPage() {
   }
 
   const varsText = missingVars.join(", ");
-  const targetsText = targets.join(" и ");
+  const targetsText = targets.join(", ");
 
   return (
     <div className="flex h-screen items-center justify-center bg-muted">
@@ -27,8 +27,8 @@ export default function MissingEnvPage() {
         <div className="space-y-4 max-w-md text-center">
           {missingVars.length > 0 && (
             <Alert variant="destructive">
-              {t("env.missingVarsPrefix")} {varsText}. {t("env.limitedMode")}
-              {targets.length ? ` для: ${targetsText}.` : "."}
+              {t("env.missingVarsPrefix")} {varsText}. {t("env.limitedMode")}{" "}
+              {targets.length ? `${t("env.targetsPrefix")}${targetsText}.` : ""}
             </Alert>
           )}
           {!isApiConfigured && (

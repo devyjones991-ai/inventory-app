@@ -1,6 +1,6 @@
-export const TASK_STATUSES = ["planned", "in_progress", "done", "canceled"];
+﻿export const TASK_STATUSES = ["planned", "in_progress", "done", "canceled"];
 
-// Подписи статусов (RU) -> машинные значения
+// RU label -> internal code
 export const STATUS_MAP = {
   Запланирована: "planned",
   "В работе": "in_progress",
@@ -8,7 +8,10 @@ export const STATUS_MAP = {
   Отменена: "canceled",
 };
 
-// Обратное отображение: машинные -> подписи (RU)
-export const REVERSE_STATUS_MAP = Object.fromEntries(
-  Object.entries(STATUS_MAP).map(([k, v]) => [v, k]),
-);
+// internal code -> RU label
+export const REVERSE_STATUS_MAP = {
+  planned: "Запланирована",
+  in_progress: "В работе",
+  done: "Выполнена",
+  canceled: "Отменена",
+};

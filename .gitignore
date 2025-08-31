@@ -25,3 +25,9 @@ docs
 *.sw?
 
 .env
+.venv/
+coverage/
+cypress/screenshots/
+cypress/videos/
+supabase/.temp/
+

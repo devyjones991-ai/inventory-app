@@ -1,4 +1,4 @@
-/* global process */
+﻿/* global process */
 import logger from "./utils/logger";
 
 const apiBaseUrl =
@@ -8,7 +8,7 @@ export const isApiConfigured = Boolean(apiBaseUrl);
 
 if (!isApiConfigured) {
   logger.error(
-    "Не задана переменная окружения VITE_API_BASE_URL. Приложение работает в ограниченном режиме.",
+    "VITE_API_BASE_URL is not set. Application runs in limited mode.",
   );
 }
 

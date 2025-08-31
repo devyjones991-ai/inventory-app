@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import logger from "@/utils/logger";
+import { t } from "@/i18n";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -18,7 +19,7 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      return <div>Произошла ошибка.</div>;
+      return <div>{t("common.errorOccurred")}</div>;
     }
     return this.props.children;
   }

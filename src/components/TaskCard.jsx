@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+﻿import { memo, useCallback } from "react";
 import PropTypes from "prop-types";
 import { formatDate } from "@/utils/date";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { REVERSE_STATUS_MAP } from "@/constants/taskStatus";
+import { t } from "@/i18n";
 
 const STATUS_VARIANTS = {
   planned: "info",
@@ -53,12 +54,33 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         <CardTitle className="break-words whitespace-pre-wrap">
           {item.title}
         </CardTitle>
+        <p className="text-sm text-foreground/70 hidden">
+          {assignee && <span>РСЃРїРѕР»РЅРёС‚РµР»СЊ: {assignee}</span>}
+          {assignee && (assignedAt || dueDate) && <span> | </span>}
+          {assignedAt && (
+            <span>РќР°Р·РЅР°С‡РµРЅР°: {formatDate(assignedAt)}</span>
+          )}
+          {dueDate && (assignedAt || assignee) && <span> | </span>}
+          {dueDate && <span>РЎСЂРѕРє РґРѕ: {formatDate(dueDate)}</span>}
+        </p>
         <p className="text-sm text-foreground/70">
-          {assignee && <span>Исполнитель: {assignee}</span>}
-          {assignee && (assignedAt || dueDate) && " • "}
-          {assignedAt && <span>Назначена: {formatDate(assignedAt)}</span>}
-          {dueDate && (assignedAt || assignee) && " • "}
-          {dueDate && <span>Срок до: {formatDate(dueDate)}</span>}
+          {assignee && (
+            <span>
+              {t("tasks.view.assignee")} {assignee}
+            </span>
+          )}
+          {assignee && (assignedAt || dueDate) && <span> | </span>}
+          {assignedAt && (
+            <span>
+              {t("tasks.view.added")} {formatDate(assignedAt)}
+            </span>
+          )}
+          {dueDate && (assignedAt || assignee) && <span> | </span>}
+          {dueDate && (
+            <span>
+              {t("tasks.view.dueDate")} {formatDate(dueDate)}
+            </span>
+          )}
         </p>
       </CardHeader>
       <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
@@ -69,8 +91,8 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           size="iconSm"
           variant="ghost"
           className="text-blue-600 dark:text-blue-400"
-          title="Редактировать задачу"
-          aria-label="Редактировать задачу"
+          title={t("common.edit")}
+          aria-label={t("common.edit")}
           onClick={handleEdit}
         >
           <PencilIcon className="w-4 h-4" />
@@ -79,8 +101,8 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           size="iconSm"
           variant="ghost"
           className="text-red-600 dark:text-red-400"
-          title="Удалить задачу"
-          aria-label="Удалить задачу"
+          title={t("common.delete")}
+          aria-label={t("common.delete")}
           onClick={handleDelete}
         >
           <TrashIcon className="w-4 h-4" />

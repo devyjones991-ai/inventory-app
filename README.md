@@ -1,86 +1,45 @@
 # Inventory App
 
-Inventory App — приложение на React, которое помогает командам вести единый учёт объектов, оборудования, задач и переписки.
+Inventory App — веб‑приложение на React + Vite с Tailwind CSS и Supabase для учёта объектов, оборудования и задач.
 
 [![Build](https://github.com/devyjones991-ai/inventory-app/actions/workflows/supabase-migrate.yml/badge.svg)](https://github.com/devyjones991-ai/inventory-app/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/devyjones991-ai/inventory-app)](https://codecov.io/gh/devyjones991-ai/inventory-app)
 [![License](https://img.shields.io/github/license/devyjones991-ai/inventory-app)](LICENSE)
 
-Все данные хранятся в [Supabase](https://supabase.com/), что обеспечивает удобный доступ и совместную работу без необходимости управлять собственной инфраструктурой.
+## Быстрый старт
 
-Приложение ориентировано на небольшие команды и организации, которым нужен единый инструмент учёта.
+1. Создайте проект в [Supabase](https://supabase.com/).
+2. В настройках проекта откройте `Settings → API` и возьмите значения `Project URL` и `anon` key.
+3. Скопируйте `.env.example` в `.env` и заполните:
 
-## Структура таблиц
-
-- **objects**: `id`, `name`, `description`, `created_at`
-- **hardware**: `id`, `object_id`, `name`, `location`, `purchase_status`, `install_status`, `created_at`
-- **tasks**: `id`, `object_id`, `title`, `status`, `assignee`, `due_date`, `notes`, `created_at`
-- **chat_messages**: `id`, `object_id`, `sender`, `content`, `file_url`, `created_at`, `read_at`
-
-Подробные схемы данных с перечислением обязательных и необязательных полей, форматов дат и допустимых значений находятся в [docs/api/openapi.yaml](docs/api/openapi.yaml).
-
-## Запуск
-
-1. Зарегистрируйтесь на [Supabase](https://supabase.com) и создайте проект.
-2. В настройках проекта откройте `Settings → API`.
-3. Скопируйте `URL` проекта и `anon`-ключ.
-4. Скопируйте файл `.env.example` в `.env` (например, `cp .env.example .env`) и перед запуском заполните `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` и `VITE_API_BASE_URL`.
-   Если `VITE_API_BASE_URL` не указана, запросы к API завершатся ошибкой и интерфейс не сможет загрузить данные.
-   Пример: `VITE_API_BASE_URL=https://<project-ref>.supabase.co` — значение берётся в Supabase в разделе `Settings → API` в поле `Project URL`.
-5. Установите зависимости: `npm install`.
-
-### Инициализация базы данных
-
-- Откройте Supabase SQL Editor и выполните `supabase/migrations/*.sql` (или готовый `init.sql`).
-- Либо установите и авторизуйте Supabase CLI, затем выполните `supabase db push` из корня проекта.
-
-6. Старт разработки: `npm run dev`.
-7. Запуск тестов: `npm test`.
-
-### Применение миграции `profiles`
-
-Файл `supabase/migrations/*_create_profiles_table.sql` создаёт таблицу `profiles`,
-функцию `handle_new_user()` и триггер для автоматического добавления записей.
-Чтобы применить миграцию:
-
-1. Установите и авторизуйте Supabase CLI.
-2. Выполните в корне проекта:
-
-```bash
-supabase db push
+```
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key>
+VITE_API_BASE_URL=https://<project-ref>.supabase.co
 ```
 
-Миграция создаст необходимые объекты в базе.
+4. Установите зависимости и запустите:
 
-### Назначение администраторских прав
-
-1. Авторизуйтесь в Supabase через CLI или веб‑интерфейс.
-2. Выполните SQL‑запрос:
-
-```sql
-update profiles
-set role = 'admin'
-where id = '<uuid>';
+```
+npm install
+npm run dev
 ```
 
-3. Пользователь должен заново войти в приложение, чтобы новая роль вступила в силу.
+### Миграции БД
 
-Если переменные окружения из пункта 4 не заданы, приложение запускается в ограниченном режиме: на экране появится уведомление о необходимости настроить `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` и `VITE_API_BASE_URL`, а обращения к базе данных будут отклонены.
+- Выполните SQL из `supabase/migrations/*.sql` через Supabase SQL Editor или используйте Supabase CLI: `supabase db push`.
+
+### Тесты
+
+```
+npm test
+```
 
 ## Сборка
 
-- Сборка: `npm run build`
-- Предпросмотр: `npm run preview`
+- Production: `npm run build`
+- Preview: `npm run preview`
 
-## Деплой
+## API
 
-### Чек-лист перед деплоем
-
-## Trivia
-
-**Какой вид тестирования предназначен для проверки того, что новые изменения в коде не нарушают существующую функциональность?**
-
-- Регрессионное тестирование (correct)
-- Модульное тестирование
-- Тестирование производительности
-- Смоук-тестирование
+Спецификация OpenAPI: `openapi.yaml`. Сборка документации: `npm run docs:build` (в папку `docs/`).

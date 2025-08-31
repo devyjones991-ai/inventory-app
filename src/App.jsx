@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster, toast } from "react-hot-toast";
+import { t } from "@/i18n";
 import { isSupabaseConfigured } from "./supabaseClient";
 import { isApiConfigured } from "./apiConfig";
 import PrivateRoute from "./components/PrivateRoute";
@@ -13,9 +14,7 @@ const MissingEnvPage = lazy(() => import("./pages/MissingEnvPage"));
 export default function App() {
   useEffect(() => {
     if (isSupabaseConfigured && !isApiConfigured) {
-      toast("API не настроен. Некоторые функции будут недоступны.", {
-        icon: "⚠️",
-      });
+      toast(t("env.apiUnavailable"), { icon: "!" });
     }
   }, []);
 

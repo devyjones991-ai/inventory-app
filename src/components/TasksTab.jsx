@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 
 import TaskCard from "./TaskCard";
@@ -8,6 +8,7 @@ import { useTasks } from "@/hooks/useTasks";
 import logger from "@/utils/logger";
 import { STATUS_MAP, REVERSE_STATUS_MAP } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/date";
+import { t } from "@/i18n";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,11 +32,8 @@ import {
 const PAGE_SIZE = 20;
 const STATUS_OPTIONS = Object.keys(STATUS_MAP);
 
-export default function TasksTab({
-  selected,
-  registerAddHandler,
-  onCountChange,
-}) {
+function TasksTab({ selected, registerAddHandler, onCountChange }) {
+  const assigneeInputRef = useRef(null);
   const todayStr = new Date().toISOString().slice(0, 10);
   const [taskForm, setTaskForm] = useState({
     title: "",
@@ -90,6 +88,15 @@ export default function TasksTab({
   useEffect(() => {
     onCountChange?.(tasks.length);
   }, [tasks, onCountChange]);
+  // Keep focus on assignee filter input while typing
+  useEffect(() => {
+    if (
+      assigneeInputRef.current &&
+      document.activeElement !== assigneeInputRef.current
+    ) {
+      assigneeInputRef.current.focus({ preventScroll: true });
+    }
+  }, [filterAssignee]);
 
   const closeTaskModal = useCallback(() => {
     setIsTaskModalOpen(false);
@@ -153,7 +160,7 @@ export default function TasksTab({
   if (!selected) {
     return (
       <div className="text-center py-8 text-gray-500">
-        Выберите объект, чтобы просматривать задачи
+        {t("dashboard.selectPrompt")}
       </div>
     );
   }
@@ -174,11 +181,11 @@ export default function TasksTab({
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          Задачи для {selected.name}
+          {t("tasks.headerPrefix")} {selected.name}
         </h2>
         <div className="flex gap-2">
           <Button size="sm" onClick={openTaskModal}>
-            Создать задачу
+            {t("tasks.add")}
           </Button>
         </div>
       </div>
@@ -186,13 +193,13 @@ export default function TasksTab({
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <div className="min-w-[180px]">
-          <Label>Статус</Label>
+          <Label>{t("tasks.status")}</Label>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger>
-              <SelectValue placeholder="Выберите" />
+              <SelectValue placeholder={t("tasks.chooseStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Все</SelectItem>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
               {STATUS_OPTIONS.map((status) => (
                 <SelectItem key={status} value={status}>
                   {status}
@@ -202,30 +209,28 @@ export default function TasksTab({
           </Select>
         </div>
         <div className="min-w-[220px]">
-          <Label>Исполнитель</Label>
+          <Label>{t("tasks.assignee")}</Label>
           <Input
+            ref={assigneeInputRef}
             value={filterAssignee}
             onChange={(e) => setFilterAssignee(e.target.value)}
-            placeholder="Имя или email"
+            placeholder={t("tasks.assigneePlaceholder")}
           />
+          {(filterStatus !== "all" || filterAssignee) && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setFilterStatus("all");
+                setFilterAssignee("");
+              }}
+            >
+              {t("common.reset")}
+            </Button>
+          )}
         </div>
-        {(filterStatus !== "all" || filterAssignee) && (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setFilterStatus("all");
-              setFilterAssignee("");
-            }}
-          >
-            Сбросить
-          </Button>
-        )}
       </div>
-
       {tasks.length === 0 ? (
-        <div className="text-gray-500 text-center py-8">
-          Пока задач нет. Нажмите «Создать задачу».
-        </div>
+        <div className="text-gray-500 text-center py-8">{t("tasks.empty")}</div>
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
@@ -239,7 +244,6 @@ export default function TasksTab({
           ))}
         </div>
       )}
-
       {/* Task Modal */}
       <Dialog
         open={isTaskModalOpen}
@@ -248,12 +252,12 @@ export default function TasksTab({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingTask ? "Редактировать задачу" : "Создать задачу"}
+              {editingTask ? t("tasks.editTitle") : t("tasks.addTitle")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="task-title">Название *</Label>
+              <Label htmlFor="task-title">{t("tasks.title")} *</Label>
               <Input
                 id="task-title"
                 value={taskForm.title}
@@ -264,7 +268,7 @@ export default function TasksTab({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-assignee">Исполнитель</Label>
+              <Label htmlFor="task-assignee">{t("tasks.assignee")}</Label>
               <Input
                 id="task-assignee"
                 value={taskForm.assignee}
@@ -274,10 +278,12 @@ export default function TasksTab({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-due-date">Срок до</Label>
+              <Label htmlFor="task-due-date">{t("tasks.form.dueDate")}</Label>
               <Input
                 id="task-due-date"
                 type="date"
+                aria-label={t("tasks.form.dueDate")}
+                title={t("tasks.form.dueDate")}
                 value={taskForm.due_date}
                 onChange={(e) =>
                   setTaskForm({ ...taskForm, due_date: e.target.value })
@@ -285,7 +291,7 @@ export default function TasksTab({
               />
             </div>
             <div className="space-y-2">
-              <Label>Статус</Label>
+              <Label>{t("tasks.status")}</Label>
               <Select
                 value={taskForm.status}
                 onValueChange={(value) =>
@@ -293,7 +299,7 @@ export default function TasksTab({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Выберите статус" />
+                  <SelectValue placeholder={t("tasks.chooseStatus")} />
                 </SelectTrigger>
                 <SelectContent>
                   {STATUS_OPTIONS.map((status) => (
@@ -305,7 +311,7 @@ export default function TasksTab({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-notes">Заметки</Label>
+              <Label htmlFor="task-notes">{t("tasks.notes")}</Label>
               <Textarea
                 id="task-notes"
                 rows={3}
@@ -316,9 +322,9 @@ export default function TasksTab({
               />
             </div>
             <DialogFooter>
-              <Button type="submit">Сохранить</Button>
+              <Button type="submit">{t("common.save")}</Button>
               <Button type="button" variant="ghost" onClick={closeTaskModal}>
-                Отмена
+                {t("common.cancel")}
               </Button>
             </DialogFooter>
           </form>
@@ -337,27 +343,29 @@ export default function TasksTab({
           <div className="space-y-2">
             {viewingTask?.assignee && (
               <p>
-                <strong>Исполнитель:</strong> {viewingTask.assignee}
+                <strong>{t("tasks.view.assignee")}</strong>{" "}
+                {viewingTask.assignee}
               </p>
             )}
             {(viewingTask?.assigned_at || viewingTask?.created_at) && (
               <p>
-                <strong>Назначена:</strong>{" "}
+                <strong>{t("tasks.view.added")}</strong>{" "}
                 {formatDate(viewingTask.assigned_at || viewingTask.created_at)}
               </p>
             )}
             {viewingTask?.due_date && (
               <p>
-                <strong>Срок до:</strong> {formatDate(viewingTask.due_date)}
+                <strong>{t("tasks.view.dueDate")}</strong>{" "}
+                {formatDate(viewingTask.due_date)}
               </p>
             )}
             <p>
-              <strong>Статус:</strong>{" "}
+              <strong>{t("tasks.view.status")}</strong>{" "}
               {REVERSE_STATUS_MAP[viewingTask?.status] || viewingTask?.status}
             </p>
             {viewingTask?.notes && (
               <p className="whitespace-pre-wrap break-words">
-                <strong>Заметки:</strong> {viewingTask.notes}
+                <strong>{t("tasks.view.notes")}</strong> {viewingTask.notes}
               </p>
             )}
           </div>
@@ -366,16 +374,17 @@ export default function TasksTab({
 
       <ConfirmModal
         open={!!taskDeleteId}
-        title="Удалить задачу?"
+        title={t("tasks.confirmDelete")}
         onConfirm={confirmDeleteTask}
         onCancel={() => setTaskDeleteId(null)}
       />
     </div>
   );
 }
-
 TasksTab.propTypes = {
   selected: PropTypes.object,
   registerAddHandler: PropTypes.func,
   onCountChange: PropTypes.func,
 };
+
+export default TasksTab;

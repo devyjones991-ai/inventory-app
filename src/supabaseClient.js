@@ -1,4 +1,4 @@
-/* global process */
+﻿/* global process */
 import { createClient } from "@supabase/supabase-js";
 import logger from "./utils/logger";
 
@@ -12,17 +12,17 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 let supabase;
 
 if (!isSupabaseConfigured) {
-  logger.error("Не заданы VITE_SUPABASE_URL и/или VITE_SUPABASE_ANON_KEY.");
+  logger.error("VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY are not set.");
   const handler = {
     get() {
       return new Proxy(() => {
-        logger.error("Попытка обращения к Supabase без конфигурации.");
-        return Promise.reject(new Error("Supabase не сконфигурирован"));
+        logger.error("Supabase not available: invalid configuration.");
+        return Promise.reject(new Error("Supabase is not configured"));
       }, handler);
     },
     apply() {
-      logger.error("Попытка обращения к Supabase без конфигурации.");
-      return Promise.reject(new Error("Supabase не сконфигурирован"));
+      logger.error("Supabase not available: invalid configuration.");
+      return Promise.reject(new Error("Supabase is not configured"));
     },
   };
   supabase = new Proxy(() => {}, handler);
