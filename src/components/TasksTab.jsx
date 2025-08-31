@@ -314,6 +314,12 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                 <strong>Дата:</strong> {formatDate(viewingTask.due_date)}
               </p>
             )}
+            {(viewingTask?.assigned_at || viewingTask?.created_at) && (
+              <p>
+                <strong>Назначено:</strong>{" "}
+                {formatDate(viewingTask.assigned_at || viewingTask.created_at)}
+              </p>
+            )}
             <p>
               <strong>Статус:</strong>{" "}
               {REVERSE_STATUS_MAP[viewingTask?.status] || viewingTask?.status}

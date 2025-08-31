@@ -34,6 +34,10 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
 
   const assignee = useMemo(() => item.assignee, [item.assignee]);
   const dueDate = useMemo(() => item.due_date, [item.due_date]);
+  const assignedAt = useMemo(
+    () => item.assigned_at || item.created_at,
+    [item.assigned_at, item.created_at],
+  );
 
   const handleView = useCallback(
     (e) => {
@@ -75,6 +79,11 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
             {dueDate && <span>Срок: {formatDate(dueDate)}</span>}
           </p>
         )}
+        {assignedAt && (
+          <p className="text-sm text-foreground/70">
+            Назначено: {formatDate(assignedAt)}
+          </p>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
         <Badge variant={badgeVariant}>
@@ -113,6 +122,8 @@ TaskCard.propTypes = {
     status: PropTypes.string.isRequired,
     assignee: PropTypes.string,
     due_date: PropTypes.string,
+    created_at: PropTypes.string,
+    assigned_at: PropTypes.string,
   }).isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
