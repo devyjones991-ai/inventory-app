@@ -41,7 +41,7 @@ export default function DashboardPage() {
     exportToFile,
   } = useObjectList();
 
-  const { notifications, clearNotifications } = useObjectNotifications(
+  const { chatUnread, clearNotifications } = useObjectNotifications(
     selected,
     activeTab,
     user,
@@ -145,7 +145,7 @@ export default function DashboardPage() {
             onSelect={onSelect}
             onEdit={openEditModal}
             onDelete={setDeleteCandidate}
-            notifications={notifications}
+            notifications={chatUnread}
           />
         </aside>
         {isSidebarOpen && (
@@ -169,7 +169,7 @@ export default function DashboardPage() {
                 onSelect={onSelect}
                 onEdit={openEditModal}
                 onDelete={setDeleteCandidate}
-                notifications={notifications}
+                notifications={chatUnread}
               />
             </aside>
           </div>

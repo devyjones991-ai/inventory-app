@@ -255,6 +255,8 @@ export default function useChat({ objectId, userEmail, search }) {
     };
     offsetRef.current += 1;
     setMessages((prev) => [...prev, optimistic]);
+    // Ensure we stay pinned to bottom on optimistic add
+    setTimeout(() => autoScrollToBottom(true), 0);
 
     optimisticTimersRef.current[optimisticId] = setTimeout(() => {
       setMessages((prev) =>
@@ -297,6 +299,8 @@ export default function useChat({ objectId, userEmail, search }) {
         }
         return [...filtered, data].sort(sortByCreatedAt);
       });
+      // Keep view at the latest message
+      setTimeout(() => autoScrollToBottom(true), 0);
       if (filePreview) URL.revokeObjectURL(filePreview);
       setFile(null);
       setFilePreview(null);
@@ -304,6 +308,8 @@ export default function useChat({ objectId, userEmail, search }) {
     }
     setNewMessage("");
     setSending(false);
+    // Final safeguard to keep the scroll at bottom after DOM settles
+    setTimeout(() => autoScrollToBottom(true), 0);
   };
 
   const handleKeyDown = (e) => {

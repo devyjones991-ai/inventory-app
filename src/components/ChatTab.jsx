@@ -10,7 +10,12 @@ import {
 import useChat from "../hooks/useChat.js";
 import { Textarea } from "@/components/ui/textarea";
 
-function ChatTab({ selected = null, userEmail, onCountChange }) {
+function ChatTab({
+  selected = null,
+  userEmail,
+  active = false,
+  onCountChange,
+}) {
   const objectId = selected?.id || null;
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,12 +40,25 @@ function ChatTab({ selected = null, userEmail, onCountChange }) {
     handleKeyDown,
     fileInputRef,
     scrollRef,
+    markMessagesAsRead,
     loadError,
   } = useChat({ objectId, userEmail, search: searchQuery });
 
   useEffect(() => {
-    onCountChange?.(messages.length);
-  }, [messages, onCountChange]);
+    const me = (userEmail || "").trim().toLowerCase();
+    const unread = messages.reduce((acc, m) => {
+      const sender = (m.sender || "").trim().toLowerCase();
+      const isOwn = sender === me;
+      return acc + (!m.read_at && !isOwn ? 1 : 0);
+    }, 0);
+    onCountChange?.(unread);
+  }, [messages, userEmail, onCountChange]);
+
+  useEffect(() => {
+    if (active) {
+      markMessagesAsRead();
+    }
+  }, [active, markMessagesAsRead]);
 
   const handleFileChange = useCallback(
     (e) => setFile(e.target.files[0]),
@@ -240,5 +258,6 @@ ChatTab.propTypes = {
     id: PropTypes.number.isRequired,
   }),
   userEmail: PropTypes.string.isRequired,
+  active: PropTypes.bool,
   onCountChange: PropTypes.func,
 };

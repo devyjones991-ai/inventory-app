@@ -255,17 +255,18 @@ function InventoryTabs({
         </div>
       </TabsContent>
 
-      <TabsContent value="tasks" className="flex-1 overflow-auto">
+      <TabsContent forceMount value="tasks" className="flex-1 overflow-auto">
         <TasksTab
           selected={selected}
           registerAddHandler={registerAddHandler}
           onCountChange={setTasksCount}
         />
       </TabsContent>
-      <TabsContent value="chat" className="flex-1 overflow-auto">
+      <TabsContent forceMount value="chat" className="flex-1 overflow-auto">
         <ChatTab
           selected={selected}
           userEmail={user?.email}
+          active={tab === "chat"}
           onCountChange={setMessageCount}
         />
       </TabsContent>
