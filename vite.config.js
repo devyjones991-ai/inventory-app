@@ -44,7 +44,9 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    esbuild: isProd ? { drop: ["console", "debugger"] } : {},
     build: {
+      sourcemap: mode === "staging",
       rollupOptions: {
         plugins: env.ANALYZE ? [visualizer({ filename: "stats.html" })] : [],
         output: {
