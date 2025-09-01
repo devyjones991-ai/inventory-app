@@ -1,8 +1,9 @@
-﻿import { memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 import PropTypes from "prop-types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Badge } from "@/components/ui/badge";
+import { t } from "@/i18n";
 
 function InventorySidebar({
   objects,
@@ -49,14 +50,14 @@ function InventorySidebar({
               <button
                 onClick={o.edit}
                 className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                title="Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РѕР±СЉРµРєС‚"
+                title={t("objects.edit")}
               >
                 <PencilIcon className="w-4 h-4" />
               </button>
               <button
                 onClick={o.remove}
                 className="ml-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                title="РЈРґР°Р»РёС‚СЊ РѕР±СЉРµРєС‚"
+                title={t("objects.delete")}
               >
                 <TrashIcon className="w-4 h-4" />
               </button>
