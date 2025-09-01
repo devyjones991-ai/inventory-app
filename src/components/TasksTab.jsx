@@ -223,7 +223,6 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             <Button
               variant="ghost"
               type="button"
-              type="button"
               onClick={() => {
                 setFilterStatus("all");
                 setFilterAssignee("");
@@ -328,12 +327,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             </div>
             <DialogFooter>
               <Button type="submit">{t("common.save")}</Button>
-              <Button
-                type="button"
-                variant="ghost"
-                type="button"
-                onClick={closeTaskModal}
-              >
+              <Button type="button" variant="ghost" onClick={closeTaskModal}>
                 {t("common.cancel")}
               </Button>
             </DialogFooter>

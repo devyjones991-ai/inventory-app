@@ -340,10 +340,10 @@ export default function DashboardPage() {
             role="dialog"
           >
             <div
-              className="fixed inset-0 bg-black/60 animate-in fade-in-0"
+              className="fixed inset-0 bg-black animate-in fade-in-0"
               onClick={toggleSidebar}
             />
-            <aside className="relative z-20 w-72 max-w-[85vw] bg-muted p-4 shadow-lg overflow-y-auto transform duration-200 ease-out animate-in slide-in-from-left">
+            <aside className="relative z-20 w-72 max-w-[85vw] bg-background p-4 shadow-lg overflow-y-auto transform duration-200 ease-out animate-in slide-in-from-left">
               <Button
                 size="icon"
                 type="button"
@@ -366,8 +366,8 @@ export default function DashboardPage() {
         )}
 
         <div className="flex-1 flex flex-col">
-          <header className="flex flex-row items-center justify-between gap-2 p-3 sm:p-4 border-b bg-background flex-nowrap overflow-x-auto">
-            <div className="flex items-center gap-3 md:gap-4">
+          <header className="flex flex-row items-center justify-between gap-2 p-3 sm:p-4 border-b bg-background">
+            <div className="flex items-center gap-3 md:gap-4 overflow-x-auto overflow-y-visible whitespace-nowrap">
               <button
                 className="md:hidden p-2 text-blue-600 dark:text-blue-400"
                 onClick={toggleSidebar}

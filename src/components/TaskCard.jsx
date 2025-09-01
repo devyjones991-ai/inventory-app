@@ -47,7 +47,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
 
   return (
     <Card
-      className="flex flex-col xs:flex-row md:flex-row justify-between items-start xs:items-center cursor-pointer hover:bg-accent/30 animate-fade-in"
+      className="flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer hover:bg-accent/30 animate-fade-in"
       onClick={handleView}
     >
       <CardHeader className="flex-1">
@@ -83,7 +83,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           )}
         </p>
       </CardHeader>
-      <CardContent className="flex flex-col xs:flex-row md:flex-row flex-wrap items-center gap-2 mt-2 xs:mt-0">
+      <CardContent className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mt-2 sm:mt-0 sm:whitespace-nowrap">
         <Badge variant={badgeVariant}>
           {REVERSE_STATUS_MAP[item.status] || item.status}
         </Badge>
