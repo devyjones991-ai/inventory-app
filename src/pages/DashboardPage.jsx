@@ -83,7 +83,7 @@ export default function DashboardPage() {
   const importInputRef = useRef(null);
   const menuRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
+  const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -98,23 +98,27 @@ export default function DashboardPage() {
       document.body.style.overflow = originalOverflow;
     };
   }, [isSidebarOpen]);
-  // Close import/export dropdown on outside click or Escape
+
+  // Закрытие меню по клику вне его области или при нажатии Escape
   useEffect(() => {
     if (!isMenuOpen) return;
-    function onDocMouseDown(e) {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(e.target)) {
+
+    const handlePointerDown = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsMenuOpen(false);
       }
-    }
-    function onKeyDown(e) {
+    };
+
+    const handleKeyDown = (e) => {
       if (e.key === "Escape") setIsMenuOpen(false);
-    }
-    document.addEventListener("mousedown", onDocMouseDown);
-    document.addEventListener("keydown", onKeyDown);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
     return () => {
-      document.removeEventListener("mousedown", onDocMouseDown);
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMenuOpen]);
 
@@ -275,25 +279,6 @@ export default function DashboardPage() {
     else document.body.classList.remove("overflow-hidden");
     return () => document.body.classList.remove("overflow-hidden");
   }, [isSidebarOpen]);
-  // Close import/export dropdown on outside click or Escape
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    function onDocMouseDown(e) {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(e.target)) {
-        setIsMenuOpen(false);
-      }
-    }
-    function onKeyDown(e) {
-      if (e.key === "Escape") setIsMenuOpen(false);
-    }
-    document.addEventListener("mousedown", onDocMouseDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onDocMouseDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isMenuOpen]);
 
   if (!user) return <Navigate to="/auth" replace />;
 
@@ -412,7 +397,7 @@ export default function DashboardPage() {
                   <EllipsisVerticalIcon className="w-5 h-5" />
                 </Button>
                 {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-36 rounded-md border bg-background shadow-lg ring-1 ring-border">
+                  <div className="absolute right-0 mt-2 w-36 z-50 rounded-md border bg-background shadow-lg ring-1 ring-border">
                     <button
                       type="button"
                       className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
