@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import TaskCard from "./TaskCard";
 import ErrorMessage from "./ErrorMessage";
@@ -32,16 +35,17 @@ import {
 const PAGE_SIZE = 20;
 const STATUS_OPTIONS = TASK_STATUSES;
 
+const taskSchema = z.object({
+  title: z.string().min(1, "Введите название"),
+  assignee: z.string().optional(),
+  due_date: z.string().optional(),
+  status: z.enum(STATUS_OPTIONS, { required_error: "Выберите статус" }),
+  notes: z.string().optional(),
+});
+
 function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const assigneeInputRef = useRef(null);
   const todayStr = new Date().toISOString().slice(0, 10);
-  const [taskForm, setTaskForm] = useState({
-    title: "",
-    assignee: "",
-    due_date: "",
-    status: STATUS_OPTIONS[0] || "",
-    notes: "",
-  });
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [viewingTask, setViewingTask] = useState(null);
@@ -49,6 +53,30 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterAssignee, setFilterAssignee] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(taskSchema),
+    defaultValues: {
+      title: "",
+      assignee: "",
+      due_date: "",
+      status: STATUS_OPTIONS[0] || "",
+      notes: "",
+    },
+  });
+
+  useEffect(() => {
+    register("status");
+  }, [register]);
+
+  const status = watch("status");
 
   const {
     tasks,
@@ -68,7 +96,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   }, [selected?.id, filterStatus, filterAssignee, loadTasks]);
 
   const openTaskModal = useCallback(() => {
-    setTaskForm({
+    reset({
       title: "",
       assignee: "",
       due_date: todayStr,
@@ -77,7 +105,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     });
     setEditingTask(null);
     setIsTaskModalOpen(true);
-  }, [todayStr]);
+  }, [todayStr, reset]);
 
   useEffect(() => {
     registerAddHandler?.(openTaskModal);
@@ -103,16 +131,15 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   }, []);
 
   const handleTaskSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (!TASK_STATUSES.includes(taskForm.status)) {
-        logger.error("Unknown status selected:", taskForm.status);
+    async (data) => {
+      if (!TASK_STATUSES.includes(data.status)) {
+        logger.error("Unknown status selected:", data.status);
         return;
       }
       const payload = {
-        ...taskForm,
+        ...data,
         object_id: selected?.id,
-        status: taskForm.status,
+        status: data.status,
       };
       try {
         if (editingTask) await updateTask(editingTask.id, payload);
@@ -122,27 +149,23 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         logger.error("Error saving task:", err);
       }
     },
-    [
-      taskForm,
-      editingTask,
-      selected?.id,
-      createTask,
-      updateTask,
-      closeTaskModal,
-    ],
+    [editingTask, selected?.id, createTask, updateTask, closeTaskModal],
   );
 
-  const handleEditTask = useCallback((task) => {
-    setTaskForm({
-      title: task.title || "",
-      assignee: task.assignee || "",
-      due_date: task.due_date || "",
-      status: task.status || STATUS_OPTIONS[0] || "",
-      notes: task.notes || "",
-    });
-    setEditingTask(task);
-    setIsTaskModalOpen(true);
-  }, []);
+  const handleEditTask = useCallback(
+    (task) => {
+      reset({
+        title: task.title || "",
+        assignee: task.assignee || "",
+        due_date: task.due_date || "",
+        status: task.status || STATUS_OPTIONS[0] || "",
+        notes: task.notes || "",
+      });
+      setEditingTask(task);
+      setIsTaskModalOpen(true);
+    },
+    [reset],
+  );
 
   const confirmDeleteTask = useCallback(async () => {
     if (!taskDeleteId) return;
@@ -277,27 +300,22 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               {editingTask ? t("tasks.editTitle") : t("tasks.addTitle")}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleTaskSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(handleTaskSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="task-title">{t("tasks.title")} *</Label>
-              <Input
-                id="task-title"
-                value={taskForm.title}
-                onChange={(e) =>
-                  setTaskForm({ ...taskForm, title: e.target.value })
-                }
-                required
-              />
+              <Input id="task-title" {...register("title")} />
+              {errors.title && (
+                <p className="text-red-500 text-sm">{errors.title.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-assignee">{t("tasks.assignee")}</Label>
-              <Input
-                id="task-assignee"
-                value={taskForm.assignee}
-                onChange={(e) =>
-                  setTaskForm({ ...taskForm, assignee: e.target.value })
-                }
-              />
+              <Input id="task-assignee" {...register("assignee")} />
+              {errors.assignee && (
+                <p className="text-red-500 text-sm">
+                  {errors.assignee.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-due-date">{t("tasks.form.dueDate")}</Label>
@@ -306,19 +324,19 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                 type="date"
                 aria-label={t("tasks.form.dueDate")}
                 title={t("tasks.form.dueDate")}
-                value={taskForm.due_date}
-                onChange={(e) =>
-                  setTaskForm({ ...taskForm, due_date: e.target.value })
-                }
+                {...register("due_date")}
               />
+              {errors.due_date && (
+                <p className="text-red-500 text-sm">
+                  {errors.due_date.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>{t("tasks.status")}</Label>
               <Select
-                value={taskForm.status}
-                onValueChange={(value) =>
-                  setTaskForm({ ...taskForm, status: value })
-                }
+                value={status}
+                onValueChange={(value) => setValue("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t("tasks.chooseStatus")} />
@@ -331,17 +349,16 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.status && (
+                <p className="text-red-500 text-sm">{errors.status.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-notes">{t("tasks.notes")}</Label>
-              <Textarea
-                id="task-notes"
-                rows={3}
-                value={taskForm.notes}
-                onChange={(e) =>
-                  setTaskForm({ ...taskForm, notes: e.target.value })
-                }
-              />
+              <Textarea id="task-notes" rows={3} {...register("notes")} />
+              {errors.notes && (
+                <p className="text-red-500 text-sm">{errors.notes.message}</p>
+              )}
             </div>
             <DialogFooter>
               <Button type="submit">{t("common.save")}</Button>
