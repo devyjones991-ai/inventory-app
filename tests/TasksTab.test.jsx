@@ -68,9 +68,22 @@ describe("TasksTab", () => {
         <TasksTab selected={selected} />
       </MemoryRouter>,
     );
-    expect(
-      await screen.findByText("Нет задач для этого объекта."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Задач пока нет/)).toBeInTheDocument();
+  });
+
+  it("загружает задачи при монтировании", async () => {
+    render(
+      <MemoryRouter>
+        <TasksTab selected={selected} />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(mockLoadTasks).toHaveBeenCalledWith({
+        limit: 20,
+        status: undefined,
+        assignee: undefined,
+      });
+    });
   });
 
   it("добавляет задачу с assignee", async () => {
@@ -96,7 +109,7 @@ describe("TasksTab", () => {
 
     const titleInput = screen.getByLabelText(/Название/);
     const assigneeInput = screen.getByLabelText("Исполнитель");
-    const dueDateInput = screen.getByLabelText("Дата выполнения");
+    const dueDateInput = screen.getByLabelText("Назначена на");
 
     await act(async () => {
       fireEvent.change(titleInput, { target: { value: "Новая задача" } });
@@ -104,7 +117,7 @@ describe("TasksTab", () => {
       fireEvent.change(dueDateInput, { target: { value: "2024-05-10" } });
     });
 
-    fireEvent.click(screen.getByText("Добавить"));
+    fireEvent.click(screen.getByText("Сохранить"));
 
     await waitFor(() => {
       expect(mockCreateTask).toHaveBeenCalledWith({
@@ -137,7 +150,7 @@ describe("TasksTab", () => {
       </MemoryRouter>,
     );
 
-    const editButton = await screen.findByLabelText("Редактировать задачу");
+    const editButton = await screen.findByLabelText(/Редактировать/);
     fireEvent.click(editButton);
 
     const titleInput = screen.getByDisplayValue("Существующая задача");
@@ -174,7 +187,7 @@ describe("TasksTab", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByLabelText("Редактировать задачу")).toBeInTheDocument();
-    expect(screen.getByLabelText("Удалить задачу")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Редактировать/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Удалить/)).toBeInTheDocument();
   });
 });
