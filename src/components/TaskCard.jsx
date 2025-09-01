@@ -1,11 +1,10 @@
-﻿import { memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import PropTypes from "prop-types";
 import { formatDate } from "@/utils/date";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { REVERSE_STATUS_MAP } from "@/constants/taskStatus";
 import { t } from "@/i18n";
 
 const STATUS_VARIANTS = {
@@ -55,13 +54,11 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           {item.title}
         </CardTitle>
         <p className="text-sm text-foreground/70 hidden">
-          {assignee && <span>РСЃРїРѕР»РЅРёС‚РµР»СЊ: {assignee}</span>}
+          {assignee && <span>Исполнитель: {assignee}</span>}
           {assignee && (assignedAt || dueDate) && <span> | </span>}
-          {assignedAt && (
-            <span>РќР°Р·РЅР°С‡РµРЅР°: {formatDate(assignedAt)}</span>
-          )}
+          {assignedAt && <span>Назначена: {formatDate(assignedAt)}</span>}
           {dueDate && (assignedAt || assignee) && <span> | </span>}
-          {dueDate && <span>РЎСЂРѕРє РґРѕ: {formatDate(dueDate)}</span>}
+          {dueDate && <span>Срок до: {formatDate(dueDate)}</span>}
         </p>
         <p className="text-sm text-foreground/70">
           {assignee && (
@@ -85,7 +82,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
       </CardHeader>
       <CardContent className="flex flex-col sm:flex-row items-center justify-evenly w-full sm:w-auto gap-2 sm:gap-3 mt-2 sm:mt-0 sm:whitespace-nowrap">
         <Badge variant={badgeVariant}>
-          {REVERSE_STATUS_MAP[item.status] || item.status}
+          {t(`tasks.statuses.${item.status}`)}
         </Badge>
         <Button
           size="iconSm"

@@ -6,7 +6,7 @@ import ErrorMessage from "./ErrorMessage";
 import ConfirmModal from "./ConfirmModal";
 import { useTasks } from "@/hooks/useTasks";
 import logger from "@/utils/logger";
-import { STATUS_MAP, REVERSE_STATUS_MAP } from "@/constants/taskStatus";
+import { TASK_STATUSES } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/date";
 import { t } from "@/i18n";
 
@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 
 const PAGE_SIZE = 20;
-const STATUS_OPTIONS = Object.keys(STATUS_MAP);
+const STATUS_OPTIONS = TASK_STATUSES;
 
 function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const assigneeInputRef = useRef(null);
@@ -62,8 +62,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
 
   useEffect(() => {
     if (!selected?.id) return;
-    const statusCode =
-      filterStatus === "all" ? undefined : STATUS_MAP[filterStatus];
+    const statusCode = filterStatus === "all" ? undefined : filterStatus;
     const assignee = filterAssignee.trim() || undefined;
     loadTasks({ limit: PAGE_SIZE, status: statusCode, assignee });
   }, [selected?.id, filterStatus, filterAssignee, loadTasks]);
@@ -106,15 +105,14 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const handleTaskSubmit = useCallback(
     async (e) => {
       e.preventDefault();
-      const statusValue = STATUS_MAP[taskForm.status];
-      if (!statusValue) {
+      if (!TASK_STATUSES.includes(taskForm.status)) {
         logger.error("Unknown status selected:", taskForm.status);
         return;
       }
       const payload = {
         ...taskForm,
         object_id: selected?.id,
-        status: statusValue,
+        status: taskForm.status,
       };
       try {
         if (editingTask) await updateTask(editingTask.id, payload);
@@ -139,7 +137,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       title: task.title || "",
       assignee: task.assignee || "",
       due_date: task.due_date || "",
-      status: REVERSE_STATUS_MAP[task.status] || STATUS_OPTIONS[0] || "",
+      status: task.status || STATUS_OPTIONS[0] || "",
       notes: task.notes || "",
     });
     setEditingTask(task);
@@ -205,7 +203,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               <SelectItem value="all">{t("common.all")}</SelectItem>
               {STATUS_OPTIONS.map((status) => (
                 <SelectItem key={status} value={status}>
-                  {status}
+                  {t(`tasks.statuses.${status}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -328,7 +326,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                 <SelectContent>
                   {STATUS_OPTIONS.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status}
+                      {t(`tasks.statuses.${status}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -389,7 +387,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             )}
             <p>
               <strong>{t("tasks.view.status")}</strong>{" "}
-              {REVERSE_STATUS_MAP[viewingTask?.status] || viewingTask?.status}
+              {t(`tasks.statuses.${viewingTask?.status}`)}
             </p>
             {viewingTask?.notes && (
               <p className="whitespace-pre-wrap break-words">
