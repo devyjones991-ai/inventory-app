@@ -357,11 +357,15 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         open={!!viewingTask}
         onOpenChange={(open) => !open && setViewingTask(null)}
       >
-        <DialogContent className="border">
+        <DialogContent
+          aria-labelledby="view-task-title"
+          aria-describedby="view-task-content"
+          className="border rounded-md bg-background shadow-lg"
+        >
           <DialogHeader>
-            <DialogTitle>{viewingTask?.title}</DialogTitle>
+            <DialogTitle id="view-task-title">{viewingTask?.title}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div id="view-task-content" className="space-y-2">
             {viewingTask?.assignee && (
               <p>
                 <strong>{t("tasks.view.assignee")}</strong>{" "}
