@@ -80,6 +80,18 @@ export default function DashboardPage() {
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    if (isSidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = originalOverflow;
+    }
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isSidebarOpen]);
+
   const onSelect = (obj) => {
     handleSelect(obj);
     clearNotifications(obj.id);
@@ -269,12 +281,16 @@ export default function DashboardPage() {
           />
         </aside>
         {isSidebarOpen && (
-          <div className="fixed inset-0 z-10 flex">
+          <div
+            className="fixed inset-0 z-10 flex"
+            aria-modal="true"
+            role="dialog"
+          >
             <div
               className="fixed inset-0 bg-background"
               onClick={toggleSidebar}
             />
-            <aside className="relative z-20 w-72 bg-muted p-4 shadow-lg overflow-y-auto">
+            <aside className="relative z-20 w-72 bg-muted p-4 shadow-lg overflow-y-auto transition-transform">
               <Button
                 size="icon"
                 className="absolute right-2 top-2"
