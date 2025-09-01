@@ -1,6 +1,9 @@
 /* eslint-env node */
 /* globals process, global */
-import "@testing-library/jest-dom";
+import { vi } from "vitest";
+import "@testing-library/jest-dom/vitest";
+
+globalThis.jest = vi;
 
 if (typeof File === "undefined") {
   globalThis.File = class File extends Blob {
@@ -23,7 +26,7 @@ process.env.VITE_API_BASE_URL = "http://localhost";
 process.env.VITE_SUPABASE_URL = "http://localhost";
 process.env.VITE_SUPABASE_ANON_KEY = "test-key";
 
-jest.mock("@supabase/supabase-js", () => {
+vi.mock("@supabase/supabase-js", () => {
   return {
     createClient: () => {
       const proxy = new Proxy(() => {}, {
@@ -54,5 +57,5 @@ if (!globalThis.fetch || !globalThis.fetch.mock) {
       return this;
     },
   };
-  globalThis.fetch = jest.fn(async () => defaultResponse);
+  globalThis.fetch = vi.fn(async () => defaultResponse);
 }

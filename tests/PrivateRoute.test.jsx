@@ -4,7 +4,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "@/components/PrivateRoute.jsx";
 import { useAuth } from "@/hooks/useAuth.js";
 
-jest.mock("@/hooks/useAuth.js", () => ({
+vi.mock("@/hooks/useAuth.js", () => ({
   useAuth: jest.fn(),
 }));
 

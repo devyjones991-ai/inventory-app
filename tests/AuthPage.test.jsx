@@ -13,7 +13,7 @@ const mockOnAuthStateChange = jest.fn(() => ({
   data: { subscription: { unsubscribe: jest.fn() } },
 }));
 
-jest.mock("@/supabaseClient.js", () => ({
+vi.mock("@/supabaseClient.js", () => ({
   supabase: {
     auth: {
       signUp: mockSignUp,

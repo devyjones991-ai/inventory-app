@@ -1,19 +1,20 @@
-/* eslint-env jest */
+/* eslint-env vitest */
 
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, test, expect, jest, beforeEach } from "@jest/globals";
+import { describe, test, expect, vi, beforeEach } from "vitest";
+const jest = vi;
 
 import AccountModal from "@/components/AccountModal.jsx";
 
 const mockUpdate = jest.fn();
 
-jest.mock("@/hooks/useAccount", () => ({
+vi.mock("@/hooks/useAccount", () => ({
   useAccount: () => ({ updateProfile: mockUpdate }),
 }));
 
-jest.mock("react-hot-toast", () => ({ toast: { error: jest.fn() } }));
+vi.mock("react-hot-toast", () => ({ toast: { error: jest.fn() } }));
 
 describe("AccountModal", () => {
   const user = { user_metadata: { username: "old" } };

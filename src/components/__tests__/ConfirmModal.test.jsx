@@ -1,14 +1,15 @@
-/* eslint-env jest */
-import "@testing-library/jest-dom";
-import { describe, test, expect, jest } from "@jest/globals";
+/* eslint-env vitest */
+import "@testing-library/jest-dom/vitest";
+import { describe, test, expect, vi } from "vitest";
+const jest = vi;
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-jest.mock("@/components/ui/button", () => ({
+vi.mock("@/components/ui/button", () => ({
   Button: ({ children, ...props }) => <button {...props}>{children}</button>,
 }));
 
-jest.mock("@/components/ui/dialog", () => ({
+vi.mock("@/components/ui/dialog", () => ({
   Dialog: ({ open, onOpenChange, children }) =>
     open ? (
       <div data-testid="dialog" onClick={() => onOpenChange?.(false)}>
