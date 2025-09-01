@@ -1,9 +1,10 @@
 import js from "@eslint/js";
-import globals from "globals";
+import { defineConfig, globalIgnores } from "eslint/config";
+import importPlugin from "eslint-plugin-import";
+import prettier from "eslint-plugin-prettier";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import prettier from "eslint-plugin-prettier";
-import { defineConfig, globalIgnores } from "eslint/config";
+import globals from "globals";
 
 export default defineConfig([
   globalIgnores(["dist"]),
@@ -11,6 +12,7 @@ export default defineConfig([
     files: ["**/*.{js,jsx}"],
     plugins: {
       prettier,
+      import: importPlugin,
     },
     extends: [
       js.configs.recommended,
@@ -29,6 +31,21 @@ export default defineConfig([
     rules: {
       "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z_]" }],
       "prettier/prettier": "error",
+      "import/order": [
+        "error",
+        {
+          alphabetize: { order: "asc", caseInsensitive: true },
+          "newlines-between": "always",
+        },
+      ],
+      "import/no-cycle": "error",
+    },
+    settings: {
+      "import/resolver": {
+        typescript: {
+          project: "./jsconfig.json",
+        },
+      },
     },
   },
   {
