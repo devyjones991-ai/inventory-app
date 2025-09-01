@@ -7,11 +7,13 @@ import viteCompression from "vite-plugin-compression";
 import viteImagemin from "@vheemstra/vite-plugin-imagemin";
 import imageminMozjpeg from "imagemin-mozjpeg";
 import imageminPngquant from "imagemin-pngquant";
+import process from "node:process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
   const isProd = mode === "production";
+  const enableBrotli = process.env.ENABLE_BROTLI === "true";
   return {
     plugins: [
       react(),
@@ -23,8 +25,15 @@ export default defineConfig(({ mode }) => {
                 png: imageminPngquant(),
               },
             }),
-            viteCompression(),
-            viteCompression({ algorithm: "brotliCompress" }),
+            viteCompression({ threshold: 8192 }),
+            ...(enableBrotli
+              ? [
+                  viteCompression({
+                    algorithm: "brotliCompress",
+                    threshold: 8192,
+                  }),
+                ]
+              : []),
           ]
         : []),
     ],
