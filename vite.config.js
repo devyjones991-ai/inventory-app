@@ -7,6 +7,8 @@ import viteCompression from "vite-plugin-compression";
 import viteImagemin from "@vheemstra/vite-plugin-imagemin";
 import imageminMozjpeg from "imagemin-mozjpeg";
 import imageminPngquant from "imagemin-pngquant";
+import { visualizer } from "rollup-plugin-visualizer";
+import { env } from "node:process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,6 +37,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
+        plugins: env.ANALYZE ? [visualizer({ filename: "stats.html" })] : [],
         output: {
           manualChunks(id) {
             if (id.includes("node_modules")) {
