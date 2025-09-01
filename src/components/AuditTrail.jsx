@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import { supabase } from "@/supabaseClient";
 import Spinner from "./Spinner";
 import ErrorMessage from "./ErrorMessage";
+import logger from "@/utils/logger";
+import { handleSupabaseError } from "@/utils/handleSupabaseError";
 
 export default function AuditTrail({ limit = 50 }) {
   const [logs, setLogs] = useState([]);
@@ -11,19 +13,23 @@ export default function AuditTrail({ limit = 50 }) {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
-        .from("audit_logs")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(limit);
-      if (error) {
-        setError(error);
-        setLogs([]);
-      } else {
+      try {
+        const { data, error: err } = await supabase
+          .from("audit_logs")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(limit);
+        if (err) throw err;
         setLogs(data || []);
         setError(null);
+      } catch (err) {
+        logger.error("AuditTrail load error:", err);
+        await handleSupabaseError(err, null, "Ошибка загрузки логов");
+        setError(err);
+        setLogs([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     load();
   }, [limit]);

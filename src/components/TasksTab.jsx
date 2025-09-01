@@ -175,7 +175,10 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     );
   }
 
-  if (error) return <ErrorMessage message={error} />;
+  if (error) {
+    logger.error("TasksTab error:", error);
+    return <ErrorMessage error={error} />;
+  }
 
   return (
     <div className="p-4">
