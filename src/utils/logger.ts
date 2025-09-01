@@ -3,36 +3,37 @@ const levels = {
   error: 1,
   warn: 2,
   info: 3,
-};
+} as const;
 
-let forcedLevel;
+type Level = keyof typeof levels;
 
-export function setLogLevel(level) {
+let forcedLevel: Level | undefined;
+
+export function setLogLevel(level: Level | undefined): void {
   forcedLevel = level;
 }
 
-function getEnvLevel() {
-  if (forcedLevel) return forcedLevel.toLowerCase();
+function getEnvLevel(): Level {
+  if (forcedLevel) return forcedLevel.toLowerCase() as Level;
   const level = import.meta.env?.VITE_LOG_LEVEL;
-  if (level) return String(level).toLowerCase();
+  if (level) return String(level).toLowerCase() as Level;
   const mode = (import.meta.env && import.meta.env.MODE) || "development";
-  // Default to less noisy logs in production
-  return mode === "production" ? "warn" : "info";
+  return (mode === "production" ? "warn" : "info") as Level;
 }
 
-function shouldLog(level) {
+function shouldLog(level: Level): boolean {
   const envLevel = levels[getEnvLevel()] ?? levels.info;
   return envLevel >= levels[level];
 }
 
 const logger = {
-  info: (...args) => {
+  info: (...args: unknown[]) => {
     if (shouldLog("info")) console.info(...args);
   },
-  warn: (...args) => {
+  warn: (...args: unknown[]) => {
     if (shouldLog("warn")) console.warn(...args);
   },
-  error: (...args) => {
+  error: (...args: unknown[]) => {
     if (shouldLog("error")) console.error(...args);
   },
 };

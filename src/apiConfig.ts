@@ -1,7 +1,7 @@
-﻿/* global process */
+/* global process */
 import logger from "./utils/logger";
 
-const apiBaseUrl =
+const apiBaseUrl: string | undefined =
   import.meta.env?.VITE_API_BASE_URL || process.env.VITE_API_BASE_URL;
 
 export const isApiConfigured = Boolean(apiBaseUrl);

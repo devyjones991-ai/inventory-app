@@ -1,6 +1,13 @@
+// @ts-check
 import logger from "./logger";
 
+/** @type {AudioContext | undefined} */
 let audioCtx;
+
+/**
+ * Plays a short tone using Web Audio API.
+ * @param {number} frequency Frequency in hertz
+ */
 function playTone(frequency) {
   if (typeof window === "undefined") return;
   const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -18,6 +25,9 @@ function playTone(frequency) {
 }
 
 // Запрашивает разрешение на показ уведомлений
+/**
+ * Requests browser permission to show notifications.
+ */
 export function requestNotificationPermission() {
   if (typeof window === "undefined" || !("Notification" in window)) return;
   if (Notification.permission === "default") {
@@ -30,6 +40,11 @@ export function requestNotificationPermission() {
 }
 
 // Показывает push-уведомление в поддерживаемых браузерах
+/**
+ * Shows a push notification if supported and permitted.
+ * @param {string} title Notification title
+ * @param {string} body Notification body
+ */
 export function pushNotification(title, body) {
   if (typeof window === "undefined" || !("Notification" in window)) return;
   if (Notification.permission === "granted") {
@@ -42,11 +57,17 @@ export function pushNotification(title, body) {
 }
 
 // Проигрывает звук для новой задачи
+/**
+ * Plays sound for a new task.
+ */
 export function playTaskSound() {
   playTone(440);
 }
 
 // Проигрывает звук для нового сообщения
+/**
+ * Plays sound for a new message.
+ */
 export function playMessageSound() {
   playTone(660);
 }

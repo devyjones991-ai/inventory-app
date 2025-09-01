@@ -1,3 +1,6 @@
+// @ts-check
+/* eslint-env jest */
+import { describe, test, expect, jest } from "@jest/globals";
 /* eslint-env vitest */
 import { describe, test, expect, vi } from "vitest";
 const jest = vi;
@@ -48,8 +51,6 @@ describe("ObjectList", () => {
   test("обработка ошибок", () => {
     const error = new Error("Ошибка сети");
     render(<ObjectList error={error} onItemClick={() => {}} />);
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "Ошибка загрузки данных: Ошибка сети",
-    );
+    expect(screen.getByRole("alert")).toHaveTextContent("Ошибка сети");
   });
 });

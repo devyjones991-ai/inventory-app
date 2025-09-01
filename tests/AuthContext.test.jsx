@@ -1,10 +1,11 @@
+// @ts-check
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 const jest = vi;
 import { useContext } from "react";
 import { AuthProvider, AuthContext } from "@/context/AuthContext.jsx";
 import { toast } from "react-hot-toast";
-import logger from "@/utils/logger.js";
+import logger from "@/utils/logger";
 
 const mockGetSession = jest.fn();
 const mockOnAuthStateChange = jest.fn();

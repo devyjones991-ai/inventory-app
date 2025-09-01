@@ -1,3 +1,12 @@
+// @ts-check
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from "@jest/globals";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 const jest = vi;
 
@@ -15,6 +24,7 @@ vi.mock("@/supabaseClient.js", () => ({
   isSupabaseConfigured: true,
 }));
 
+jest.mock("@/apiConfig", () => ({
 vi.mock("@/apiConfig.js", () => ({
   apiBaseUrl: "http://localhost",
   isApiConfigured: true,
