@@ -1,4 +1,5 @@
-﻿/* global process */
+// @ts-check
+/* global process */
 import { createClient } from "@supabase/supabase-js";
 import logger from "./utils/logger";
 
@@ -9,10 +10,12 @@ const supabaseKey =
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 
+/** @type {import('@supabase/supabase-js').SupabaseClient} */
 let supabase;
 
 if (!isSupabaseConfigured) {
   logger.error("VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY are not set.");
+  /** @type {ProxyHandler<any>} */
   const handler = {
     get() {
       return new Proxy(() => {
@@ -25,7 +28,7 @@ if (!isSupabaseConfigured) {
       return Promise.reject(new Error("Supabase is not configured"));
     },
   };
-  supabase = new Proxy(() => {}, handler);
+  supabase = /** @type {any} */ (new Proxy(() => {}, handler));
 } else {
   supabase = createClient(supabaseUrl, supabaseKey);
 }

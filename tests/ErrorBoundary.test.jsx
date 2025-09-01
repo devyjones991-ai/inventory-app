@@ -1,7 +1,8 @@
+// @ts-check
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import logger from "@/utils/logger.js";
+import logger from "@/utils/logger";
 
 function ProblemComponent() {
   throw new Error("Test error");

@@ -1,4 +1,5 @@
-import logger, { setLogLevel } from "@/utils/logger.js";
+// @ts-check
+import logger, { setLogLevel } from "@/utils/logger";
 
 describe("logger", () => {
   let infoSpy;

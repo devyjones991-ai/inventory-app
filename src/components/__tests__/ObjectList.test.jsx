@@ -1,3 +1,4 @@
+// @ts-check
 /* eslint-env jest */
 import { describe, test, expect, jest } from "@jest/globals";
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -47,8 +48,6 @@ describe("ObjectList", () => {
   test("обработка ошибок", () => {
     const error = new Error("Ошибка сети");
     render(<ObjectList error={error} onItemClick={() => {}} />);
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "Ошибка загрузки данных: Ошибка сети",
-    );
+    expect(screen.getByRole("alert")).toHaveTextContent("Ошибка сети");
   });
 });

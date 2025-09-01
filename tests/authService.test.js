@@ -1,3 +1,4 @@
+// @ts-check
 import {
   describe,
   it,
@@ -21,7 +22,7 @@ jest.mock("@/supabaseClient.js", () => ({
   isSupabaseConfigured: true,
 }));
 
-jest.mock("@/apiConfig.js", () => ({
+jest.mock("@/apiConfig", () => ({
   apiBaseUrl: "http://localhost",
   isApiConfigured: true,
 }));

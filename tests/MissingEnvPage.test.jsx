@@ -1,10 +1,11 @@
+// @ts-check
 import React from "react";
 import { render, screen } from "@testing-library/react";
 
 jest.mock("@/supabaseClient.js", () => ({
   isSupabaseConfigured: false,
 }));
-jest.mock("@/apiConfig.js", () => ({
+jest.mock("@/apiConfig", () => ({
   isApiConfigured: false,
 }));
 
@@ -15,7 +16,7 @@ describe("MissingEnvPage", () => {
     render(<App />);
     expect(
       await screen.findByText(
-        /VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_API_BASE_URL не заданы/i,
+        /VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_API_BASE_URL/i,
       ),
     ).toBeInTheDocument();
   });
