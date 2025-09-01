@@ -6,7 +6,7 @@ import ErrorMessage from "./ErrorMessage";
 import ConfirmModal from "./ConfirmModal";
 import { useTasks } from "@/hooks/useTasks";
 import logger from "@/utils/logger";
-import { TASK_STATUSES } from "@/constants/taskStatus";
+import { TASK_STATUSES } from "@/constants";
 import { formatDate } from "@/utils/date";
 import { t } from "@/i18n";
 
