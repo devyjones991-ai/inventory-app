@@ -121,7 +121,7 @@ function ChatTab({
       </div>
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted rounded-2xl"
+        className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 bg-muted rounded-2xl"
       >
         {loadError ? (
           <div className="text-center">
@@ -205,7 +205,7 @@ function ChatTab({
         )}
       </div>
 
-      <div className="p-3 border-t space-y-2">
+      <div className="p-2 sm:p-3 border-t space-y-2">
         {file && filePreview && <AttachmentPreview url={filePreview} />}
         <div className="flex items-center gap-2">
           <label
