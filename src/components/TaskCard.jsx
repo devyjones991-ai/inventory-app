@@ -83,14 +83,14 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
           )}
         </p>
       </CardHeader>
-      <CardContent className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mt-2 sm:mt-0 sm:whitespace-nowrap">
+      <CardContent className="flex flex-col sm:flex-row items-center justify-evenly w-full sm:w-auto gap-2 sm:gap-3 mt-2 sm:mt-0 sm:whitespace-nowrap">
         <Badge variant={badgeVariant}>
           {REVERSE_STATUS_MAP[item.status] || item.status}
         </Badge>
         <Button
           size="iconSm"
           variant="ghost"
-          className="text-blue-600 dark:text-blue-400"
+          className="flex items-center justify-center text-blue-600 dark:text-blue-400"
           title={t("common.edit")}
           aria-label={t("common.edit")}
           onClick={handleEdit}
@@ -100,7 +100,7 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         <Button
           size="iconSm"
           variant="ghost"
-          className="text-red-600 dark:text-red-400"
+          className="flex items-center justify-center text-red-600 dark:text-red-400"
           title={t("common.delete")}
           aria-label={t("common.delete")}
           onClick={handleDelete}
