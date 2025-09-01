@@ -1,6 +1,26 @@
 /* eslint-env node */
 /* globals process, global */
 import "@testing-library/jest-dom";
+import { TextEncoder, TextDecoder } from "util";
+import { ReadableStream, TransformStream } from "stream/web";
+
+if (!global.TextEncoder) global.TextEncoder = TextEncoder;
+if (!global.TextDecoder) global.TextDecoder = TextDecoder;
+if (!global.ReadableStream) global.ReadableStream = ReadableStream;
+if (!global.TransformStream) global.TransformStream = TransformStream;
+
+class MockBroadcastChannel {
+  constructor() {}
+  postMessage() {}
+  addEventListener() {}
+  removeEventListener() {}
+  close() {}
+}
+if (!global.BroadcastChannel) global.BroadcastChannel = MockBroadcastChannel;
+
+import "whatwg-fetch";
+
+let server;
 
 if (typeof File === "undefined") {
   globalThis.File = class File extends Blob {
@@ -23,7 +43,7 @@ process.env.VITE_API_BASE_URL = "http://localhost";
 process.env.VITE_SUPABASE_URL = "http://localhost";
 process.env.VITE_SUPABASE_ANON_KEY = "test-key";
 
-jest.mock("@supabase/supabase-js", () => {
+vi.mock("@supabase/supabase-js", () => {
   return {
     createClient: () => {
       const proxy = new Proxy(() => {}, {
@@ -42,17 +62,10 @@ jest.mock("@supabase/supabase-js", () => {
   };
 });
 
-// Provide a default fetch stub to avoid real network calls in tests
-// Tests that need specific fetch behavior override this with their own mocks
-if (!globalThis.fetch || !globalThis.fetch.mock) {
-  const defaultResponse = {
-    status: 404,
-    ok: false,
-    json: async () => ({}),
-    text: async () => "",
-    clone() {
-      return this;
-    },
-  };
-  globalThis.fetch = jest.fn(async () => defaultResponse);
-}
+beforeAll(async () => {
+  const mod = await import("./mocks/server");
+  server = mod.server;
+  server.listen({ onUnhandledRequest: "error" });
+});
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());

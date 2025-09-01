@@ -1,5 +1,5 @@
 // Tests for InventoryTabs component
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 
 /* eslint-env jest */
 
@@ -11,7 +11,7 @@ var mockLoadHardware,
   mockUpdateHardware,
   mockReset;
 
-jest.mock("@/hooks/usePersistedForm.js", () => () => {
+vi.mock("@/hooks/usePersistedForm.js", () => () => {
   mockReset = jest.fn();
   return {
     register: jest.fn(),
@@ -25,7 +25,7 @@ jest.mock("@/hooks/usePersistedForm.js", () => () => {
   };
 });
 
-jest.mock("@/hooks/useHardware.js", () => {
+vi.mock("@/hooks/useHardware.js", () => {
   mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null });
   mockCreateHardware = jest.fn();
   mockUpdateHardware = jest.fn();
@@ -44,7 +44,7 @@ jest.mock("@/hooks/useHardware.js", () => {
   };
 });
 
-jest.mock("@/hooks/useTasks.js", () => {
+vi.mock("@/hooks/useTasks.js", () => {
   const tasks = [];
   const mocked = {
     tasks,
@@ -59,7 +59,7 @@ jest.mock("@/hooks/useTasks.js", () => {
   return { useTasks: () => mocked };
 });
 
-jest.mock("@/hooks/useChatMessages.js", () => {
+vi.mock("@/hooks/useChatMessages.js", () => {
   mockFetchMessages = jest.fn().mockResolvedValue({ data: [], error: null });
   return {
     useChatMessages: () => ({
@@ -70,11 +70,11 @@ jest.mock("@/hooks/useChatMessages.js", () => {
   };
 });
 
-jest.mock("@/hooks/useObjects.js", () => ({
+vi.mock("@/hooks/useObjects.js", () => ({
   useObjects: () => ({ updateObject: jest.fn() }),
 }));
 
-jest.mock("@/hooks/useAuth.js", () => ({
+vi.mock("@/hooks/useAuth.js", () => ({
   useAuth: () => ({
     user: { id: "u1", email: "me@example.com" },
     role: null,
@@ -82,12 +82,12 @@ jest.mock("@/hooks/useAuth.js", () => ({
   }),
 }));
 
-jest.mock("react-hot-toast", () => ({
+vi.mock("react-hot-toast", () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock("react-router-dom", () => {
-  const actual = jest.requireActual("react-router-dom");
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
   return { ...actual, useNavigate: () => mockNavigate };
 });
 

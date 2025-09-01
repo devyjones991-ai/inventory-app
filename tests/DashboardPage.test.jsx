@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-jest.mock("@/utils/notifications", () => ({
+vi.mock("@/utils/notifications", () => ({
   requestNotificationPermission: jest.fn(),
   pushNotification: jest.fn(),
   playTaskSound: jest.fn(),
@@ -11,7 +11,7 @@ jest.mock("@/utils/notifications", () => ({
 
 const mockLoadError = new Error("load failed");
 
-jest.mock("@/supabaseClient.js", () => {
+vi.mock("@/supabaseClient.js", () => {
   const channelMock = { on: jest.fn().mockReturnThis(), subscribe: jest.fn() };
   return {
     isSupabaseConfigured: true,
@@ -41,12 +41,12 @@ jest.mock("@/supabaseClient.js", () => {
   };
 });
 
-jest.mock("react-hot-toast", () => ({
+vi.mock("react-hot-toast", () => ({
   Toaster: () => null,
   toast: { success: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock("@/hooks/useAuth", () => ({
+vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({ user: {}, role: null, isLoading: false }),
 }));
 

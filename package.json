@@ -8,9 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "analyze": "ANALYZE=true vite build",
-    "test": "jest --config jest.config.js",
-    "test:debug": "jest --config jest.config.js --runInBand --detectOpenHandles --silent",
-    "test:one": "jest --config jest.config.js --runInBand --silent --",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "eslint .",
     "format": "prettier . --write",
     "deploy": "npm run build && vite preview --host",
@@ -19,6 +18,7 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run",
+    "e2e": "start-server-and-test dev http://localhost:5173 cy:run",
     "lighthouse": "lighthouse http://localhost:5173 --output html --output-path=tests/perf/lighthouse-report.html",
     "webpagetest": "webpagetest test http://localhost:5173 --key $WPT_API_KEY"
   },
@@ -42,7 +42,7 @@
     "react-window": "^1.8.10",
     "tailwind-merge": "^3.3.1",
     "uuid": "^11.1.0",
-    "zod": "^4.0.15"
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.0",
@@ -60,11 +60,12 @@
     "@vitejs/plugin-react": "^4.0.0",
     "@vitest/ui": "^1.6.0",
     "autoprefixer": "^10.4.17",
-    "babel-jest": "^30.0.5",
     "babel-plugin-transform-vite-meta-env": "^1.0.3",
     "cypress": "^14.5.4",
     "daisyui": "^5.0.54",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -72,11 +73,10 @@
     "husky": "^9.1.7",
     "imagemin-mozjpeg": "^10.0.0",
     "imagemin-pngquant": "^10.0.0",
-    "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^24.0.0",
     "lighthouse": "^12.0.0",
     "lint-staged": "^16.1.4",
+    "msw": "^2.11.1",
     "postcss": "^8.4.32",
     "prettier": "^3.4.2",
     "rollup-plugin-visualizer": "^6.0.3",
@@ -87,7 +87,8 @@
     "vite": "^4.0.0",
     "vite-plugin-compression": "^0.5.1",
     "vitest": "^1.6.0",
-    "webpagetest": "^0.7.6"
+    "webpagetest": "^0.7.6",
+    "whatwg-fetch": "^3.6.20"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

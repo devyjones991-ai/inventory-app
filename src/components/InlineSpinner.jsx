@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function InlineSpinner({ size = 20 }) {
   const px = typeof size === "number" ? `${size}px` : size;
@@ -28,3 +29,7 @@ export default function InlineSpinner({ size = 20 }) {
     </svg>
   );
 }
+
+InlineSpinner.propTypes = {
+  size: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+};

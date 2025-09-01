@@ -2,6 +2,7 @@ import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
 import { useNavigate } from "react-router-dom";
 import { useCallback, useState } from "react";
+import { t } from "@/i18n";
 
 export function useHardware() {
   const navigate = useNavigate();
@@ -19,11 +20,7 @@ export function useHardware() {
         if (result.error) throw result.error;
         return result;
       } catch (error) {
-        await handleSupabaseError(
-          error,
-          navigate,
-          "Ошибка загрузки оборудования",
-        );
+        await handleSupabaseError(error, navigate, t("hardware.errors.load"));
         return { data: null, error };
       }
     },
@@ -41,11 +38,7 @@ export function useHardware() {
         if (result.error) throw result.error;
         return result;
       } catch (error) {
-        await handleSupabaseError(
-          error,
-          navigate,
-          "Ошибка добавления оборудования",
-        );
+        await handleSupabaseError(error, navigate, t("hardware.errors.create"));
         return { data: null, error };
       }
     },
@@ -64,11 +57,7 @@ export function useHardware() {
         if (result.error) throw result.error;
         return result;
       } catch (error) {
-        await handleSupabaseError(
-          error,
-          navigate,
-          "Ошибка обновления оборудования",
-        );
+        await handleSupabaseError(error, navigate, t("hardware.errors.update"));
         return { data: null, error };
       }
     },
@@ -82,11 +71,7 @@ export function useHardware() {
         if (result.error) throw result.error;
         return result;
       } catch (error) {
-        await handleSupabaseError(
-          error,
-          navigate,
-          "Ошибка удаления оборудования",
-        );
+        await handleSupabaseError(error, navigate, t("hardware.errors.delete"));
         return { data: null, error };
       }
     },

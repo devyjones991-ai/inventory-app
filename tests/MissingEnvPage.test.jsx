@@ -2,10 +2,11 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 
-jest.mock("@/supabaseClient.js", () => ({
+vi.mock("@/supabaseClient.js", () => ({
   isSupabaseConfigured: false,
 }));
 jest.mock("@/apiConfig", () => ({
+vi.mock("@/apiConfig.js", () => ({
   isApiConfigured: false,
 }));
 

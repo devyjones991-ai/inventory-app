@@ -1,17 +1,18 @@
-import { describe, it, expect, beforeEach, jest } from "@jest/globals";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+const jest = vi;
 import { renderHook } from "@testing-library/react";
 import { useChatMessages } from "@/hooks/useChatMessages.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
-jest.mock("@/utils/handleSupabaseError", () => ({
+vi.mock("@/utils/handleSupabaseError", () => ({
   handleSupabaseError: jest.fn(),
 }));
 
-jest.mock("react-hot-toast", () => ({
+vi.mock("react-hot-toast", () => ({
   toast: { error: jest.fn() },
 }));
 
-jest.mock("react-router-dom", () => ({
+vi.mock("react-router-dom", () => ({
   useNavigate: () => jest.fn(),
 }));
 
@@ -23,7 +24,7 @@ var mockSelect;
 var mockInsert;
 var mockSupabaseFrom;
 
-jest.mock("@/supabaseClient.js", () => {
+vi.mock("@/supabaseClient.js", () => {
   mockUpload = jest.fn(() => Promise.resolve({ data: null, error: null }));
   mockGetPublicUrl = jest.fn(() => ({ data: { publicUrl: "url" } }));
   mockStorageFrom = jest.fn(() => ({
