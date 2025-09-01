@@ -210,7 +210,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         </div>
         <div className="w-full sm:min-w-[220px] sm:w-auto flex-1">
           <Label>{t("tasks.assignee")}</Label>
-          <div className="relative">
+          <div className="relative h-10">
             <Input
               ref={assigneeInputRef}
               value={filterAssignee}
@@ -219,7 +219,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               onKeyDown={(e) => {
                 if (e.key === "Enter") e.preventDefault();
               }}
-              className="pr-10"
+              className="h-full pr-10"
             />
             {(filterStatus !== "all" || filterAssignee) && (
               <Button
