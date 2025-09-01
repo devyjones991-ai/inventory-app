@@ -19,6 +19,7 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run",
+    "e2e": "start-server-and-test dev http://localhost:5173 cy:run",
     "lighthouse": "lighthouse http://localhost:5173 --output html --output-path=tests/perf/lighthouse-report.html",
     "webpagetest": "webpagetest test http://localhost:5173 --key $WPT_API_KEY"
   },
