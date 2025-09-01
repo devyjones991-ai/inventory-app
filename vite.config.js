@@ -22,9 +22,10 @@ export default defineConfig(({ mode }) => {
       ...(isProd
         ? [
             viteImagemin({
+              cache: true,
               plugins: {
-                jpg: imageminMozjpeg(),
-                png: imageminPngquant(),
+                jpg: imageminMozjpeg({ quality: 80 }),
+                png: imageminPngquant({ quality: [0.65, 0.8] }),
               },
             }),
             viteCompression({ threshold: 8192 }),
