@@ -242,6 +242,14 @@ export default function DashboardPage() {
     }
   };
 
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (isSidebarOpen) document.body.classList.add("overflow-hidden");
+    else document.body.classList.remove("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [isSidebarOpen]);
+
   if (!user) return <Navigate to="/auth" replace />;
 
   if (fetchError) {

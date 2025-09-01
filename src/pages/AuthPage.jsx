@@ -87,7 +87,7 @@ export default function AuthPage() {
   return (
     <div>
       <div className="flex items-center justify-center min-h-screen bg-muted">
-        <div className="flex w-full min-h-screen items-center justify-center bg-background">
+        <div className="flex w-full items-center justify-center bg-background">
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="bg-background p-6 rounded shadow w-full max-w-sm space-y-4"

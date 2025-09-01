@@ -23,7 +23,7 @@ export default function MissingEnvPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="flex w-full min-h-screen items-center justify-center bg-muted">
+      <div className="flex w-full items-center justify-center bg-muted">
         <div className="space-y-4 max-w-md text-center">
           {missingVars.length > 0 && (
             <Alert variant="destructive">
