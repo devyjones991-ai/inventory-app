@@ -168,7 +168,7 @@ export default function DashboardPage() {
       params.set("tab", nextTab);
     }
     if (changed) setSearchParams(params, { replace: true });
-  }, [selected?.id, activeTab]);
+  }, [selected?.id, activeTab, searchParams, setSearchParams]);
 
   // Restore selection/tab from URL (and react to browser navigation)
   useEffect(() => {
@@ -192,7 +192,7 @@ export default function DashboardPage() {
         handleSelect(found);
       }
     }
-  }, [searchParams, objects, selected]);
+  }, [searchParams, objects, selected, activeTab, handleSelect]);
 
   // Fetch total tasks count for header; keep updated via realtime
   useEffect(() => {
