@@ -7,15 +7,21 @@ import viteCompression from "vite-plugin-compression";
 import viteImagemin from "@vheemstra/vite-plugin-imagemin";
 import imageminMozjpeg from "imagemin-mozjpeg";
 import imageminPngquant from "imagemin-pngquant";
-import { visualizer } from "rollup-plugin-visualizer";
 import { env } from "node:process";
 import process from "node:process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const isProd = mode === "production";
   const enableBrotli = process.env.ENABLE_BROTLI === "true";
+  const rollupPlugins = [];
+
+  if (env.ANALYZE === "true") {
+    const { visualizer } = await import("rollup-plugin-visualizer");
+    rollupPlugins.push(visualizer({ filename: "stats.html" }));
+  }
+
   return {
     plugins: [
       react(),
@@ -49,7 +55,7 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: mode === "staging",
       rollupOptions: {
-        plugins: env.ANALYZE ? [visualizer({ filename: "stats.html" })] : [],
+        plugins: rollupPlugins,
         output: {
           manualChunks(id) {
             if (id.includes("node_modules")) {
