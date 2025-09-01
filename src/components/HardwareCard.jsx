@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n";
 
 export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
   return (
@@ -14,8 +15,14 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
       </CardHeader>
       <CardContent className="flex justify-between items-center">
         <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 text-sm max-sm:text-xs">
-          <span>Статус покупки: {item.purchase_status}</span>
-          <span>Статус установки: {item.install_status}</span>
+          <span>
+            {t("hardware.statusPurchasePrefix")}{" "}
+            {t(`hardware.statuses.purchase.${item.purchase_status}`)}
+          </span>
+          <span>
+            {t("hardware.statusInstallPrefix")}{" "}
+            {t(`hardware.statuses.install.${item.install_status}`)}
+          </span>
         </div>
 
         {!!user && (
@@ -27,7 +34,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
               className="flex items-center gap-1 w-full sm:w-auto text-blue-600 dark:text-blue-400"
             >
               <PencilIcon className="w-4 h-4" />
-              Изменить
+              {t("common.edit")}
             </Button>
             <Button
               size="sm"
@@ -36,7 +43,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
               className="flex items-center gap-1 w-full sm:w-auto"
             >
               <TrashIcon className="w-4 h-4" />
-              Удалить
+              {t("common.delete")}
             </Button>
           </div>
         )}

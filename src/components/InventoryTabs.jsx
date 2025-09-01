@@ -12,6 +12,12 @@ import { linkifyText } from "@/utils/linkify";
 import { useHardware } from "@/hooks/useHardware";
 import { useObjects } from "@/hooks/useObjects";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  PURCHASE_STATUSES,
+  INSTALL_STATUSES,
+  HARDWARE_FIELDS,
+} from "@/constants";
+import { t } from "@/i18n";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -38,10 +44,10 @@ import Spinner from "./Spinner";
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`;
 const DEFAULT_HW_FORM = {
-  name: "",
-  location: "",
-  purchase_status: "не оплачен",
-  install_status: "не установлен",
+  [HARDWARE_FIELDS.NAME]: "",
+  [HARDWARE_FIELDS.LOCATION]: "",
+  [HARDWARE_FIELDS.PURCHASE_STATUS]: PURCHASE_STATUSES[0],
+  [HARDWARE_FIELDS.INSTALL_STATUS]: INSTALL_STATUSES[0],
 };
 
 function InventoryTabs({
@@ -76,13 +82,15 @@ function InventoryTabs({
       setMessageCount(chatCountExternal);
   }, [chatCountExternal]);
   const hardwareSchema = z.object({
-    name: z.string().min(1, "Введите название"),
-    location: z.string().optional(),
-    purchase_status: z.enum(["не оплачен", "оплачен"], {
-      required_error: "Выберите статус покупки",
+    [HARDWARE_FIELDS.NAME]: z
+      .string()
+      .min(1, t("hardware.validation.nameRequired")),
+    [HARDWARE_FIELDS.LOCATION]: z.string().optional(),
+    [HARDWARE_FIELDS.PURCHASE_STATUS]: z.enum(PURCHASE_STATUSES, {
+      required_error: t("hardware.validation.purchaseStatusRequired"),
     }),
-    install_status: z.enum(["не установлен", "установлен"], {
-      required_error: "Выберите статус установки",
+    [HARDWARE_FIELDS.INSTALL_STATUS]: z.enum(INSTALL_STATUSES, {
+      required_error: t("hardware.validation.installStatusRequired"),
     }),
   });
 
@@ -101,12 +109,12 @@ function InventoryTabs({
   );
 
   useEffect(() => {
-    register("purchase_status");
-    register("install_status");
+    register(HARDWARE_FIELDS.PURCHASE_STATUS);
+    register(HARDWARE_FIELDS.INSTALL_STATUS);
   }, [register]);
 
-  const purchaseStatus = watch("purchase_status");
-  const installStatus = watch("install_status");
+  const purchaseStatus = watch(HARDWARE_FIELDS.PURCHASE_STATUS);
+  const installStatus = watch(HARDWARE_FIELDS.INSTALL_STATUS);
 
   const {
     hardware: loadedHardware = [],
@@ -194,16 +202,16 @@ function InventoryTabs({
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         <TabsTrigger value="desc" className="flex-shrink-0">
-          Описание
+          {t("inventory.tabs.desc")}
         </TabsTrigger>
         <TabsTrigger value="hw" className="flex-shrink-0">
-          Железо ({hardware.length})
+          {t("inventory.tabs.hw")} ({hardware.length})
         </TabsTrigger>
         <TabsTrigger value="tasks" className="flex-shrink-0">
-          Задачи ({tasksCount})
+          {t("inventory.tabs.tasks")} ({tasksCount})
         </TabsTrigger>
         <TabsTrigger value="chat" className="flex-shrink-0">
-          Чат ({messageCount})
+          {t("inventory.tabs.chat")} ({messageCount})
         </TabsTrigger>
       </TabsList>
 
@@ -218,21 +226,23 @@ function InventoryTabs({
               />
               <div className="flex gap-2">
                 <Button size="sm" type="button" onClick={saveDescription}>
-                  Сохранить
+                  {t("common.save")}
                 </Button>
                 <Button
                   size="sm"
                   type="button"
                   onClick={() => setIsEditingDesc(false)}
                 >
-                  Отмена
+                  {t("common.cancel")}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-2">
               <div className="whitespace-pre-wrap break-words">
-                {description ? linkifyText(description) : "Нет описания"}
+                {description
+                  ? linkifyText(description)
+                  : t("inventory.noDescription")}
               </div>
               {user && (
                 <Button
@@ -240,7 +250,7 @@ function InventoryTabs({
                   variant="outline"
                   onClick={() => setIsEditingDesc(true)}
                 >
-                  Изменить
+                  {t("common.edit")}
                 </Button>
               )}
             </div>
@@ -251,7 +261,7 @@ function InventoryTabs({
       <TabsContent value="hw" className="flex-1 overflow-auto">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Оборудование</h2>
+            <h2 className="text-lg font-semibold">{t("hardware.header")}</h2>
             {user && (
               <Button
                 size="sm"
@@ -259,13 +269,13 @@ function InventoryTabs({
                 className="flex items-center gap-1"
                 onClick={openHWModal}
               >
-                <PlusIcon className="w-4 h-4" /> Добавить
+                <PlusIcon className="w-4 h-4" /> {t("common.add")}
               </Button>
             )}
           </div>
           {hardware.length === 0 ? (
             <div className="text-center text-gray-500">
-              Оборудование не найдено
+              {t("hardware.notFound")}
             </div>
           ) : (
             <div className="space-y-2">
@@ -311,70 +321,86 @@ function InventoryTabs({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingHW ? "Изменить оборудование" : "Добавить оборудование"}
+              {editingHW ? t("hardware.editTitle") : t("hardware.addTitle")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleHWSubmit} className="space-y-2">
             <div>
               <Input
                 className="w-full"
-                placeholder="Название"
-                {...register("name")}
+                placeholder={t("hardware.name")}
+                {...register(HARDWARE_FIELDS.NAME)}
               />
-              {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name.message}</p>
+              {errors[HARDWARE_FIELDS.NAME] && (
+                <p className="text-red-500 text-sm">
+                  {errors[HARDWARE_FIELDS.NAME].message}
+                </p>
               )}
             </div>
             <div>
               <Input
                 className="w-full"
-                placeholder="Расположение"
-                {...register("location")}
+                placeholder={t("hardware.location")}
+                {...register(HARDWARE_FIELDS.LOCATION)}
               />
             </div>
             <div>
               <Select
                 value={purchaseStatus}
-                onValueChange={(value) => setValue("purchase_status", value)}
+                onValueChange={(value) =>
+                  setValue(HARDWARE_FIELDS.PURCHASE_STATUS, value)
+                }
               >
                 <SelectTrigger className="w-full h-9">
-                  <SelectValue placeholder="" />
+                  <SelectValue
+                    placeholder={t("hardware.choosePurchaseStatus")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="не оплачен">не оплачен</SelectItem>
-                  <SelectItem value="оплачен">оплачен</SelectItem>
+                  {PURCHASE_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {t(`hardware.statuses.purchase.${status}`)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              {errors.purchase_status && (
+              {errors[HARDWARE_FIELDS.PURCHASE_STATUS] && (
                 <p className="text-red-500 text-sm">
-                  {errors.purchase_status.message}
+                  {errors[HARDWARE_FIELDS.PURCHASE_STATUS].message}
                 </p>
               )}
             </div>
             <div>
               <Select
                 value={installStatus}
-                onValueChange={(value) => setValue("install_status", value)}
+                onValueChange={(value) =>
+                  setValue(HARDWARE_FIELDS.INSTALL_STATUS, value)
+                }
               >
                 <SelectTrigger className="w-full h-9">
-                  <SelectValue placeholder="" />
+                  <SelectValue
+                    placeholder={t("hardware.chooseInstallStatus")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="не установлен">не установлен</SelectItem>
-                  <SelectItem value="установлен">установлен</SelectItem>
+                  {INSTALL_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {t(`hardware.statuses.install.${status}`)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              {errors.install_status && (
+              {errors[HARDWARE_FIELDS.INSTALL_STATUS] && (
                 <p className="text-red-500 text-sm">
-                  {errors.install_status.message}
+                  {errors[HARDWARE_FIELDS.INSTALL_STATUS].message}
                 </p>
               )}
             </div>
             <DialogFooter>
               <Button type="button" onClick={closeHWModal}>
-                Отмена
+                {t("common.cancel")}
               </Button>
-              <Button type="submit">Сохранить</Button>
+              <Button type="submit">{t("common.save")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
