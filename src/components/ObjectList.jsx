@@ -2,6 +2,7 @@ import { memo, useState } from "react";
 import Spinner from "./Spinner";
 import ErrorMessage from "./ErrorMessage";
 import { Input } from "@/components/ui/input";
+import logger from "@/utils/logger";
 
 function ObjectList({
   objects = [],
@@ -13,7 +14,10 @@ function ObjectList({
 
   if (loading) return <Spinner />;
 
-  if (error) return <ErrorMessage error={error} />;
+  if (error) {
+    logger.error("ObjectList error:", error);
+    return <ErrorMessage error={error} />;
+  }
 
   const filtered = objects.filter((o) =>
     o.name.toLowerCase().includes(filter.toLowerCase()),
