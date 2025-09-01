@@ -75,6 +75,8 @@ export default function DashboardPage() {
   );
 
   const importInputRef = useRef(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -304,12 +306,14 @@ export default function DashboardPage() {
               </button>
               <Button
                 variant="success"
-                className="flex items-center gap-1"
+                size="xs"
+                className="flex items-center gap-1 px-2 text-sm"
                 onClick={addHandler}
               >
-                <PlusIcon className="w-4 h-4" /> {t("dashboard.add")}
+                <PlusIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">{t("dashboard.add")}</span>
               </Button>
-              <>
+              <div className="hidden md:flex gap-2">
                 <Button
                   variant="warning"
                   onClick={() => importInputRef.current?.click()}
@@ -319,14 +323,49 @@ export default function DashboardPage() {
                 <Button variant="info" onClick={exportToFile}>
                   {t("dashboard.export")}
                 </Button>
-                <Input
-                  type="file"
-                  accept=".csv"
-                  ref={importInputRef}
-                  className="hidden"
-                  onChange={handleImport}
-                />
-              </>
+              </div>
+              <div className="relative md:hidden">
+                <Button
+                  variant="outline"
+                  size="iconSm"
+                  className="p-2"
+                  onClick={toggleMenu}
+                  aria-label="Меню импорта и экспорта"
+                  aria-haspopup="true"
+                  aria-expanded={isMenuOpen}
+                >
+                  ⋮
+                </Button>
+                {isMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-32 rounded-md border bg-background shadow-md">
+                    <button
+                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        importInputRef.current?.click();
+                      }}
+                    >
+                      {t("dashboard.import")}
+                    </button>
+                    <button
+                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        exportToFile();
+                      }}
+                    >
+                      {t("dashboard.export")}
+                    </button>
+                  </div>
+                )}
+              </div>
+              <Input
+                type="file"
+                accept=".csv"
+                ref={importInputRef}
+                className="hidden"
+                onChange={handleImport}
+              />
             </div>
             <div className="flex items-center gap-3 md:gap-4">
               <ThemeToggle />
