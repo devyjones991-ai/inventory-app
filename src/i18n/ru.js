@@ -37,6 +37,12 @@ export const ru = {
       "\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043e\u0431\u044a\u0435\u043a\u0442",
   },
   tasks: {
+    statuses: {
+      planned: "Запланирована",
+      in_progress: "В работе",
+      done: "Выполнена",
+      canceled: "Отменена",
+    },
     headerPrefix: "\u0417\u0430\u0434\u0430\u0447\u0438 \u0434\u043b\u044f",
     add: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0443",
     empty:
