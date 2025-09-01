@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
 import PropTypes from "prop-types";
 
 import usePersistedForm from "@/hooks/usePersistedForm";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import HardwareCard from "./HardwareCard";
-import ChatTab from "./ChatTab";
-import TasksTab from "./TasksTab";
+const ChatTab = lazy(() => import("./ChatTab"));
+const TasksTab = lazy(() => import("./TasksTab"));
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { linkifyText } from "@/utils/linkify";
 import { useHardware } from "@/hooks/useHardware";
@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
+import Spinner from "./Spinner";
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`;
 const DEFAULT_HW_FORM = {
@@ -284,21 +285,25 @@ function InventoryTabs({
 
       <TabsContent value="tasks" className="flex-1 overflow-auto">
         {tab === "tasks" ? (
-          <TasksTab
-            selected={selected}
-            registerAddHandler={registerAddHandler}
-            onCountChange={setTasksCount}
-          />
+          <Suspense fallback={<Spinner />}>
+            <TasksTab
+              selected={selected}
+              registerAddHandler={registerAddHandler}
+              onCountChange={setTasksCount}
+            />
+          </Suspense>
         ) : null}
       </TabsContent>
       <TabsContent value="chat" className="flex-1 overflow-auto">
         {tab === "chat" ? (
-          <ChatTab
-            selected={selected}
-            userEmail={user?.email}
-            active={tab === "chat"}
-            onCountChange={setMessageCount}
-          />
+          <Suspense fallback={<Spinner />}>
+            <ChatTab
+              selected={selected}
+              userEmail={user?.email}
+              active={tab === "chat"}
+              onCountChange={setMessageCount}
+            />
+          </Suspense>
         ) : null}
       </TabsContent>
 
