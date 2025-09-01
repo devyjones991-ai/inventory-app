@@ -13,7 +13,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
         <div className="text-sm text-foreground/70">{item.location}</div>
       </CardHeader>
       <CardContent className="flex justify-between items-center">
-        <div className="flex space-x-2 mt-1 text-sm">
+        <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 text-sm max-sm:text-xs">
           <span>Статус покупки: {item.purchase_status}</span>
           <span>Статус установки: {item.install_status}</span>
         </div>
