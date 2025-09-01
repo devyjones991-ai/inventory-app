@@ -1,9 +1,10 @@
 import React from "react";
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+const jest = vi;
 import { render, fireEvent, waitFor, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-jest.mock("@/supabaseClient.js", () => {
+vi.mock("@/supabaseClient.js", () => {
   const channelMock = { on: jest.fn().mockReturnThis(), subscribe: jest.fn() };
   return {
     isSupabaseConfigured: true,
@@ -36,16 +37,16 @@ jest.mock("@/supabaseClient.js", () => {
   };
 });
 
-jest.mock("react-hot-toast", () => ({
+vi.mock("react-hot-toast", () => ({
   toast: { success: jest.fn(), error: jest.fn() },
   Toaster: () => null,
 }));
 
-jest.mock("@/hooks/useAuth", () => ({
+vi.mock("@/hooks/useAuth", () => ({
   useAuth: jest.fn(),
 }));
 
-jest.mock("@/components/InventoryTabs", () => () => <div />);
+vi.mock("@/components/InventoryTabs", () => () => <div />);
 
 import { supabase } from "@/supabaseClient.js";
 import * as exportImport from "@/utils/exportImport";

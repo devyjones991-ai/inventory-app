@@ -1,12 +1,12 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-jest.mock("@/utils/notifications", () => ({
+vi.mock("@/utils/notifications", () => ({
   requestNotificationPermission: jest.fn(),
   pushNotification: jest.fn(),
   playTaskSound: jest.fn(),
   playMessageSound: jest.fn(),
 }));
-jest.mock("@/supabaseClient.js", () => {
+vi.mock("@/supabaseClient.js", () => {
   const channelMock = { on: jest.fn().mockReturnThis(), subscribe: jest.fn() };
   return {
     isSupabaseConfigured: true,
@@ -26,7 +26,7 @@ jest.mock("@/supabaseClient.js", () => {
     },
   };
 });
-jest.mock("react-hot-toast", () => ({
+vi.mock("react-hot-toast", () => ({
   Toaster: () => null,
   toast: { success: jest.fn(), error: jest.fn() },
 }));

@@ -1,4 +1,5 @@
-import { describe, it, expect, jest } from "@jest/globals";
+import { describe, it, expect, vi } from "vitest";
+const jest = vi;
 import { renderHook, act } from "@testing-library/react";
 import { useSupabaseQuery } from "@/utils/useSupabaseQuery.js";
 

@@ -28,7 +28,7 @@ const mockMessages = [
 var mockFetchMessages;
 var mockSendMessage;
 
-jest.mock("@/supabaseClient.js", () => {
+vi.mock("@/supabaseClient.js", () => {
   const mockUpdate = jest.fn(() => ({
     is: jest.fn(() => ({
       eq: jest.fn(() => ({
@@ -56,7 +56,7 @@ jest.mock("@/supabaseClient.js", () => {
   };
 });
 
-jest.mock("@/hooks/useChatMessages.js", () => {
+vi.mock("@/hooks/useChatMessages.js", () => {
   mockFetchMessages = jest.fn(() =>
     Promise.resolve({ data: mockMessages, error: null }),
   );
