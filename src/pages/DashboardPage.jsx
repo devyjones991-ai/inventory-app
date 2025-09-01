@@ -3,7 +3,13 @@ import InventorySidebar from "@/components/InventorySidebar";
 import InventoryTabs from "@/components/InventoryTabs";
 import AccountModal from "@/components/AccountModal";
 import ConfirmModal from "@/components/ConfirmModal";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  TrashIcon,
+  Bars3Icon,
+  EllipsisVerticalIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import ThemeToggle from "@/components/ThemeToggle";
 import { t } from "@/i18n";
 import { Navigate, useSearchParams } from "react-router-dom";
@@ -75,6 +81,7 @@ export default function DashboardPage() {
   );
 
   const importInputRef = useRef(null);
+  const menuRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
@@ -91,6 +98,25 @@ export default function DashboardPage() {
       document.body.style.overflow = originalOverflow;
     };
   }, [isSidebarOpen]);
+  // Close import/export dropdown on outside click or Escape
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    function onDocMouseDown(e) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target)) {
+        setIsMenuOpen(false);
+      }
+    }
+    function onKeyDown(e) {
+      if (e.key === "Escape") setIsMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onDocMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMenuOpen]);
 
   const onSelect = (obj) => {
     handleSelect(obj);
@@ -249,6 +275,25 @@ export default function DashboardPage() {
     else document.body.classList.remove("overflow-hidden");
     return () => document.body.classList.remove("overflow-hidden");
   }, [isSidebarOpen]);
+  // Close import/export dropdown on outside click or Escape
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    function onDocMouseDown(e) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target)) {
+        setIsMenuOpen(false);
+      }
+    }
+    function onKeyDown(e) {
+      if (e.key === "Escape") setIsMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onDocMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMenuOpen]);
 
   if (!user) return <Navigate to="/auth" replace />;
 
@@ -295,17 +340,18 @@ export default function DashboardPage() {
             role="dialog"
           >
             <div
-              className="fixed inset-0 bg-black/40"
+              className="fixed inset-0 bg-black/60 animate-in fade-in-0"
               onClick={toggleSidebar}
             />
-            <aside className="relative z-20 w-72 max-w-[85vw] bg-muted p-4 shadow-lg overflow-y-auto transition-transform">
+            <aside className="relative z-20 w-72 max-w-[85vw] bg-muted p-4 shadow-lg overflow-y-auto transform duration-200 ease-out animate-in slide-in-from-left">
               <Button
                 size="icon"
-                className="absolute right-2 top-2"
+                type="button"
+                className="absolute right-2 top-2 bg-background/90"
                 onClick={toggleSidebar}
                 aria-label="Close"
               >
-                ✕
+                <XMarkIcon className="w-5 h-5" />
               </Button>
               <InventorySidebar
                 objects={objects}
@@ -320,19 +366,22 @@ export default function DashboardPage() {
         )}
 
         <div className="flex-1 flex flex-col">
-          <header className="flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between p-3 sm:p-4 border-b bg-background">
+          <header className="flex flex-row items-center justify-between gap-2 p-3 sm:p-4 border-b bg-background flex-nowrap overflow-x-auto">
             <div className="flex items-center gap-3 md:gap-4">
               <button
-                className="md:hidden p-2 text-lg text-blue-600 dark:text-blue-400"
+                className="md:hidden p-2 text-blue-600 dark:text-blue-400"
                 onClick={toggleSidebar}
+                type="button"
+                aria-label={t("common.open")}
               >
-                ☰
+                <Bars3Icon className="w-6 h-6" />
               </button>
               <Button
                 variant="success"
                 size="xs"
                 className="flex items-center gap-1 px-2 text-sm"
                 onClick={addHandler}
+                type="button"
               >
                 <PlusIcon className="w-4 h-4" />
                 <span className="hidden sm:inline">{t("dashboard.add")}</span>
@@ -341,28 +390,31 @@ export default function DashboardPage() {
                 <Button
                   variant="warning"
                   onClick={() => importInputRef.current?.click()}
+                  type="button"
                 >
                   {t("dashboard.import")}
                 </Button>
-                <Button variant="info" onClick={exportToFile}>
+                <Button variant="info" onClick={exportToFile} type="button">
                   {t("dashboard.export")}
                 </Button>
               </div>
-              <div className="relative md:hidden">
+              <div className="relative md:hidden" ref={menuRef}>
                 <Button
                   variant="outline"
                   size="iconSm"
                   className="p-2"
                   onClick={toggleMenu}
-                  aria-label="Меню импорта и экспорта"
+                  aria-label="More"
                   aria-haspopup="true"
                   aria-expanded={isMenuOpen}
+                  type="button"
                 >
-                  ⋮
+                  <EllipsisVerticalIcon className="w-5 h-5" />
                 </Button>
                 {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-32 rounded-md border bg-background shadow-md">
+                  <div className="absolute right-0 mt-2 w-36 rounded-md border bg-background shadow-lg ring-1 ring-border">
                     <button
+                      type="button"
                       className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
                       onClick={() => {
                         setIsMenuOpen(false);
@@ -372,6 +424,7 @@ export default function DashboardPage() {
                       {t("dashboard.import")}
                     </button>
                     <button
+                      type="button"
                       className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
                       onClick={() => {
                         setIsMenuOpen(false);
@@ -396,6 +449,7 @@ export default function DashboardPage() {
               <Button
                 className="p-2 text-sm md:text-base"
                 onClick={() => setIsAccountModalOpen(true)}
+                type="button"
               >
                 {user.user_metadata?.username || t("common.account")}
               </Button>
@@ -403,6 +457,7 @@ export default function DashboardPage() {
                 variant="destructive"
                 className="p-2 text-sm md:text-base"
                 onClick={signOut}
+                type="button"
               >
                 {t("common.logout")}
               </Button>
@@ -432,11 +487,12 @@ export default function DashboardPage() {
           <DialogContent draggable className="w-full max-w-md">
             <Button
               size="icon"
-              className="absolute right-2 top-2"
+              type="button"
+              className="absolute right-2 top-2 bg-background/90"
               onClick={closeObjectModal}
               aria-label="Close"
             >
-              ✕
+              <XMarkIcon className="w-5 h-5" />
             </Button>
             <DialogHeader data-dialog-handle>
               <DialogTitle>

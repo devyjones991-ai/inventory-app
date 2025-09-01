@@ -216,10 +216,14 @@ function InventoryTabs({
                 onChange={(e) => setDescription(e.target.value)}
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={saveDescription}>
+                <Button size="sm" type="button" onClick={saveDescription}>
                   Сохранить
                 </Button>
-                <Button size="sm" onClick={() => setIsEditingDesc(false)}>
+                <Button
+                  size="sm"
+                  type="button"
+                  onClick={() => setIsEditingDesc(false)}
+                >
                   Отмена
                 </Button>
               </div>

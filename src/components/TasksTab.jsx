@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 
 import TaskCard from "./TaskCard";
@@ -184,7 +184,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           {t("tasks.headerPrefix")} {selected.name}
         </h2>
         <div className="flex gap-2">
-          <Button size="sm" onClick={openTaskModal}>
+          <Button size="sm" type="button" onClick={openTaskModal}>
             {t("tasks.add")}
           </Button>
         </div>
@@ -215,10 +215,15 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             value={filterAssignee}
             onChange={(e) => setFilterAssignee(e.target.value)}
             placeholder={t("tasks.assigneePlaceholder")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.preventDefault();
+            }}
           />
           {(filterStatus !== "all" || filterAssignee) && (
             <Button
               variant="ghost"
+              type="button"
+              type="button"
               onClick={() => {
                 setFilterStatus("all");
                 setFilterAssignee("");
@@ -323,7 +328,12 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             </div>
             <DialogFooter>
               <Button type="submit">{t("common.save")}</Button>
-              <Button type="button" variant="ghost" onClick={closeTaskModal}>
+              <Button
+                type="button"
+                variant="ghost"
+                type="button"
+                onClick={closeTaskModal}
+              >
                 {t("common.cancel")}
               </Button>
             </DialogFooter>
