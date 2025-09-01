@@ -5,5 +5,6 @@ export default defineConfig({
     baseUrl: "http://localhost:5173",
     specPattern: "e2e/**/*.cy.{js,jsx,ts,tsx}",
     supportFile: false,
+    fixturesFolder: "e2e/fixtures",
   },
 });

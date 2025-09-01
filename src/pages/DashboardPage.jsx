@@ -1,8 +1,16 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import InventorySidebar from "@/components/InventorySidebar";
-import InventoryTabs from "@/components/InventoryTabs";
-import AccountModal from "@/components/AccountModal";
-import ConfirmModal from "@/components/ConfirmModal";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  Suspense,
+  lazy,
+} from "react";
+import Spinner from "@/components/Spinner";
+const InventorySidebar = lazy(() => import("@/components/InventorySidebar"));
+const InventoryTabs = lazy(() => import("@/components/InventoryTabs"));
+const AccountModal = lazy(() => import("@/components/AccountModal"));
+const ConfirmModal = lazy(() => import("@/components/ConfirmModal"));
 import {
   PlusIcon,
   TrashIcon,
@@ -309,14 +317,16 @@ export default function DashboardPage() {
     <>
       <div className="flex min-h-screen bg-background">
         <aside className="hidden md:flex flex-col w-72 bg-muted p-4 border-r shadow-lg overflow-y-auto">
-          <InventorySidebar
-            objects={objects}
-            selected={selected}
-            onSelect={onSelect}
-            onEdit={openEditModal}
-            onDelete={setDeleteCandidate}
-            notifications={chatUnread}
-          />
+          <Suspense fallback={<Spinner />}>
+            <InventorySidebar
+              objects={objects}
+              selected={selected}
+              onSelect={onSelect}
+              onEdit={openEditModal}
+              onDelete={setDeleteCandidate}
+              notifications={chatUnread}
+            />
+          </Suspense>
         </aside>
         {isSidebarOpen && (
           <div
@@ -338,14 +348,16 @@ export default function DashboardPage() {
               >
                 <XMarkIcon className="w-5 h-5" />
               </Button>
-              <InventorySidebar
-                objects={objects}
-                selected={selected}
-                onSelect={onSelect}
-                onEdit={openEditModal}
-                onDelete={setDeleteCandidate}
-                notifications={chatUnread}
-              />
+              <Suspense fallback={<Spinner />}>
+                <InventorySidebar
+                  objects={objects}
+                  selected={selected}
+                  onSelect={onSelect}
+                  onEdit={openEditModal}
+                  onDelete={setDeleteCandidate}
+                  notifications={chatUnread}
+                />
+              </Suspense>
             </aside>
           </div>
         )}
@@ -450,14 +462,16 @@ export default function DashboardPage() {
           </header>
 
           <div className="flex-1 overflow-auto p-2 sm:p-4">
-            <InventoryTabs
-              selected={selected}
-              onUpdateSelected={onUpdateSelected}
-              onTabChange={onTabChange}
-              registerAddHandler={registerAddHandler}
-              tasksCount={tasksCount}
-              chatCount={chatCount}
-            />
+            <Suspense fallback={<Spinner />}>
+              <InventoryTabs
+                selected={selected}
+                onUpdateSelected={onUpdateSelected}
+                onTabChange={onTabChange}
+                registerAddHandler={registerAddHandler}
+                tasksCount={tasksCount}
+                chatCount={chatCount}
+              />
+            </Suspense>
           </div>
         </div>
 
@@ -502,24 +516,28 @@ export default function DashboardPage() {
           </DialogContent>
         </Dialog>
 
-        <ConfirmModal
-          open={!!deleteCandidate}
-          title={t("objects.confirmDeleteTitle")}
-          confirmLabel={
-            <>
-              <TrashIcon className="w-4 h-4" /> {t("common.delete")}
-            </>
-          }
-          onConfirm={onConfirmDelete}
-          onCancel={() => setDeleteCandidate(null)}
-        />
+        <Suspense fallback={<Spinner />}>
+          <ConfirmModal
+            open={!!deleteCandidate}
+            title={t("objects.confirmDeleteTitle")}
+            confirmLabel={
+              <>
+                <TrashIcon className="w-4 h-4" /> {t("common.delete")}
+              </>
+            }
+            onConfirm={onConfirmDelete}
+            onCancel={() => setDeleteCandidate(null)}
+          />
+        </Suspense>
 
         {isAccountModalOpen && (
-          <AccountModal
-            user={user}
-            onClose={() => setIsAccountModalOpen(false)}
-            onUpdated={() => {}}
-          />
+          <Suspense fallback={<Spinner />}>
+            <AccountModal
+              user={user}
+              onClose={() => setIsAccountModalOpen(false)}
+              onUpdated={() => {}}
+            />
+          </Suspense>
         )}
       </div>
     </>

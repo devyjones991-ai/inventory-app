@@ -1,5 +1,6 @@
-/* eslint-env jest */
-import { describe, test, expect, jest } from "@jest/globals";
+/* eslint-env vitest */
+import { describe, test, expect, vi } from "vitest";
+const jest = vi;
 import { render, screen, fireEvent } from "@testing-library/react";
 import ObjectList from "@/components/ObjectList";
 

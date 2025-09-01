@@ -1,14 +1,15 @@
-/* eslint-env jest */
+/* eslint-env vitest */
 import React from "react";
-import { describe, test, expect, jest } from "@jest/globals";
+import { describe, test, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+const jest = vi;
 import InventoryTabs from "@/components/InventoryTabs";
 
-jest.mock("@/hooks/useAuth", () => ({
+vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({ user: null, role: null, isLoading: false }),
 }));
 
-jest.mock("@/hooks/useHardware", () => ({
+vi.mock("@/hooks/useHardware", () => ({
   useHardware: () => ({
     hardware: [{ id: 1 }, { id: 2 }],
     loadHardware: jest.fn(),
@@ -18,8 +19,8 @@ jest.mock("@/hooks/useHardware", () => ({
   }),
 }));
 
-jest.mock("@/components/TasksTab", () => {
-  const React = jest.requireActual("react");
+vi.mock("@/components/TasksTab", async () => {
+  const React = await vi.importActual("react");
   const MockTasksTab = ({ onCountChange }) => {
     React.useEffect(() => {
       onCountChange?.(5);
@@ -29,8 +30,8 @@ jest.mock("@/components/TasksTab", () => {
   return { __esModule: true, default: MockTasksTab };
 });
 
-jest.mock("@/components/ChatTab", () => {
-  const React = jest.requireActual("react");
+vi.mock("@/components/ChatTab", async () => {
+  const React = await vi.importActual("react");
   const MockChatTab = ({ onCountChange }) => {
     React.useEffect(() => {
       onCountChange?.(3);

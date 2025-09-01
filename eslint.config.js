@@ -49,11 +49,12 @@ export default defineConfig([
     },
   },
   {
-    files: ["tests/**/*.{js,jsx}"],
+    files: ["tests/**/*.{js,jsx}", "src/components/__tests__/**/*.{js,jsx}"],
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.jest,
+        ...globals.vitest,
+        jest: "readonly",
       },
     },
   },
