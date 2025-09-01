@@ -188,11 +188,22 @@ function InventoryTabs({
 
   return (
     <Tabs value={tab} onValueChange={setTab} className="flex flex-col h-full">
-      <TabsList className="mb-4">
-        <TabsTrigger value="desc">Описание</TabsTrigger>
-        <TabsTrigger value="hw">Железо ({hardware.length})</TabsTrigger>
-        <TabsTrigger value="tasks">Задачи ({tasksCount})</TabsTrigger>
-        <TabsTrigger value="chat">Чат ({messageCount})</TabsTrigger>
+      <TabsList
+        className="mb-4 overflow-x-auto flex-nowrap"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <TabsTrigger value="desc" className="flex-shrink-0">
+          Описание
+        </TabsTrigger>
+        <TabsTrigger value="hw" className="flex-shrink-0">
+          Железо ({hardware.length})
+        </TabsTrigger>
+        <TabsTrigger value="tasks" className="flex-shrink-0">
+          Задачи ({tasksCount})
+        </TabsTrigger>
+        <TabsTrigger value="chat" className="flex-shrink-0">
+          Чат ({messageCount})
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="desc" className="flex-1 overflow-auto">
