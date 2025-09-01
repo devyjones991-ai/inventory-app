@@ -269,7 +269,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="flex h-screen bg-background">
+      <div className="flex min-h-screen bg-background">
         <aside className="hidden md:flex flex-col w-72 bg-muted p-4 border-r shadow-lg overflow-y-auto">
           <InventorySidebar
             objects={objects}
@@ -287,10 +287,10 @@ export default function DashboardPage() {
             role="dialog"
           >
             <div
-              className="fixed inset-0 bg-background"
+              className="fixed inset-0 bg-black/40"
               onClick={toggleSidebar}
             />
-            <aside className="relative z-20 w-72 bg-muted p-4 shadow-lg overflow-y-auto transition-transform">
+            <aside className="relative z-20 w-72 max-w-[85vw] bg-muted p-4 shadow-lg overflow-y-auto transition-transform">
               <Button
                 size="icon"
                 className="absolute right-2 top-2"
@@ -312,7 +312,7 @@ export default function DashboardPage() {
         )}
 
         <div className="flex-1 flex flex-col">
-          <header className="flex flex-col xs:items-start xs:gap-2 md:flex-row items-center justify-between p-4 border-b bg-background">
+          <header className="flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between p-3 sm:p-4 border-b bg-background">
             <div className="flex items-center gap-3 md:gap-4">
               <button
                 className="md:hidden p-2 text-lg text-blue-600 dark:text-blue-400"
@@ -386,14 +386,14 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3 md:gap-4">
               <ThemeToggle />
               <Button
-                className="p-2 text-lg md:text-sm"
+                className="p-2 text-sm md:text-base"
                 onClick={() => setIsAccountModalOpen(true)}
               >
                 {user.user_metadata?.username || t("common.account")}
               </Button>
               <Button
                 variant="destructive"
-                className="p-2 text-lg md:text-sm"
+                className="p-2 text-sm md:text-base"
                 onClick={signOut}
               >
                 {t("common.logout")}
@@ -401,7 +401,7 @@ export default function DashboardPage() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto p-4">
+          <div className="flex-1 overflow-auto p-2 sm:p-4">
             <InventoryTabs
               selected={selected}
               onUpdateSelected={onUpdateSelected}

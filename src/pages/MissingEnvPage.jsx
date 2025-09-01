@@ -22,7 +22,7 @@ export default function MissingEnvPage() {
   const targetsText = targets.join(", ");
 
   return (
-    <div className="flex h-screen items-center justify-center bg-muted">
+    <div className="flex min-h-screen items-center justify-center bg-muted">
       <div className="flex w-full min-h-screen items-center justify-center bg-muted">
         <div className="space-y-4 max-w-md text-center">
           {missingVars.length > 0 && (

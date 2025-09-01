@@ -192,7 +192,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
 
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-3 mb-4">
-        <div className="min-w-[180px]">
+        <div className="w-full sm:min-w-[180px] sm:w-auto">
           <Label>{t("tasks.status")}</Label>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger>
@@ -208,7 +208,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="min-w-[220px]">
+        <div className="w-full sm:min-w-[220px] sm:w-auto flex-1">
           <Label>{t("tasks.assignee")}</Label>
           <Input
             ref={assigneeInputRef}
