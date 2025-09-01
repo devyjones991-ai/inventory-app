@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 import {
   render,
   screen,
@@ -15,7 +15,7 @@ var mockTasks = [],
   mockUpdateTask;
 const mockNavigate = jest.fn();
 
-jest.mock("@/hooks/useTasks.js", () => {
+vi.mock("@/hooks/useTasks.js", () => {
   mockTasks = [];
   mockLoadTasks = jest.fn();
   mockCreateTask = jest.fn();
@@ -34,7 +34,7 @@ jest.mock("@/hooks/useTasks.js", () => {
   };
 });
 
-jest.mock("@/hooks/useAuth.js", () => ({
+vi.mock("@/hooks/useAuth.js", () => ({
   useAuth: () => ({
     user: { id: "u1", email: "me@example.com" },
     role: null,
@@ -42,12 +42,12 @@ jest.mock("@/hooks/useAuth.js", () => ({
   }),
 }));
 
-jest.mock("react-hot-toast", () => ({
+vi.mock("react-hot-toast", () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock("react-router-dom", () => {
-  const actual = jest.requireActual("react-router-dom");
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
   return { ...actual, useNavigate: () => mockNavigate };
 });
 

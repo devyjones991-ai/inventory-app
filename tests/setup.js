@@ -43,7 +43,7 @@ process.env.VITE_API_BASE_URL = "http://localhost";
 process.env.VITE_SUPABASE_URL = "http://localhost";
 process.env.VITE_SUPABASE_ANON_KEY = "test-key";
 
-jest.mock("@supabase/supabase-js", () => {
+vi.mock("@supabase/supabase-js", () => {
   return {
     createClient: () => {
       const proxy = new Proxy(() => {}, {

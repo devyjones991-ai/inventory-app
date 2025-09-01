@@ -2,7 +2,7 @@
 let mockSupabase;
 let onPayload;
 
-jest.mock("@/supabaseClient.js", () => ({
+vi.mock("@/supabaseClient.js", () => ({
   get supabase() {
     return mockSupabase;
   },
@@ -37,7 +37,7 @@ mockSupabase = {
   removeChannel: jest.fn(),
 };
 
-jest.mock("@/utils/handleSupabaseError", () => ({
+vi.mock("@/utils/handleSupabaseError", () => ({
   handleSupabaseError: jest.fn(),
 }));
 
@@ -89,7 +89,7 @@ const mockSendMessage = jest.fn(() => {
 });
 
 // Mock the useChatMessages hook
-jest.mock("@/hooks/useChatMessages.js", () => ({
+vi.mock("@/hooks/useChatMessages.js", () => ({
   useChatMessages: () => ({
     fetchMessages: mockFetchMessages,
     sendMessage: mockSendMessage,
@@ -98,7 +98,8 @@ jest.mock("@/hooks/useChatMessages.js", () => ({
 
 // Now import the components
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { describe, it, expect, beforeEach, jest } from "@jest/globals";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+const jest = vi;
 import useChat from "@/hooks/useChat.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 

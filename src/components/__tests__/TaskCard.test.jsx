@@ -1,8 +1,9 @@
-/* eslint-env jest */
+/* eslint-env vitest */
 
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
-import { describe, test, expect, jest } from "@jest/globals";
+import { describe, test, expect, vi } from "vitest";
+const jest = vi;
 
 import TaskCard from "@/components/TaskCard.jsx";
 

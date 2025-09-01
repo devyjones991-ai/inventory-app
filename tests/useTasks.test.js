@@ -1,13 +1,14 @@
-import { describe, it, expect, beforeEach, jest } from "@jest/globals";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+const jest = vi;
 import { renderHook, act } from "@testing-library/react";
 import { useTasks } from "@/hooks/useTasks.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
-jest.mock("@/utils/handleSupabaseError", () => ({
+vi.mock("@/utils/handleSupabaseError", () => ({
   handleSupabaseError: jest.fn(),
 }));
 
-jest.mock("react-router-dom", () => ({
+vi.mock("react-router-dom", () => ({
   useNavigate: () => jest.fn(),
 }));
 
@@ -20,7 +21,7 @@ var mockOrder;
 var mockRangeOrder;
 var mockRangeBase;
 
-jest.mock("@/supabaseClient.js", () => {
+vi.mock("@/supabaseClient.js", () => {
   mockSingle = jest.fn(() => Promise.resolve({ data: null, error: null }));
   mockRangeOrder = jest.fn(() => Promise.resolve({ data: null, error: null }));
   mockRangeBase = jest.fn(() => Promise.resolve({ data: null, error: null }));

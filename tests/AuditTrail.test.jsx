@@ -13,7 +13,7 @@ const mockLogs = [
   },
 ];
 
-jest.mock("@/supabaseClient.js", () => {
+vi.mock("@/supabaseClient.js", () => {
   const mockLimit = jest.fn(() =>
     Promise.resolve({ data: mockLogs, error: null }),
   );

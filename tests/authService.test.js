@@ -1,11 +1,5 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  jest,
-} from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+const jest = vi;
 
 const mockGetSession = jest.fn();
 const mockMaybeSingle = jest.fn();
@@ -13,7 +7,7 @@ const mockEq = jest.fn(() => ({ maybeSingle: mockMaybeSingle }));
 const mockSelect = jest.fn(() => ({ eq: mockEq }));
 const mockFrom = jest.fn(() => ({ select: mockSelect }));
 
-jest.mock("@/supabaseClient.js", () => ({
+vi.mock("@/supabaseClient.js", () => ({
   supabase: {
     auth: { getSession: mockGetSession },
     from: mockFrom,
@@ -21,7 +15,7 @@ jest.mock("@/supabaseClient.js", () => ({
   isSupabaseConfigured: true,
 }));
 
-jest.mock("@/apiConfig.js", () => ({
+vi.mock("@/apiConfig.js", () => ({
   apiBaseUrl: "http://localhost",
   isApiConfigured: true,
 }));
