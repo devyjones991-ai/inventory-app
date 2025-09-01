@@ -210,19 +210,36 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         </div>
         <div className="w-full sm:min-w-[220px] sm:w-auto flex-1">
           <Label>{t("tasks.assignee")}</Label>
-          <Input
-            ref={assigneeInputRef}
-            value={filterAssignee}
-            onChange={(e) => setFilterAssignee(e.target.value)}
-            placeholder={t("tasks.assigneePlaceholder")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") e.preventDefault();
-            }}
-          />
+          <div className="relative">
+            <Input
+              ref={assigneeInputRef}
+              value={filterAssignee}
+              onChange={(e) => setFilterAssignee(e.target.value)}
+              placeholder={t("tasks.assigneePlaceholder")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.preventDefault();
+              }}
+              className="pr-10"
+            />
+            {(filterStatus !== "all" || filterAssignee) && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="hidden sm:inline-flex h-8 px-2 absolute right-1 top-1/2 -translate-y-1/2"
+                onClick={() => {
+                  setFilterStatus("all");
+                  setFilterAssignee("");
+                }}
+              >
+                {t("common.reset")}
+              </Button>
+            )}
+          </div>
           {(filterStatus !== "all" || filterAssignee) && (
             <Button
               variant="ghost"
               type="button"
+              className="sm:hidden mt-2"
               onClick={() => {
                 setFilterStatus("all");
                 setFilterAssignee("");
@@ -340,7 +357,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         open={!!viewingTask}
         onOpenChange={(open) => !open && setViewingTask(null)}
       >
-        <DialogContent>
+        <DialogContent className="border">
           <DialogHeader>
             <DialogTitle>{viewingTask?.title}</DialogTitle>
           </DialogHeader>
