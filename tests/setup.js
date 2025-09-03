@@ -1,13 +1,16 @@
 /* eslint-env node */
 /* globals process, global */
 import "@testing-library/jest-dom";
-import { TextEncoder, TextDecoder } from "util";
 import { ReadableStream, TransformStream } from "stream/web";
+import { TextEncoder, TextDecoder } from "util";
+
+import { vi } from "vitest";
 
 if (!global.TextEncoder) global.TextEncoder = TextEncoder;
 if (!global.TextDecoder) global.TextDecoder = TextDecoder;
 if (!global.ReadableStream) global.ReadableStream = ReadableStream;
 if (!global.TransformStream) global.TransformStream = TransformStream;
+globalThis.jest = vi;
 
 class MockBroadcastChannel {
   constructor() {}

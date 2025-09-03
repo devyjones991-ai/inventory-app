@@ -1,30 +1,32 @@
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { rest } from "msw";
 
 const API_URL = "http://localhost";
 
 export const handlers = [
-  rest.options(`${API_URL}/functions/v1/cacheGet`, (req, res, ctx) =>
-    res(ctx.status(200)),
+  http.options(`${API_URL}/functions/v1/cacheGet`, () =>
+    HttpResponse.json({}, { status: 200 }),
   ),
-  rest.get(`${API_URL}/functions/v1/cacheGet`, (req, res, ctx) => {
-    const table = req.url.searchParams.get("table");
+  http.get(`${API_URL}/functions/v1/cacheGet`, ({ request }) => {
+    const url = new URL(request.url);
+    const table = url.searchParams.get("table");
     if (table === "profiles") {
-      return res(ctx.status(200), ctx.json({ data: { role: "user" } }));
+      return HttpResponse.json({ data: { role: "user" } }, { status: 200 });
     }
     if (table === "objects") {
-      return res(ctx.status(200), ctx.json({ data: [] }));
+      return HttpResponse.json({ data: [] }, { status: 200 });
     }
-    return res(ctx.status(404));
+    return new HttpResponse(null, { status: 404 });
   }),
-  rest.delete(`${API_URL}/functions/v1/cacheGet`, (req, res, ctx) =>
-    res(ctx.status(200)),
+  http.delete(`${API_URL}/functions/v1/cacheGet`, () =>
+    HttpResponse.json({}, { status: 200 }),
   ),
-  rest.get(`${API_URL}/api/export/:table`, (req, res, ctx) =>
-    res(ctx.status(200), ctx.body("id,name\n1,Item")),
+  http.get(
+    `${API_URL}/api/export/:table`,
+    () => new HttpResponse("id,name\n1,Item", { status: 200 }),
   ),
-  rest.post(`${API_URL}/api/import/:table`, async (req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ processed: 0, errors: [] })),
+  http.post(`${API_URL}/api/import/:table`, async () =>
+    HttpResponse.json({ processed: 0, errors: [] }, { status: 200 }),
   ),
 ];
 

@@ -58,6 +58,7 @@
     "@types/react-dom": "^18.2.0",
     "@vheemstra/vite-plugin-imagemin": "^2.2.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "@vitest/coverage-v8": "^1.6.0",
     "@vitest/ui": "^1.6.0",
     "autoprefixer": "^10.4.17",
     "babel-plugin-transform-vite-meta-env": "^1.0.3",
