@@ -5,6 +5,8 @@ describe("Задачи CRUD", () => {
 
   beforeEach(() => {
     cy.visit("/auth");
+    cy.injectAxe();
+    cy.checkA11y(null, { includedImpacts: ["critical"] });
   });
 
   it("создает задачу", () => {
