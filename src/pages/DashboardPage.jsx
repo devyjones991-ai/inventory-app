@@ -471,6 +471,7 @@ export default function DashboardPage() {
                 selected={selected}
                 onUpdateSelected={onUpdateSelected}
                 onTabChange={onTabChange}
+                activeTab={activeTab}
                 registerAddHandler={registerAddHandler}
                 tasksCount={tasksCount}
                 chatCount={chatCount}
