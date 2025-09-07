@@ -28,6 +28,7 @@ npm run dev
 ### Миграции БД
 
 - Выполните SQL из `supabase/migrations/*.sql` через Supabase SQL Editor или используйте Supabase CLI: `supabase db push`.
+  Миграции включают Row Level Security и политики доступа по `object_id`. Для выдачи прав пользователю добавьте запись в `object_members` с нужным `object_id`.
 
 ### Тесты
 
