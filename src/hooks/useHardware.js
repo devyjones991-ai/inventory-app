@@ -5,6 +5,14 @@ import { t } from "@/i18n";
 import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
 
+const PURCHASE_ALLOWED = ["not_paid", "paid"];
+const INSTALL_ALLOWED = ["not_installed", "installed"];
+
+function normalizeStatus(value, allowed) {
+  const v = String(value ?? "").trim();
+  return allowed.includes(v) ? v : allowed[0];
+}
+
 export function useHardware() {
   const navigate = useNavigate();
   const [hardware, setHardware] = useState([]);
@@ -31,9 +39,20 @@ export function useHardware() {
   const insertHardware = useCallback(
     async (data) => {
       try {
+        const sanitized = {
+          ...data,
+          purchase_status: normalizeStatus(
+            data?.purchase_status,
+            PURCHASE_ALLOWED,
+          ),
+          install_status: normalizeStatus(
+            data?.install_status,
+            INSTALL_ALLOWED,
+          ),
+        };
         const result = await supabase
           .from("hardware")
-          .insert([data])
+          .insert([sanitized])
           .select("id, name, location, purchase_status, install_status")
           .single();
         if (result.error) throw result.error;
@@ -49,9 +68,20 @@ export function useHardware() {
   const updateHardwareSupabase = useCallback(
     async (id, data) => {
       try {
+        const sanitized = {
+          ...data,
+          purchase_status: normalizeStatus(
+            data?.purchase_status,
+            PURCHASE_ALLOWED,
+          ),
+          install_status: normalizeStatus(
+            data?.install_status,
+            INSTALL_ALLOWED,
+          ),
+        };
         const result = await supabase
           .from("hardware")
-          .update(data)
+          .update(sanitized)
           .eq("id", id)
           .select("id, name, location, purchase_status, install_status")
           .single();
