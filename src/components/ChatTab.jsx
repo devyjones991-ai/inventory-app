@@ -48,6 +48,18 @@ function ChatTab({
     loadError,
   } = useChat({ objectId, userEmail, search: searchQuery });
 
+  // Ensure we always scroll to the latest message when the tab becomes active
+  useEffect(() => {
+    if (!active) return;
+    const el = scrollRef?.current;
+    if (!el) return;
+    // schedule after layout
+    const id = setTimeout(() => {
+      el.scrollTop = el.scrollHeight;
+    }, 0);
+    return () => clearTimeout(id);
+  }, [active, messages.length, scrollRef]);
+
   useEffect(() => {
     const me = (userEmail || "").trim().toLowerCase();
     const unread = messages.reduce((acc, m) => {

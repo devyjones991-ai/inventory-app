@@ -18,11 +18,13 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
         <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 text-sm max-sm:text-xs">
           <span>
             {t("hardware.statusPurchasePrefix")}{" "}
-            {t(`hardware.statuses.purchase.${item.purchase_status}`)}
+            {t(
+              `hardware.statuses.purchase.${item.purchase_status || "unknown"}`,
+            )}
           </span>
           <span>
             {t("hardware.statusInstallPrefix")}{" "}
-            {t(`hardware.statuses.install.${item.install_status}`)}
+            {t(`hardware.statuses.install.${item.install_status || "unknown"}`)}
           </span>
         </div>
 

@@ -244,6 +244,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           <div className="relative h-10">
             <Input
               ref={assigneeInputRef}
+              type="search"
+              autoComplete="off"
               value={filterAssignee}
               onChange={(e) => setFilterAssignee(e.target.value)}
               placeholder={t("tasks.assigneePlaceholder")}
