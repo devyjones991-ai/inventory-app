@@ -3,7 +3,14 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import PropTypes from "prop-types";
-import { memo, useCallback, useEffect, useLayoutEffect, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 import useChat from "../hooks/useChat.js";
 
@@ -48,27 +55,38 @@ function ChatTab({
     loadError,
   } = useChat({ objectId, userEmail, search: searchQuery });
 
+  // Pin-to-bottom logic (like messengers)
+  const pinnedRef = useRef(true);
+  const bottomRef = useRef(null);
+  const scrollToBottom = useCallback(() => {
+    const el = bottomRef.current;
+    if (el) el.scrollIntoView({ block: "end" });
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef?.current;
+    if (!el) return;
+    const threshold = 80; // px
+    const nearBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+    pinnedRef.current = nearBottom;
+  }, [scrollRef]);
+
   // Ensure we always scroll to the latest message when the tab becomes active
   useLayoutEffect(() => {
     if (!active) return;
-    const el = scrollRef?.current;
-    if (!el) return;
-    const raf = requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight;
-    });
+    pinnedRef.current = true;
+    const raf = requestAnimationFrame(() => scrollToBottom());
     return () => cancelAnimationFrame(raf);
-  }, [active, scrollRef]);
+  }, [active, scrollToBottom]);
 
   // Also keep pinned to bottom on new messages
   useLayoutEffect(() => {
     if (!active) return;
-    const el = scrollRef?.current;
-    if (!el) return;
-    const raf = requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight;
-    });
+    if (!pinnedRef.current) return;
+    const raf = requestAnimationFrame(() => scrollToBottom());
     return () => cancelAnimationFrame(raf);
-  }, [active, messages.length, scrollRef]);
+  }, [active, messages.length, scrollToBottom]);
 
   useEffect(() => {
     const me = (userEmail || "").trim().toLowerCase();
@@ -146,6 +164,7 @@ function ChatTab({
       </div>
       <div
         ref={scrollRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 bg-muted rounded-2xl"
       >
         {loadError ? (
@@ -226,6 +245,8 @@ function ChatTab({
                 );
               })
             )}
+            {/* bottom sentinel to allow precise scrollToBottom */}
+            <div ref={bottomRef} />
           </>
         )}
       </div>

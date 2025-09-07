@@ -62,12 +62,19 @@ function InventoryTabs({
   registerAddHandler,
   tasksCount: tasksCountExternal,
   chatCount: chatCountExternal,
+  activeTab: controlledTab = "desc",
 }) {
   const { user } = useAuth();
 
   // --- вкладки и описание ---
   const [tab, setTab] = useState("desc");
   const [description, setDescription] = useState("");
+  // Sync internal tab with parent-controlled tab (from URL/state)
+  useEffect(() => {
+    if (controlledTab && controlledTab !== tab) {
+      setTab(controlledTab);
+    }
+  }, [controlledTab, tab]);
   const [isEditingDesc, setIsEditingDesc] = useState(false);
 
   // --- оборудование и счётчики ---
