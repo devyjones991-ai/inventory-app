@@ -49,11 +49,17 @@ export default function useChat({ objectId, userEmail, search }) {
       }
       setLoadError(null);
       offsetRef.current += data?.length || 0;
-      if (replace) {
-        setMessages(data || []);
-      } else {
-        setMessages((prev) => [...(data || []), ...prev]);
-      }
+      const dedupe = (list) => {
+        const map = new Map();
+        for (const m of list || []) {
+          const k =
+            m?.id ?? m?.client_generated_id ?? `${m?.created_at}-${m?.sender}`;
+          map.set(k, m);
+        }
+        return Array.from(map.values()).sort(sortByCreatedAt);
+      };
+      if (replace) setMessages(dedupe(data || []));
+      else setMessages((prev) => dedupe([...(data || []), ...prev]));
       if (!data || data.length < LIMIT) setHasMore(false);
     },
     [objectId, fetchMessages, search],
@@ -162,7 +168,16 @@ export default function useChat({ objectId, userEmail, search }) {
               }
 
               offsetRef.current += 1;
-              return [...prev, payload.new].sort(sortByCreatedAt);
+              const list = [...prev, payload.new];
+              const map = new Map();
+              for (const m of list) {
+                const k =
+                  m?.id ??
+                  m?.client_generated_id ??
+                  `${m?.created_at}-${m?.sender}`;
+                map.set(k, m);
+              }
+              return Array.from(map.values()).sort(sortByCreatedAt);
             });
           }
           if (payload.eventType === "UPDATE") {
@@ -303,7 +318,14 @@ export default function useChat({ objectId, userEmail, search }) {
         if (filtered.some((m) => m.id === data.id)) {
           return filtered.sort(sortByCreatedAt);
         }
-        return [...filtered, data].sort(sortByCreatedAt);
+        const list = [...filtered, data];
+        const map = new Map();
+        for (const m of list) {
+          const k =
+            m?.id ?? m?.client_generated_id ?? `${m?.created_at}-${m?.sender}`;
+          map.set(k, m);
+        }
+        return Array.from(map.values()).sort(sortByCreatedAt);
       });
       // Keep view at the latest message
       setTimeout(() => autoScrollToBottom(true), 0);

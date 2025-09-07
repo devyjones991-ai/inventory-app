@@ -194,7 +194,7 @@ function InventoryTabs({
   return (
     <Tabs
       value={controlledTab}
-      onValueChange={onTabChange}
+      onValueChange={(v) => onTabChange(v)}
       className="flex flex-col h-full"
     >
       <TabsList
