@@ -1,20 +1,22 @@
 // vite.config.js
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
-import { fileURLToPath } from "url";
-import viteCompression from "vite-plugin-compression";
-import viteImagemin from "@vheemstra/vite-plugin-imagemin";
-import imageminMozjpeg from "imagemin-mozjpeg";
-import imageminPngquant from "imagemin-pngquant";
 import { env } from "node:process";
 import process from "node:process";
+import path from "path";
+import { fileURLToPath } from "url";
+
+import viteImagemin from "@vheemstra/vite-plugin-imagemin";
+import react from "@vitejs/plugin-react";
+import imageminMozjpeg from "imagemin-mozjpeg";
+import imageminPngquant from "imagemin-pngquant";
+import { defineConfig } from "vite";
+import viteCompression from "vite-plugin-compression";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(async ({ mode }) => {
   const isProd = mode === "production";
   const enableBrotli = process.env.ENABLE_BROTLI === "true";
+  const base = env.BASE_PATH ?? "/";
   const rollupPlugins = [];
 
   if (env.ANALYZE === "true") {
@@ -23,6 +25,7 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
+    base,
     plugins: [
       react(),
       ...(isProd
