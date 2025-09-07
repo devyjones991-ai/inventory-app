@@ -318,7 +318,7 @@ export default memo(ChatTab);
 
 ChatTab.propTypes = {
   selected: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   }),
   userEmail: PropTypes.string.isRequired,
   active: PropTypes.bool,

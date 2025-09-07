@@ -42,7 +42,7 @@ import { handleSupabaseError } from "@/utils/handleSupabaseError";
 export default function DashboardPage() {
   const { user } = useAuth();
   const { signOut } = useSupabaseAuth();
-  const [activeTab, setActiveTab] = useState("desc");
+  // Active tab is derived from URL (single source of truth)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [tasksCount, setTasksCount] = useState(0);
@@ -60,6 +60,9 @@ export default function DashboardPage() {
     exportToFile,
   } = useObjectList();
 
+  const allowedTabs = ["desc", "hw", "tasks", "chat"];
+  const tabParam = searchParams.get("tab");
+  const activeTab = allowedTabs.includes(tabParam) ? tabParam : "desc";
   const { chatUnread, clearNotifications } = useObjectNotifications(
     selected,
     activeTab,
@@ -134,7 +137,11 @@ export default function DashboardPage() {
   const onSelect = (obj) => {
     handleSelect(obj);
     clearNotifications(obj.id);
-    setActiveTab("desc");
+    // sync URL: set obj and reset tab to desc
+    const params = new URLSearchParams(searchParams);
+    params.set("obj", String(obj.id));
+    params.set("tab", "desc");
+    setSearchParams(params, { replace: true });
     setIsSidebarOpen(false);
   };
 
@@ -145,57 +152,38 @@ export default function DashboardPage() {
 
   const onTabChange = useCallback(
     (tab) => {
-      setActiveTab(tab);
+      // update URL only if actually changed
+      const current = searchParams.get("tab") || "desc";
+      if (current !== tab) {
+        const params = new URLSearchParams(searchParams);
+        params.set("tab", tab);
+        setSearchParams(params, { replace: true });
+      }
       if ((tab === "tasks" || tab === "chat") && selected) {
         clearNotifications(selected.id);
       }
     },
-    [selected, clearNotifications],
+    [searchParams, setSearchParams, selected, clearNotifications],
   );
 
-  // Keep URL in sync with selected object and active tab
+  // URL is updated explicitly in handlers; no syncing effect to avoid loops
+
+  // Restore selection from URL (and react to browser navigation)
   useEffect(() => {
-    const currentObj = searchParams.get("obj");
-    const currentTab = searchParams.get("tab");
-    const nextObj = selected?.id ? String(selected.id) : null;
-    const nextTab = activeTab;
-
-    const params = new URLSearchParams(searchParams);
-    if (nextObj !== currentObj) {
-      if (nextObj) params.set("obj", nextObj);
-      else params.delete("obj");
-    }
-    if (nextTab !== currentTab) {
-      params.set("tab", nextTab);
-    }
-    const currentStr = searchParams.toString();
-    const nextStr = params.toString();
-    if (nextStr !== currentStr) setSearchParams(params, { replace: true });
-  }, [selected?.id, activeTab, searchParams, setSearchParams]);
-
-  // Restore selection/tab from URL (and react to browser navigation)
-  useEffect(() => {
-    // tab
-    const tabParam = searchParams.get("tab");
-    const allowedTabs = ["desc", "hw", "tasks", "chat"];
-    if (tabParam && allowedTabs.includes(tabParam) && tabParam !== activeTab) {
-      setActiveTab(tabParam);
-    }
-
     // object by id
-    const objParam = Number(searchParams.get("obj"));
+    const objParam = searchParams.get("obj");
     if (
       objects?.length &&
       objParam &&
-      (!selected || selected.id !== objParam)
+      (!selected || String(selected.id) !== objParam)
     ) {
-      const found = objects.find((o) => o.id === objParam);
+      const found = objects.find((o) => String(o.id) === objParam);
       if (found) {
         // Use handleSelect directly to avoid resetting tab to "desc"
         handleSelect(found);
       }
     }
-  }, [searchParams, objects, selected, activeTab, handleSelect]);
+  }, [searchParams, objects, selected, handleSelect]);
 
   // Fetch total tasks count for header; keep updated via realtime
   useEffect(() => {
