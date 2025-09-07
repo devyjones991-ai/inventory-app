@@ -1,14 +1,7 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import PropTypes from "prop-types";
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  Suspense,
-  lazy,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
 import { z } from "zod";
 
 import HardwareCard from "./HardwareCard";
@@ -203,17 +196,17 @@ function InventoryTabs({
     }
   }, [selected, description, updateObject, onUpdateSelected]);
 
-  // Notify parent only when tab value changes, not when function identity changes
-  const onTabChangeRef = useRef(onTabChange);
-  useEffect(() => {
-    onTabChangeRef.current = onTabChange;
-  }, [onTabChange]);
-  useEffect(() => {
-    onTabChangeRef.current?.(tab);
-  }, [tab]);
+  // Propagate user-initiated tab changes directly to parent
 
   return (
-    <Tabs value={tab} onValueChange={setTab} className="flex flex-col h-full">
+    <Tabs
+      value={tab}
+      onValueChange={(v) => {
+        setTab(v);
+        onTabChange(v);
+      }}
+      className="flex flex-col h-full"
+    >
       <TabsList
         className="mb-4 overflow-x-auto flex-nowrap"
         style={{ WebkitOverflowScrolling: "touch" }}
