@@ -128,15 +128,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   useEffect(() => {
     onCountChangeRef.current?.(tasks.length);
   }, [tasks.length]);
-  // Keep focus on assignee filter input while typing
-  useEffect(() => {
-    if (
-      assigneeInputRef.current &&
-      document.activeElement !== assigneeInputRef.current
-    ) {
-      assigneeInputRef.current.focus({ preventScroll: true });
-    }
-  }, [assigneeInput]);
+  // Do not forcibly steal focus on each keystroke; keep UX stable
 
   const closeTaskModal = useCallback(() => {
     setIsTaskModalOpen(false);

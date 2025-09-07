@@ -3,7 +3,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import PropTypes from "prop-types";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useState } from "react";
 
 import useChat from "../hooks/useChat.js";
 
@@ -49,16 +49,26 @@ function ChatTab({
   } = useChat({ objectId, userEmail, search: searchQuery });
 
   // Ensure we always scroll to the latest message when the tab becomes active
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!active) return;
     const el = scrollRef?.current;
     if (!el) return;
-    // schedule after layout
-    const id = setTimeout(() => {
+    const raf = requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
-    }, 0);
-    return () => clearTimeout(id);
-  }, [active, messages.length, scrollRef]);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [active]);
+
+  // Also keep pinned to bottom on new messages
+  useLayoutEffect(() => {
+    if (!active) return;
+    const el = scrollRef?.current;
+    if (!el) return;
+    const raf = requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [active, messages.length]);
 
   useEffect(() => {
     const me = (userEmail || "").trim().toLowerCase();
