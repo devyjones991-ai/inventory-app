@@ -8,9 +8,11 @@ const envSchema = z.object({
 });
 
 const getEnv = (key) => {
+  let v;
   if (typeof process !== "undefined" && process?.env?.[key])
-    return process.env[key];
-  return import.meta?.env?.[key];
+    v = process.env[key];
+  else v = import.meta?.env?.[key];
+  return typeof v === "string" ? v.trim() : v;
 };
 
 const source = {
