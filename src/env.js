@@ -7,11 +7,20 @@ const envSchema = z.object({
   VITE_SUPABASE_ANON_KEY: z.string().min(1).optional(),
 });
 
+const fromWindow = (key) =>
+  typeof window !== "undefined" && window?.__ENV?.[key]
+    ? window.__ENV[key]
+    : undefined;
+
+const fromProcess = (key) =>
+  typeof process !== "undefined" && process?.env?.[key]
+    ? process.env[key]
+    : undefined;
+
+const fromVite = (key) => (import.meta?.env ? import.meta.env[key] : undefined);
+
 const getEnv = (key) => {
-  let v;
-  if (typeof process !== "undefined" && process?.env?.[key])
-    v = process.env[key];
-  else v = import.meta?.env?.[key];
+  const v = fromWindow(key) ?? fromProcess(key) ?? fromVite(key);
   return typeof v === "string" ? v.trim() : v;
 };
 
