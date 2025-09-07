@@ -51,7 +51,7 @@ jobs:
         uses: peter-evans/find-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body-includes: 'Предпросмотр доступен'
+          body-includes: "Предпросмотр доступен"
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v4
         with:

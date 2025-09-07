@@ -17,11 +17,13 @@ Inventory App — веб‑приложение на React + Vite с Tailwind CS
 npm install
 npm run dev
 ```
+
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-key>
 VITE_API_BASE_URL=https://<project-ref>.supabase.co
 BASE_PATH=/
-```
+
+````
 
 Переменная `BASE_PATH` задаёт базовый путь приложения в Vite. Если её не указывать,
 используется значение по умолчанию `/`.
@@ -34,7 +36,7 @@ BASE_PATH=/
 
 ```bash
 supabase db push
-```
+````
 
 ## Переменные окружения
 
@@ -59,6 +61,7 @@ npm run e2e
 ```
 
 ## Деплой
+
 - Выполните SQL из `supabase/migrations/*.sql` через Supabase SQL Editor или используйте Supabase CLI: `supabase db push`.
   Миграции включают Row Level Security и политики доступа по `object_id`. Для выдачи прав пользователю добавьте запись в `object_members` с нужным `object_id`.
 
@@ -84,4 +87,4 @@ npm run preview
 ## Превью
 
 - Локально после `npm run preview`: [http://localhost:4173](http://localhost:4173)
-Спецификация OpenAPI: `openapi.yaml`. Статическая документация собирается командой `npm run docs:build` и доступна в [`docs/index.html`](docs/index.html).
+  Спецификация OpenAPI: `openapi.yaml`. Статическая документация собирается командой `npm run docs:build` и доступна в [`docs/index.html`](docs/index.html).

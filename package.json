@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "format": "prettier . --write",
     "deploy": "npm run build && vite preview --host",
-    "docs:build": "mkdir -p docs && redoc-cli build openapi.yaml -o docs/index.html",
+    "docs:build": "node -e \"require('fs').mkdirSync('docs',{recursive:true})\" && redoc-cli build openapi.yaml -o docs/index.html",
     "prepare": "husky install",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
