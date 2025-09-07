@@ -1,5 +1,5 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
 vi.mock("@/utils/notifications", () => ({
@@ -38,8 +38,8 @@ vi.mock("react-hot-toast", () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }));
 
-import { pushNotification } from "@/utils/notifications";
 import AuthPage from "@/pages/AuthPage.jsx";
+import { pushNotification } from "@/utils/notifications";
 
 describe("AuthPage signUp confirmation", () => {
   it("показывает сообщение и уведомление при незавершённой регистрации", async () => {

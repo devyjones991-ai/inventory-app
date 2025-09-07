@@ -1,5 +1,5 @@
-import React from "react";
 import PropTypes from "prop-types";
+import React from "react";
 
 export default function InlineSpinner({ size = 20 }) {
   const px = typeof size === "number" ? `${size}px` : size;

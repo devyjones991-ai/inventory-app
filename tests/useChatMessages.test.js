@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 const jest = vi;
 import { renderHook } from "@testing-library/react";
+
 import { useChatMessages } from "@/hooks/useChatMessages.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 

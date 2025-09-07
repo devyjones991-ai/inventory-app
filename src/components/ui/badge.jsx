@@ -1,6 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
 import { cva } from "class-variance-authority";
+import PropTypes from "prop-types";
+import React from "react";
+
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(

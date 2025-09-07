@@ -1,19 +1,19 @@
 // @ts-check
-import React from "react";
 import { render, screen } from "@testing-library/react";
+import React from "react";
 
-vi.mock("@/supabaseClient.js", () => ({
+vi.mock("@/supabaseClient", () => ({
   isSupabaseConfigured: false,
 }));
-jest.mock("@/apiConfig", () => ({
-vi.mock("@/apiConfig.js", () => ({
+
+vi.mock("@/apiConfig", () => ({
   isApiConfigured: false,
 }));
 
 import App from "@/App";
 
 describe("MissingEnvPage", () => {
-  it("отображает предупреждение при отсутствии переменных окружения", async () => {
+  it("показывает подсказку с отсутствующими переменными", async () => {
     render(<App />);
     expect(
       await screen.findByText(

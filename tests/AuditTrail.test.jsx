@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+
 import AuditTrail from "@/components/AuditTrail.jsx";
 
 const mockLogs = [

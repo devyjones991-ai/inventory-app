@@ -6,6 +6,7 @@ import ErrorMessage from "./ErrorMessage";
 import Spinner from "./Spinner";
 
 import { Input } from "@/components/ui/input";
+import { t } from "@/i18n";
 import logger from "@/utils/logger";
 
 function ObjectList({
@@ -32,13 +33,13 @@ function ObjectList({
   return (
     <div>
       <Input
-        aria-label="Поиск"
-        placeholder="Поиск"
+        aria-label={t("common.search")}
+        placeholder={t("common.search")}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
       />
       {filtered.length === 0 ? (
-        <p>Нет объектов</p>
+        <p>{t("objects.empty")}</p>
       ) : (
         <List
           height={Math.min(filtered.length * 50, 400)}

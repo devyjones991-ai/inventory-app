@@ -57,5 +57,8 @@ export default defineConfig([
         jest: "readonly",
       },
     },
+    rules: {
+      "import/order": "off",
+    },
   },
 ]);

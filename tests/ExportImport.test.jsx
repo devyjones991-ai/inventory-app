@@ -48,11 +48,12 @@ vi.mock("@/hooks/useAuth", () => ({
 
 vi.mock("@/components/InventoryTabs", () => () => <div />);
 
+import { useAuth } from "@/hooks/useAuth";
+import DashboardPage from "@/pages/DashboardPage";
 import { supabase } from "@/supabaseClient.js";
 import * as exportImport from "@/utils/exportImport";
-import DashboardPage from "@/pages/DashboardPage";
+
 import { toast } from "react-hot-toast";
-import { useAuth } from "@/hooks/useAuth";
 
 beforeEach(() => {
   supabase.functions.invoke.mockReset();

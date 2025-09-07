@@ -1,7 +1,8 @@
 /* eslint-env vitest */
+import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import { describe, test, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+
 const jest = vi;
 import InventoryTabs from "@/components/InventoryTabs";
 

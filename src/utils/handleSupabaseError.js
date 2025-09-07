@@ -1,5 +1,6 @@
-import { supabase } from "@/supabaseClient";
 import { toast } from "react-hot-toast";
+
+import { supabase } from "@/supabaseClient";
 import logger from "@/utils/logger";
 
 export async function handleSupabaseError(error, navigate, message = "Ошибка") {

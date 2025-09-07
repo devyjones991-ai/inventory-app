@@ -1,5 +1,6 @@
-import { memo } from "react";
 import PropTypes from "prop-types";
+import { memo } from "react";
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 function ObjectCard({ item }) {

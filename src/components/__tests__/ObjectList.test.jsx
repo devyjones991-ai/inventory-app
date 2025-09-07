@@ -1,19 +1,16 @@
 // @ts-check
-/* eslint-env jest */
-import { describe, test, expect, jest } from "@jest/globals";
-/* eslint-env vitest */
-import { describe, test, expect, vi } from "vitest";
-const jest = vi;
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, test, expect, vi } from "vitest";
+
 import ObjectList from "@/components/ObjectList";
 
 describe("ObjectList", () => {
-  test("рендер пустого списка", () => {
+  test("рендерит пустое состояние", () => {
     render(<ObjectList objects={[]} onItemClick={() => {}} />);
     expect(screen.getByText("Нет объектов")).toBeInTheDocument();
   });
 
-  test("отображение списка объектов", () => {
+  test("рендерит элементы списка", () => {
     const objects = [
       { id: 1, name: "Объект 1" },
       { id: 2, name: "Объект 2" },
@@ -23,34 +20,34 @@ describe("ObjectList", () => {
     expect(screen.getByText("Объект 2")).toBeInTheDocument();
   });
 
-  test("обработка клика по элементу списка", () => {
+  test("клик по элементу вызывает обработчик", () => {
     const objects = [{ id: 1, name: "Объект 1" }];
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     render(<ObjectList objects={objects} onItemClick={handleClick} />);
     fireEvent.click(screen.getByText("Объект 1"));
     expect(handleClick).toHaveBeenCalledWith(objects[0]);
   });
 
-  test("фильтрация объектов", () => {
+  test("фильтр по строке поиска", () => {
     const objects = [
-      { id: 1, name: "Первый" },
-      { id: 2, name: "Второй" },
+      { id: 1, name: "Кошка" },
+      { id: 2, name: "Собака" },
     ];
     render(<ObjectList objects={objects} onItemClick={() => {}} />);
     const input = screen.getByPlaceholderText("Поиск");
-    fireEvent.change(input, { target: { value: "Второй" } });
-    expect(screen.queryByText("Первый")).not.toBeInTheDocument();
-    expect(screen.getByText("Второй")).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: "Соб" } });
+    expect(screen.queryByText("Кошка")).not.toBeInTheDocument();
+    expect(screen.getByText("Собака")).toBeInTheDocument();
   });
 
-  test("состояние загрузки", () => {
+  test("показывает спиннер при загрузке", () => {
     render(<ObjectList loading onItemClick={() => {}} />);
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
-  test("обработка ошибок", () => {
-    const error = new Error("Ошибка сети");
+  test("показывает ошибку", () => {
+    const error = new Error("Ошибка загрузки");
     render(<ObjectList error={error} onItemClick={() => {}} />);
-    expect(screen.getByRole("alert")).toHaveTextContent("Ошибка сети");
+    expect(screen.getByRole("alert")).toHaveTextContent("Ошибка загрузки");
   });
 });

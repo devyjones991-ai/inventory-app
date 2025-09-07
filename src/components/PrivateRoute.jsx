@@ -1,8 +1,10 @@
-import React from "react";
 import PropTypes from "prop-types";
+import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+
 import Spinner from "./Spinner";
+
+import { useAuth } from "@/hooks/useAuth";
 
 export default function PrivateRoute({ children }) {
   const { user, isLoading } = useAuth();

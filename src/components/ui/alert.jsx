@@ -1,6 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
 import { cva } from "class-variance-authority";
+import PropTypes from "prop-types";
+import React from "react";
+
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva("relative w-full rounded-md border p-4 text-sm", {

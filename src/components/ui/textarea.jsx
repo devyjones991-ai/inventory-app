@@ -1,5 +1,6 @@
-import { forwardRef } from "react";
 import PropTypes from "prop-types";
+import { forwardRef } from "react";
+
 import { cn } from "@/lib/utils";
 
 const Textarea = forwardRef(function Textarea({ className, ...props }, ref) {

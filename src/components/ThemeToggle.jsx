@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 

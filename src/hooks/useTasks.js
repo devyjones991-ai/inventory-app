@@ -1,9 +1,10 @@
 ﻿import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { TASK_STATUSES } from "@/constants";
 import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
-import { useNavigate } from "react-router-dom";
 import logger from "@/utils/logger";
-import { TASK_STATUSES } from "@/constants";
 
 const isColumnMissingError = (err) => {
   const code = err?.code ? String(err.code) : "";

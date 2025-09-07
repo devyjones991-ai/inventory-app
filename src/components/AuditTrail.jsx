@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { supabase } from "@/supabaseClient";
-import Spinner from "./Spinner";
+import React, { useEffect, useState } from "react";
+
 import ErrorMessage from "./ErrorMessage";
-import logger from "@/utils/logger";
+import Spinner from "./Spinner";
+
+import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
+import logger from "@/utils/logger";
 
 export default function AuditTrail({ limit = 50 }) {
   const [logs, setLogs] = useState([]);

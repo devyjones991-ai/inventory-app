@@ -1,8 +1,9 @@
 import React from "react";
+
 import { isApiConfigured } from "@/apiConfig";
-import { isSupabaseConfigured } from "@/supabaseClient";
 import { Alert } from "@/components/ui/alert";
 import { t } from "@/i18n";
+import { isSupabaseConfigured } from "@/supabaseClient";
 
 export default function MissingEnvPage() {
   const missingVars = [];

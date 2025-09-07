@@ -94,6 +94,7 @@ vi.mock("react-router-dom", async () => {
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
+
 import InventoryTabs from "@/components/InventoryTabs.jsx";
 
 describe("InventoryTabs", () => {

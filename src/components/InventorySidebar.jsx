@@ -1,8 +1,9 @@
-import { memo, useMemo } from "react";
-import PropTypes from "prop-types";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import PropTypes from "prop-types";
+import { memo, useMemo } from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { t } from "@/i18n";
 
 function InventorySidebar({

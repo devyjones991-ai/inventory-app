@@ -21,7 +21,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["src/utils/logger.ts", "src/utils/date.js"],
+      include: ["src/utils/logger.js", "src/utils/date.js"],
     },
   },
 });

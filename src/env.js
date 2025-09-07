@@ -2,12 +2,12 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  VITE_API_BASE_URL: z.string().url(),
-  VITE_SUPABASE_URL: z.string().url(),
-  VITE_SUPABASE_ANON_KEY: z.string().min(1),
+  VITE_API_BASE_URL: z.string().url().optional(),
+  VITE_SUPABASE_URL: z.string().url().optional(),
+  VITE_SUPABASE_ANON_KEY: z.string().min(1).optional(),
 });
 
-const parsedEnv = envSchema.safeParse({
+const source = {
   VITE_API_BASE_URL:
     process.env.VITE_API_BASE_URL || import.meta.env?.VITE_API_BASE_URL,
   VITE_SUPABASE_URL:
@@ -15,15 +15,17 @@ const parsedEnv = envSchema.safeParse({
   VITE_SUPABASE_ANON_KEY:
     process.env.VITE_SUPABASE_ANON_KEY ||
     import.meta.env?.VITE_SUPABASE_ANON_KEY,
-});
+};
 
-if (!parsedEnv.success) {
-  throw new Error(
-    "Missing or invalid environment variables: " +
-      JSON.stringify(parsedEnv.error.format()),
-  );
-}
+const parsedEnv = envSchema.safeParse(source);
 
-export const env = parsedEnv.data;
+export const env = parsedEnv.success
+  ? parsedEnv.data
+  : {
+      VITE_API_BASE_URL: undefined,
+      VITE_SUPABASE_URL: undefined,
+      VITE_SUPABASE_ANON_KEY: undefined,
+    };
+
 export const { VITE_API_BASE_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY } =
   env;

@@ -1,9 +1,10 @@
 // src/components/HardwareCard.jsx
-import React from "react";
-import PropTypes from "prop-types";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import PropTypes from "prop-types";
+import React from "react";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { t } from "@/i18n";
 
 export default function HardwareCard({ item, onEdit, onDelete, user = null }) {

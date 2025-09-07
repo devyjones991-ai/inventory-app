@@ -1,7 +1,8 @@
-import React from "react";
 import PropTypes from "prop-types";
-import logger from "@/utils/logger";
+import React from "react";
+
 import { t } from "@/i18n";
+import logger from "@/utils/logger";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

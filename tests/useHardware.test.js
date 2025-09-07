@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 const jest = vi;
 import { renderHook, act } from "@testing-library/react";
+
 import { useHardware } from "@/hooks/useHardware.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 

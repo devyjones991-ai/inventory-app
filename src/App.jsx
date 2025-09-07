@@ -1,11 +1,13 @@
 import React, { Suspense, lazy, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster, toast } from "react-hot-toast";
-import { t } from "@/i18n";
-import { isSupabaseConfigured } from "./supabaseClient";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import { isApiConfigured } from "./apiConfig";
+import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
+import { isSupabaseConfigured } from "./supabaseClient";
+
+import { t } from "@/i18n";
 
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));

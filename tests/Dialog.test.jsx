@@ -1,5 +1,6 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import React from "react";
+
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog.jsx";
 
 describe("Dialog", () => {

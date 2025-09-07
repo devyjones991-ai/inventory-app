@@ -99,6 +99,7 @@ vi.mock("@/hooks/useChatMessages.js", () => ({
 // Now import the components
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
+
 const jest = vi;
 import useChat from "@/hooks/useChat.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";

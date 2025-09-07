@@ -1,8 +1,9 @@
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { t } from "@/i18n";
 import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
-import { useNavigate } from "react-router-dom";
-import { useCallback, useState } from "react";
-import { t } from "@/i18n";
 
 export function useHardware() {
   const navigate = useNavigate();

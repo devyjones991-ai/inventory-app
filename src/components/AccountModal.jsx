@@ -1,10 +1,8 @@
-import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { useAccount } from "@/hooks/useAccount";
+import React, { useState } from "react";
 import { toast } from "react-hot-toast";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +10,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAccount } from "@/hooks/useAccount";
 
 export default function AccountModal({ user, onClose, onUpdated }) {
   const [username, setUsername] = useState(user.user_metadata?.username || "");

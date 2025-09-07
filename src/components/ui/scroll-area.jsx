@@ -1,5 +1,6 @@
-import React from "react";
 import PropTypes from "prop-types";
+import React from "react";
+
 import { cn } from "@/lib/utils";
 
 const ScrollArea = React.forwardRef(function ScrollArea(

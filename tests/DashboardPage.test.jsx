@@ -1,5 +1,5 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
+import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
 vi.mock("@/utils/notifications", () => ({
@@ -51,6 +51,7 @@ vi.mock("@/hooks/useAuth", () => ({
 }));
 
 import { toast } from "react-hot-toast";
+
 import DashboardPage from "@/pages/DashboardPage";
 
 describe("DashboardPage", () => {

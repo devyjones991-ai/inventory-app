@@ -1,5 +1,5 @@
-import { supabase } from "@/supabaseClient";
 import { apiBaseUrl, isApiConfigured } from "@/apiConfig";
+import { supabase } from "@/supabaseClient";
 import logger from "@/utils/logger";
 
 export function useObjects() {

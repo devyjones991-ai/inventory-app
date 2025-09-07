@@ -5,6 +5,7 @@ import {
   screen,
   act,
 } from "@testing-library/react";
+
 import ChatTab from "@/components/ChatTab.jsx";
 
 const mockMessages = [

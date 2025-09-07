@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useChatMessages } from "./useChatMessages.js";
+
 import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
 import logger from "@/utils/logger";
-import { useChatMessages } from "./useChatMessages.js";
 
 export default function useChat({ objectId, userEmail, search }) {
   const [messages, setMessages] = useState([]);

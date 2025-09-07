@@ -1,5 +1,6 @@
-import React from "react";
 import PropTypes from "prop-types";
+import React from "react";
+
 import { cn } from "@/lib/utils";
 
 export const Label = React.forwardRef(function Label(

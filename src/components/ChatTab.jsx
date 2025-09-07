@@ -1,15 +1,18 @@
-import { memo, useCallback, useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import { Button, Input } from "@/components/ui";
-import { linkifyText } from "@/utils/linkify.jsx";
-import AttachmentPreview from "./AttachmentPreview.jsx";
 import {
   PaperClipIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import PropTypes from "prop-types";
+import { memo, useCallback, useEffect, useState } from "react";
+
 import useChat from "../hooks/useChat.js";
-import { formatDateTime } from "@/utils/date";
+
+import AttachmentPreview from "./AttachmentPreview.jsx";
+
+import { Button, Input } from "@/components/ui";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateTime } from "@/utils/date";
+import { linkifyText } from "@/utils/linkify.jsx";
 
 function ChatTab({
   selected = null,
