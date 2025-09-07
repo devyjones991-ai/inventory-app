@@ -1,0 +1,4 @@
+fix: стабилизирован обмен вкладок и URL
+
+- InventoryTabs: onTabChange вызывается только при смене значения tab (через ref), без перезапуска из‑за новой функции.
+- DashboardPage: onTabChange мемоизирован через useCallback; синхронизация URL не зависит от searchParams, чтобы исключить цикл.
