@@ -17,6 +17,16 @@ Inventory App — веб‑приложение на React + Vite с Tailwind CS
 npm install
 npm run dev
 ```
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key>
+VITE_API_BASE_URL=https://<project-ref>.supabase.co
+BASE_PATH=/
+```
+
+Переменная `BASE_PATH` задаёт базовый путь приложения в Vite. Если её не указывать,
+используется значение по умолчанию `/`.
+
+4. Установите зависимости и запустите:
 
 ### Миграции БД
 

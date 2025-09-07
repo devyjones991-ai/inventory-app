@@ -16,6 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig(async ({ mode }) => {
   const isProd = mode === "production";
   const enableBrotli = process.env.ENABLE_BROTLI === "true";
+  const base = env.BASE_PATH ?? "/";
   const rollupPlugins = [];
 
   const securityHeaders = {
@@ -32,6 +33,7 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
+    base,
     plugins: [
       react(),
       ...(isProd
