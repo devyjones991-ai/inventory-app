@@ -1,11 +1,12 @@
-import { memo, useCallback } from "react";
-import PropTypes from "prop-types";
-import { formatDate } from "@/utils/date";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/ui/button";
+import PropTypes from "prop-types";
+import { memo, useCallback } from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { t } from "@/i18n";
+import { formatDate } from "@/utils/date";
 
 const STATUS_VARIANTS = {
   planned: "info",
@@ -14,7 +15,7 @@ const STATUS_VARIANTS = {
   canceled: "destructive",
 };
 
-function TaskCard({ item, onEdit, onDelete, onView }) {
+function TaskCard({ item, onEdit, onDelete, onView, canManage = true }) {
   const assignee = item.assignee || null;
   const dueDate = item.due_date || null;
   const assignedAt = item.assigned_at || item.created_at || null;
@@ -84,26 +85,30 @@ function TaskCard({ item, onEdit, onDelete, onView }) {
         <Badge variant={badgeVariant}>
           {t(`tasks.statuses.${item.status}`)}
         </Badge>
-        <Button
-          size="iconSm"
-          variant="ghost"
-          className="flex items-center justify-center text-blue-600 dark:text-blue-400"
-          title={t("common.edit")}
-          aria-label={t("common.edit")}
-          onClick={handleEdit}
-        >
-          <PencilIcon className="w-4 h-4" />
-        </Button>
-        <Button
-          size="iconSm"
-          variant="ghost"
-          className="flex items-center justify-center text-red-600 dark:text-red-400"
-          title={t("common.delete")}
-          aria-label={t("common.delete")}
-          onClick={handleDelete}
-        >
-          <TrashIcon className="w-4 h-4" />
-        </Button>
+        {canManage && (
+          <>
+            <Button
+              size="iconSm"
+              variant="ghost"
+              className="flex items-center justify-center text-blue-600 dark:text-blue-400"
+              title={t("common.edit")}
+              aria-label={t("common.edit")}
+              onClick={handleEdit}
+            >
+              <PencilIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              size="iconSm"
+              variant="ghost"
+              className="flex items-center justify-center text-red-600 dark:text-red-400"
+              title={t("common.delete")}
+              aria-label={t("common.delete")}
+              onClick={handleDelete}
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -123,4 +128,5 @@ TaskCard.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onView: PropTypes.func.isRequired,
+  canManage: PropTypes.bool,
 };

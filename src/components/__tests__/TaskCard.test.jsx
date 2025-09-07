@@ -25,10 +25,8 @@ describe("TaskCard", () => {
       />,
     );
 
-    expect(
-      screen.queryByLabelText("Редактировать задачу"),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Удалить задачу")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Редактировать")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Удалить")).not.toBeInTheDocument();
   });
 
   test("показывает кнопки при наличии прав", () => {
@@ -42,7 +40,7 @@ describe("TaskCard", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Редактировать задачу")).toBeInTheDocument();
-    expect(screen.getByLabelText("Удалить задачу")).toBeInTheDocument();
+    expect(screen.getByLabelText("Редактировать")).toBeInTheDocument();
+    expect(screen.getByLabelText("Удалить")).toBeInTheDocument();
   });
 });
