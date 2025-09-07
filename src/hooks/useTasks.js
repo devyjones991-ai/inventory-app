@@ -1,4 +1,5 @@
 ﻿import { useState, useCallback, useEffect } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { TASK_STATUSES } from "@/constants";
@@ -36,6 +37,7 @@ export function useTasks(objectId) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const requestSeqRef = useRef(0);
 
   // helpers moved to module scope to remain stable across renders
 
@@ -229,6 +231,7 @@ export function useTasks(objectId) {
   const loadTasks = useCallback(
     async ({ offset = 0, limit = 20, status, assignee } = {}) => {
       setLoading(true);
+      const seq = ++requestSeqRef.current;
       if (!objectId) {
         setTasks([]);
         setError(null);
@@ -241,6 +244,9 @@ export function useTasks(objectId) {
         status,
         assignee,
       });
+      if (seq !== requestSeqRef.current) {
+        return { data: null, error: null };
+      }
       if (err) {
         setError(err.message || "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р·Р°РґР°С‡");
         setTasks([]);
