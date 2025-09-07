@@ -19,9 +19,20 @@ export default defineConfig(async ({ mode }) => {
   const base = env.BASE_PATH ?? "/";
   const rollupPlugins = [];
 
+  const csp = [
+    "default-src 'self'",
+    "img-src 'self' data:",
+    // Allow Vite React Refresh preamble and eval only in dev
+    `script-src 'self'${isProd ? "" : " 'unsafe-inline' 'unsafe-eval'"}`,
+    "style-src 'self' 'unsafe-inline'",
+    // Allow Vite HMR WS in dev and Supabase in both
+    `connect-src 'self' ${isProd ? "" : "ws: wss:"} https://*.supabase.co https://*.supabase.in`,
+    // Allow self/data and generic https fonts (dev-friendly)
+    "font-src 'self' data: https:",
+  ].join("; ");
+
   const securityHeaders = {
-    "Content-Security-Policy":
-      "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://*.supabase.in;",
+    "Content-Security-Policy": csp,
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "no-referrer",
     "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
