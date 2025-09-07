@@ -145,7 +145,7 @@ export default function DashboardPage() {
 
   const onTabChange = useCallback(
     (tab) => {
-      setActiveTab(tab);
+      setActiveTab((prev) => (prev === tab ? prev : tab));
       if ((tab === "tasks" || tab === "chat") && selected) {
         clearNotifications(selected.id);
       }
@@ -183,13 +183,13 @@ export default function DashboardPage() {
     }
 
     // object by id
-    const objParam = Number(searchParams.get("obj"));
+    const objParam = searchParams.get("obj");
     if (
       objects?.length &&
       objParam &&
-      (!selected || selected.id !== objParam)
+      (!selected || String(selected.id) !== objParam)
     ) {
-      const found = objects.find((o) => o.id === objParam);
+      const found = objects.find((o) => String(o.id) === objParam);
       if (found) {
         // Use handleSelect directly to avoid resetting tab to "desc"
         handleSelect(found);

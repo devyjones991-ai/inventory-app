@@ -1,0 +1,4 @@
+fix: prop-types для ChatTab и стабилизация URL/восстановления
+
+- ChatTab: selected.id теперь string|number (UUID не ломает prop-types).
+- DashboardPage: onTabChange игнорирует одинаковое значение; восстановление selected по obj как строке (UUID).
