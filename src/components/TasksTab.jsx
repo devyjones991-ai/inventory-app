@@ -54,13 +54,13 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [taskDeleteId, setTaskDeleteId] = useState(null);
 
   const [filterStatus, setFilterStatus] = useState("all");
-  const [filterAssignee, setFilterAssignee] = useState("");
+  const [filterQuery, setFilterQuery] = useState("");
   // Debounced input state to avoid refresh on every keystroke
-  const [assigneeInput, setAssigneeInput] = useState("");
+  const [queryInput, setQueryInput] = useState("");
   useEffect(() => {
-    const id = setTimeout(() => setFilterAssignee(assigneeInput), 300);
+    const id = setTimeout(() => setFilterQuery(queryInput), 300);
     return () => clearTimeout(id);
-  }, [assigneeInput]);
+  }, [queryInput]);
 
   const {
     register,
@@ -99,9 +99,9 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   useEffect(() => {
     if (!selected?.id) return;
     const statusCode = filterStatus === "all" ? undefined : filterStatus;
-    const assignee = filterAssignee.trim() || undefined;
-    loadTasks({ limit: PAGE_SIZE, status: statusCode, assignee });
-  }, [selected?.id, filterStatus, filterAssignee, loadTasks]);
+    const query = filterQuery.trim() || undefined;
+    loadTasks({ limit: PAGE_SIZE, status: statusCode, query });
+  }, [selected?.id, filterStatus, filterQuery, loadTasks]);
 
   const openTaskModal = useCallback(() => {
     reset({
@@ -238,45 +238,45 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           </Select>
         </div>
         <div className="w-full sm:min-w-[220px] sm:w-auto flex-1">
-          <Label>{t("tasks.assignee")}</Label>
+          <Label>{t("common.search")}</Label>
           <div className="relative h-10">
             <Input
               ref={assigneeInputRef}
               type="text"
               inputMode="search"
               autoComplete="off"
-              value={assigneeInput}
-              onChange={(e) => setAssigneeInput(e.target.value)}
-              placeholder={t("tasks.assigneePlaceholder")}
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
+              placeholder={t("tasks.searchPlaceholder")}
               onKeyDown={(e) => {
                 if (e.key === "Enter") e.preventDefault();
               }}
               className="h-full pr-10"
             />
-            {(filterStatus !== "all" || assigneeInput) && (
+            {(filterStatus !== "all" || queryInput) && (
               <Button
                 type="button"
                 variant="ghost"
                 className="hidden sm:inline-flex h-8 px-2 absolute right-1 top-1/2 -translate-y-1/2"
                 onClick={() => {
                   setFilterStatus("all");
-                  setAssigneeInput("");
-                  setFilterAssignee("");
+                  setQueryInput("");
+                  setFilterQuery("");
                 }}
               >
                 {t("common.reset")}
               </Button>
             )}
           </div>
-          {(filterStatus !== "all" || assigneeInput) && (
+          {(filterStatus !== "all" || queryInput) && (
             <Button
               variant="ghost"
               type="button"
               className="sm:hidden mt-2"
               onClick={() => {
                 setFilterStatus("all");
-                setAssigneeInput("");
-                setFilterAssignee("");
+                setQueryInput("");
+                setFilterQuery("");
               }}
             >
               {t("common.reset")}

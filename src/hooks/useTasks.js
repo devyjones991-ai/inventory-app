@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -42,7 +42,7 @@ export function useTasks(objectId) {
   // helpers moved to module scope to remain stable across renders
 
   const fetchTasks = useCallback(
-    async (objId, { offset = 0, limit = 20, status, assignee } = {}) => {
+    async (objId, { offset = 0, limit = 20, status } = {}) => {
       try {
         if (!objId) return { data: [], error: null };
         let baseQuery = supabase
@@ -52,9 +52,6 @@ export function useTasks(objectId) {
 
         if (status) {
           baseQuery = baseQuery.eq("status", status);
-        }
-        if (assignee) {
-          baseQuery = baseQuery.ilike("assignee", `%${assignee}%`);
         }
         let result = await baseQuery
           .order("created_at", { ascending: false })
@@ -70,9 +67,6 @@ export function useTasks(objectId) {
           if (status) {
             fbQuery = fbQuery.eq("status", status);
           }
-          if (assignee) {
-            fbQuery = fbQuery.ilike("assignee", `%${assignee}%`);
-          }
           result = await fbQuery
             .order("created_at", { ascending: false })
             .range(offset, offset + limit - 1);
@@ -81,11 +75,7 @@ export function useTasks(objectId) {
         return result;
       } catch (err) {
         logger.error("fetchTasks failed", err);
-        await handleSupabaseError(
-          err,
-          navigate,
-          "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р·Р°РґР°С‡",
-        );
+        await handleSupabaseError(err, navigate, "Ошибка загрузки задач");
         return { data: null, error: err };
       }
     },
@@ -109,7 +99,7 @@ export function useTasks(objectId) {
         } = data;
         const status = inputStatus ?? "planned";
         if (!TASK_STATUSES.includes(status)) {
-          throw new Error("РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ СЃС‚Р°С‚СѓСЃ Р·Р°РґР°С‡Рё");
+          throw new Error("Недопустимый статус задачи");
         }
         const taskDataBase = {
           title,
@@ -143,9 +133,9 @@ export function useTasks(objectId) {
         return result;
       } catch (err) {
         const message =
-          err.message === "РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ СЃС‚Р°С‚СѓСЃ Р·Р°РґР°С‡Рё"
-            ? "РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ СЃС‚Р°С‚СѓСЃ Р·Р°РґР°С‡Рё"
-            : "РћС€РёР±РєР° РґРѕР±Р°РІР»РµРЅРёСЏ Р·Р°РґР°С‡Рё";
+          err.message === "Недопустимый статус задачи"
+            ? "Недопустимый статус задачи"
+            : "Ошибка добавления задачи";
         await handleSupabaseError(err, navigate, message);
         return { data: null, error: err };
       }
@@ -199,11 +189,7 @@ export function useTasks(objectId) {
         if (result.error) throw result.error;
         return result;
       } catch (err) {
-        await handleSupabaseError(
-          err,
-          navigate,
-          "РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ Р·Р°РґР°С‡Рё",
-        );
+        await handleSupabaseError(err, navigate, "Ошибка обновления задачи");
         return { data: null, error: err };
       }
     },
@@ -217,11 +203,7 @@ export function useTasks(objectId) {
         if (result.error) throw result.error;
         return result;
       } catch (err) {
-        await handleSupabaseError(
-          err,
-          navigate,
-          "РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ Р·Р°РґР°С‡Рё",
-        );
+        await handleSupabaseError(err, navigate, "Ошибка удаления задачи");
         return { data: null, error: err };
       }
     },
@@ -229,7 +211,7 @@ export function useTasks(objectId) {
   );
 
   const loadTasks = useCallback(
-    async ({ offset = 0, limit = 20, status, assignee } = {}) => {
+    async ({ offset = 0, limit = 20, status, query } = {}) => {
       setLoading(true);
       const seq = ++requestSeqRef.current;
       if (!objectId) {
@@ -242,16 +224,16 @@ export function useTasks(objectId) {
         offset,
         limit,
         status,
-        assignee,
       });
       if (seq !== requestSeqRef.current) {
         return { data: null, error: null };
       }
       if (err) {
-        setError(err.message || "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р·Р°РґР°С‡");
+        setError(err.message || "Ошибка загрузки задач");
         setTasks([]);
       } else {
-        setTasks(data || []);
+        const filtered = applyQueryFilter(data || [], query);
+        setTasks(filtered);
         setError(null);
       }
       setLoading(false);
@@ -374,4 +356,25 @@ export function useTasks(objectId) {
     updateTask,
     deleteTask,
   };
+}
+
+function applyQueryFilter(items, rawQuery) {
+  const q = (rawQuery || "").trim().toLowerCase();
+  if (!q) return items;
+  const m = q.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  let iso = null;
+  if (m) {
+    const [_, dd, mm, yyyy] = m;
+    iso = `${yyyy}-${mm}-${dd}`;
+  }
+  return items.filter((t) => {
+    const title = (t.title || "").toLowerCase();
+    const assignee = (t.assignee || "").toLowerCase();
+    const isEmailAssignee = assignee.includes("@");
+    const due = (t.due_date || "").slice(0, 10);
+    if (iso && due === iso) return true;
+    if (title.includes(q)) return true;
+    if (!isEmailAssignee && assignee && assignee.includes(q)) return true;
+    return false;
+  });
 }
