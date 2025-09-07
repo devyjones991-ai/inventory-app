@@ -114,9 +114,14 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     return () => registerAddHandler?.(null);
   }, [registerAddHandler, openTaskModal]);
 
+  // Notify parent about tasks count changes without re-triggering on every re-render
+  const onCountChangeRef = useRef(onCountChange);
   useEffect(() => {
-    onCountChange?.(tasks.length);
-  }, [tasks, onCountChange]);
+    onCountChangeRef.current = onCountChange;
+  }, [onCountChange]);
+  useEffect(() => {
+    onCountChangeRef.current?.(tasks.length);
+  }, [tasks.length]);
   // Keep focus on assignee filter input while typing
   useEffect(() => {
     if (
