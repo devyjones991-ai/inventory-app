@@ -1,0 +1,4 @@
+fix(hardware): нормализация статусов перед insert/update
+
+- useHardware: приводим purchase_status/install_status к допустимым значениям (fallback на первый).
+- Предотвращает нарушение CHECK hardware_install_status_check при пустых/unknown значениях.
