@@ -1,0 +1,4 @@
+fix(hardware): валидируем значения в форме перед reset
+
+- InventoryTabs: при открытии редактирования приводим purchase/install к допустимым кодам.
+- Устраняет ошибку «Invalid option … not_installed|installed» и сбой CHECK при сохранении.

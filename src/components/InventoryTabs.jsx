@@ -160,7 +160,14 @@ function InventoryTabs({
 
   useEffect(() => {
     if (isHWModalOpen && editingHW) {
-      reset(editingHW);
+      const sanitize = (val, allowed) =>
+        allowed.includes(val) ? val : allowed[0];
+      const sanitized = {
+        ...editingHW,
+        purchase_status: sanitize(editingHW.purchase_status, PURCHASE_STATUSES),
+        install_status: sanitize(editingHW.install_status, INSTALL_STATUSES),
+      };
+      reset(sanitized);
     }
   }, [isHWModalOpen, editingHW, reset]);
 
