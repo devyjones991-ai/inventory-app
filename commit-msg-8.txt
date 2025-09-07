@@ -1,0 +1,4 @@
+fix(tabs): полностью контролируемый Tabs + стабильный URL
+
+- InventoryTabs: убран внутренний state tab; value берётся из activeTab, onValueChange отдаёт наверх.
+- DashboardPage: синхронизация URL сравнивает строки и учитывает searchParams как зависимость.

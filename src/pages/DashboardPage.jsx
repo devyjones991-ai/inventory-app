@@ -160,19 +160,18 @@ export default function DashboardPage() {
     const nextObj = selected?.id ? String(selected.id) : null;
     const nextTab = activeTab;
 
-    let changed = false;
     const params = new URLSearchParams(searchParams);
     if (nextObj !== currentObj) {
-      changed = true;
       if (nextObj) params.set("obj", nextObj);
       else params.delete("obj");
     }
     if (nextTab !== currentTab) {
-      changed = true;
       params.set("tab", nextTab);
     }
-    if (changed) setSearchParams(params, { replace: true });
-  }, [selected?.id, activeTab, setSearchParams]);
+    const currentStr = searchParams.toString();
+    const nextStr = params.toString();
+    if (nextStr !== currentStr) setSearchParams(params, { replace: true });
+  }, [selected?.id, activeTab, searchParams, setSearchParams]);
 
   // Restore selection/tab from URL (and react to browser navigation)
   useEffect(() => {
