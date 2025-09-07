@@ -1,6 +1,7 @@
 import {
   PaperClipIcon,
   MagnifyingGlassIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import PropTypes from "prop-types";
 import {
@@ -57,10 +58,12 @@ function ChatTab({
 
   // Pin-to-bottom logic (like messengers)
   const pinnedRef = useRef(true);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const bottomRef = useRef(null);
-  const scrollToBottom = useCallback(() => {
+  const scrollToBottom = useCallback((smooth = true) => {
     const el = bottomRef.current;
-    if (el) el.scrollIntoView({ block: "end" });
+    if (el)
+      el.scrollIntoView({ block: "end", behavior: smooth ? "smooth" : "auto" });
   }, []);
 
   const handleScroll = useCallback(() => {
@@ -70,6 +73,7 @@ function ChatTab({
     const nearBottom =
       el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
     pinnedRef.current = nearBottom;
+    setShowScrollDown(!nearBottom);
   }, [scrollRef]);
 
   // Ensure we always scroll to the latest message when the tab becomes active
@@ -165,7 +169,7 @@ function ChatTab({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 bg-muted rounded-2xl"
+        className="relative flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 bg-muted rounded-2xl"
       >
         {loadError ? (
           <div className="text-center">
@@ -207,9 +211,13 @@ function ChatTab({
                   (m.sender || "").trim().toLowerCase() ===
                   (userEmail || "").trim().toLowerCase();
                 const when = formatDateTime(m.created_at);
+                const key =
+                  m.id ||
+                  m.client_generated_id ||
+                  `${m.created_at}-${m.sender}`;
                 return (
                   <div
-                    key={m.id}
+                    key={key}
                     data-testid="chat-message"
                     className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                   >
@@ -248,6 +256,19 @@ function ChatTab({
             {/* bottom sentinel to allow precise scrollToBottom */}
             <div ref={bottomRef} />
           </>
+        )}
+        {showScrollDown && (
+          <button
+            type="button"
+            aria-label="Scroll to latest"
+            className="absolute right-3 bottom-3 rounded-full p-2 bg-blue-600 text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-ring"
+            onClick={() => {
+              pinnedRef.current = true;
+              scrollToBottom(true);
+            }}
+          >
+            <ChevronDownIcon className="w-5 h-5" />
+          </button>
         )}
       </div>
 
