@@ -1,6 +1,7 @@
-import { FixedSizeList as List } from "react-window";
 import PropTypes from "prop-types";
 import { forwardRef } from "react";
+import { FixedSizeList as List } from "react-window";
+
 import TaskCard from "./TaskCard";
 
 function VirtualizedTaskList({
@@ -35,6 +36,7 @@ function VirtualizedTaskList({
       itemCount={tasks.length}
       itemSize={itemSize}
       width="100%"
+      itemKey={(index) => tasks[index].id}
       outerElementType={Outer}
     >
       {Row}

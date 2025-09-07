@@ -1,19 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import PropTypes from "prop-types";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-import TaskCard from "./TaskCard";
-import ErrorMessage from "./ErrorMessage";
 import ConfirmModal from "./ConfirmModal";
-import { useTasks } from "@/hooks/useTasks";
-import logger from "@/utils/logger";
-import { TASK_STATUSES } from "@/constants";
-import { formatDate } from "@/utils/date";
-import { t } from "@/i18n";
-
-import { Button } from "@/components/ui/button";
+import ErrorMessage from "./ErrorMessage";
+import TaskCard from "./TaskCard";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +14,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "./ui/dialog";
+import FormError from "@/components/FormError.jsx";
+import VirtualizedTaskList from "./VirtualizedTaskList";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -31,6 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { TASK_STATUSES } from "@/constants";
+import { useTasks } from "@/hooks/useTasks";
+import { t } from "@/i18n";
+import { formatDate } from "@/utils/date";
+import logger from "@/utils/logger";
 
 const PAGE_SIZE = 20;
 const STATUS_OPTIONS = TASK_STATUSES;
@@ -277,17 +278,13 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       {tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">{t("tasks.empty")}</div>
       ) : (
-        <div className="space-y-3">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              item={task}
-              onEdit={() => handleEditTask(task)}
-              onDelete={() => setTaskDeleteId(task.id)}
-              onView={() => setViewingTask(task)}
-            />
-          ))}
-        </div>
+        <VirtualizedTaskList
+          tasks={tasks}
+          onEdit={handleEditTask}
+          onDelete={(id) => setTaskDeleteId(id)}
+          onView={(task) => setViewingTask(task)}
+          height={400}
+        />
       )}
       {/* Task Modal */}
       <Dialog
@@ -303,19 +300,31 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           <form onSubmit={handleSubmit(handleTaskSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="task-title">{t("tasks.title")} *</Label>
-              <Input id="task-title" {...register("title")} />
-              {errors.title && (
-                <p className="text-red-500 text-sm">{errors.title.message}</p>
-              )}
+              <Input
+                id="task-title"
+                aria-invalid={!!errors.title}
+                aria-describedby={errors.title ? "task-title-error" : undefined}
+                {...register("title")}
+              />
+              <FormError
+                id="task-title-error"
+                message={errors.title?.message}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-assignee">{t("tasks.assignee")}</Label>
-              <Input id="task-assignee" {...register("assignee")} />
-              {errors.assignee && (
-                <p className="text-red-500 text-sm">
-                  {errors.assignee.message}
-                </p>
-              )}
+              <Input
+                id="task-assignee"
+                aria-invalid={!!errors.assignee}
+                aria-describedby={
+                  errors.assignee ? "task-assignee-error" : undefined
+                }
+                {...register("assignee")}
+              />
+              <FormError
+                id="task-assignee-error"
+                message={errors.assignee?.message}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-due-date">{t("tasks.form.dueDate")}</Label>
@@ -324,13 +333,16 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                 type="date"
                 aria-label={t("tasks.form.dueDate")}
                 title={t("tasks.form.dueDate")}
+                aria-invalid={!!errors.due_date}
+                aria-describedby={
+                  errors.due_date ? "task-due-date-error" : undefined
+                }
                 {...register("due_date")}
               />
-              {errors.due_date && (
-                <p className="text-red-500 text-sm">
-                  {errors.due_date.message}
-                </p>
-              )}
+              <FormError
+                id="task-due-date-error"
+                message={errors.due_date?.message}
+              />
             </div>
             <div className="space-y-2">
               <Label>{t("tasks.status")}</Label>
@@ -338,7 +350,12 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                 value={status}
                 onValueChange={(value) => setValue("status", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  aria-invalid={!!errors.status}
+                  aria-describedby={
+                    errors.status ? "task-status-error" : undefined
+                  }
+                >
                   <SelectValue placeholder={t("tasks.chooseStatus")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -349,16 +366,24 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.status && (
-                <p className="text-red-500 text-sm">{errors.status.message}</p>
-              )}
+              <FormError
+                id="task-status-error"
+                message={errors.status?.message}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-notes">{t("tasks.notes")}</Label>
-              <Textarea id="task-notes" rows={3} {...register("notes")} />
-              {errors.notes && (
-                <p className="text-red-500 text-sm">{errors.notes.message}</p>
-              )}
+              <Textarea
+                id="task-notes"
+                rows={3}
+                aria-invalid={!!errors.notes}
+                aria-describedby={errors.notes ? "task-notes-error" : undefined}
+                {...register("notes")}
+              />
+              <FormError
+                id="task-notes-error"
+                message={errors.notes?.message}
+              />
             </div>
             <DialogFooter>
               <Button type="submit">{t("common.save")}</Button>

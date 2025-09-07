@@ -49,6 +49,8 @@ npm run e2e
 ```
 
 ## Деплой
+- Выполните SQL из `supabase/migrations/*.sql` через Supabase SQL Editor или используйте Supabase CLI: `supabase db push`.
+  Миграции включают Row Level Security и политики доступа по `object_id`. Для выдачи прав пользователю добавьте запись в `object_members` с нужным `object_id`.
 
 1. Соберите приложение:
 
@@ -72,3 +74,4 @@ npm run preview
 ## Превью
 
 - Локально после `npm run preview`: [http://localhost:4173](http://localhost:4173)
+Спецификация OpenAPI: `openapi.yaml`. Статическая документация собирается командой `npm run docs:build` и доступна в [`docs/index.html`](docs/index.html).

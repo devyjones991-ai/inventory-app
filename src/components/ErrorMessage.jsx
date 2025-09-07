@@ -1,10 +1,10 @@
-import React from "react";
 import PropTypes from "prop-types";
+import React from "react";
 
 export default function ErrorMessage({ error, message = "Произошла ошибка" }) {
   const text = typeof error === "string" ? error : error?.message || message;
   return (
-    <div className="text-center text-red-500 p-4" role="alert">
+    <div className="text-center text-destructive p-4" role="alert">
       {text}
     </div>
   );

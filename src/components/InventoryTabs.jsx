@@ -1,28 +1,24 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
-import PropTypes from "prop-types";
-
-import usePersistedForm from "@/hooks/usePersistedForm";
-import { z } from "zod";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
+import PropTypes from "prop-types";
+import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
+import { z } from "zod";
+
 import HardwareCard from "./HardwareCard";
+import Spinner from "./Spinner";
 const ChatTab = lazy(() => import("./ChatTab"));
 const TasksTab = lazy(() => import("./TasksTab"));
-import { PlusIcon } from "@heroicons/react/24/outline";
-import { linkifyText } from "@/utils/linkify";
-import { useHardware } from "@/hooks/useHardware";
-import { useObjects } from "@/hooks/useObjects";
-import { useAuth } from "@/hooks/useAuth";
+
+import FormError from "@/components/FormError.jsx";
+import { Button } from "@/components/ui/button";
 import {
-  PURCHASE_STATUSES,
-  INSTALL_STATUSES,
-  HARDWARE_FIELDS,
-} from "@/constants";
-import { t } from "@/i18n";
-
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,17 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
-import { Button } from "@/components/ui/button";
-import Spinner from "./Spinner";
+  HARDWARE_FIELDS,
+  INSTALL_STATUSES,
+  PURCHASE_STATUSES,
+} from "@/constants";
+import { useAuth } from "@/hooks/useAuth";
+import { useHardware } from "@/hooks/useHardware";
+import { useObjects } from "@/hooks/useObjects";
+import usePersistedForm from "@/hooks/usePersistedForm";
+import { t } from "@/i18n";
+import { linkifyText } from "@/utils/linkify";
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`;
 const DEFAULT_HW_FORM = {
@@ -329,13 +327,18 @@ function InventoryTabs({
               <Input
                 className="w-full"
                 placeholder={t("hardware.name")}
+                aria-invalid={!!errors[HARDWARE_FIELDS.NAME]}
+                aria-describedby={
+                  errors[HARDWARE_FIELDS.NAME]
+                    ? "hardware-name-error"
+                    : undefined
+                }
                 {...register(HARDWARE_FIELDS.NAME)}
               />
-              {errors[HARDWARE_FIELDS.NAME] && (
-                <p className="text-red-500 text-sm">
-                  {errors[HARDWARE_FIELDS.NAME].message}
-                </p>
-              )}
+              <FormError
+                id="hardware-name-error"
+                message={errors[HARDWARE_FIELDS.NAME]?.message}
+              />
             </div>
             <div>
               <Input
@@ -351,7 +354,15 @@ function InventoryTabs({
                   setValue(HARDWARE_FIELDS.PURCHASE_STATUS, value)
                 }
               >
-                <SelectTrigger className="w-full h-9">
+                <SelectTrigger
+                  className="w-full h-9"
+                  aria-invalid={!!errors[HARDWARE_FIELDS.PURCHASE_STATUS]}
+                  aria-describedby={
+                    errors[HARDWARE_FIELDS.PURCHASE_STATUS]
+                      ? "hardware-purchase-error"
+                      : undefined
+                  }
+                >
                   <SelectValue
                     placeholder={t("hardware.choosePurchaseStatus")}
                   />
@@ -364,11 +375,10 @@ function InventoryTabs({
                   ))}
                 </SelectContent>
               </Select>
-              {errors[HARDWARE_FIELDS.PURCHASE_STATUS] && (
-                <p className="text-red-500 text-sm">
-                  {errors[HARDWARE_FIELDS.PURCHASE_STATUS].message}
-                </p>
-              )}
+              <FormError
+                id="hardware-purchase-error"
+                message={errors[HARDWARE_FIELDS.PURCHASE_STATUS]?.message}
+              />
             </div>
             <div>
               <Select
@@ -377,7 +387,15 @@ function InventoryTabs({
                   setValue(HARDWARE_FIELDS.INSTALL_STATUS, value)
                 }
               >
-                <SelectTrigger className="w-full h-9">
+                <SelectTrigger
+                  className="w-full h-9"
+                  aria-invalid={!!errors[HARDWARE_FIELDS.INSTALL_STATUS]}
+                  aria-describedby={
+                    errors[HARDWARE_FIELDS.INSTALL_STATUS]
+                      ? "hardware-install-error"
+                      : undefined
+                  }
+                >
                   <SelectValue
                     placeholder={t("hardware.chooseInstallStatus")}
                   />
@@ -390,11 +408,10 @@ function InventoryTabs({
                   ))}
                 </SelectContent>
               </Select>
-              {errors[HARDWARE_FIELDS.INSTALL_STATUS] && (
-                <p className="text-red-500 text-sm">
-                  {errors[HARDWARE_FIELDS.INSTALL_STATUS].message}
-                </p>
-              )}
+              <FormError
+                id="hardware-install-error"
+                message={errors[HARDWARE_FIELDS.INSTALL_STATUS]?.message}
+              />
             </div>
             <DialogFooter>
               <Button type="button" onClick={closeHWModal}>

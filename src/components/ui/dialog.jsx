@@ -1,7 +1,9 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { cn } from "@/lib/utils";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { createFocusTrap } from "focus-trap";
+import PropTypes from "prop-types";
+import React from "react";
+
+import { cn } from "@/lib/utils";
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
@@ -29,10 +31,24 @@ export const DialogContent = React.forwardRef(function DialogContent(
   ref,
 ) {
   const contentRef = React.useRef(null);
+  const trapRef = React.useRef(null);
+  const previousRef = React.useRef(null);
   const [position, setPosition] = React.useState({ x: 0, y: 0 });
   const dragStart = React.useRef(null);
 
   React.useImperativeHandle(ref, () => contentRef.current);
+
+  React.useEffect(() => {
+    if (!contentRef.current) return undefined;
+    trapRef.current = createFocusTrap(contentRef.current, {
+      fallbackFocus: contentRef.current,
+    });
+    trapRef.current.activate();
+    return () => {
+      trapRef.current?.deactivate({ returnFocus: false });
+      previousRef.current?.focus?.();
+    };
+  }, []);
 
   const isPointerFine =
     typeof window !== "undefined" &&
@@ -74,6 +90,11 @@ export const DialogContent = React.forwardRef(function DialogContent(
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={contentRef}
+        onOpenAutoFocus={(e) => {
+          previousRef.current = document.activeElement;
+          e.preventDefault();
+        }}
+        onCloseAutoFocus={(e) => e.preventDefault()}
         onMouseDown={handleMouseDown}
         style={transform ? { transform } : undefined}
         className={cn(
