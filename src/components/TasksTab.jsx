@@ -55,6 +55,12 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterAssignee, setFilterAssignee] = useState("");
+  // Debounced input state to avoid refresh on every keystroke
+  const [assigneeInput, setAssigneeInput] = useState("");
+  useEffect(() => {
+    const id = setTimeout(() => setFilterAssignee(assigneeInput), 300);
+    return () => clearTimeout(id);
+  }, [assigneeInput]);
 
   const {
     register,
@@ -130,7 +136,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     ) {
       assigneeInputRef.current.focus({ preventScroll: true });
     }
-  }, [filterAssignee]);
+  }, [assigneeInput]);
 
   const closeTaskModal = useCallback(() => {
     setIsTaskModalOpen(false);
@@ -244,10 +250,11 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           <div className="relative h-10">
             <Input
               ref={assigneeInputRef}
-              type="search"
+              type="text"
+              inputMode="search"
               autoComplete="off"
-              value={filterAssignee}
-              onChange={(e) => setFilterAssignee(e.target.value)}
+              value={assigneeInput}
+              onChange={(e) => setAssigneeInput(e.target.value)}
               placeholder={t("tasks.assigneePlaceholder")}
               onKeyDown={(e) => {
                 if (e.key === "Enter") e.preventDefault();

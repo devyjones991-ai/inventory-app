@@ -8,6 +8,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { t } from "@/i18n";
 
 export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
+  const normalize = (v, allowed) => {
+    const s = String(v ?? "").trim();
+    return allowed.includes(s) ? s : "unknown";
+  };
+  const purchaseKey = normalize(item?.purchase_status, ["not_paid", "paid"]);
+  const installKey = normalize(item?.install_status, [
+    "not_installed",
+    "installed",
+  ]);
+
   return (
     <Card>
       <CardHeader>
@@ -18,13 +28,11 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
         <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 text-sm max-sm:text-xs">
           <span>
             {t("hardware.statusPurchasePrefix")}{" "}
-            {t(
-              `hardware.statuses.purchase.${item.purchase_status || "unknown"}`,
-            )}
+            {t(`hardware.statuses.purchase.${purchaseKey}`)}
           </span>
           <span>
             {t("hardware.statusInstallPrefix")}{" "}
-            {t(`hardware.statuses.install.${item.install_status || "unknown"}`)}
+            {t(`hardware.statuses.install.${installKey}`)}
           </span>
         </div>
 
