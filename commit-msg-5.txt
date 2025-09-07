@@ -1,6 +1,0 @@
-fix(tasks,chat): стабильный поиск (reset), скролл чата как мессенджер
-
-- TasksTab: reset очищает поле и фильтр; debounce сохранён; без форс‑фокуса.
-- useTasks: защита от устаревших ответов при быстром вводе (sequence guard).
-- ChatTab: автоскролл вниз при активации/новых сообщениях через useLayoutEffect.
-- InventoryTabs: контент вкладок не размонтируется (forceMount); для чата overflow-hidden.

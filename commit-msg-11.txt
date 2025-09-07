@@ -1,4 +1,0 @@
-fix(tabs): единый источник истины — URL
-
-- DashboardPage: tab берётся из searchParams; удалён синк‑эффект, onTabChange пишет только в URL.
-- onSelect: сразу обновляет obj+tab в URL; исключены петли и строб.

@@ -1,4 +1,0 @@
-fix: prop-types и стабилизация URL восстановления
-
-- ChatTab: selected.id допускает string|number.
-- DashboardPage: onTabChange не пишет то же значение; obj читается как строка.
