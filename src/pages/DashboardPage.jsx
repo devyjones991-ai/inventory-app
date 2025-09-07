@@ -143,12 +143,15 @@ export default function DashboardPage() {
     clearNotifications(updated.id);
   };
 
-  const onTabChange = (tab) => {
-    setActiveTab(tab);
-    if ((tab === "tasks" || tab === "chat") && selected) {
-      clearNotifications(selected.id);
-    }
-  };
+  const onTabChange = useCallback(
+    (tab) => {
+      setActiveTab(tab);
+      if ((tab === "tasks" || tab === "chat") && selected) {
+        clearNotifications(selected.id);
+      }
+    },
+    [selected, clearNotifications],
+  );
 
   // Keep URL in sync with selected object and active tab
   useEffect(() => {
@@ -169,7 +172,7 @@ export default function DashboardPage() {
       params.set("tab", nextTab);
     }
     if (changed) setSearchParams(params, { replace: true });
-  }, [selected?.id, activeTab, searchParams, setSearchParams]);
+  }, [selected?.id, activeTab, setSearchParams]);
 
   // Restore selection/tab from URL (and react to browser navigation)
   useEffect(() => {
