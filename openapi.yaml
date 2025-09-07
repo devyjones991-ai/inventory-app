@@ -1,96 +1,156 @@
-﻿openapi: 3.0.3
+openapi: 3.0.3
 info:
-  title: Inventory API
+  title: Inventory App API
   version: 1.0.0
-  description: API РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚Р°РјРё, РѕР±РѕСЂСѓРґРѕРІР°РЅРёРµРј, Р·Р°РґР°С‡Р°РјРё Рё СЃРѕРѕР±С‰РµРЅРёСЏРјРё С‡Р°С‚Р°.
+  description: API для приложения учёта объектов, оборудования и задач
 servers:
-  - url: https://{project}.functions.supabase.co
+  - url: https://{project}.supabase.co/functions/v1
     variables:
       project:
-        default: your-project-ref
+        default: YOUR_PROJECT_REF
 paths:
-  /export/{table}/{format}:
-    get:
-      summary: Р­РєСЃРїРѕСЂС‚ РґР°РЅРЅС‹С… С‚Р°Р±Р»РёС†С‹ РІ CSV/XLSX
-      parameters:
-        - name: table
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: format
-          in: path
-          required: true
-          schema:
-            type: string
-            enum: [csv, xlsx]
-        - name: columns
-          in: query
-          required: false
-          schema:
-            type: string
-            description: РЎРїРёСЃРѕРє СЃС‚РѕР»Р±С†РѕРІ С‡РµСЂРµР· Р·Р°РїСЏС‚СѓСЋ
-      responses:
-        "200":
-          description: РЈСЃРїРµС€РЅС‹Р№ СЌРєСЃРїРѕСЂС‚
-          content:
-            text/csv: {}
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: {}
-  /import:
-    post:
-      summary: РРјРїРѕСЂС‚ РґР°РЅРЅС‹С… РёР· С„Р°Р№Р»Р° РІ С‚Р°Р±Р»РёС†Сѓ
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                table:
-                  type: string
-                file:
-                  type: string
-                  format: binary
-              required: [table, file]
-      responses:
-        "200":
-          description: Р РµР·СѓР»СЊС‚Р°С‚ РёРјРїРѕСЂС‚Р°
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  inserted:
-                    type: integer
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        row:
-                          type: integer
-                        error:
-                          type: string
-  /import-export:
-    get:
-      summary: РџСЂРѕРІРµСЂРєР° РґРѕСЃС‚СѓРїРЅРѕСЃС‚Рё С„СѓРЅРєС†РёР№ РёРјРїРѕСЂС‚Р°/СЌРєСЃРїРѕСЂС‚Р°
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-
+  schemas:
+    Object:
+      type: object
+      required:
+        - id
+        - name
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор объекта
+        name:
+          type: string
+          description: Название объекта
+        description:
+          type: string
+          description: Описание объекта
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+    Hardware:
+      type: object
+      required:
+        - id
+        - object_id
+        - name
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор оборудования
+        object_id:
+          type: integer
+          description: Идентификатор связанного объекта
+        name:
+          type: string
+          description: Название оборудования
+        location:
+          type: string
+          description: Местоположение оборудования
+          nullable: true
+        purchase_status:
+          type: string
+          description: Статус закупки
+          enum:
+            - "не заказано"
+            - "заказано"
+            - "доставлено"
+          nullable: true
+        install_status:
+          type: string
+          description: Статус установки
+          enum:
+            - "не установлено"
+            - "установлено"
+            - "настроено"
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+    Task:
+      type: object
+      required:
+        - id
+        - object_id
+        - title
+        - status
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор задачи
+        object_id:
+          type: integer
+          description: Идентификатор связанного объекта
+        title:
+          type: string
+          description: Заголовок задачи
+        status:
+          type: string
+          description: Статус задачи
+          enum:
+            - "запланировано"
+            - "в процессе"
+            - "завершено"
+        assignee:
+          type: string
+          description: Имя исполнителя
+          nullable: true
+        assignee_id:
+          type: string
+          description: Идентификатор исполнителя
+          nullable: true
+        due_date:
+          type: string
+          format: date-time
+          description: Срок выполнения
+          nullable: true
+        notes:
+          type: string
+          description: Дополнительные заметки
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+    ChatMessage:
+      type: object
+      required:
+        - id
+        - object_id
+        - sender
+        - content
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор сообщения
+        object_id:
+          type: integer
+          description: Идентификатор связанного объекта
+        sender:
+          type: string
+          description: E-mail отправителя
+        content:
+          type: string
+          description: Текст сообщения
+        file_url:
+          type: string
+          format: uri
+          description: Ссылка на вложенный файл
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время отправки
+        read_at:
+          type: string
+          format: date-time
+          description: Дата и время чтения
+          nullable: true

@@ -42,4 +42,4 @@ npm test
 
 ## API
 
-Спецификация OpenAPI: `openapi.yaml`. Сборка документации: `npm run docs:build` (в папку `docs/`).
+Спецификация OpenAPI: `openapi.yaml`. Статическая документация собирается командой `npm run docs:build` и доступна в [`docs/index.html`](docs/index.html).
