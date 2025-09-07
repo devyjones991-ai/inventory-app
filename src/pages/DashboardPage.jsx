@@ -1,42 +1,43 @@
+import {
+  Bars3Icon,
+  EllipsisVerticalIcon,
+  PlusIcon,
+  TrashIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import React, {
-  useState,
-  useRef,
   useCallback,
   useEffect,
+  useRef,
+  useState,
   Suspense,
   lazy,
 } from "react";
+import { Navigate, useSearchParams } from "react-router-dom";
+
 import Spinner from "@/components/Spinner";
 const InventorySidebar = lazy(() => import("@/components/InventorySidebar"));
 const InventoryTabs = lazy(() => import("@/components/InventoryTabs"));
 const AccountModal = lazy(() => import("@/components/AccountModal"));
 const ConfirmModal = lazy(() => import("@/components/ConfirmModal"));
-import {
-  PlusIcon,
-  TrashIcon,
-  Bars3Icon,
-  EllipsisVerticalIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
 import ThemeToggle from "@/components/ThemeToggle";
-import { t } from "@/i18n";
-import { Navigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/supabaseClient";
-import { handleSupabaseError } from "@/utils/handleSupabaseError";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { useObjectList } from "@/hooks/useObjectList";
-import { useObjectNotifications } from "@/hooks/useObjectNotifications";
-import { useDashboardModals } from "@/hooks/useDashboardModals";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { useDashboardModals } from "@/hooks/useDashboardModals";
+import { useObjectList } from "@/hooks/useObjectList";
+import { useObjectNotifications } from "@/hooks/useObjectNotifications";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { t } from "@/i18n";
+import { supabase } from "@/supabaseClient";
+import { handleSupabaseError } from "@/utils/handleSupabaseError";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -292,7 +293,7 @@ export default function DashboardPage() {
 
   if (fetchError) {
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-background text-red-500">
+      <div className="flex w-full min-h-screen items-center justify-center bg-background text-destructive">
         {fetchError}
       </div>
     );
