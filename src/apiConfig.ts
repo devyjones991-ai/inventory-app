@@ -1,15 +1,7 @@
-/* global process */
-import logger from "./utils/logger";
+import { VITE_API_BASE_URL } from "./env";
 
-const apiBaseUrl: string | undefined =
-  import.meta.env?.VITE_API_BASE_URL || process.env.VITE_API_BASE_URL;
-
-export const isApiConfigured = Boolean(apiBaseUrl);
-
-if (!isApiConfigured) {
-  logger.error(
-    "VITE_API_BASE_URL is not set. Application runs in limited mode.",
-  );
-}
+const apiBaseUrl: string = VITE_API_BASE_URL;
 
 export { apiBaseUrl };
+
+export const isApiConfigured = Boolean(apiBaseUrl);

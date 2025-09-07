@@ -1,7 +1,10 @@
-import { memo, useState } from "react";
 import PropTypes from "prop-types";
-import Spinner from "./Spinner";
+import { memo, useState, forwardRef } from "react";
+import { FixedSizeList as List } from "react-window";
+
 import ErrorMessage from "./ErrorMessage";
+import Spinner from "./Spinner";
+
 import { Input } from "@/components/ui/input";
 import logger from "@/utils/logger";
 
@@ -24,6 +27,8 @@ function ObjectList({
     o.name.toLowerCase().includes(filter.toLowerCase()),
   );
 
+  const Outer = forwardRef((props, ref) => <ul ref={ref} {...props} />);
+
   return (
     <div>
       <Input
@@ -35,13 +40,23 @@ function ObjectList({
       {filtered.length === 0 ? (
         <p>Нет объектов</p>
       ) : (
-        <ul>
-          {filtered.map((o) => (
-            <li key={o.id}>
-              <button onClick={() => onItemClick(o)}>{o.name}</button>
-            </li>
-          ))}
-        </ul>
+        <List
+          height={Math.min(filtered.length * 50, 400)}
+          itemCount={filtered.length}
+          itemSize={50}
+          width="100%"
+          itemKey={(index) => filtered[index].id}
+          outerElementType={Outer}
+        >
+          {({ index, style }) => {
+            const o = filtered[index];
+            return (
+              <li style={style}>
+                <button onClick={() => onItemClick(o)}>{o.name}</button>
+              </li>
+            );
+          }}
+        </List>
       )}
     </div>
   );

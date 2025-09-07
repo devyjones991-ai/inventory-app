@@ -14,7 +14,8 @@ jobs:
           node-version: 20
       - run: npm install
       - run: npm run lint
-      - name: Run Jest tests
+      - name: Run unit tests
         run: npm test
-      - run: npm run e2e
+      - name: Run e2e tests
+        run: npm run e2e
       - run: npm run build

@@ -1,19 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import PropTypes from "prop-types";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-import TaskCard from "./TaskCard";
-import ErrorMessage from "./ErrorMessage";
 import ConfirmModal from "./ConfirmModal";
-import { useTasks } from "@/hooks/useTasks";
-import logger from "@/utils/logger";
-import { TASK_STATUSES } from "@/constants";
-import { formatDate } from "@/utils/date";
-import { t } from "@/i18n";
-
-import { Button } from "@/components/ui/button";
+import ErrorMessage from "./ErrorMessage";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +13,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "./ui/dialog";
+import VirtualizedTaskList from "./VirtualizedTaskList";
+
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -31,6 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { TASK_STATUSES } from "@/constants";
+import { useTasks } from "@/hooks/useTasks";
+import { t } from "@/i18n";
+import { formatDate } from "@/utils/date";
+import logger from "@/utils/logger";
 
 const PAGE_SIZE = 20;
 const STATUS_OPTIONS = TASK_STATUSES;
@@ -277,17 +277,13 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       {tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">{t("tasks.empty")}</div>
       ) : (
-        <div className="space-y-3">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              item={task}
-              onEdit={() => handleEditTask(task)}
-              onDelete={() => setTaskDeleteId(task.id)}
-              onView={() => setViewingTask(task)}
-            />
-          ))}
-        </div>
+        <VirtualizedTaskList
+          tasks={tasks}
+          onEdit={handleEditTask}
+          onDelete={(id) => setTaskDeleteId(id)}
+          onView={(task) => setViewingTask(task)}
+          height={400}
+        />
       )}
       {/* Task Modal */}
       <Dialog
