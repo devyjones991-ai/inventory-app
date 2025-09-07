@@ -253,13 +253,14 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               }}
               className="h-full pr-10"
             />
-            {(filterStatus !== "all" || filterAssignee) && (
+            {(filterStatus !== "all" || assigneeInput) && (
               <Button
                 type="button"
                 variant="ghost"
                 className="hidden sm:inline-flex h-8 px-2 absolute right-1 top-1/2 -translate-y-1/2"
                 onClick={() => {
                   setFilterStatus("all");
+                  setAssigneeInput("");
                   setFilterAssignee("");
                 }}
               >
@@ -267,13 +268,14 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               </Button>
             )}
           </div>
-          {(filterStatus !== "all" || filterAssignee) && (
+          {(filterStatus !== "all" || assigneeInput) && (
             <Button
               variant="ghost"
               type="button"
               className="sm:hidden mt-2"
               onClick={() => {
                 setFilterStatus("all");
+                setAssigneeInput("");
                 setFilterAssignee("");
               }}
             >

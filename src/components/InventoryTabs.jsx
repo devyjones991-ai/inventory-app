@@ -303,28 +303,24 @@ function InventoryTabs({
         </div>
       </TabsContent>
 
-      <TabsContent value="tasks" className="flex-1 overflow-auto">
-        {tab === "tasks" ? (
-          <Suspense fallback={<Spinner />}>
-            <TasksTab
-              selected={selected}
-              registerAddHandler={registerAddHandler}
-              onCountChange={setTasksCount}
-            />
-          </Suspense>
-        ) : null}
+      <TabsContent value="tasks" forceMount className="flex-1 overflow-auto">
+        <Suspense fallback={<Spinner />}>
+          <TasksTab
+            selected={selected}
+            registerAddHandler={registerAddHandler}
+            onCountChange={setTasksCount}
+          />
+        </Suspense>
       </TabsContent>
-      <TabsContent value="chat" className="flex-1 overflow-auto">
-        {tab === "chat" ? (
-          <Suspense fallback={<Spinner />}>
-            <ChatTab
-              selected={selected}
-              userEmail={user?.email}
-              active={tab === "chat"}
-              onCountChange={setMessageCount}
-            />
-          </Suspense>
-        ) : null}
+      <TabsContent value="chat" forceMount className="flex-1 overflow-hidden">
+        <Suspense fallback={<Spinner />}>
+          <ChatTab
+            selected={selected}
+            userEmail={user?.email}
+            active={tab === "chat"}
+            onCountChange={setMessageCount}
+          />
+        </Suspense>
       </TabsContent>
 
       <Dialog open={isHWModalOpen} onOpenChange={setIsHWModalOpen}>

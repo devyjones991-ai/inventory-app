@@ -57,7 +57,7 @@ function ChatTab({
       el.scrollTop = el.scrollHeight;
     });
     return () => cancelAnimationFrame(raf);
-  }, [active]);
+  }, [active, scrollRef]);
 
   // Also keep pinned to bottom on new messages
   useLayoutEffect(() => {
@@ -68,7 +68,7 @@ function ChatTab({
       el.scrollTop = el.scrollHeight;
     });
     return () => cancelAnimationFrame(raf);
-  }, [active, messages.length]);
+  }, [active, messages.length, scrollRef]);
 
   useEffect(() => {
     const me = (userEmail || "").trim().toLowerCase();
