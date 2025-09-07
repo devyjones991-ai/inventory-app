@@ -3,18 +3,19 @@
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import React from "react";
 import { describe, test, expect, vi, beforeEach } from "vitest";
 const jest = vi;
 
 import AccountModal from "@/components/AccountModal.jsx";
 
-const mockUpdate = jest.fn();
+const mockUpdate = vi.fn();
 
 vi.mock("@/hooks/useAccount", () => ({
   useAccount: () => ({ updateProfile: mockUpdate }),
 }));
 
-vi.mock("react-hot-toast", () => ({ toast: { error: jest.fn() } }));
+vi.mock("react-hot-toast", () => ({ toast: { error: vi.fn() } }));
 
 describe("AccountModal", () => {
   const user = { user_metadata: { username: "old" } };
@@ -49,5 +50,24 @@ describe("AccountModal", () => {
     expect(mockUpdate).toHaveBeenCalledWith({ username: "newname" });
     expect(onUpdated).toHaveBeenCalledWith(user);
     expect(onClose).toHaveBeenCalled();
+  });
+
+  test("циклическая навигация по фокусу", async () => {
+    const userEventSetup = userEvent.setup();
+    render(
+      <AccountModal user={user} onClose={jest.fn()} onUpdated={jest.fn()} />,
+    );
+
+    const input = screen.getByLabelText("Никнейм");
+    const save = screen.getByRole("button", { name: "Сохранить" });
+    const cancel = screen.getByRole("button", { name: "Отмена" });
+
+    expect(input).toHaveFocus();
+    await userEventSetup.tab();
+    expect(save).toHaveFocus();
+    await userEventSetup.tab();
+    expect(cancel).toHaveFocus();
+    await userEventSetup.tab();
+    expect(input).toHaveFocus();
   });
 });
