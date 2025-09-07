@@ -7,14 +7,16 @@ const envSchema = z.object({
   VITE_SUPABASE_ANON_KEY: z.string().min(1).optional(),
 });
 
+const getEnv = (key) => {
+  if (typeof process !== "undefined" && process?.env?.[key])
+    return process.env[key];
+  return import.meta?.env?.[key];
+};
+
 const source = {
-  VITE_API_BASE_URL:
-    process.env.VITE_API_BASE_URL || import.meta.env?.VITE_API_BASE_URL,
-  VITE_SUPABASE_URL:
-    process.env.VITE_SUPABASE_URL || import.meta.env?.VITE_SUPABASE_URL,
-  VITE_SUPABASE_ANON_KEY:
-    process.env.VITE_SUPABASE_ANON_KEY ||
-    import.meta.env?.VITE_SUPABASE_ANON_KEY,
+  VITE_API_BASE_URL: getEnv("VITE_API_BASE_URL"),
+  VITE_SUPABASE_URL: getEnv("VITE_SUPABASE_URL"),
+  VITE_SUPABASE_ANON_KEY: getEnv("VITE_SUPABASE_ANON_KEY"),
 };
 
 const parsedEnv = envSchema.safeParse(source);
