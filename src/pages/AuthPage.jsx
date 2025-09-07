@@ -1,15 +1,16 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useNavigate } from "react-router-dom";
-import logger from "@/utils/logger";
-import { useAuth } from "@/hooks/useAuth";
-import { t } from "@/i18n";
+import { z } from "zod";
 
-import { Input } from "@/components/ui/input";
+import FormError from "@/components/FormError.jsx";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { t } from "@/i18n";
+import logger from "@/utils/logger";
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -95,9 +96,7 @@ export default function AuthPage() {
             <h2 className="text-lg font-bold text-center">
               {isRegister ? t("auth.register") : t("auth.login")}
             </h2>
-            {userError && (
-              <div className="text-red-500 text-sm">{userError}</div>
-            )}
+            {userError && <FormError message={userError} />}
             {authError && (
               <div className="text-gray-500 text-xs">{authError}</div>
             )}
@@ -108,13 +107,11 @@ export default function AuthPage() {
                 type="email"
                 className="w-full"
                 placeholder={t("auth.email")}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
                 {...register("email")}
               />
-              {errors.email && (
-                <div className="text-red-500 text-sm">
-                  {errors.email.message}
-                </div>
-              )}
+              <FormError id="email-error" message={errors.email?.message} />
             </div>
 
             {isRegister && (
@@ -123,13 +120,16 @@ export default function AuthPage() {
                   type="text"
                   className="w-full"
                   placeholder={t("auth.username")}
+                  aria-invalid={!!errors.username}
+                  aria-describedby={
+                    errors.username ? "username-error" : undefined
+                  }
                   {...register("username")}
                 />
-                {errors.username && (
-                  <div className="text-red-500 text-sm">
-                    {errors.username.message}
-                  </div>
-                )}
+                <FormError
+                  id="username-error"
+                  message={errors.username?.message}
+                />
               </div>
             )}
 
@@ -138,13 +138,16 @@ export default function AuthPage() {
                 type="password"
                 className="w-full"
                 placeholder={t("auth.password")}
+                aria-invalid={!!errors.password}
+                aria-describedby={
+                  errors.password ? "password-error" : undefined
+                }
                 {...register("password")}
               />
-              {errors.password && (
-                <div className="text-red-500 text-sm">
-                  {errors.password.message}
-                </div>
-              )}
+              <FormError
+                id="password-error"
+                message={errors.password?.message}
+              />
             </div>
 
             <Button type="submit" className="w-full">
