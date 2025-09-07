@@ -60,14 +60,7 @@ function InventoryTabs({
   const { user } = useAuth();
 
   // --- вкладки и описание ---
-  const [tab, setTab] = useState("desc");
   const [description, setDescription] = useState("");
-  // Sync internal tab with parent-controlled tab (from URL/state)
-  useEffect(() => {
-    if (controlledTab && controlledTab !== tab) {
-      setTab(controlledTab);
-    }
-  }, [controlledTab, tab]);
   const [isEditingDesc, setIsEditingDesc] = useState(false);
 
   // --- оборудование и счётчики ---
@@ -200,11 +193,8 @@ function InventoryTabs({
 
   return (
     <Tabs
-      value={tab}
-      onValueChange={(v) => {
-        setTab(v);
-        onTabChange(v);
-      }}
+      value={controlledTab}
+      onValueChange={onTabChange}
       className="flex flex-col h-full"
     >
       <TabsList
@@ -317,7 +307,7 @@ function InventoryTabs({
           <ChatTab
             selected={selected}
             userEmail={user?.email}
-            active={tab === "chat"}
+            active={controlledTab === "chat"}
             onCountChange={setMessageCount}
           />
         </Suspense>

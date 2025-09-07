@@ -1,3 +1,4 @@
-fix(tabs): убран цикл смены вкладок и мигание
+fix(tabs): убран цикл смены вкладок
 
-- InventoryTabs: onTabChange вызывается только при клике пользователя; синхронизация с activeTab через эффект.
+- InventoryTabs: onTabChange только по клику.
+- Синхронизация с activeTab через эффект.
