@@ -14,8 +14,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "./ui/dialog";
-
 import FormError from "@/components/FormError.jsx";
+import VirtualizedTaskList from "./VirtualizedTaskList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -278,17 +278,13 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       {tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">{t("tasks.empty")}</div>
       ) : (
-        <div className="space-y-3">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              item={task}
-              onEdit={() => handleEditTask(task)}
-              onDelete={() => setTaskDeleteId(task.id)}
-              onView={() => setViewingTask(task)}
-            />
-          ))}
-        </div>
+        <VirtualizedTaskList
+          tasks={tasks}
+          onEdit={handleEditTask}
+          onDelete={(id) => setTaskDeleteId(id)}
+          onView={(task) => setViewingTask(task)}
+          height={400}
+        />
       )}
       {/* Task Modal */}
       <Dialog
