@@ -1,4 +1,0 @@
-fix(tabs): контролируемый Tabs и стабильный URL
-
-- InventoryTabs: value из activeTab; onValueChange -> родителю.
-- DashboardPage: URL sync с учётом searchParams и сравнения строк.

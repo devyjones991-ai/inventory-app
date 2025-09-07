@@ -1,4 +1,0 @@
-fix(tabs): убран цикл смены вкладок
-
-- InventoryTabs: onTabChange только по клику.
-- Синхронизация с activeTab через эффект.
