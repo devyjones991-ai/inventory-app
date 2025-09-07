@@ -211,7 +211,11 @@ export default function useChat({ objectId, userEmail, search }) {
     setMessages([]);
     setHasMore(true);
     offsetRef.current = 0;
-    if (objectId) loadMore(true);
+    if (objectId)
+      loadMore(true).then(() => {
+        // Ensure the view stays pinned to the latest result after search
+        setTimeout(() => autoScrollToBottom(true), 0);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
