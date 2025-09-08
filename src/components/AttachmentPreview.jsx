@@ -34,11 +34,19 @@ export default function AttachmentPreview({ url, onImageClick = null }) {
           className="max-w-full cursor-pointer"
           onClick={handleOpen}
           data-testid="attachment-image"
+          loading="lazy"
+          decoding="async"
         />
         {!onImageClick && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent data-testid="image-modal">
-              <img src={url} alt="full" className="max-h-screen" />
+              <img
+                src={url}
+                alt="full"
+                className="max-h-screen"
+                loading="lazy"
+                decoding="async"
+              />
               <DialogFooter>
                 <button onClick={handleClose}>Закрыть</button>
               </DialogFooter>
@@ -58,6 +66,8 @@ export default function AttachmentPreview({ url, onImageClick = null }) {
           className="max-w-full cursor-pointer"
           onClick={() => setOpen(true)}
           data-testid="attachment-video"
+          preload="metadata"
+          playsInline
         />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent data-testid="video-modal">
