@@ -58,6 +58,7 @@ function ChatTab({
 
   // Pin-to-bottom logic (like messengers)
   const pinnedRef = useRef(true);
+  const scrollRafRef = useRef(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const bottomRef = useRef(null);
   const scrollToBottom = useCallback((smooth = true) => {
@@ -69,11 +70,16 @@ function ChatTab({
   const handleScroll = useCallback(() => {
     const el = scrollRef?.current;
     if (!el) return;
-    const threshold = 80; // px
-    const nearBottom =
-      el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
-    pinnedRef.current = nearBottom;
-    setShowScrollDown(!nearBottom);
+    if (scrollRafRef.current) return;
+    scrollRafRef.current = true;
+    requestAnimationFrame(() => {
+      const threshold = 80; // px
+      const nearBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+      if (pinnedRef.current !== nearBottom) pinnedRef.current = nearBottom;
+      setShowScrollDown((prev) => (prev === !nearBottom ? prev : !nearBottom));
+      scrollRafRef.current = false;
+    });
   }, [scrollRef]);
 
   // Ensure we always scroll to the latest message when the tab becomes active
@@ -150,7 +156,7 @@ function ChatTab({
           <MagnifyingGlassIcon className="w-6 h-6" />
         </button>
         <div
-          className={`transition-all duration-300 overflow-hidden ${
+          className={`transition-all duration-300 motion-reduce:transition-none overflow-hidden ${
             isSearchOpen ? "max-h-12 mt-1" : "max-h-0"
           }`}
         >
@@ -170,6 +176,11 @@ function ChatTab({
         ref={scrollRef}
         onScroll={handleScroll}
         className="relative flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 bg-muted rounded-2xl"
+        style={{
+          contentVisibility: "auto",
+          containIntrinsicSize: "600px",
+          overscrollBehavior: "contain",
+        }}
       >
         {loadError ? (
           <div className="text-center">
