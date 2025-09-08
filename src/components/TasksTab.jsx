@@ -57,10 +57,38 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [filterQuery, setFilterQuery] = useState("");
   // Debounced input state to avoid refresh on every keystroke
   const [queryInput, setQueryInput] = useState("");
+  // Virtualized list responsive sizing for mobile correctness
+  const [listHeight, setListHeight] = useState(400);
+  const [listItemSize, setListItemSize] = useState(120);
   useEffect(() => {
     const id = setTimeout(() => setFilterQuery(queryInput), 300);
     return () => clearTimeout(id);
   }, [queryInput]);
+
+  // Compute responsive list height and row size (prevents clipping on mobile)
+  useEffect(() => {
+    const compute = () => {
+      const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+      const vw = typeof window !== "undefined" ? window.innerWidth : 1024;
+      // Leave room for header/filters/footer; use 55% of viewport on mobile, 65% on larger
+      const h = Math.max(260, Math.floor(vw < 640 ? vh * 0.55 : vh * 0.65));
+      // Row height: taller on mobile to accommodate wrapping
+      const row = vw < 640 ? 156 : 120;
+      setListHeight(h);
+      setListItemSize(row);
+    };
+    compute();
+    let rafId = 0;
+    const onResize = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(compute);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
 
   const {
     register,
@@ -292,7 +320,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           onEdit={handleEditTask}
           onDelete={(id) => setTaskDeleteId(id)}
           onView={(task) => setViewingTask(task)}
-          height={400}
+          height={listHeight}
+          itemSize={listItemSize}
         />
       )}
       {/* Task Modal */}
