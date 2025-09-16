@@ -35,7 +35,9 @@ describe("AuthPage", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByText("Нет аккаунта? Регистрация"));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Нет аккаунта? Зарегистрироваться" }),
+    );
 
     fireEvent.change(screen.getByPlaceholderText("Email"), {
       target: { value: "test@example.com" },
@@ -47,7 +49,7 @@ describe("AuthPage", () => {
       target: { value: "testuser" },
     });
 
-    fireEvent.click(screen.getByText("Зарегистрироваться"));
+    fireEvent.click(screen.getByRole("button", { name: "Регистрация" }));
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalled();

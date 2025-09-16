@@ -1,4 +1,4 @@
-/* global cy, describe, it */
+/* eslint-env cypress */
 
 describe("Авторизация", () => {
   it("отображает форму входа", () => {

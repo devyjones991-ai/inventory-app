@@ -70,7 +70,7 @@ describe("TasksTab", () => {
       </MemoryRouter>,
     );
     expect(
-      await screen.findByText("Нет задач для этого объекта."),
+      await screen.findByText("Задач пока нет. Добавьте первую задачу."),
     ).toBeInTheDocument();
   });
 
@@ -97,7 +97,7 @@ describe("TasksTab", () => {
 
     const titleInput = screen.getByLabelText(/Название/);
     const assigneeInput = screen.getByLabelText("Исполнитель");
-    const dueDateInput = screen.getByLabelText("Дата выполнения");
+    const dueDateInput = screen.getByLabelText("Назначена на");
 
     await act(async () => {
       fireEvent.change(titleInput, { target: { value: "Новая задача" } });
@@ -105,7 +105,7 @@ describe("TasksTab", () => {
       fireEvent.change(dueDateInput, { target: { value: "2024-05-10" } });
     });
 
-    fireEvent.click(screen.getByText("Добавить"));
+    fireEvent.click(screen.getByText("Сохранить"));
 
     await waitFor(() => {
       expect(mockCreateTask).toHaveBeenCalledWith({
@@ -138,7 +138,7 @@ describe("TasksTab", () => {
       </MemoryRouter>,
     );
 
-    const editButton = await screen.findByLabelText("Редактировать задачу");
+    const editButton = await screen.findByLabelText("Редактировать");
     fireEvent.click(editButton);
 
     const titleInput = screen.getByDisplayValue("Существующая задача");
@@ -175,7 +175,7 @@ describe("TasksTab", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByLabelText("Редактировать задачу")).toBeInTheDocument();
-    expect(screen.getByLabelText("Удалить задачу")).toBeInTheDocument();
+    expect(screen.getByLabelText("Редактировать")).toBeInTheDocument();
+    expect(screen.getByLabelText("Удалить")).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-/* global cy, describe, it, beforeEach */
+/* eslint-env cypress */
 
 describe("Задачи CRUD", () => {
   const api = "/rest/v1/tasks";

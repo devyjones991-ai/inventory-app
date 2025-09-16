@@ -16,6 +16,7 @@ export default function useChat({ objectId, userEmail, search }) {
   const [loadError, setLoadError] = useState(null);
   const scrollRef = useRef(null);
   const channelRef = useRef(null);
+  const loadMoreRef = useRef(() => Promise.resolve());
   const fileInputRef = useRef(null);
   const optimisticTimersRef = useRef({});
   const { fetchMessages, sendMessage } = useChatMessages();
@@ -121,6 +122,10 @@ export default function useChat({ objectId, userEmail, search }) {
   }, [file]);
 
   useEffect(() => {
+    loadMoreRef.current = loadMore;
+  }, [loadMore]);
+
+  useEffect(() => {
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
@@ -196,7 +201,7 @@ export default function useChat({ objectId, userEmail, search }) {
       .subscribe((status) => {
         logger.info("Channel status:", status);
         if (status === "SUBSCRIBED") {
-          loadMore().then(() => {
+          loadMoreRef.current(true).then(() => {
             setTimeout(() => autoScrollToBottom(true), 0);
           });
         }
@@ -213,7 +218,7 @@ export default function useChat({ objectId, userEmail, search }) {
       });
       optimisticTimersRef.current = {};
     };
-  }, [objectId, loadMore, autoScrollToBottom]);
+  }, [objectId, autoScrollToBottom]);
 
   const searchInitRef = useRef(false);
   useEffect(() => {
