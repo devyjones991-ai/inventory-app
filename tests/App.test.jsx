@@ -37,6 +37,8 @@ describe("App", () => {
     window.history.pushState({}, "", "/auth");
     render(<App />);
     expect(screen.getByText(/Loading|Загрузка/i)).toBeInTheDocument();
-    expect(await screen.findByText("Вход")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Войти" }),
+    ).toBeInTheDocument();
   });
 });
