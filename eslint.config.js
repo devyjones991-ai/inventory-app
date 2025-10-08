@@ -1,4 +1,6 @@
 import js from "@eslint/js";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 import { defineConfig, globalIgnores } from "eslint/config";
 import importPlugin from "eslint-plugin-import";
 import prettier from "eslint-plugin-prettier";
@@ -9,19 +11,22 @@ import globals from "globals";
 export default defineConfig([
   globalIgnores(["dist"]),
   {
-    files: ["**/*.{js,jsx}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     plugins: {
       prettier,
       import: importPlugin,
+      "@typescript-eslint": tseslint,
     },
     extends: [
       js.configs.recommended,
+      ...tseslint.configs["flat/recommended"],
       reactHooks.configs["recommended-latest"],
       reactRefresh.configs.vite,
     ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parser: tsParser,
       parserOptions: {
         ecmaVersion: "latest",
         ecmaFeatures: { jsx: true },
@@ -29,7 +34,11 @@ export default defineConfig([
       },
     },
     rules: {
-      "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z_]" }],
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { varsIgnorePattern: "^[A-Z_]", argsIgnorePattern: "^_" },
+      ],
       "prettier/prettier": "error",
       "import/order": [
         "error",
@@ -43,13 +52,16 @@ export default defineConfig([
     settings: {
       "import/resolver": {
         typescript: {
-          project: "./jsconfig.json",
+          project: ["./jsconfig.json", "./tsconfig.json"],
         },
       },
     },
   },
   {
-    files: ["tests/**/*.{js,jsx}", "src/components/__tests__/**/*.{js,jsx}"],
+    files: [
+      "tests/**/*.{js,jsx,ts,tsx}",
+      "src/components/__tests__/**/*.{js,jsx,ts,tsx}",
+    ],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -59,6 +71,19 @@ export default defineConfig([
     },
     rules: {
       "import/order": "off",
+    },
+  },
+  {
+    files: ["supabase/functions/**/*.{js,jsx,ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.worker,
+        Deno: "readonly",
+      },
+    },
+    rules: {
+      "import/order": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
   {

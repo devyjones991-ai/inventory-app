@@ -65,6 +65,8 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
     "@vheemstra/vite-plugin-imagemin": "^2.2.0",
     "@vitejs/plugin-react": "^4.0.0",
     "@vitest/coverage-v8": "^1.6.0",
