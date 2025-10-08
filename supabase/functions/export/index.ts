@@ -11,7 +11,47 @@ const ALLOWED_TABLES = [
 ] as const;
 const FILTER_KEY_PATTERN = /^[a-zA-Z0-9_]+$/;
 
-export async function handler(req: Request): Promise<Response> {
+type SupabaseClient = ReturnType<typeof createClient>;
+
+interface CsvOptions {
+  header?: boolean;
+  columns?: string[];
+}
+
+export interface ExportDependencies {
+  createSupabaseClient?: () => SupabaseClient;
+  csvStringify?: (data: unknown[], options: CsvOptions) => string;
+  createWorkbookWriter?: (options: { stream: WritableStream<Uint8Array> }) => {
+    addWorksheet: (name: string) => {
+      columns?: { header: string; key: string }[];
+      rows?: unknown[];
+      addRow: (row: Record<string, unknown>) => { commit: () => void };
+    } & { columns?: { header: string; key: string }[] };
+    commit: () => Promise<void> | void;
+  };
+}
+
+const DEFAULT_DEPENDENCIES: Required<ExportDependencies> = {
+  createSupabaseClient: () =>
+    createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    ),
+  csvStringify: (data: unknown[], options: CsvOptions) =>
+    unparse(data, options),
+  createWorkbookWriter: (options: { stream: WritableStream<Uint8Array> }) =>
+    new ExcelJS.stream.xlsx.WorkbookWriter(options),
+};
+
+export async function handleRequest(
+  req: Request,
+  dependencies: ExportDependencies = {},
+): Promise<Response> {
+  const { createSupabaseClient, csvStringify, createWorkbookWriter } = {
+    ...DEFAULT_DEPENDENCIES,
+    ...dependencies,
+  };
+
   const url = new URL(req.url);
   const segments = url.pathname.split("/").filter(Boolean);
   // Expected path: /export/:table/:format
@@ -39,10 +79,7 @@ export async function handler(req: Request): Promise<Response> {
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "");
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
+  const supabase = createSupabaseClient();
 
   const { data: userData, error: userError } =
     await supabase.auth.getUser(token);
@@ -83,7 +120,7 @@ export async function handler(req: Request): Promise<Response> {
         if (!header && data.length) {
           header = Object.keys(data[0]);
         }
-        const csv = unparse(data, { header: firstChunk, columns: header });
+        const csv = csvStringify(data, { header: firstChunk, columns: header });
         controller.enqueue(encoder.encode(csv + "\n"));
         firstChunk = false;
         start += batchSize;
@@ -103,9 +140,7 @@ export async function handler(req: Request): Promise<Response> {
     const { readable, writable } = new TransformStream();
 
     (async () => {
-      const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
-        stream: writable,
-      });
+      const workbook = createWorkbookWriter({ stream: writable });
       const worksheet = workbook.addWorksheet(table);
       if (selectedColumns) {
         worksheet.columns = selectedColumns.map((c) => ({ header: c, key: c }));
@@ -143,5 +178,5 @@ export async function handler(req: Request): Promise<Response> {
 }
 
 if (import.meta.main) {
-  serve(handler);
+  serve((req) => handleRequest(req));
 }
