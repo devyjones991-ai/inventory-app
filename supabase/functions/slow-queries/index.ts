@@ -1,13 +1,34 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-serve(async () => {
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
+export interface SlowQueriesDependencies {
+  createSupabaseClient?: () => ReturnType<typeof createClient>;
+  thresholdMs?: number;
+}
 
-  const threshold = Number(Deno.env.get("SLOW_QUERY_THRESHOLD") ?? "500");
+const DEFAULT_DEPENDENCIES: Required<
+  Omit<SlowQueriesDependencies, "thresholdMs">
+> = {
+  createSupabaseClient: () =>
+    createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    ),
+};
+
+export async function handleRequest(
+  _req: Request,
+  dependencies: SlowQueriesDependencies = {},
+): Promise<Response> {
+  const { createSupabaseClient } = {
+    ...DEFAULT_DEPENDENCIES,
+    ...dependencies,
+  };
+  const threshold =
+    dependencies.thresholdMs ??
+    Number(Deno.env.get("SLOW_QUERY_THRESHOLD") ?? "500");
+
+  const supabase = createSupabaseClient();
 
   const { data, error } = await supabase
     .from("pg_stat_statements" as any)
@@ -33,4 +54,8 @@ serve(async () => {
   return new Response(JSON.stringify({ stored: 0 }), {
     headers: { "Content-Type": "application/json" },
   });
-});
+}
+
+if (import.meta.main) {
+  serve((req) => handleRequest(req));
+}

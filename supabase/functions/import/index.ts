@@ -3,7 +3,35 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Papa from "https://esm.sh/papaparse@5.4.1";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 
-serve(async (req) => {
+type SupabaseClient = ReturnType<typeof createClient>;
+
+export interface ImportDependencies {
+  createSupabaseClient?: () => SupabaseClient;
+  parseCsv?: (text: string) => Record<string, unknown>[];
+  parseXlsx?: (buffer: ArrayBuffer) => Record<string, unknown>[];
+}
+
+const DEFAULT_DEPENDENCIES: Required<ImportDependencies> = {
+  createSupabaseClient: () =>
+    createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    ),
+  parseCsv: (text: string) => {
+    const parsed = Papa.parse<Record<string, unknown>>(text, { header: true });
+    return (parsed.data as Record<string, unknown>[]) ?? [];
+  },
+  parseXlsx: (buffer: ArrayBuffer) => {
+    const workbook = XLSX.read(buffer, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    return XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
+  },
+};
+
+export async function handleRequest(
+  req: Request,
+  dependencies: ImportDependencies = {},
+): Promise<Response> {
   if (req.method !== "POST") {
     return new Response(
       JSON.stringify({ error: "Only POST requests are allowed" }),
@@ -13,6 +41,11 @@ serve(async (req) => {
       },
     );
   }
+
+  const { createSupabaseClient, parseCsv, parseXlsx } = {
+    ...DEFAULT_DEPENDENCIES,
+    ...dependencies,
+  };
 
   const formData = await req.formData();
   const table = formData.get("table")?.toString();
@@ -38,12 +71,9 @@ serve(async (req) => {
 
   if (ext === "csv") {
     const text = new TextDecoder().decode(buf);
-    const parsed = Papa.parse<Record<string, unknown>>(text, { header: true });
-    rows = (parsed.data as Record<string, unknown>[]) ?? [];
+    rows = parseCsv(text);
   } else if (ext === "xlsx" || ext === "xls") {
-    const workbook = XLSX.read(buf, { type: "array" });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
+    rows = parseXlsx(buf);
   } else {
     return new Response(JSON.stringify({ error: "Unsupported file type" }), {
       status: 400,
@@ -67,10 +97,7 @@ serve(async (req) => {
     }
   });
 
-  const client = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
+  const client = createSupabaseClient();
 
   let inserted = 0;
   if (valid.length) {
@@ -85,4 +112,8 @@ serve(async (req) => {
   return new Response(JSON.stringify({ inserted, errors }), {
     headers: { "Content-Type": "application/json" },
   });
-});
+}
+
+if (import.meta.main) {
+  serve((req) => handleRequest(req));
+}

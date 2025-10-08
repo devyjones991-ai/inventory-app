@@ -9,7 +9,69 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+export interface CacheGetDependencies {
+  createSupabaseClient?: () => {
+    auth: {
+      getUser: (
+        token: string,
+      ) => Promise<{
+        data: { user: unknown } | null;
+        error: { message: string } | null;
+      }>;
+    };
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (
+          column: string,
+          value: string,
+        ) => {
+          maybeSingle: () => Promise<{
+            data: unknown;
+            error: { message: string } | null;
+          }>;
+        };
+        then?: (
+          onfulfilled: (value: {
+            data: unknown;
+            error: { message: string } | null;
+          }) => unknown,
+        ) => Promise<unknown>;
+      };
+    };
+  };
+  createRedisClient?: () => {
+    get: <T>(key: string) => Promise<T | null>;
+    set: (
+      key: string,
+      value: string,
+      options: { ex: number },
+    ) => Promise<unknown>;
+    del: (key: string) => Promise<unknown>;
+  };
+}
+
+const DEFAULT_DEPENDENCIES: Required<CacheGetDependencies> = {
+  createSupabaseClient: () =>
+    createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    ),
+  createRedisClient: () =>
+    new Redis({
+      url: Deno.env.get("REDIS_URL") ?? "",
+      token: Deno.env.get("REDIS_TOKEN") ?? "",
+    }),
+};
+
+export async function handleRequest(
+  req: Request,
+  dependencies: CacheGetDependencies = {},
+): Promise<Response> {
+  const { createSupabaseClient, createRedisClient } = {
+    ...DEFAULT_DEPENDENCIES,
+    ...dependencies,
+  };
+
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
@@ -35,10 +97,7 @@ serve(async (req) => {
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "");
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
+  const supabase = createSupabaseClient();
 
   const { data: userData, error: userError } =
     await supabase.auth.getUser(token);
@@ -49,10 +108,7 @@ serve(async (req) => {
     });
   }
 
-  const redis = new Redis({
-    url: Deno.env.get("REDIS_URL") ?? "",
-    token: Deno.env.get("REDIS_TOKEN") ?? "",
-  });
+  const redis = createRedisClient();
 
   const key = id ? `${table}:${id}` : table;
 
@@ -81,14 +137,31 @@ serve(async (req) => {
     });
   }
 
-  let query;
   if (id) {
-    query = supabase.from(table).select("*").eq("id", id).maybeSingle();
-  } else {
-    query = supabase.from(table).select("*");
+    const { data, error } = await supabase
+      .from(table)
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    await redis.set(key, JSON.stringify({ data }), { ex: 3600 });
+
+    return new Response(JSON.stringify({ data }), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "X-Cache": "MISS",
+      },
+    });
   }
 
-  const { data, error } = await query;
+  const { data, error } = await supabase.from(table).select("*");
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -106,4 +179,8 @@ serve(async (req) => {
       "X-Cache": "MISS",
     },
   });
-});
+}
+
+if (import.meta.main) {
+  serve((req) => handleRequest(req));
+}

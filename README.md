@@ -60,6 +60,12 @@ npm test
 npm run e2e
 ```
 
+- Deno‑тесты edge‑функций:
+
+```bash
+deno test supabase/functions/**/index.test.ts
+```
+
 ## Деплой
 
 - Выполните SQL из `supabase/migrations/*.sql` через Supabase SQL Editor или используйте Supabase CLI: `supabase db push`.
