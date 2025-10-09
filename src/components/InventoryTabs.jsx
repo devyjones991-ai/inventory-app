@@ -8,6 +8,7 @@ import HardwareCard from "./HardwareCard";
 import Spinner from "./Spinner";
 const ChatTab = lazy(() => import("./ChatTab"));
 const TasksTab = lazy(() => import("./TasksTab"));
+const GanttTab = lazy(() => import("./GanttTab"));
 
 import FormError from "@/components/FormError.jsx";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,22 @@ function InventoryTabs({
   const [messageCount, setMessageCount] = useState(0);
   const [isHWModalOpen, setIsHWModalOpen] = useState(false);
   const [editingHW, setEditingHW] = useState(null);
+  const [ganttTasks, setGanttTasks] = useState([]);
+  const [scheduleUpdater, setScheduleUpdater] = useState(null);
+
+  const handleTasksShare = useCallback((list) => {
+    setGanttTasks(Array.isArray(list) ? list : []);
+  }, []);
+
+  const handleScheduleChange = useCallback((handler) => {
+    setScheduleUpdater(() => handler || null);
+  }, []);
+
+  const ganttTabLabelRaw = t("inventory.tabs.gantt");
+  const ganttTabLabel =
+    ganttTabLabelRaw && ganttTabLabelRaw !== "inventory.tabs.gantt"
+      ? ganttTabLabelRaw
+      : "Диаграмма Ганта";
 
   // Allow external counts (from Dashboard) to override before tabs mount
   useEffect(() => {
@@ -217,6 +234,9 @@ function InventoryTabs({
         <TabsTrigger value="tasks" className="flex-shrink-0">
           {t("inventory.tabs.tasks")} ({tasksCount})
         </TabsTrigger>
+        <TabsTrigger value="gantt" className="flex-shrink-0">
+          {ganttTabLabel}
+        </TabsTrigger>
         <TabsTrigger value="chat" className="flex-shrink-0">
           {t("inventory.tabs.chat")} ({messageCount})
         </TabsTrigger>
@@ -306,6 +326,17 @@ function InventoryTabs({
             selected={selected}
             registerAddHandler={registerAddHandler}
             onCountChange={setTasksCount}
+            onTasksShare={handleTasksShare}
+            onScheduleChange={handleScheduleChange}
+          />
+        </Suspense>
+      </TabsContent>
+      <TabsContent value="gantt" forceMount className="flex-1 overflow-auto">
+        <Suspense fallback={<Spinner />}>
+          <GanttTab
+            selected={selected}
+            tasks={ganttTasks}
+            onTaskReschedule={scheduleUpdater || undefined}
           />
         </Suspense>
       </TabsContent>

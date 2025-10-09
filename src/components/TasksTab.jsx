@@ -45,7 +45,54 @@ const taskSchema = z.object({
   notes: z.string().optional(),
 });
 
-function TasksTab({ selected, registerAddHandler, onCountChange }) {
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const toIsoDate = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (DATE_REGEX.test(trimmed)) return trimmed;
+    if (trimmed.length >= 10 && DATE_REGEX.test(trimmed.slice(0, 10))) {
+      return trimmed.slice(0, 10);
+    }
+  }
+  return null;
+};
+
+const calcDuration = (start, end) => {
+  const startDate = new Date(`${start}T00:00:00Z`);
+  const endDate = new Date(`${end}T00:00:00Z`);
+  const msPerDay = 24 * 60 * 60 * 1000;
+  return Math.max(Math.round((endDate - startDate) / msPerDay) + 1, 1);
+};
+
+const parseDependencies = (value) => {
+  if (!value) return [];
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(",")
+      : [];
+  return Array.from(
+    new Set(
+      raw
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter((item) => item && UUID_REGEX.test(item)),
+    ),
+  );
+};
+
+function TasksTab({
+  selected,
+  registerAddHandler,
+  onCountChange,
+  onTasksShare = () => {},
+  onScheduleChange = () => {},
+}) {
   const assigneeInputRef = useRef(null);
   const todayStr = new Date().toISOString().slice(0, 10);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -123,6 +170,47 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     updateTask,
     deleteTask,
   } = useTasks(selected?.id);
+
+  useEffect(() => {
+    onTasksShare(Array.isArray(tasks) ? tasks : []);
+  }, [tasks, onTasksShare]);
+
+  const handleTimelineChange = useCallback(
+    async (ganttTask, start, end) => {
+      if (!ganttTask?.id) return;
+      const startIso = toIsoDate(start) || toIsoDate(ganttTask.start);
+      const endIso = toIsoDate(end) || toIsoDate(ganttTask.end) || startIso;
+      if (!startIso || !endIso) {
+        logger.error("Не удалось определить даты после перетаскивания", {
+          ganttTask,
+          start,
+          end,
+        });
+        return;
+      }
+      const deps = parseDependencies(
+        ganttTask.dependency_ids ?? ganttTask.dependencies,
+      );
+      try {
+        await updateTask(ganttTask.id, {
+          object_id: selected?.id,
+          start_date: startIso,
+          end_date: endIso,
+          due_date: endIso,
+          duration: calcDuration(startIso, endIso),
+          dependency_ids: deps,
+        });
+      } catch (err) {
+        logger.error("Ошибка обновления задачи после перетаскивания:", err);
+      }
+    },
+    [selected?.id, updateTask],
+  );
+
+  useEffect(() => {
+    onScheduleChange(handleTimelineChange);
+    return () => onScheduleChange(null);
+  }, [handleTimelineChange, onScheduleChange]);
 
   useEffect(() => {
     if (!selected?.id) return;
@@ -491,6 +579,8 @@ TasksTab.propTypes = {
   selected: PropTypes.object,
   registerAddHandler: PropTypes.func,
   onCountChange: PropTypes.func,
+  onTasksShare: PropTypes.func,
+  onScheduleChange: PropTypes.func,
 };
 
 export default TasksTab;
