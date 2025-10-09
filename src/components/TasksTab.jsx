@@ -7,6 +7,8 @@ import { z } from "zod";
 import ConfirmModal from "./ConfirmModal";
 import ErrorMessage from "./ErrorMessage";
 import TaskCard from "./TaskCard";
+import TasksAnalytics from "./TasksAnalytics";
+import TasksKanban from "./TasksKanban";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +38,7 @@ import logger from "@/utils/logger";
 
 const PAGE_SIZE = 20;
 const STATUS_OPTIONS = TASK_STATUSES;
+const VIEW_MODES = ["list", "kanban", "analytics"];
 
 const taskSchema = z.object({
   title: z.string().min(1, "Введите название"),
@@ -52,6 +55,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [editingTask, setEditingTask] = useState(null);
   const [viewingTask, setViewingTask] = useState(null);
   const [taskDeleteId, setTaskDeleteId] = useState(null);
+  const [viewMode, setViewMode] = useState("list");
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterQuery, setFilterQuery] = useState("");
@@ -211,6 +215,25 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     }
   }, [taskDeleteId, deleteTask]);
 
+  const handleStatusChange = useCallback(
+    async (task, nextStatus) => {
+      if (!task || !nextStatus || task.status === nextStatus) return;
+      try {
+        await updateTask(task.id, {
+          title: task.title,
+          assignee: task.assignee ?? null,
+          due_date: task.due_date ?? null,
+          status: nextStatus,
+          notes: task.notes ?? "",
+          object_id: selected?.id,
+        });
+      } catch (err) {
+        logger.error("Error updating task status:", err);
+      }
+    },
+    [updateTask, selected?.id],
+  );
+
   if (!selected) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -236,11 +259,26 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-800">
           {t("tasks.headerPrefix")} {selected.name}
         </h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={viewMode} onValueChange={setViewMode}>
+            <SelectTrigger
+              className="w-[160px]"
+              aria-label={t("tasks.viewModeLabel")}
+            >
+              <SelectValue placeholder={t("tasks.viewModeLabel")} />
+            </SelectTrigger>
+            <SelectContent>
+              {VIEW_MODES.map((mode) => (
+                <SelectItem key={mode} value={mode}>
+                  {t(`tasks.viewModes.${mode}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" type="button" onClick={openTaskModal}>
             {t("tasks.add")}
           </Button>
@@ -312,7 +350,18 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           )}
         </div>
       </div>
-      {tasks.length === 0 ? (
+      {viewMode === "kanban" ? (
+        <TasksKanban
+          tasks={tasks}
+          statuses={STATUS_OPTIONS}
+          onEdit={handleEditTask}
+          onDelete={(id) => setTaskDeleteId(id)}
+          onView={(task) => setViewingTask(task)}
+          onStatusChange={handleStatusChange}
+        />
+      ) : viewMode === "analytics" ? (
+        <TasksAnalytics tasks={tasks} statuses={STATUS_OPTIONS} />
+      ) : tasks.length === 0 ? (
         <div className="text-gray-500 text-center py-8">{t("tasks.empty")}</div>
       ) : (
         <VirtualizedTaskList
