@@ -26,7 +26,7 @@ function InventorySidebar({
   );
 
   return (
-    <nav className="flex flex-col space-y-2">
+    <nav className="flex flex-col space-y-2 max-h-[calc(100vh-4rem)] md:max-h-none overflow-y-auto pr-1 md:pr-0">
       {items.map((o) => (
         <Card key={o.id}>
           <CardHeader className="p-2">
