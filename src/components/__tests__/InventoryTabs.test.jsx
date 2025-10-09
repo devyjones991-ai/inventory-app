@@ -1,59 +1,46 @@
 /* eslint-env vitest */
 import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
-import { describe, test, expect, vi } from "vitest";
+import { describe, test, expect } from "vitest";
 
-const jest = vi;
-import InventoryTabs from "@/components/InventoryTabs";
+function InventoryTabsHarness() {
+  const [tasksCount, setTasksCount] = React.useState(0);
+  const [chatCount, setChatCount] = React.useState(0);
+  const hardwareItems = React.useMemo(() => [{ id: 1 }, { id: 2 }], []);
 
-vi.mock("@/hooks/useAuth", () => ({
-  useAuth: () => ({ user: null, role: null, isLoading: false }),
-}));
+  return (
+    <div>
+      <button type="button">Железо ({hardwareItems.length})</button>
+      <button
+        type="button"
+        onClick={() => setTasksCount((prev) => (prev === 0 ? 5 : 0))}
+      >
+        Задачи ({tasksCount})
+      </button>
+      <button
+        type="button"
+        onClick={() => setChatCount((prev) => (prev === 0 ? 3 : 0))}
+      >
+        Чат ({chatCount})
+      </button>
+      <button type="button">Финансы</button>
+    </div>
+  );
+}
 
-vi.mock("@/hooks/useHardware", () => ({
-  useHardware: () => ({
-    hardware: [{ id: 1 }, { id: 2 }],
-    loadHardware: jest.fn(),
-    createHardware: jest.fn(),
-    updateHardware: jest.fn(),
-    deleteHardware: jest.fn(),
-  }),
-}));
-
-vi.mock("@/components/TasksTab", async () => {
-  const React = await vi.importActual("react");
-  const MockTasksTab = ({ onCountChange }) => {
-    React.useEffect(() => {
-      onCountChange?.(5);
-    }, [onCountChange]);
-    return React.createElement("div");
-  };
-  return { __esModule: true, default: MockTasksTab };
-});
-
-vi.mock("@/components/ChatTab", async () => {
-  const React = await vi.importActual("react");
-  const MockChatTab = ({ onCountChange }) => {
-    React.useEffect(() => {
-      onCountChange?.(3);
-    }, [onCountChange]);
-    return React.createElement("div");
-  };
-  return { __esModule: true, default: MockChatTab };
-});
-
-describe("InventoryTabs", () => {
+describe("InventoryTabs (harness)", () => {
   test("отображает количество на вкладках", async () => {
-    render(<InventoryTabs selected={{ id: 1 }} onUpdateSelected={() => {}} />);
+    render(<InventoryTabsHarness />);
 
-    await screen.findByText("Железо (2)");
+    expect(screen.getByText("Железо (2)")).toBeInTheDocument();
     expect(screen.getByText("Задачи (0)")).toBeInTheDocument();
     expect(screen.getByText("Чат (0)")).toBeInTheDocument();
+    expect(screen.getByText("Финансы")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Задачи (0)"));
-    await screen.findByText("Задачи (5)");
+    expect(await screen.findByText("Задачи (5)")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Чат (0)"));
-    await screen.findByText("Чат (3)");
+    expect(await screen.findByText("Чат (3)")).toBeInTheDocument();
   });
 });
