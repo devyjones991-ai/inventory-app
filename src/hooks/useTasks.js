@@ -7,10 +7,20 @@ import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
 import logger from "@/utils/logger";
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 const isColumnMissingError = (err) => {
   const code = err?.code ? String(err.code) : "";
   const msg = err?.message?.toLowerCase?.() || "";
-  const mentionsField = msg.includes("due_date") || msg.includes("assigned_at");
+  const mentionsField =
+    msg.includes("due_date") ||
+    msg.includes("assigned_at") ||
+    msg.includes("start_date") ||
+    msg.includes("end_date") ||
+    msg.includes("duration") ||
+    msg.includes("dependency_ids");
   const looksLikeUnknownColumn =
     msg.includes("column") ||
     msg.includes("unknown") ||
@@ -29,8 +39,127 @@ const isSchemaCacheError = (err) => {
 };
 
 const TASK_FIELDS =
-  "id, title, status, assignee, due_date, assigned_at, notes, created_at";
+  "id, title, status, assignee, due_date, assigned_at, notes, created_at, start_date, end_date, duration, dependency_ids";
 const TASK_FIELDS_FALLBACK = "id, title, status, assignee, notes, created_at";
+
+const toIsoDate = (value, fieldName) => {
+  if (value === null || value === undefined || value === "") return undefined;
+  if (value instanceof Date) {
+    return value.toISOString().slice(0, 10);
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    if (!DATE_REGEX.test(trimmed)) {
+      throw new Error(`Некорректная дата в поле ${fieldName}`);
+    }
+    return trimmed;
+  }
+  throw new Error(`Некорректный тип данных для поля ${fieldName}`);
+};
+
+const diffInDaysInclusive = (start, end) => {
+  const startDate = new Date(`${start}T00:00:00Z`);
+  const endDate = new Date(`${end}T00:00:00Z`);
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const diff =
+    Math.round((endDate.getTime() - startDate.getTime()) / msPerDay) + 1;
+  return diff;
+};
+
+const normalizeDuration = (value, { startDate, endDate }) => {
+  if (value === null || value === undefined || value === "") {
+    if (startDate && endDate) {
+      return Math.max(diffInDaysInclusive(startDate, endDate), 1);
+    }
+    return undefined;
+  }
+  const num = Number(value);
+  if (!Number.isFinite(num)) {
+    throw new Error("Некорректная длительность задачи");
+  }
+  const intVal = Math.trunc(num);
+  if (intVal < 1) {
+    throw new Error("Длительность задачи должна быть не меньше 1 дня");
+  }
+  return intVal;
+};
+
+const normalizeDependencies = (value) => {
+  if (!value) return [];
+  const items = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(",")
+      : [];
+  const filtered = items
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter((item) => item && UUID_REGEX.test(item));
+  return Array.from(new Set(filtered));
+};
+
+const sanitizeTaskPayload = (data, { includeAssignedAt = false } = {}) => {
+  const {
+    planned_date: _planned_date,
+    plan_date: _plan_date,
+    executor,
+    assignee_id,
+    assignee,
+    title,
+    status: inputStatus,
+    due_date,
+    notes,
+    object_id,
+    start_date,
+    end_date,
+    duration,
+    dependency_ids,
+  } = data;
+
+  const status = inputStatus ?? "planned";
+  if (!TASK_STATUSES.includes(status)) {
+    throw new Error("Недопустимый статус задачи");
+  }
+
+  const dueDate = toIsoDate(due_date, "due_date");
+  const startDate = toIsoDate(start_date, "start_date");
+  const endDate = toIsoDate(end_date, "end_date");
+
+  if (startDate && endDate && endDate < startDate) {
+    throw new Error("Дата окончания не может быть раньше даты начала");
+  }
+
+  const normalizedDuration = normalizeDuration(duration, {
+    startDate,
+    endDate,
+  });
+  const dependencies = normalizeDependencies(dependency_ids);
+
+  const payload = {
+    title,
+    status,
+    notes,
+    object_id,
+    due_date: dueDate,
+    start_date: startDate,
+    end_date: endDate,
+    duration: normalizedDuration,
+    dependency_ids: dependencies,
+    assignee: assignee ?? executor ?? assignee_id ?? null,
+  };
+
+  if (includeAssignedAt) {
+    payload.assigned_at = new Date().toISOString();
+  }
+
+  Object.keys(payload).forEach((key) => {
+    if (payload[key] === undefined) {
+      delete payload[key];
+    }
+  });
+
+  return payload;
+};
 
 export function useTasks(objectId) {
   const navigate = useNavigate();
@@ -85,35 +214,13 @@ export function useTasks(objectId) {
   const insertTask = useCallback(
     async (data) => {
       try {
-        const {
-          planned_date: _planned_date,
-          plan_date: _plan_date,
-          executor,
-          assignee_id,
-          assignee,
-          title,
-          status: inputStatus,
-          due_date,
-          notes,
-          object_id,
-        } = data;
-        const status = inputStatus ?? "planned";
-        if (!TASK_STATUSES.includes(status)) {
-          throw new Error("Недопустимый статус задачи");
-        }
-        const taskDataBase = {
-          title,
-          status,
-          notes,
-          object_id,
-          assignee: assignee ?? executor ?? assignee_id ?? null,
-        };
-        const taskData = {
-          ...taskDataBase,
-          due_date,
-          // always set assignment date to now on create (if column exists)
-          assigned_at: new Date().toISOString(),
-        };
+        const taskData = sanitizeTaskPayload(data, { includeAssignedAt: true });
+        const taskDataBase = { ...taskData };
+        delete taskDataBase.start_date;
+        delete taskDataBase.end_date;
+        delete taskDataBase.duration;
+        delete taskDataBase.dependency_ids;
+        delete taskDataBase.assigned_at;
         let result = await supabase
           .from("tasks")
           .insert([taskData])
@@ -133,8 +240,11 @@ export function useTasks(objectId) {
         return result;
       } catch (err) {
         const message =
-          err.message === "Недопустимый статус задачи"
-            ? "Недопустимый статус задачи"
+          err.message &&
+          (err.message.startsWith("Некоррект") ||
+            err.message.startsWith("Дата окончания") ||
+            err.message === "Недопустимый статус задачи")
+            ? err.message
             : "Ошибка добавления задачи";
         await handleSupabaseError(err, navigate, message);
         return { data: null, error: err };
@@ -146,29 +256,12 @@ export function useTasks(objectId) {
   const updateTaskInner = useCallback(
     async (id, data) => {
       try {
-        const {
-          planned_date: _planned_date,
-          plan_date: _plan_date,
-          executor,
-          assignee_id,
-          assignee,
-          title,
-          status,
-          due_date,
-          notes,
-          object_id,
-        } = data;
-        const taskDataBase = {
-          title,
-          status,
-          notes,
-          object_id,
-          assignee: assignee ?? executor ?? assignee_id ?? null,
-        };
-        const taskData = {
-          ...taskDataBase,
-          due_date,
-        };
+        const taskData = sanitizeTaskPayload(data);
+        const taskDataBase = { ...taskData };
+        delete taskDataBase.start_date;
+        delete taskDataBase.end_date;
+        delete taskDataBase.duration;
+        delete taskDataBase.dependency_ids;
         let result = await supabase
           .from("tasks")
           .update(taskData)
@@ -189,7 +282,14 @@ export function useTasks(objectId) {
         if (result.error) throw result.error;
         return result;
       } catch (err) {
-        await handleSupabaseError(err, navigate, "Ошибка обновления задачи");
+        const message =
+          err.message &&
+          (err.message.startsWith("Некоррект") ||
+            err.message.startsWith("Дата окончания") ||
+            err.message === "Недопустимый статус задачи")
+            ? err.message
+            : "Ошибка обновления задачи";
+        await handleSupabaseError(err, navigate, message);
         return { data: null, error: err };
       }
     },
