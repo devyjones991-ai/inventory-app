@@ -1,5 +1,6 @@
 // Tests for InventoryTabs component
 import "@testing-library/jest-dom/vitest";
+import React, { useState } from "react";
 
 /* eslint-env jest */
 
@@ -11,24 +12,26 @@ var mockLoadHardware,
   mockUpdateHardware,
   mockReset;
 
-vi.mock("@/hooks/usePersistedForm.js", () => () => {
-  mockReset = jest.fn();
-  return {
-    register: jest.fn(),
-    handleSubmit: (fn) => fn,
-    reset: mockReset,
-    setValue: jest.fn(),
-    watch: jest.fn((field) =>
-      field === "purchase_status" ? "не оплачен" : "не установлен",
-    ),
-    formState: { errors: {} },
-  };
-});
+vi.mock("@/hooks/usePersistedForm.js", () => ({
+  default: () => {
+    mockReset = vi.fn();
+    return {
+      register: vi.fn(),
+      handleSubmit: (fn) => fn,
+      reset: mockReset,
+      setValue: vi.fn(),
+      watch: vi.fn((field) =>
+        field === "purchase_status" ? "не оплачен" : "не установлен",
+      ),
+      formState: { errors: {} },
+    };
+  },
+}));
 
 vi.mock("@/hooks/useHardware.js", () => {
-  mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null });
-  mockCreateHardware = jest.fn();
-  mockUpdateHardware = jest.fn();
+  mockLoadHardware = vi.fn().mockResolvedValue({ data: [], error: null });
+  mockCreateHardware = vi.fn();
+  mockUpdateHardware = vi.fn();
   mockHardware = [];
 
   return {
@@ -39,7 +42,7 @@ vi.mock("@/hooks/useHardware.js", () => {
       loadHardware: mockLoadHardware,
       createHardware: mockCreateHardware,
       updateHardware: mockUpdateHardware,
-      deleteHardware: jest.fn(),
+      deleteHardware: vi.fn(),
     }),
   };
 });
@@ -50,28 +53,28 @@ vi.mock("@/hooks/useTasks.js", () => {
     tasks,
     loading: false,
     error: null,
-    loadTasks: jest.fn(),
-    createTask: jest.fn(),
-    updateTask: jest.fn(),
-    deleteTask: jest.fn(),
-    importTasks: jest.fn(),
+    loadTasks: vi.fn(),
+    createTask: vi.fn(),
+    updateTask: vi.fn(),
+    deleteTask: vi.fn(),
+    importTasks: vi.fn(),
   };
   return { useTasks: () => mocked };
 });
 
 vi.mock("@/hooks/useChatMessages.js", () => {
-  mockFetchMessages = jest.fn().mockResolvedValue({ data: [], error: null });
+  mockFetchMessages = vi.fn().mockResolvedValue({ data: [], error: null });
   return {
     useChatMessages: () => ({
       fetchMessages: mockFetchMessages,
-      subscribeToMessages: jest.fn(() => jest.fn()),
-      sendMessage: jest.fn(),
+      subscribeToMessages: vi.fn(() => vi.fn()),
+      sendMessage: vi.fn(),
     }),
   };
 });
 
 vi.mock("@/hooks/useObjects.js", () => ({
-  useObjects: () => ({ updateObject: jest.fn() }),
+  useObjects: () => ({ updateObject: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useAuth.js", () => ({
@@ -83,7 +86,7 @@ vi.mock("@/hooks/useAuth.js", () => ({
 }));
 
 vi.mock("react-hot-toast", () => ({
-  toast: { success: jest.fn(), error: jest.fn() },
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 vi.mock("react-router-dom", async () => {
@@ -97,23 +100,37 @@ import { MemoryRouter } from "react-router-dom";
 
 import InventoryTabs from "@/components/InventoryTabs.jsx";
 
+function ControlledInventoryTabs({ activeTab: initialTab = "desc", ...props }) {
+  const [tab, setTab] = useState(initialTab);
+  return (
+    <InventoryTabs
+      {...props}
+      activeTab={tab}
+      onTabChange={(value) => {
+        setTab(value);
+        props.onTabChange?.(value);
+      }}
+    />
+  );
+}
+
 describe("InventoryTabs", () => {
   const selected = { id: "1", name: "Объект 1" };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockHardware = [];
+    mockNavigate = vi.fn();
   });
 
   it("отображает все вкладки", async () => {
     const { container } = render(
       <MemoryRouter>
-        <InventoryTabs
+        <ControlledInventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          registerAddHandler={vi.fn()}
         />
       </MemoryRouter>,
     );
@@ -126,10 +143,13 @@ describe("InventoryTabs", () => {
         expect.stringMatching(/Железо/),
         expect.stringMatching(/Задачи/),
         expect.stringMatching(/Чат/),
+        expect.stringMatching(/Аудит/),
       ]),
     );
     await userEvent.click(screen.getByRole("tab", { name: /Железо/ }));
-    expect(await screen.findByText("Оборудование")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Оборудование" }),
+    ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("tab", { name: /Задачи/ }));
     expect(
@@ -140,31 +160,29 @@ describe("InventoryTabs", () => {
   it("показывает сообщение при отсутствии задач", async () => {
     render(
       <MemoryRouter>
-        <InventoryTabs
+        <ControlledInventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          registerAddHandler={vi.fn()}
         />
       </MemoryRouter>,
     );
 
     await userEvent.click(screen.getByRole("tab", { name: /Задачи/ }));
     expect(
-      await screen.findByText("Нет задач для этого объекта."),
+      await screen.findByText("Задач пока нет. Добавьте первую задачу."),
     ).toBeInTheDocument();
   });
 
   it("отображает чат", async () => {
     render(
       <MemoryRouter>
-        <InventoryTabs
+        <ControlledInventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          registerAddHandler={vi.fn()}
         />
       </MemoryRouter>,
     );
@@ -180,18 +198,24 @@ describe("InventoryTabs", () => {
   it("открывает форму добавления оборудования", async () => {
     render(
       <MemoryRouter>
-        <InventoryTabs
+        <ControlledInventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          registerAddHandler={vi.fn()}
         />
       </MemoryRouter>,
     );
 
-    await userEvent.click(screen.getByRole("tab", { name: /Железо/ }));
-    await userEvent.click(screen.getByRole("button", { name: /Добавить/ }));
+    const hardwareTab = screen.getByRole("tab", { name: /Железо/ });
+    await userEvent.click(hardwareTab);
+    const hardwarePanel = document.getElementById(
+      hardwareTab.getAttribute("aria-controls"),
+    );
+    expect(hardwarePanel).not.toBeNull();
+    await userEvent.click(
+      within(hardwarePanel).getByRole("button", { name: /Добавить/ }),
+    );
     expect(screen.getByPlaceholderText("Название")).toHaveClass("w-full");
     expect(screen.getByPlaceholderText("Расположение")).toHaveClass("w-full");
   });
@@ -202,25 +226,31 @@ describe("InventoryTabs", () => {
         id: "1",
         name: "Принтер",
         location: "Офис",
-        purchase_status: "не оплачен",
-        install_status: "не установлен",
+        purchase_status: "not_paid",
+        install_status: "not_installed",
       },
     ];
 
     render(
       <MemoryRouter>
-        <InventoryTabs
+        <ControlledInventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          registerAddHandler={vi.fn()}
         />
       </MemoryRouter>,
     );
 
-    await userEvent.click(screen.getByRole("tab", { name: /Железо/ }));
-    const editBtn = await screen.findByRole("button", { name: "Изменить" });
+    const hardwareTab = screen.getByRole("tab", { name: /Железо/ });
+    await userEvent.click(hardwareTab);
+    const hardwarePanel = document.getElementById(
+      hardwareTab.getAttribute("aria-controls"),
+    );
+    expect(hardwarePanel).not.toBeNull();
+    const editBtn = await within(hardwarePanel).findByRole("button", {
+      name: "Редактировать",
+    });
     await userEvent.click(editBtn);
     await screen.findByPlaceholderText("Название");
     expect(mockReset).toHaveBeenLastCalledWith(mockHardware[0]);
@@ -229,24 +259,31 @@ describe("InventoryTabs", () => {
   it("скрывает кнопки сохранения описания после сохранения", async () => {
     render(
       <MemoryRouter>
-        <InventoryTabs
+        <ControlledInventoryTabs
           selected={{ id: "1", name: "Объект", description: "старое" }}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          registerAddHandler={vi.fn()}
         />
       </MemoryRouter>,
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "Изменить" }));
-    const textarea = screen.getByRole("textbox");
+    const descTab = screen.getByRole("tab", { name: /Описание/ });
+    await userEvent.click(descTab);
+    const descPanel = document.getElementById(
+      descTab.getAttribute("aria-controls"),
+    );
+    expect(descPanel).not.toBeNull();
+    await userEvent.click(
+      within(descPanel).getByRole("button", { name: "Редактировать" }),
+    );
+    const textarea = within(descPanel).getByDisplayValue("старое");
     await userEvent.clear(textarea);
     await userEvent.type(textarea, "новое описание");
     await userEvent.click(screen.getByRole("button", { name: "Сохранить" }));
 
     expect(
-      await screen.findByRole("button", { name: "Изменить" }),
+      await screen.findByRole("button", { name: "Редактировать" }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Сохранить" }),

@@ -22,6 +22,19 @@ vi.mock("@/components/ui/dialog", () => ({
   DialogFooter: ({ children }) => <div>{children}</div>,
 }));
 
+vi.mock("@/components/SignatureModal", () => ({
+  __esModule: true,
+  default: ({ open, onSuccess, onCancel }) =>
+    open ? (
+      <div data-testid="signature-modal">
+        <button onClick={() => onSuccess?.({ signatureHash: "hash" })}>
+          Sign
+        </button>
+        <button onClick={onCancel}>Close</button>
+      </div>
+    ) : null,
+}));
+
 import ConfirmModal from "@/components/ConfirmModal";
 
 describe("ConfirmModal", () => {
@@ -44,6 +57,23 @@ describe("ConfirmModal", () => {
     render(<ConfirmModal open onConfirm={handleConfirm} onCancel={() => {}} />);
     fireEvent.click(screen.getByText("OK"));
     expect(handleConfirm).toHaveBeenCalled();
+  });
+
+  test("требует подпись перед подтверждением", () => {
+    const handleConfirm = jest.fn();
+    render(
+      <ConfirmModal
+        open
+        requireSignature
+        signaturePayload={{ action: "delete" }}
+        onConfirm={handleConfirm}
+        onCancel={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByText("OK"));
+    expect(screen.getByTestId("signature-modal")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Sign"));
+    expect(handleConfirm).toHaveBeenCalledWith({ signatureHash: "hash" });
   });
 
   test("вызов onCancel", () => {

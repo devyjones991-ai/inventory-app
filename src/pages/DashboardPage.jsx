@@ -258,8 +258,8 @@ export default function DashboardPage() {
     if (ok) closeObjectModal();
   };
 
-  const onConfirmDelete = async () => {
-    const ok = await deleteObject(deleteCandidate);
+  const onConfirmDelete = async (signature) => {
+    const ok = await deleteObject(deleteCandidate, signature);
     if (ok) setDeleteCandidate(null);
   };
 
@@ -517,6 +517,14 @@ export default function DashboardPage() {
                 <TrashIcon className="w-4 h-4" /> {t("common.delete")}
               </>
             }
+            requireSignature
+            signaturePayload={{
+              entity: "object",
+              action: "delete",
+              objectId: deleteCandidate,
+            }}
+            signatureTitle={t("signature.modal.objectTitle")}
+            signatureDescription={t("signature.modal.objectDescription")}
             onConfirm={onConfirmDelete}
             onCancel={() => setDeleteCandidate(null)}
           />
