@@ -20,7 +20,9 @@
    ```bash
    supabase start
    supabase functions serve cacheGet
+   supabase functions serve reports
    ```
+   Сервис `reports` отвечает за генерацию PDF/XLSX-отчётов и должен работать параллельно с остальными функциями.
 3. Если указан неверный URL или функция не задеплоена, приложение вернёт ошибку `Requested function was not found`.
 
 ## Настройка безопасности Supabase

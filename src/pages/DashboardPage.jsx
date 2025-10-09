@@ -20,6 +20,7 @@ const InventorySidebar = lazy(() => import("@/components/InventorySidebar"));
 const InventoryTabs = lazy(() => import("@/components/InventoryTabs"));
 const AccountModal = lazy(() => import("@/components/AccountModal"));
 const ConfirmModal = lazy(() => import("@/components/ConfirmModal"));
+const ReportsModal = lazy(() => import("@/components/ReportsModal"));
 import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -96,6 +97,26 @@ export default function DashboardPage() {
   const menuRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
+  const [reportPreset, setReportPreset] = useState(null);
+
+  const openReportsModal = useCallback((types) => {
+    setReportPreset(types?.length ? types : null);
+    setIsReportsModalOpen(true);
+  }, []);
+
+  const closeReportsModal = useCallback(() => {
+    setIsReportsModalOpen(false);
+    setReportPreset(null);
+  }, []);
+
+  const openReportsFromMenu = useCallback(
+    (types) => {
+      setIsMenuOpen(false);
+      openReportsModal(types);
+    },
+    [openReportsModal],
+  );
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -385,6 +406,13 @@ export default function DashboardPage() {
                 <Button variant="info" onClick={exportToFile} type="button">
                   {t("dashboard.export")}
                 </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => openReportsModal(reportPreset)}
+                  type="button"
+                >
+                  Отчёты
+                </Button>
               </div>
               <div className="relative md:hidden" ref={menuRef}>
                 <Button
@@ -420,6 +448,20 @@ export default function DashboardPage() {
                       }}
                     >
                       {t("dashboard.export")}
+                    </button>
+                    <button
+                      type="button"
+                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => openReportsFromMenu(["tasks"])}
+                    >
+                      Отчёт по задачам
+                    </button>
+                    <button
+                      type="button"
+                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => openReportsFromMenu(["workAct"])}
+                    >
+                      Акт выполненных работ
                     </button>
                   </div>
                 )}
@@ -519,6 +561,15 @@ export default function DashboardPage() {
             }
             onConfirm={onConfirmDelete}
             onCancel={() => setDeleteCandidate(null)}
+          />
+        </Suspense>
+        <Suspense fallback={<Spinner />}>
+          <ReportsModal
+            open={isReportsModalOpen}
+            onClose={closeReportsModal}
+            objects={objects}
+            defaultObjectId={selected?.id ?? ""}
+            presetTypes={reportPreset ?? undefined}
           />
         </Suspense>
 
