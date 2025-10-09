@@ -11,6 +11,7 @@ function VirtualizedTaskList({
   onDelete,
   height = 400,
   itemSize = 120,
+  canManage = true,
 }) {
   const listRef = useRef(null);
   const sizeMapRef = useRef({});
@@ -56,6 +57,7 @@ function VirtualizedTaskList({
             onView={() => onView(task)}
             onEdit={() => onEdit(task)}
             onDelete={() => onDelete(task.id)}
+            canManage={canManage}
           />
         </div>
       </div>
@@ -88,6 +90,7 @@ VirtualizedTaskList.propTypes = {
   onDelete: PropTypes.func.isRequired,
   height: PropTypes.number,
   itemSize: PropTypes.number,
+  canManage: PropTypes.bool,
 };
 
 export default VirtualizedTaskList;

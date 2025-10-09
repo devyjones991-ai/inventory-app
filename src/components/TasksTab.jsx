@@ -45,7 +45,12 @@ const taskSchema = z.object({
   notes: z.string().optional(),
 });
 
-function TasksTab({ selected, registerAddHandler, onCountChange }) {
+function TasksTab({
+  selected,
+  registerAddHandler,
+  onCountChange,
+  canEditTasks = true,
+}) {
   const assigneeInputRef = useRef(null);
   const todayStr = new Date().toISOString().slice(0, 10);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -132,6 +137,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   }, [selected?.id, filterStatus, filterQuery, loadTasks]);
 
   const openTaskModal = useCallback(() => {
+    if (!canEditTasks) return;
     reset({
       title: "",
       assignee: "",
@@ -141,12 +147,12 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     });
     setEditingTask(null);
     setIsTaskModalOpen(true);
-  }, [todayStr, reset]);
+  }, [todayStr, reset, canEditTasks]);
 
   useEffect(() => {
-    registerAddHandler?.(openTaskModal);
+    registerAddHandler?.(canEditTasks ? openTaskModal : null);
     return () => registerAddHandler?.(null);
-  }, [registerAddHandler, openTaskModal]);
+  }, [registerAddHandler, openTaskModal, canEditTasks]);
 
   // Notify parent about tasks count changes without re-triggering on every re-render
   const onCountChangeRef = useRef(onCountChange);
@@ -175,6 +181,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         status: data.status,
       };
       try {
+        if (!canEditTasks) return;
         if (editingTask) await updateTask(editingTask.id, payload);
         else await createTask(payload);
         closeTaskModal();
@@ -182,11 +189,19 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         logger.error("Error saving task:", err);
       }
     },
-    [editingTask, selected?.id, createTask, updateTask, closeTaskModal],
+    [
+      editingTask,
+      selected?.id,
+      createTask,
+      updateTask,
+      closeTaskModal,
+      canEditTasks,
+    ],
   );
 
   const handleEditTask = useCallback(
     (task) => {
+      if (!canEditTasks) return;
       reset({
         title: task.title || "",
         assignee: task.assignee || "",
@@ -197,11 +212,11 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       setEditingTask(task);
       setIsTaskModalOpen(true);
     },
-    [reset],
+    [reset, canEditTasks],
   );
 
   const confirmDeleteTask = useCallback(async () => {
-    if (!taskDeleteId) return;
+    if (!taskDeleteId || !canEditTasks) return;
     try {
       await deleteTask(taskDeleteId);
     } catch (err) {
@@ -209,7 +224,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     } finally {
       setTaskDeleteId(null);
     }
-  }, [taskDeleteId, deleteTask]);
+  }, [taskDeleteId, deleteTask, canEditTasks]);
 
   if (!selected) {
     return (
@@ -240,11 +255,13 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         <h2 className="text-xl font-bold text-gray-800">
           {t("tasks.headerPrefix")} {selected.name}
         </h2>
-        <div className="flex gap-2">
-          <Button size="sm" type="button" onClick={openTaskModal}>
-            {t("tasks.add")}
-          </Button>
-        </div>
+        {canEditTasks && (
+          <div className="flex gap-2">
+            <Button size="sm" type="button" onClick={openTaskModal}>
+              {t("tasks.add")}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -318,10 +335,11 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         <VirtualizedTaskList
           tasks={tasks}
           onEdit={handleEditTask}
-          onDelete={(id) => setTaskDeleteId(id)}
+          onDelete={(id) => canEditTasks && setTaskDeleteId(id)}
           onView={(task) => setViewingTask(task)}
           height={listHeight}
           itemSize={listItemSize}
+          canManage={canEditTasks}
         />
       )}
       {/* Task Modal */}
@@ -491,6 +509,7 @@ TasksTab.propTypes = {
   selected: PropTypes.object,
   registerAddHandler: PropTypes.func,
   onCountChange: PropTypes.func,
+  canEditTasks: PropTypes.bool,
 };
 
 export default TasksTab;

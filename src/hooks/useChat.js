@@ -6,7 +6,12 @@ import { supabase } from "@/supabaseClient";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
 import logger from "@/utils/logger";
 
-export default function useChat({ objectId, userEmail, search }) {
+export default function useChat({
+  objectId,
+  userEmail,
+  search,
+  canManage = true,
+}) {
   const [messages, setMessages] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [newMessage, setNewMessage] = useState("");
@@ -67,7 +72,7 @@ export default function useChat({ objectId, userEmail, search }) {
   );
 
   const markMessagesAsRead = useCallback(async () => {
-    if (!objectId) return;
+    if (!objectId || !canManage) return;
     try {
       const { error } = await supabase
         .from("chat_messages")
@@ -89,7 +94,7 @@ export default function useChat({ objectId, userEmail, search }) {
         "Ошибка отметки сообщений как прочитанных",
       );
     }
-  }, [objectId]);
+  }, [objectId, canManage]);
 
   // Автоскролл к новому сообщению
   const autoScrollToBottom = useCallback((force = false) => {
@@ -262,7 +267,7 @@ export default function useChat({ objectId, userEmail, search }) {
   }, [messages, markMessagesAsRead]);
 
   const handleSend = async () => {
-    if ((!newMessage.trim() && !file) || sending) return;
+    if (!canManage || (!newMessage.trim() && !file) || sending) return;
 
     setSending(true);
     const optimisticId = Date.now() + Math.random();
@@ -346,6 +351,7 @@ export default function useChat({ objectId, userEmail, search }) {
   };
 
   const handleKeyDown = (e) => {
+    if (!canManage) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();

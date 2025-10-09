@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { t } from "@/i18n";
 
-export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
+export default function HardwareCard({
+  item,
+  onEdit,
+  onDelete,
+  canManage = false,
+}) {
   const normalize = (v, allowed) => {
     const s = String(v ?? "").trim();
     return allowed.includes(s) ? s : "unknown";
@@ -36,7 +41,7 @@ export default function HardwareCard({ item, onEdit, onDelete, user = null }) {
           </span>
         </div>
 
-        {!!user && (
+        {canManage && (
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
               size="sm"
@@ -72,7 +77,5 @@ HardwareCard.propTypes = {
   }).isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  user: PropTypes.shape({
-    id: PropTypes.string,
-  }),
+  canManage: PropTypes.bool,
 };
