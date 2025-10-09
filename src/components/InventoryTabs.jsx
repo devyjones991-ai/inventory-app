@@ -2,6 +2,7 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import PropTypes from "prop-types";
 import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
+import { toast } from "react-hot-toast";
 import { z } from "zod";
 
 import HardwareCard from "./HardwareCard";
@@ -38,6 +39,8 @@ import { useHardware } from "@/hooks/useHardware";
 import { useObjects } from "@/hooks/useObjects";
 import usePersistedForm from "@/hooks/usePersistedForm";
 import { t } from "@/i18n";
+import { supabase } from "@/supabaseClient";
+import { handleSupabaseError } from "@/utils/handleSupabaseError";
 import { linkifyText } from "@/utils/linkify";
 
 const HW_FORM_KEY = (objectId) => `hwForm_${objectId}`;
@@ -56,6 +59,7 @@ function InventoryTabs({
   tasksCount: tasksCountExternal,
   chatCount: chatCountExternal,
   activeTab: controlledTab = "desc",
+  onTemplateCreated = () => {},
 }) {
   const { user } = useAuth();
 
@@ -69,6 +73,12 @@ function InventoryTabs({
   const [messageCount, setMessageCount] = useState(0);
   const [isHWModalOpen, setIsHWModalOpen] = useState(false);
   const [editingHW, setEditingHW] = useState(null);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+  const [isTemplatePublic, setIsTemplatePublic] = useState(false);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [templateError, setTemplateError] = useState("");
 
   // Allow external counts (from Dashboard) to override before tabs mount
   useEffect(() => {
@@ -180,11 +190,65 @@ function InventoryTabs({
 
   const { updateObject } = useObjects();
 
+  const openTemplateModal = useCallback(() => {
+    if (!selected) return;
+    setTemplateName(selected.name || "");
+    setTemplateDescription(selected.description || "");
+    setIsTemplatePublic(false);
+    setTemplateError("");
+    setIsTemplateModalOpen(true);
+  }, [selected]);
+
+  const closeTemplateModal = useCallback(() => {
+    setIsTemplateModalOpen(false);
+  }, []);
+
+  const handleSaveTemplate = useCallback(async () => {
+    if (!selected?.id) return;
+    const trimmedName = templateName.trim();
+    if (!trimmedName) {
+      setTemplateError(t("templates.save.nameRequired"));
+      return;
+    }
+    setIsSavingTemplate(true);
+    const { data, error } = await supabase.functions.invoke("templates-save", {
+      body: {
+        objectId: selected.id,
+        name: trimmedName,
+        description: templateDescription.trim(),
+        isPublic: isTemplatePublic,
+      },
+    });
+    setIsSavingTemplate(false);
+    if (error) {
+      setTemplateError(error.message || t("templates.save.error"));
+      toast.error(t("templates.save.error"));
+      await handleSupabaseError(error, null, t("templates.save.error"));
+      return;
+    }
+    toast.success(t("templates.save.success"));
+    onTemplateCreated?.(data?.template);
+    setIsTemplateModalOpen(false);
+  }, [
+    selected?.id,
+    templateName,
+    templateDescription,
+    isTemplatePublic,
+    onTemplateCreated,
+  ]);
+
   useEffect(() => {
     if (selected) {
       setDescription(selected.description || "");
     }
   }, [selected]);
+
+  useEffect(() => {
+    if (!isTemplateModalOpen) {
+      setTemplateError("");
+      setIsSavingTemplate(false);
+    }
+  }, [isTemplateModalOpen]);
 
   const saveDescription = useCallback(async () => {
     if (!selected) return;
@@ -252,13 +316,24 @@ function InventoryTabs({
                   : t("inventory.noDescription")}
               </div>
               {user && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsEditingDesc(true)}
-                >
-                  {t("common.edit")}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsEditingDesc(true)}
+                  >
+                    {t("common.edit")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    type="button"
+                    onClick={openTemplateModal}
+                    disabled={!selected}
+                  >
+                    {t("templates.saveAs")}
+                  </Button>
+                </div>
               )}
             </div>
           )}
@@ -427,6 +502,64 @@ function InventoryTabs({
           </form>
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={isTemplateModalOpen}
+        onOpenChange={(open) => {
+          if (!open) closeTemplateModal();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("templates.save.title")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="template-name">
+                {t("templates.save.nameLabel")}
+              </Label>
+              <Input
+                id="template-name"
+                value={templateName}
+                onChange={(e) => {
+                  setTemplateName(e.target.value);
+                  if (templateError) setTemplateError("");
+                }}
+                placeholder={t("templates.save.namePlaceholder")}
+              />
+              <FormError id="template-name-error" message={templateError} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="template-description">
+                {t("templates.save.descriptionLabel")}
+              </Label>
+              <Textarea
+                id="template-description"
+                value={templateDescription}
+                onChange={(e) => setTemplateDescription(e.target.value)}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isTemplatePublic}
+                onChange={(e) => setIsTemplatePublic(e.target.checked)}
+              />
+              {t("templates.save.publicLabel")}
+            </label>
+          </div>
+          <DialogFooter className="flex space-x-2">
+            <Button onClick={handleSaveTemplate} disabled={isSavingTemplate}>
+              {isSavingTemplate
+                ? t("templates.save.progress")
+                : t("templates.save.confirm")}
+            </Button>
+            <Button variant="ghost" onClick={closeTemplateModal}>
+              {t("common.cancel")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Tabs>
   );
 }
@@ -442,6 +575,8 @@ InventoryTabs.propTypes = {
   registerAddHandler: PropTypes.func,
   tasksCount: PropTypes.number,
   chatCount: PropTypes.number,
+  activeTab: PropTypes.string,
+  onTemplateCreated: PropTypes.func,
 };
 
 export default InventoryTabs;

@@ -13,6 +13,7 @@ import React, {
   Suspense,
   lazy,
 } from "react";
+import { toast } from "react-hot-toast";
 import { Navigate, useSearchParams } from "react-router-dom";
 
 import Spinner from "@/components/Spinner";
@@ -21,6 +22,7 @@ const InventoryTabs = lazy(() => import("@/components/InventoryTabs"));
 const AccountModal = lazy(() => import("@/components/AccountModal"));
 const ConfirmModal = lazy(() => import("@/components/ConfirmModal"));
 import ThemeToggle from "@/components/ThemeToggle";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +32,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboardModals } from "@/hooks/useDashboardModals";
 import { useObjectList } from "@/hooks/useObjectList";
@@ -49,12 +53,15 @@ export default function DashboardPage() {
 
   const {
     objects,
+    templates,
     selected,
     fetchError,
     isEmpty,
     handleSelect,
     handleUpdateSelected,
     saveObject,
+    loadTemplates,
+    createFromTemplate,
     deleteObject,
     importFromFile,
     exportToFile,
@@ -91,6 +98,120 @@ export default function DashboardPage() {
     },
     [openAddModal],
   );
+
+  const [objectModalTab, setObjectModalTab] = useState("manual");
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templatesError, setTemplatesError] = useState(null);
+  const [templatesLoaded, setTemplatesLoaded] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [templateObjectName, setTemplateObjectName] = useState("");
+  const [isCreatingFromTemplate, setIsCreatingFromTemplate] = useState(false);
+  const selectedTemplate =
+    selectedTemplateId && templates?.length
+      ? templates.find((tpl) => tpl.id === selectedTemplateId) || null
+      : null;
+
+  const resetTemplateState = useCallback(() => {
+    setObjectModalTab("manual");
+    setTemplatesError(null);
+    setTemplatesLoading(false);
+    setTemplatesLoaded(false);
+    setSelectedTemplateId(null);
+    setTemplateObjectName("");
+    setIsCreatingFromTemplate(false);
+  }, []);
+
+  const fetchTemplates = useCallback(async () => {
+    setTemplatesLoading(true);
+    const { data: list, error } = await loadTemplates();
+    if (error) {
+      setTemplatesError(error.message || "Ошибка загрузки шаблонов");
+    } else {
+      setTemplatesError(null);
+      if (!selectedTemplateId && list?.length) {
+        setSelectedTemplateId(list[0].id);
+        setTemplateObjectName((prev) => prev || list[0].name || "");
+      }
+    }
+    setTemplatesLoading(false);
+    setTemplatesLoaded(true);
+  }, [loadTemplates, selectedTemplateId]);
+
+  const ensureTemplatesLoaded = useCallback(async () => {
+    if (templatesLoaded || templatesLoading) return;
+    await fetchTemplates();
+  }, [templatesLoaded, templatesLoading, fetchTemplates]);
+
+  const handleReloadTemplates = useCallback(async () => {
+    await fetchTemplates();
+  }, [fetchTemplates]);
+
+  const handleObjectModalTabChange = useCallback(
+    async (value) => {
+      setObjectModalTab(value);
+      if (value === "template") {
+        await ensureTemplatesLoaded();
+      }
+    },
+    [ensureTemplatesLoaded],
+  );
+
+  const handleSelectTemplate = useCallback((template) => {
+    if (!template) return;
+    setSelectedTemplateId(template.id);
+    setTemplateObjectName((prev) => prev || template.name || "");
+  }, []);
+
+  const handleCreateFromTemplate = useCallback(async () => {
+    if (!selectedTemplateId) {
+      toast.error(t("templates.selectTemplate"));
+      return;
+    }
+    const nameToUse = (
+      templateObjectName ||
+      selectedTemplate?.name ||
+      ""
+    ).trim();
+    if (!nameToUse) {
+      toast.error(t("templates.nameRequired"));
+      return;
+    }
+    setIsCreatingFromTemplate(true);
+    const { error } = await createFromTemplate({
+      templateId: selectedTemplateId,
+      name: nameToUse,
+      description: selectedTemplate?.description ?? undefined,
+    });
+    setIsCreatingFromTemplate(false);
+    if (!error) {
+      closeObjectModal();
+      resetTemplateState();
+    }
+  }, [
+    selectedTemplateId,
+    templateObjectName,
+    selectedTemplate,
+    createFromTemplate,
+    closeObjectModal,
+    resetTemplateState,
+  ]);
+
+  const handleCloseObjectModal = useCallback(() => {
+    resetTemplateState();
+    closeObjectModal();
+  }, [resetTemplateState, closeObjectModal]);
+
+  const resolvePurchaseStatus = useCallback((value) => {
+    const key = String(value ?? "unknown");
+    const translated = t(`hardware.statuses.purchase.${key}`);
+    return translated || key;
+  }, []);
+
+  const resolveInstallStatus = useCallback((value) => {
+    const key = String(value ?? "unknown");
+    const translated = t(`hardware.statuses.install.${key}`);
+    return translated || key;
+  }, []);
 
   const importInputRef = useRef(null);
   const menuRef = useRef(null);
@@ -133,6 +254,18 @@ export default function DashboardPage() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (editingObject) {
+      setObjectModalTab("manual");
+    }
+  }, [editingObject]);
+
+  useEffect(() => {
+    if (!isObjectModalOpen) {
+      resetTemplateState();
+    }
+  }, [isObjectModalOpen, resetTemplateState]);
 
   const onSelect = (obj) => {
     handleSelect(obj);
@@ -254,6 +387,10 @@ export default function DashboardPage() {
   }, [selected?.id]);
 
   const onSaveObject = async () => {
+    if (!editingObject && objectModalTab === "template") {
+      await handleCreateFromTemplate();
+      return;
+    }
     const ok = await saveObject(objectName, editingObject);
     if (ok) closeObjectModal();
   };
@@ -462,6 +599,7 @@ export default function DashboardPage() {
                 registerAddHandler={registerAddHandler}
                 tasksCount={tasksCount}
                 chatCount={chatCount}
+                onTemplateCreated={fetchTemplates}
               />
             </Suspense>
           </div>
@@ -471,16 +609,16 @@ export default function DashboardPage() {
           open={isObjectModalOpen}
           onOpenChange={(isOpen) => {
             if (!isOpen) {
-              closeObjectModal();
+              handleCloseObjectModal();
             }
           }}
         >
-          <DialogContent draggable className="w-full max-w-md">
+          <DialogContent draggable className="w-full max-w-2xl">
             <Button
               size="icon"
               type="button"
               className="absolute right-2 top-2 bg-background/90"
-              onClick={closeObjectModal}
+              onClick={handleCloseObjectModal}
               aria-label="Close"
             >
               <XMarkIcon className="w-5 h-5" />
@@ -490,20 +628,281 @@ export default function DashboardPage() {
                 {editingObject ? t("objects.editTitle") : t("objects.addTitle")}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                type="text"
-                className="w-full"
-                placeholder={t("objects.namePlaceholder")}
-                value={objectName}
-                onChange={(e) => setObjectName(e.target.value)}
-              />
-            </div>
+            {editingObject ? (
+              <div className="space-y-4">
+                <Input
+                  type="text"
+                  className="w-full"
+                  placeholder={t("objects.namePlaceholder")}
+                  value={objectName}
+                  onChange={(e) => setObjectName(e.target.value)}
+                />
+              </div>
+            ) : (
+              <Tabs
+                value={objectModalTab}
+                onValueChange={handleObjectModalTabChange}
+                className="space-y-4"
+              >
+                <TabsList className="grid grid-cols-2">
+                  <TabsTrigger value="manual">
+                    {t("templates.tabs.manual")}
+                  </TabsTrigger>
+                  <TabsTrigger value="template">
+                    {t("templates.tabs.template")}
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="manual">
+                  <div className="space-y-4">
+                    <Input
+                      type="text"
+                      className="w-full"
+                      placeholder={t("objects.namePlaceholder")}
+                      value={objectName}
+                      onChange={(e) => setObjectName(e.target.value)}
+                    />
+                  </div>
+                </TabsContent>
+                <TabsContent value="template">
+                  <div className="space-y-4">
+                    <Input
+                      type="text"
+                      className="w-full"
+                      placeholder={t("templates.objectNamePlaceholder")}
+                      value={templateObjectName}
+                      onChange={(e) => setTemplateObjectName(e.target.value)}
+                    />
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium">
+                            {t("templates.listTitle")}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleReloadTemplates}
+                            disabled={templatesLoading}
+                          >
+                            {t("templates.reload")}
+                          </Button>
+                        </div>
+                        {templatesError && (
+                          <div className="text-sm text-destructive">
+                            {templatesError}
+                          </div>
+                        )}
+                        {templatesLoading ? (
+                          <div className="flex justify-center py-6">
+                            <Spinner />
+                          </div>
+                        ) : null}
+                        {!templatesLoading &&
+                        !templatesError &&
+                        (!templates || templates.length === 0) ? (
+                          <p className="text-sm text-muted-foreground">
+                            {t("templates.empty")}
+                          </p>
+                        ) : null}
+                        {templates && templates.length > 0 && (
+                          <ScrollArea className="h-64 border rounded-md">
+                            <div className="divide-y divide-border">
+                              {templates.map((template) => {
+                                const isActive =
+                                  template.id === selectedTemplateId;
+                                return (
+                                  <button
+                                    type="button"
+                                    key={template.id}
+                                    onClick={() =>
+                                      handleSelectTemplate(template)
+                                    }
+                                    className={`w-full text-left px-3 py-2 transition focus:outline-none ${
+                                      isActive
+                                        ? "bg-accent text-accent-foreground"
+                                        : "hover:bg-accent/40"
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="font-medium line-clamp-1">
+                                        {template.name}
+                                      </span>
+                                      <div className="flex items-center gap-1">
+                                        {template.owned ? (
+                                          <Badge variant="secondary">
+                                            {t("templates.ownedBadge")}
+                                          </Badge>
+                                        ) : null}
+                                        {template.isPublic ? (
+                                          <Badge>
+                                            {t("templates.publicBadge")}
+                                          </Badge>
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                      {template.description ||
+                                        t("templates.preview.noDescription")}
+                                    </p>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </ScrollArea>
+                        )}
+                      </div>
+                      <div className="border rounded-md bg-background/60 p-3">
+                        {selectedTemplate ? (
+                          <div className="space-y-3 text-sm">
+                            <div>
+                              <h4 className="text-base font-semibold">
+                                {t("templates.preview.title")}
+                              </h4>
+                              <p className="mt-1 text-muted-foreground">
+                                {selectedTemplate.description ||
+                                  t("templates.preview.noDescription")}
+                              </p>
+                            </div>
+                            <div>
+                              <h5 className="font-semibold">
+                                {t("templates.preview.equipment")} (
+                                {selectedTemplate.equipment.length})
+                              </h5>
+                              {selectedTemplate.equipment.length ? (
+                                <ul className="mt-2 space-y-2">
+                                  {selectedTemplate.equipment.map(
+                                    (item, idx) => (
+                                      <li
+                                        key={`${item.name || "item"}-${idx}`}
+                                        className="rounded-md border border-border bg-background px-3 py-2"
+                                      >
+                                        <div className="text-sm font-medium">
+                                          {item.name ||
+                                            t(
+                                              "templates.preview.unnamedEquipment",
+                                            )}
+                                        </div>
+                                        {item.location ? (
+                                          <div className="text-xs text-muted-foreground">
+                                            {item.location}
+                                          </div>
+                                        ) : null}
+                                        <div className="text-xs text-muted-foreground">
+                                          {t("hardware.statusPurchasePrefix")}{" "}
+                                          {resolvePurchaseStatus(
+                                            item.purchase_status,
+                                          )}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {t("hardware.statusInstallPrefix")}{" "}
+                                          {resolveInstallStatus(
+                                            item.install_status,
+                                          )}
+                                        </div>
+                                      </li>
+                                    ),
+                                  )}
+                                </ul>
+                              ) : (
+                                <p className="text-xs text-muted-foreground">
+                                  {t("templates.preview.emptyEquipment")}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <h5 className="font-semibold">
+                                {t("templates.preview.tasks")} (
+                                {selectedTemplate.tasks.length})
+                              </h5>
+                              {selectedTemplate.tasks.length ? (
+                                <ul className="mt-2 space-y-2">
+                                  {selectedTemplate.tasks.map((task) => {
+                                    const statusKey = task.schema.status
+                                      ? `tasks.statuses.${task.schema.status}`
+                                      : null;
+                                    const statusLabel = statusKey
+                                      ? t(statusKey)
+                                      : t("templates.preview.noStatus");
+                                    return (
+                                      <li
+                                        key={task.id}
+                                        className="rounded-md border border-border bg-background px-3 py-2"
+                                      >
+                                        <div className="text-sm font-semibold line-clamp-1">
+                                          {task.schema.title}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {statusLabel ||
+                                            task.schema.status ||
+                                            ""}
+                                        </div>
+                                        {task.schema.due_date ? (
+                                          <div className="text-xs text-muted-foreground">
+                                            {t("tasks.form.dueDate")}:{" "}
+                                            {task.schema.due_date}
+                                          </div>
+                                        ) : null}
+                                        {task.schema.notes ? (
+                                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                            {task.schema.notes}
+                                          </p>
+                                        ) : null}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              ) : (
+                                <p className="text-xs text-muted-foreground">
+                                  {t("templates.preview.emptyTasks")}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            {t("templates.selectTemplate")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            )}
             <DialogFooter className="flex space-x-2">
-              <Button onClick={onSaveObject}>{t("common.save")}</Button>
-              <Button variant="ghost" onClick={closeObjectModal}>
-                {t("common.cancel")}
-              </Button>
+              {editingObject ? (
+                <>
+                  <Button onClick={onSaveObject} disabled={!objectName.trim()}>
+                    {t("common.save")}
+                  </Button>
+                  <Button variant="ghost" onClick={handleCloseObjectModal}>
+                    {t("common.cancel")}
+                  </Button>
+                </>
+              ) : objectModalTab === "template" ? (
+                <>
+                  <Button
+                    onClick={handleCreateFromTemplate}
+                    disabled={isCreatingFromTemplate || !selectedTemplateId}
+                  >
+                    {isCreatingFromTemplate
+                      ? t("templates.creating")
+                      : t("templates.createButton")}
+                  </Button>
+                  <Button variant="ghost" onClick={handleCloseObjectModal}>
+                    {t("common.cancel")}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button onClick={onSaveObject} disabled={!objectName.trim()}>
+                    {t("common.save")}
+                  </Button>
+                  <Button variant="ghost" onClick={handleCloseObjectModal}>
+                    {t("common.cancel")}
+                  </Button>
+                </>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
