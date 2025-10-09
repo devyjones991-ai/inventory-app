@@ -28,6 +28,19 @@ export const handlers = [
   http.post(`${API_URL}/api/import/:table`, async () =>
     HttpResponse.json({ processed: 0, errors: [] }, { status: 200 }),
   ),
+  http.get(`${API_URL}/functions/v1/import-export`, ({ request }) => {
+    const url = new URL(request.url);
+    if (url.searchParams.get("action") === "status") {
+      return HttpResponse.json({ data: [] }, { status: 200 });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+  http.put(`${API_URL}/functions/v1/import-export`, async () =>
+    HttpResponse.json({ status: "saved" }, { status: 200 }),
+  ),
+  http.post(`${API_URL}/functions/v1/import-export`, async () =>
+    HttpResponse.json({ status: "success" }, { status: 200 }),
+  ),
 ];
 
 export const server = setupServer(...handlers);

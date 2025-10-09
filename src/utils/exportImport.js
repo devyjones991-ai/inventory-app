@@ -14,7 +14,10 @@ export async function importInventory(file) {
   if (error) throw error;
   return data;
 }
-export async function exportTable(table, format) {
+export async function exportTable(
+  table,
+  { format = "csv", columnMapping, filters, signal } = {},
+) {
   if (!isApiConfigured) {
     logger.error(
       "Не задана переменная окружения VITE_API_BASE_URL. Экспорт невозможен.",
@@ -22,9 +25,20 @@ export async function exportTable(table, format) {
     throw new Error("API не настроен");
   }
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/api/export/${table}?format=${encodeURIComponent(format)}`,
-    );
+    const params = new URLSearchParams();
+    params.set("format", format);
+    if (columnMapping && Object.keys(columnMapping).length) {
+      params.set("columnMapping", JSON.stringify(columnMapping));
+    }
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.set(key, String(value));
+        }
+      });
+    }
+    const url = `${apiBaseUrl}/api/export/${table}?${params.toString()}`;
+    const res = await fetch(url, { signal });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(`Export failed (${res.status}): ${text}`);
@@ -35,9 +49,12 @@ export async function exportTable(table, format) {
     throw err;
   }
 }
-export async function importTable(table, file) {
+export async function importTable(table, file, { columnMapping, signal } = {}) {
   const formData = new FormData();
   formData.append("file", file);
+  if (columnMapping && Object.keys(columnMapping).length) {
+    formData.append("columnMapping", JSON.stringify(columnMapping));
+  }
   if (!isApiConfigured) {
     logger.error(
       "Не задана переменная окружения VITE_API_BASE_URL. Импорт невозможен.",
@@ -48,6 +65,7 @@ export async function importTable(table, file) {
     const res = await fetch(`${apiBaseUrl}/api/import/${table}`, {
       method: "POST",
       body: formData,
+      signal,
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
