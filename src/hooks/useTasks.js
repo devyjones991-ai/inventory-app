@@ -76,6 +76,7 @@ export function useTasks(objectId) {
           .range(offset, offset + limit - 1);
         if (
           isColumnMissingError(result.error) ||
+          isSignatureColumnError(result.error) ||
           isSchemaCacheError(result.error)
         ) {
           let fbQuery = supabase
@@ -143,6 +144,7 @@ export function useTasks(objectId) {
           .single();
         if (
           isColumnMissingError(result.error) ||
+          isSignatureColumnError(result.error) ||
           isSchemaCacheError(result.error)
         ) {
           result = await supabase
@@ -203,6 +205,7 @@ export function useTasks(objectId) {
           .single();
         if (
           isColumnMissingError(result.error) ||
+          isSignatureColumnError(result.error) ||
           isSchemaCacheError(result.error)
         ) {
           result = await supabase
