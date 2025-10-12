@@ -6,20 +6,24 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
   Suspense,
   lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
+import { toast } from "react-hot-toast";
 import { Navigate, useSearchParams } from "react-router-dom";
 
+import InlineSpinner from "@/components/InlineSpinner";
 import Spinner from "@/components/Spinner";
 const InventorySidebar = lazy(() => import("@/components/InventorySidebar"));
 const InventoryTabs = lazy(() => import("@/components/InventoryTabs"));
 const AccountModal = lazy(() => import("@/components/AccountModal"));
 const ConfirmModal = lazy(() => import("@/components/ConfirmModal"));
+const IntegrationWizard = lazy(() => import("@/components/IntegrationWizard"));
 import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +41,13 @@ import { useObjectNotifications } from "@/hooks/useObjectNotifications";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { t } from "@/i18n";
 import { supabase } from "@/supabaseClient";
+import { formatDateTime } from "@/utils/date";
+import { importTable, exportTable } from "@/utils/exportImport";
 import { handleSupabaseError } from "@/utils/handleSupabaseError";
+import {
+  fetchIntegrationStatus,
+  triggerIntegrationRun,
+} from "@/utils/integrationSync";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -93,9 +103,18 @@ export default function DashboardPage() {
   );
 
   const importInputRef = useRef(null);
+  const taskImportInputRef = useRef(null);
   const menuRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
+
+  const [isTaskImporting, setIsTaskImporting] = useState(false);
+  const [isHardwareExporting, setIsHardwareExporting] = useState(false);
+  const [integrationStatus, setIntegrationStatus] = useState([]);
+  const [integrationLoading, setIntegrationLoading] = useState(false);
+  const [isIntegrationWizardOpen, setIsIntegrationWizardOpen] = useState(false);
+  const [wizardInitialIntegration, setWizardInitialIntegration] =
+    useState(null);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -263,6 +282,81 @@ export default function DashboardPage() {
     if (ok) setDeleteCandidate(null);
   };
 
+  const refreshIntegrationStatus = useCallback(async () => {
+    try {
+      setIntegrationLoading(true);
+      const statuses = await fetchIntegrationStatus();
+      setIntegrationStatus(statuses);
+    } catch (err) {
+      if (err?.message?.includes("API не настроен")) {
+        setIntegrationStatus([]);
+      } else {
+        toast.error(err.message);
+      }
+    } finally {
+      setIntegrationLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshIntegrationStatus();
+  }, [refreshIntegrationStatus]);
+
+  const findIntegrationByTable = useCallback(
+    (table) =>
+      integrationStatus.find((item) => item.table_name === table) ||
+      integrationStatus.find((item) => item.integration?.endsWith(`_${table}`)),
+    [integrationStatus],
+  );
+
+  const getMappingForTable = useCallback(
+    (table) => {
+      const integration = findIntegrationByTable(table);
+      if (!integration) return {};
+      if (
+        integration.column_mapping &&
+        typeof integration.column_mapping === "object"
+      ) {
+        return integration.column_mapping;
+      }
+      const detailsMapping = integration.details?.columnMapping;
+      if (detailsMapping && typeof detailsMapping === "object") {
+        return detailsMapping;
+      }
+      return {};
+    },
+    [findIntegrationByTable],
+  );
+
+  const tasksIntegration = useMemo(
+    () => findIntegrationByTable("tasks"),
+    [findIntegrationByTable],
+  );
+  const hardwareIntegration = useMemo(
+    () => findIntegrationByTable("hardware"),
+    [findIntegrationByTable],
+  );
+
+  const tasksStatusText = useMemo(() => {
+    if (isTaskImporting) return "Импорт задач выполняется...";
+    if (tasksIntegration?.last_success_at) {
+      return `Импорт задач: ${formatDateTime(
+        tasksIntegration.last_success_at,
+      )}`;
+    }
+    return "Импорт задач: нет данных";
+  }, [isTaskImporting, tasksIntegration]);
+
+  const hardwareStatusText = useMemo(() => {
+    if (isHardwareExporting) return "Экспорт оборудования выполняется...";
+    if (hardwareIntegration?.last_success_at) {
+      return `Экспорт оборудования: ${formatDateTime(
+        hardwareIntegration.last_success_at,
+      )}`;
+    }
+    return "Экспорт оборудования: нет данных";
+  }, [isHardwareExporting, hardwareIntegration]);
+
   const handleImport = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -270,6 +364,90 @@ export default function DashboardPage() {
       e.target.value = "";
     }
   };
+
+  const handleTasksImportChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setIsTaskImporting(true);
+    try {
+      const columnMapping = getMappingForTable("tasks");
+      const result = await importTable("tasks", file, { columnMapping });
+      if (result.errors.length) {
+        toast.error(`Импорт завершён с ошибками (${result.errors.length})`);
+      } else {
+        toast.success(`Импортировано задач: ${result.processedRows}`);
+        const integrationId = tasksIntegration?.integration || "manual_tasks";
+        try {
+          await triggerIntegrationRun({
+            integration: integrationId,
+            direction: "import",
+            metadata: {
+              table: "tasks",
+              processedRows: result.processedRows,
+            },
+          });
+        } catch {
+          /* ignore */
+        }
+      }
+      await refreshIntegrationStatus();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsTaskImporting(false);
+      if (event.target) {
+        event.target.value = "";
+      }
+    }
+  };
+
+  const handleHardwareExport = async () => {
+    setIsHardwareExporting(true);
+    try {
+      const rawMapping = getMappingForTable("hardware");
+      const columnMapping = Object.fromEntries(
+        Object.entries(rawMapping)
+          .filter(([, target]) => typeof target === "string" && target.length)
+          .map(([source, target]) => [target, source]),
+      );
+      const blob = await exportTable("hardware", {
+        format: "xlsx",
+        columnMapping,
+      });
+      if (typeof window !== "undefined") {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "hardware.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      }
+      toast.success("Экспорт оборудования выполнен");
+      if (hardwareIntegration?.integration) {
+        try {
+          await triggerIntegrationRun({
+            integration: hardwareIntegration.integration,
+            direction: "export",
+            metadata: { table: "hardware" },
+          });
+        } catch {
+          /* ignore */
+        }
+      }
+      await refreshIntegrationStatus();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsHardwareExporting(false);
+    }
+  };
+
+  const openIntegrationWizard = useCallback((integration) => {
+    setWizardInitialIntegration(integration || null);
+    setIsIntegrationWizardOpen(true);
+  }, []);
 
   // Lock body scroll when mobile sidebar is open
   useEffect(() => {
@@ -385,6 +563,33 @@ export default function DashboardPage() {
                 <Button variant="info" onClick={exportToFile} type="button">
                   {t("dashboard.export")}
                 </Button>
+                <Button
+                  variant="secondary"
+                  type="button"
+                  disabled={isTaskImporting}
+                  onClick={() => taskImportInputRef.current?.click()}
+                  className="flex items-center gap-2"
+                >
+                  {isTaskImporting ? <InlineSpinner size={16} /> : null}
+                  Импорт задач
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={isHardwareExporting}
+                  onClick={handleHardwareExport}
+                  className="flex items-center gap-2"
+                >
+                  {isHardwareExporting ? <InlineSpinner size={16} /> : null}
+                  Экспорт оборудования
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => openIntegrationWizard(tasksIntegration)}
+                >
+                  Интеграции
+                </Button>
               </div>
               <div className="relative md:hidden" ref={menuRef}>
                 <Button
@@ -421,6 +626,38 @@ export default function DashboardPage() {
                     >
                       {t("dashboard.export")}
                     </button>
+                    <button
+                      type="button"
+                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        taskImportInputRef.current?.click();
+                      }}
+                      disabled={isTaskImporting}
+                    >
+                      Импорт задач
+                    </button>
+                    <button
+                      type="button"
+                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={async () => {
+                        setIsMenuOpen(false);
+                        await handleHardwareExport();
+                      }}
+                      disabled={isHardwareExporting}
+                    >
+                      Экспорт оборудования
+                    </button>
+                    <button
+                      type="button"
+                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        openIntegrationWizard(tasksIntegration);
+                      }}
+                    >
+                      Интеграции
+                    </button>
                   </div>
                 )}
               </div>
@@ -430,6 +667,13 @@ export default function DashboardPage() {
                 ref={importInputRef}
                 className="hidden"
                 onChange={handleImport}
+              />
+              <Input
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                ref={taskImportInputRef}
+                className="hidden"
+                onChange={handleTasksImportChange}
               />
             </div>
             <div className="flex items-center gap-3 md:gap-4">
@@ -451,6 +695,16 @@ export default function DashboardPage() {
               </Button>
             </div>
           </header>
+
+          <div className="border-b bg-muted/40 px-3 py-2 sm:px-4 text-xs sm:text-sm text-muted-foreground">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                {integrationLoading ? <InlineSpinner size={14} /> : null}
+                <span>{tasksStatusText}</span>
+              </div>
+              <span>{hardwareStatusText}</span>
+            </div>
+          </div>
 
           <div className="flex-1 overflow-auto p-2 sm:p-4">
             <Suspense fallback={<Spinner />}>
@@ -519,6 +773,15 @@ export default function DashboardPage() {
             }
             onConfirm={onConfirmDelete}
             onCancel={() => setDeleteCandidate(null)}
+          />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <IntegrationWizard
+            open={isIntegrationWizardOpen}
+            onClose={() => setIsIntegrationWizardOpen(false)}
+            initialIntegration={wizardInitialIntegration}
+            onCompleted={refreshIntegrationStatus}
           />
         </Suspense>
 

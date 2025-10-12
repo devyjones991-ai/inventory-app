@@ -17,6 +17,7 @@ serve(async (req) => {
   const formData = await req.formData();
   const table = formData.get("table")?.toString();
   const file = formData.get("file") as File | null;
+  const columnMappingRaw = formData.get("columnMapping")?.toString();
 
   if (!table || !file) {
     return new Response(
@@ -28,9 +29,80 @@ serve(async (req) => {
     );
   }
 
-  const requiredFields: Record<string, string[]> = {
-    tasks: ["title", "assignee", "due_date"],
+  const tableConfigs: Record<
+    string,
+    {
+      required: string[];
+      allowedColumns?: string[];
+    }
+  > = {
+    tasks: {
+      required: ["title", "assignee", "due_date"],
+      allowedColumns: [
+        "title",
+        "status",
+        "assignee",
+        "due_date",
+        "assigned_at",
+        "notes",
+        "object_id",
+      ],
+    },
+    hardware: {
+      required: ["name"],
+      allowedColumns: [
+        "name",
+        "location",
+        "purchase_status",
+        "install_status",
+        "object_id",
+        "serial_number",
+        "inventory_number",
+      ],
+    },
+    financial_transactions: {
+      required: ["amount", "transaction_date"],
+      allowedColumns: [
+        "amount",
+        "transaction_date",
+        "currency",
+        "category",
+        "description",
+        "object_id",
+        "external_id",
+      ],
+    },
   };
+
+  if (!tableConfigs[table]) {
+    return new Response(JSON.stringify({ error: "Unsupported table" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  let columnMapping: Record<string, string> = {};
+  if (columnMappingRaw) {
+    try {
+      const parsed = JSON.parse(columnMappingRaw);
+      if (parsed && typeof parsed === "object") {
+        columnMapping = Object.entries(parsed).reduce(
+          (acc: Record<string, string>, [source, target]) => {
+            if (typeof source === "string" && typeof target === "string") {
+              acc[source.trim()] = target.trim();
+            }
+            return acc;
+          },
+          {},
+        );
+      }
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid columnMapping" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
 
   const ext = file.name.split(".").pop()?.toLowerCase();
   const buf = await file.arrayBuffer();
@@ -53,17 +125,36 @@ serve(async (req) => {
 
   const errors: { row: number; error: string }[] = [];
   const valid: Record<string, unknown>[] = [];
-  const required = requiredFields[table] ?? [];
+  const { required, allowedColumns } = tableConfigs[table];
+
+  const normalizeRow = (row: Record<string, unknown>) => {
+    const mappedEntries = Object.entries(row).map(([key, value]) => {
+      const trimmedKey = key.trim();
+      const targetKey = columnMapping[trimmedKey] ?? trimmedKey;
+      return [targetKey, value] as const;
+    });
+    const normalized: Record<string, unknown> = {};
+    mappedEntries.forEach(([key, value]) => {
+      if (allowedColumns && !allowedColumns.includes(key)) {
+        return;
+      }
+      normalized[key] = value;
+    });
+    return normalized;
+  };
 
   rows.forEach((row, idx) => {
-    const missing = required.filter((f) => !(f in row) || row[f] === "");
+    const normalized = normalizeRow(row);
+    const missing = required.filter(
+      (f) => !(f in normalized) || normalized[f] === "",
+    );
     if (missing.length) {
       errors.push({
         row: idx + 2,
         error: `Missing fields: ${missing.join(", ")}`,
       });
     } else {
-      valid.push(row);
+      valid.push(normalized);
     }
   });
 

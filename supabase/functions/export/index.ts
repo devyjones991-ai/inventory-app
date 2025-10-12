@@ -8,6 +8,7 @@ const ALLOWED_TABLES = [
   "hardware",
   "tasks",
   "chat_messages",
+  "financial_transactions",
 ] as const;
 const FILTER_KEY_PATTERN = /^[a-zA-Z0-9_]+$/;
 
@@ -26,7 +27,29 @@ export async function handler(req: Request): Promise<Response> {
   }
 
   const columnsParam = url.searchParams.get("columns");
-  const selectedColumns = columnsParam?.split(",");
+  const selectedColumns = columnsParam?.split(",").filter(Boolean);
+  const columnMappingParam = url.searchParams.get("columnMapping");
+  let columnMapping: Record<string, string> | null = null;
+  if (columnMappingParam) {
+    try {
+      const parsed = JSON.parse(columnMappingParam);
+      if (parsed && typeof parsed === "object") {
+        columnMapping = Object.entries(parsed).reduce(
+          (acc: Record<string, string>, [source, label]) => {
+            if (typeof source === "string" && typeof label === "string") {
+              acc[source.trim()] = label.trim();
+            }
+            return acc;
+          },
+          {},
+        );
+      }
+    } catch {
+      return new Response("Invalid columnMapping", { status: 400 });
+    }
+  }
+  const columnsToSelect =
+    selectedColumns || (columnMapping ? Object.keys(columnMapping) : undefined);
   const filters: Record<string, string> = {};
   for (const [key, value] of url.searchParams.entries()) {
     if (key === "columns") continue;
@@ -67,7 +90,7 @@ export async function handler(req: Request): Promise<Response> {
       async pull(controller) {
         let query = supabase
           .from(table)
-          .select(selectedColumns?.join(",") || "*");
+          .select(columnsToSelect?.join(",") || "*");
         Object.entries(filters).forEach(([key, value]) => {
           query = query.eq(key, value);
         });
@@ -81,9 +104,27 @@ export async function handler(req: Request): Promise<Response> {
           return;
         }
         if (!header && data.length) {
-          header = Object.keys(data[0]);
+          header = columnsToSelect || Object.keys(data[0]);
         }
-        const csv = unparse(data, { header: firstChunk, columns: header });
+        const projected = data.map((row) => {
+          const ordered = (columnsToSelect || Object.keys(row)).reduce(
+            (acc: Record<string, unknown>, key) => {
+              if (key in row) acc[key] = row[key];
+              return acc;
+            },
+            {},
+          );
+          return ordered;
+        });
+        const csvColumns = (header || []).map((key) =>
+          columnMapping?.[key]
+            ? { label: columnMapping[key], value: key }
+            : key,
+        );
+        const csv = unparse(projected, {
+          header: firstChunk,
+          columns: csvColumns.length ? csvColumns : header,
+        });
         controller.enqueue(encoder.encode(csv + "\n"));
         firstChunk = false;
         start += batchSize;
@@ -107,14 +148,18 @@ export async function handler(req: Request): Promise<Response> {
         stream: writable,
       });
       const worksheet = workbook.addWorksheet(table);
-      if (selectedColumns) {
-        worksheet.columns = selectedColumns.map((c) => ({ header: c, key: c }));
+      const worksheetColumns = (columnsToSelect || []).map((c) => ({
+        header: columnMapping?.[c] ?? c,
+        key: c,
+      }));
+      if (worksheetColumns.length) {
+        worksheet.columns = worksheetColumns;
       }
       let start = 0;
       while (true) {
         let query = supabase
           .from(table)
-          .select(selectedColumns?.join(",") || "*");
+          .select(columnsToSelect?.join(",") || "*");
         Object.entries(filters).forEach(([key, value]) => {
           query = query.eq(key, value);
         });
@@ -124,7 +169,16 @@ export async function handler(req: Request): Promise<Response> {
           return;
         }
         if (!data || data.length === 0) break;
-        data.forEach((row) => worksheet.addRow(row).commit());
+        data.forEach((row) => {
+          const ordered = (columnsToSelect || Object.keys(row)).reduce(
+            (acc: Record<string, unknown>, key) => {
+              if (key in row) acc[key] = row[key];
+              return acc;
+            },
+            {},
+          );
+          worksheet.addRow(ordered).commit();
+        });
         start += batchSize;
       }
       await workbook.commit();
