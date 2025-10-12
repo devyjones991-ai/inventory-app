@@ -72,7 +72,7 @@ export default function useChat({
   );
 
   const markMessagesAsRead = useCallback(async () => {
-    if (!objectId || !canManage) return;
+    if (!objectId) return;
     try {
       const { error } = await supabase
         .from("chat_messages")
@@ -94,7 +94,7 @@ export default function useChat({
         "Ошибка отметки сообщений как прочитанных",
       );
     }
-  }, [objectId, canManage]);
+  }, [objectId]);
 
   // Автоскролл к новому сообщению
   const autoScrollToBottom = useCallback((force = false) => {
