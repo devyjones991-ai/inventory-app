@@ -404,7 +404,12 @@ export default function DashboardPage() {
   const handleHardwareExport = async () => {
     setIsHardwareExporting(true);
     try {
-      const columnMapping = getMappingForTable("hardware");
+      const rawMapping = getMappingForTable("hardware");
+      const columnMapping = Object.fromEntries(
+        Object.entries(rawMapping)
+          .filter(([, target]) => typeof target === "string" && target.length)
+          .map(([source, target]) => [target, source]),
+      );
       const blob = await exportTable("hardware", {
         format: "xlsx",
         columnMapping,
