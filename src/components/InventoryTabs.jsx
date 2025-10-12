@@ -56,8 +56,14 @@ function InventoryTabs({
   tasksCount: tasksCountExternal,
   chatCount: chatCountExternal,
   activeTab: controlledTab = "desc",
+  permissions = null,
 }) {
   const { user } = useAuth();
+  const canManageObject = Boolean(permissions?.can_manage_object);
+  const canManageHardware = Boolean(permissions?.can_manage_hardware);
+  const canEditTasks = Boolean(permissions?.can_edit_tasks);
+  const canViewChat = Boolean(permissions?.can_view_chat);
+  const canManageChat = Boolean(permissions?.can_manage_chat);
 
   // --- вкладки и описание ---
   const [description, setDescription] = useState("");
@@ -251,7 +257,7 @@ function InventoryTabs({
                   ? linkifyText(description)
                   : t("inventory.noDescription")}
               </div>
-              {user && (
+              {user && canManageObject && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -269,7 +275,7 @@ function InventoryTabs({
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">{t("hardware.header")}</h2>
-            {user && (
+            {user && canManageHardware && (
               <Button
                 size="sm"
                 variant="success"
@@ -292,7 +298,7 @@ function InventoryTabs({
                   item={item}
                   onEdit={() => handleEditHW(item)}
                   onDelete={() => handleDeleteHW(item)}
-                  user={user}
+                  canManage={canManageHardware}
                 />
               ))}
             </div>
@@ -306,6 +312,7 @@ function InventoryTabs({
             selected={selected}
             registerAddHandler={registerAddHandler}
             onCountChange={setTasksCount}
+            canEditTasks={canEditTasks}
           />
         </Suspense>
       </TabsContent>
@@ -316,6 +323,8 @@ function InventoryTabs({
             userEmail={user?.email}
             active={controlledTab === "chat"}
             onCountChange={setMessageCount}
+            canView={canViewChat}
+            canManage={canManageChat}
           />
         </Suspense>
       </TabsContent>
@@ -442,6 +451,13 @@ InventoryTabs.propTypes = {
   registerAddHandler: PropTypes.func,
   tasksCount: PropTypes.number,
   chatCount: PropTypes.number,
+  permissions: PropTypes.shape({
+    can_manage_object: PropTypes.bool,
+    can_manage_hardware: PropTypes.bool,
+    can_edit_tasks: PropTypes.bool,
+    can_view_chat: PropTypes.bool,
+    can_manage_chat: PropTypes.bool,
+  }),
 };
 
 export default InventoryTabs;

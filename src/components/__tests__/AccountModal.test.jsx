@@ -15,7 +15,9 @@ vi.mock("@/hooks/useAccount", () => ({
   useAccount: () => ({ updateProfile: mockUpdate }),
 }));
 
-vi.mock("react-hot-toast", () => ({ toast: { error: vi.fn() } }));
+vi.mock("react-hot-toast", () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
 
 describe("AccountModal", () => {
   const user = { user_metadata: { username: "old" } };

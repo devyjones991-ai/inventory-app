@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboardModals } from "@/hooks/useDashboardModals";
 import { useObjectList } from "@/hooks/useObjectList";
+import { useObjectMembers } from "@/hooks/useObjectMembers";
 import { useObjectNotifications } from "@/hooks/useObjectNotifications";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { t } from "@/i18n";
@@ -69,6 +70,16 @@ export default function DashboardPage() {
     user,
   );
   const chatCount = selected?.id ? chatUnread[selected.id] || 0 : 0;
+
+  const {
+    members: objectMembers,
+    availableRoles,
+    permissions: objectPermissions,
+    canManageRoles,
+    loading: membersLoading,
+    assignRole,
+    removeMember,
+  } = useObjectMembers(selected?.id);
 
   const {
     isObjectModalOpen,
@@ -304,6 +315,13 @@ export default function DashboardPage() {
     );
   }
 
+  const canEditTasks = Boolean(objectPermissions?.can_edit_tasks);
+  const canManageObject = Boolean(objectPermissions?.can_manage_object);
+  const shouldShowAddButton = (() => {
+    if (activeTab === "tasks") return canEditTasks;
+    return true;
+  })();
+
   return (
     <>
       <div className="flex min-h-screen bg-background">
@@ -316,6 +334,10 @@ export default function DashboardPage() {
               onEdit={openEditModal}
               onDelete={setDeleteCandidate}
               notifications={chatUnread}
+              members={objectMembers}
+              canManageObject={canManageObject}
+              canManageRoles={canManageRoles}
+              onManageAccess={() => setIsAccountModalOpen(true)}
             />
           </Suspense>
         </aside>
@@ -347,6 +369,10 @@ export default function DashboardPage() {
                   onEdit={openEditModal}
                   onDelete={setDeleteCandidate}
                   notifications={chatUnread}
+                  members={objectMembers}
+                  canManageObject={canManageObject}
+                  canManageRoles={canManageRoles}
+                  onManageAccess={() => setIsAccountModalOpen(true)}
                 />
               </Suspense>
             </aside>
@@ -364,16 +390,18 @@ export default function DashboardPage() {
               >
                 <Bars3Icon className="w-6 h-6" />
               </button>
-              <Button
-                variant="success"
-                size="xs"
-                className="flex items-center gap-1 px-2 text-sm"
-                onClick={addHandler}
-                type="button"
-              >
-                <PlusIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">{t("dashboard.add")}</span>
-              </Button>
+              {shouldShowAddButton && (
+                <Button
+                  variant="success"
+                  size="xs"
+                  className="flex items-center gap-1 px-2 text-sm"
+                  onClick={addHandler}
+                  type="button"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t("dashboard.add")}</span>
+                </Button>
+              )}
               <div className="hidden md:flex gap-2">
                 <Button
                   variant="warning"
@@ -462,6 +490,7 @@ export default function DashboardPage() {
                 registerAddHandler={registerAddHandler}
                 tasksCount={tasksCount}
                 chatCount={chatCount}
+                permissions={objectPermissions}
               />
             </Suspense>
           </div>
@@ -528,6 +557,13 @@ export default function DashboardPage() {
               user={user}
               onClose={() => setIsAccountModalOpen(false)}
               onUpdated={() => {}}
+              selectedObject={selected}
+              members={objectMembers}
+              availableRoles={availableRoles}
+              canManageRoles={canManageRoles}
+              onAssignRole={assignRole}
+              onRemoveMember={removeMember}
+              loadingMembers={membersLoading}
             />
           </Suspense>
         )}

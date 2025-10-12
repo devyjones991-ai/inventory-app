@@ -19,6 +19,7 @@ import AttachmentPreview from "./AttachmentPreview.jsx";
 
 import { Button, Input } from "@/components/ui";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n";
 import { formatDateTime } from "@/utils/date";
 import { linkifyText } from "@/utils/linkify.jsx";
 
@@ -27,6 +28,8 @@ function ChatTab({
   userEmail,
   active = false,
   onCountChange,
+  canView = true,
+  canManage = true,
 }) {
   const objectId = selected?.id || null;
   const [searchInput, setSearchInput] = useState("");
@@ -54,7 +57,12 @@ function ChatTab({
     scrollRef,
     markMessagesAsRead,
     loadError,
-  } = useChat({ objectId, userEmail, search: searchQuery });
+  } = useChat({
+    objectId,
+    userEmail,
+    search: searchQuery,
+    canManage,
+  });
 
   // Pin-to-bottom logic (like messengers)
   const pinnedRef = useRef(true);
@@ -115,13 +123,19 @@ function ChatTab({
   }, [active, markMessagesAsRead]);
 
   const handleFileChange = useCallback(
-    (e) => setFile(e.target.files[0]),
-    [setFile],
+    (e) => {
+      if (!canManage) return;
+      setFile(e.target.files[0]);
+    },
+    [setFile, canManage],
   );
 
   const handleMessageChange = useCallback(
-    (e) => setNewMessage(e.target.value),
-    [setNewMessage],
+    (e) => {
+      if (!canManage) return;
+      setNewMessage(e.target.value);
+    },
+    [setNewMessage, canManage],
   );
 
   const handleSearchChange = useCallback(
@@ -142,6 +156,14 @@ function ChatTab({
 
   if (!objectId) {
     return <div className="p-6 text-sm text-foreground/70">Выбери объект</div>;
+  }
+
+  if (!canView) {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        {t("chat.noAccess")}
+      </div>
+    );
   }
 
   return (
@@ -288,12 +310,14 @@ function ChatTab({
         <div className="flex items-center gap-2">
           <label
             htmlFor="chat-file-input"
-            className="p-2 rounded hover:bg-accent cursor-pointer"
+            className={`p-2 rounded ${
+              canManage ? "hover:bg-accent cursor-pointer" : "opacity-50"
+            }`}
             data-testid="file-label"
             aria-label="Прикрепить файл"
             title="Прикрепить файл"
             role="button"
-            tabIndex={0}
+            tabIndex={canManage ? 0 : -1}
           >
             <PaperClipIcon className="w-6 h-6" />
           </label>
@@ -303,6 +327,7 @@ function ChatTab({
             className="hidden"
             ref={fileInputRef}
             onChange={handleFileChange}
+            disabled={!canManage}
           />
           <Textarea
             className="w-full min-h-24"
@@ -310,11 +335,12 @@ function ChatTab({
             value={newMessage}
             onChange={handleMessageChange}
             onKeyDown={handleKeyDown}
+            readOnly={!canManage}
           />
         </div>
         <div className="flex justify-end">
           <Button
-            disabled={sending || (!newMessage.trim() && !file)}
+            disabled={!canManage || sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
             {sending ? "Отправка…" : "Отправить"}
@@ -334,4 +360,6 @@ ChatTab.propTypes = {
   userEmail: PropTypes.string.isRequired,
   active: PropTypes.bool,
   onCountChange: PropTypes.func,
+  canView: PropTypes.bool,
+  canManage: PropTypes.bool,
 };
