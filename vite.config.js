@@ -10,11 +10,13 @@ import imageminMozjpeg from "imagemin-mozjpeg";
 import imageminPngquant from "imagemin-pngquant";
 import { defineConfig } from "vite";
 import viteCompression from "vite-plugin-compression";
+import { VitePWA } from "vite-plugin-pwa";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(async ({ mode }) => {
   const isProd = mode === "production";
+  const isTest = mode === "test";
   const enableBrotli = process.env.ENABLE_BROTLI === "true";
   const base = env.BASE_PATH ?? "/";
   const rollupPlugins = [];
@@ -47,6 +49,74 @@ export default defineConfig(async ({ mode }) => {
     base,
     plugins: [
       react(),
+      ...(isTest
+        ? []
+        : [
+            VitePWA({
+              registerType: "autoUpdate",
+              includeAssets: [
+                "icons/icon-192.svg",
+                "icons/icon-512.svg",
+                "env.js",
+              ],
+              manifest: {
+                name: "Inventory Control",
+                short_name: "Inventory",
+                description: "Управление объектами и задачами инвентаризации",
+                start_url: "/",
+                display: "standalone",
+                background_color: "#0f172a",
+                theme_color: "#1d4ed8",
+                icons: [
+                  {
+                    src: "/icons/icon-192.svg",
+                    sizes: "192x192",
+                    type: "image/svg+xml",
+                    purpose: "any",
+                  },
+                  {
+                    src: "/icons/icon-512.svg",
+                    sizes: "512x512",
+                    type: "image/svg+xml",
+                    purpose: "any maskable",
+                  },
+                ],
+              },
+              workbox: {
+                globPatterns: ["**/*.{js,css,html,ico,png,svg,json}"],
+                runtimeCaching: [
+                  {
+                    urlPattern: ({ sameOrigin, url }) =>
+                      Boolean(sameOrigin && url.pathname.startsWith("/")),
+                    handler: "NetworkFirst",
+                    options: {
+                      cacheName: "app-pages",
+                      networkTimeoutSeconds: 6,
+                      expiration: {
+                        maxEntries: 20,
+                        maxAgeSeconds: 60 * 60 * 24,
+                      },
+                    },
+                  },
+                  {
+                    urlPattern: /https:\/\/.*supabase\.(co|in)\//,
+                    handler: "NetworkFirst",
+                    options: {
+                      cacheName: "supabase-api",
+                      networkTimeoutSeconds: 10,
+                      expiration: {
+                        maxEntries: 50,
+                        maxAgeSeconds: 60 * 10,
+                      },
+                    },
+                  },
+                ],
+              },
+              devOptions: {
+                enabled: true,
+              },
+            }),
+          ]),
       ...(isProd
         ? [
             viteImagemin({

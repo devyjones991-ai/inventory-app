@@ -235,12 +235,12 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   }
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
+    <div className="p-4 space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-gray-800">
           {t("tasks.headerPrefix")} {selected.name}
         </h2>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
           <Button size="sm" type="button" onClick={openTaskModal}>
             {t("tasks.add")}
           </Button>
@@ -248,7 +248,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-end gap-3">
         <div className="w-full sm:min-w-[180px] sm:w-auto">
           <Label>{t("tasks.status")}</Label>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -265,9 +265,9 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-full sm:min-w-[220px] sm:w-auto flex-1">
+        <div className="w-full sm:min-w-[220px] sm:w-auto flex-1 min-w-0">
           <Label>{t("common.search")}</Label>
-          <div className="relative h-10">
+          <div className="relative h-11 sm:h-10">
             <Input
               ref={assigneeInputRef}
               type="text"

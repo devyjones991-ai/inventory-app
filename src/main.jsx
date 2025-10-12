@@ -22,3 +22,21 @@ createRoot(document.getElementById("root")).render(
 );
 
 initWebVitals();
+
+if (
+  import.meta.env.MODE !== "test" &&
+  typeof window !== "undefined" &&
+  "serviceWorker" in navigator
+) {
+  void import("virtual:pwa-register").then(({ registerSW }) => {
+    registerSW({
+      immediate: true,
+      onRegistered() {
+        console.info("Service worker зарегистрирован");
+      },
+      onRegisterError(error) {
+        console.error("Ошибка регистрации сервис-воркера", error);
+      },
+    });
+  });
+}

@@ -353,9 +353,9 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="flex-1 flex flex-col">
-          <header className="flex flex-row items-center justify-between gap-2 p-3 sm:p-4 border-b bg-background">
-            <div className="flex items-center gap-3 md:gap-4 overflow-x-auto overflow-y-visible whitespace-nowrap">
+        <div className="flex-1 flex flex-col min-h-screen">
+          <header className="sticky top-0 z-30 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur">
+            <div className="flex items-center gap-2 md:gap-4 flex-wrap sm:flex-nowrap">
               <button
                 className="md:hidden p-2 text-blue-600 dark:text-blue-400"
                 onClick={toggleSidebar}
@@ -432,7 +432,7 @@ export default function DashboardPage() {
                 onChange={handleImport}
               />
             </div>
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-4 justify-end w-full sm:w-auto">
               <ThemeToggle />
               <Button
                 className="p-2 text-sm md:text-base"
@@ -452,7 +452,7 @@ export default function DashboardPage() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto p-2 sm:p-4">
+          <div className="flex-1 min-h-0 overflow-auto p-2 sm:p-4">
             <Suspense fallback={<Spinner />}>
               <InventoryTabs
                 selected={selected}
