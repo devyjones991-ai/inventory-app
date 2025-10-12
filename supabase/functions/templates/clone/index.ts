@@ -51,14 +51,15 @@ function normalizeTask(
       ? schema.status
       : "planned";
   const dueDate = schema?.due_date ? String(schema.due_date) : null;
+  const assignee = schema?.assignee ? String(schema.assignee).trim() : null;
   return {
     object_id: objectId,
     title,
     status,
     notes: schema?.notes ?? null,
-    assignee: schema?.assignee ?? null,
+    assignee,
     due_date: dueDate,
-    assigned_at: new Date().toISOString(),
+    assigned_at: assignee ? new Date().toISOString() : null,
   };
 }
 
