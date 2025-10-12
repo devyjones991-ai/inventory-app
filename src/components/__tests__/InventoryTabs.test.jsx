@@ -49,6 +49,7 @@ describe("InventoryTabs", () => {
     await screen.findByText("Железо (2)");
     expect(screen.getByText("Задачи (0)")).toBeInTheDocument();
     expect(screen.getByText("Чат (0)")).toBeInTheDocument();
+    expect(screen.getByText("Аудит")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Задачи (0)"));
     await screen.findByText("Задачи (5)");

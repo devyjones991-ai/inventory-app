@@ -8,6 +8,7 @@ import HardwareCard from "./HardwareCard";
 import Spinner from "./Spinner";
 const ChatTab = lazy(() => import("./ChatTab"));
 const TasksTab = lazy(() => import("./TasksTab"));
+const AuditTrailTab = lazy(() => import("./AuditTrail"));
 
 import FormError from "@/components/FormError.jsx";
 import { Button } from "@/components/ui/button";
@@ -220,6 +221,9 @@ function InventoryTabs({
         <TabsTrigger value="chat" className="flex-shrink-0">
           {t("inventory.tabs.chat")} ({messageCount})
         </TabsTrigger>
+        <TabsTrigger value="audit" className="flex-shrink-0">
+          {t("inventory.tabs.audit")}
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="desc" className="flex-1 overflow-auto">
@@ -306,6 +310,7 @@ function InventoryTabs({
             selected={selected}
             registerAddHandler={registerAddHandler}
             onCountChange={setTasksCount}
+            onOpenAudit={() => onTabChange("audit")}
           />
         </Suspense>
       </TabsContent>
@@ -317,6 +322,11 @@ function InventoryTabs({
             active={controlledTab === "chat"}
             onCountChange={setMessageCount}
           />
+        </Suspense>
+      </TabsContent>
+      <TabsContent value="audit" forceMount className="flex-1 overflow-auto">
+        <Suspense fallback={<Spinner />}>
+          <AuditTrailTab objectId={selected?.id} />
         </Suspense>
       </TabsContent>
 

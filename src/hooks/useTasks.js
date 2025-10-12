@@ -29,8 +29,26 @@ const isSchemaCacheError = (err) => {
 };
 
 const TASK_FIELDS =
-  "id, title, status, assignee, due_date, assigned_at, notes, created_at";
+  "id, title, status, assignee, due_date, assigned_at, notes, created_at, signed_by, signed_at, signature_hash";
 const TASK_FIELDS_FALLBACK = "id, title, status, assignee, notes, created_at";
+
+const isSignatureColumnError = (err) => {
+  const msg = err?.message?.toLowerCase?.() || "";
+  return (
+    msg.includes("signed_by") ||
+    msg.includes("signed_at") ||
+    msg.includes("signature_hash")
+  );
+};
+
+const buildSignaturePatch = (signature) => {
+  if (!signature) return {};
+  const patch = {};
+  if (signature.signedBy) patch.signed_by = signature.signedBy;
+  if (signature.signedAt) patch.signed_at = signature.signedAt;
+  if (signature.signatureHash) patch.signature_hash = signature.signatureHash;
+  return patch;
+};
 
 export function useTasks(objectId) {
   const navigate = useNavigate();
@@ -58,6 +76,7 @@ export function useTasks(objectId) {
           .range(offset, offset + limit - 1);
         if (
           isColumnMissingError(result.error) ||
+          isSignatureColumnError(result.error) ||
           isSchemaCacheError(result.error)
         ) {
           let fbQuery = supabase
@@ -83,7 +102,7 @@ export function useTasks(objectId) {
   );
 
   const insertTask = useCallback(
-    async (data) => {
+    async (data, signature) => {
       try {
         const {
           planned_date: _planned_date,
@@ -114,13 +133,18 @@ export function useTasks(objectId) {
           // always set assignment date to now on create (if column exists)
           assigned_at: new Date().toISOString(),
         };
+        const signaturePatch = buildSignaturePatch(signature);
+        const taskDataSigned = Object.keys(signaturePatch).length
+          ? { ...taskData, ...signaturePatch }
+          : taskData;
         let result = await supabase
           .from("tasks")
-          .insert([taskData])
+          .insert([taskDataSigned])
           .select(TASK_FIELDS)
           .single();
         if (
           isColumnMissingError(result.error) ||
+          isSignatureColumnError(result.error) ||
           isSchemaCacheError(result.error)
         ) {
           result = await supabase
@@ -144,7 +168,7 @@ export function useTasks(objectId) {
   );
 
   const updateTaskInner = useCallback(
-    async (id, data) => {
+    async (id, data, signature) => {
       try {
         const {
           planned_date: _planned_date,
@@ -169,14 +193,19 @@ export function useTasks(objectId) {
           ...taskDataBase,
           due_date,
         };
+        const signaturePatch = buildSignaturePatch(signature);
+        const taskDataSigned = Object.keys(signaturePatch).length
+          ? { ...taskData, ...signaturePatch }
+          : taskData;
         let result = await supabase
           .from("tasks")
-          .update(taskData)
+          .update(taskDataSigned)
           .eq("id", id)
           .select(TASK_FIELDS)
           .single();
         if (
           isColumnMissingError(result.error) ||
+          isSignatureColumnError(result.error) ||
           isSchemaCacheError(result.error)
         ) {
           result = await supabase
@@ -197,8 +226,23 @@ export function useTasks(objectId) {
   );
 
   const deleteTaskInner = useCallback(
-    async (id) => {
+    async (id, signature) => {
       try {
+        const signaturePatch = buildSignaturePatch(signature);
+        if (Object.keys(signaturePatch).length) {
+          const sigResult = await supabase
+            .from("tasks")
+            .update(signaturePatch)
+            .eq("id", id);
+          if (
+            sigResult.error &&
+            !isColumnMissingError(sigResult.error) &&
+            !isSchemaCacheError(sigResult.error) &&
+            !isSignatureColumnError(sigResult.error)
+          ) {
+            throw sigResult.error;
+          }
+        }
         const result = await supabase.from("tasks").delete().eq("id", id);
         if (result.error) throw result.error;
         return result;
@@ -243,8 +287,8 @@ export function useTasks(objectId) {
   );
 
   const createTask = useCallback(
-    async (data) => {
-      const { data: newTask, error: err } = await insertTask(data);
+    async (data, signature) => {
+      const { data: newTask, error: err } = await insertTask(data, signature);
       if (!err && newTask) {
         // Prepend to show immediately at the top (matches newest-first order)
         setTasks((prev) => [newTask, ...prev]);
@@ -255,8 +299,12 @@ export function useTasks(objectId) {
   );
 
   const updateTask = useCallback(
-    async (id, data) => {
-      const { data: updated, error: err } = await updateTaskInner(id, data);
+    async (id, data, signature) => {
+      const { data: updated, error: err } = await updateTaskInner(
+        id,
+        data,
+        signature,
+      );
       if (!err && updated) {
         setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
       }
@@ -266,8 +314,8 @@ export function useTasks(objectId) {
   );
 
   const deleteTask = useCallback(
-    async (id) => {
-      const { data: del, error: err } = await deleteTaskInner(id);
+    async (id, signature) => {
+      const { data: del, error: err } = await deleteTaskInner(id, signature);
       if (!err) {
         setTasks((prev) => prev.filter((t) => t.id !== id));
       }

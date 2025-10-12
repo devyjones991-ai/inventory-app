@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import ConfirmModal from "./ConfirmModal";
 import ErrorMessage from "./ErrorMessage";
+import SignatureModal from "./SignatureModal";
 import TaskCard from "./TaskCard";
 import {
   Dialog,
@@ -45,13 +46,21 @@ const taskSchema = z.object({
   notes: z.string().optional(),
 });
 
-function TasksTab({ selected, registerAddHandler, onCountChange }) {
+function TasksTab({
+  selected,
+  registerAddHandler,
+  onCountChange,
+  onOpenAudit,
+}) {
   const assigneeInputRef = useRef(null);
   const todayStr = new Date().toISOString().slice(0, 10);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [viewingTask, setViewingTask] = useState(null);
   const [taskDeleteId, setTaskDeleteId] = useState(null);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const [pendingSignature, setPendingSignature] = useState(null);
+  const [signaturePayload, setSignaturePayload] = useState(null);
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterQuery, setFilterQuery] = useState("");
@@ -175,6 +184,27 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         status: data.status,
       };
       try {
+        if (
+          editingTask &&
+          editingTask.status &&
+          editingTask.status !== data.status
+        ) {
+          setPendingSignature({
+            type: "update-status",
+            id: editingTask.id,
+            payload,
+          });
+          setSignaturePayload({
+            entity: "task",
+            action: "status_change",
+            taskId: editingTask.id,
+            objectId: selected?.id,
+            from: editingTask.status,
+            to: data.status,
+          });
+          setIsSignatureModalOpen(true);
+          return;
+        }
         if (editingTask) await updateTask(editingTask.id, payload);
         else await createTask(payload);
         closeTaskModal();
@@ -182,7 +212,14 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
         logger.error("Error saving task:", err);
       }
     },
-    [editingTask, selected?.id, createTask, updateTask, closeTaskModal],
+    [
+      editingTask,
+      selected?.id,
+      createTask,
+      updateTask,
+      closeTaskModal,
+      setIsSignatureModalOpen,
+    ],
   );
 
   const handleEditTask = useCallback(
@@ -200,16 +237,49 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     [reset],
   );
 
-  const confirmDeleteTask = useCallback(async () => {
-    if (!taskDeleteId) return;
-    try {
-      await deleteTask(taskDeleteId);
-    } catch (err) {
-      logger.error("Error deleting task:", err);
-    } finally {
-      setTaskDeleteId(null);
-    }
-  }, [taskDeleteId, deleteTask]);
+  const confirmDeleteTask = useCallback(
+    async (signature) => {
+      if (!taskDeleteId) return;
+      try {
+        await deleteTask(taskDeleteId, signature);
+      } catch (err) {
+        logger.error("Error deleting task:", err);
+      } finally {
+        setTaskDeleteId(null);
+      }
+    },
+    [taskDeleteId, deleteTask],
+  );
+
+  const handleSignatureCancel = useCallback(() => {
+    setIsSignatureModalOpen(false);
+    setPendingSignature(null);
+    setSignaturePayload(null);
+  }, []);
+
+  const handleSignatureSuccess = useCallback(
+    async (signatureResult) => {
+      if (!pendingSignature) {
+        handleSignatureCancel();
+        return;
+      }
+      try {
+        if (pendingSignature.type === "update-status") {
+          await updateTask(
+            pendingSignature.id,
+            pendingSignature.payload,
+            signatureResult,
+          );
+          closeTaskModal();
+        }
+      } catch (err) {
+        logger.error("Error applying signed action:", err);
+      } finally {
+        handleSignatureCancel();
+      }
+    },
+    [pendingSignature, updateTask, closeTaskModal, handleSignatureCancel],
+  );
 
   if (!selected) {
     return (
@@ -474,6 +544,34 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                 <strong>{t("tasks.view.notes")}</strong> {viewingTask.notes}
               </p>
             )}
+            <div className="mt-4 space-y-1 border-t pt-3">
+              <p>
+                <strong>{t("signature.status.label")}</strong>{" "}
+                {viewingTask?.signed_at
+                  ? t("signature.status.signed", {
+                      date: formatDate(viewingTask.signed_at),
+                    })
+                  : t("signature.status.notSigned")}
+              </p>
+              {viewingTask?.signature_hash && (
+                <p className="text-xs break-all text-muted-foreground">
+                  {t("signature.status.hash", {
+                    hash: viewingTask.signature_hash,
+                  })}
+                </p>
+              )}
+              <Button
+                type="button"
+                variant="link"
+                className="px-0"
+                onClick={() => {
+                  onOpenAudit?.();
+                  setViewingTask(null);
+                }}
+              >
+                {t("signature.viewHistory")}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -481,8 +579,24 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
       <ConfirmModal
         open={!!taskDeleteId}
         title={t("tasks.confirmDelete")}
+        requireSignature
+        signaturePayload={{
+          entity: "task",
+          action: "delete",
+          taskId: taskDeleteId,
+          objectId: selected?.id,
+        }}
         onConfirm={confirmDeleteTask}
         onCancel={() => setTaskDeleteId(null)}
+      />
+      <SignatureModal
+        open={isSignatureModalOpen}
+        payload={signaturePayload}
+        title={t("signature.modal.statusTitle")}
+        description={t("signature.modal.statusDescription")}
+        confirmLabel={t("signature.modal.confirm")}
+        onSuccess={handleSignatureSuccess}
+        onCancel={handleSignatureCancel}
       />
     </div>
   );
@@ -491,6 +605,7 @@ TasksTab.propTypes = {
   selected: PropTypes.object,
   registerAddHandler: PropTypes.func,
   onCountChange: PropTypes.func,
+  onOpenAudit: PropTypes.func,
 };
 
 export default TasksTab;
