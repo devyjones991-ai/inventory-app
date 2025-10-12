@@ -12,6 +12,7 @@ const SELECTED_OBJECT_KEY = "selectedObjectId";
 export function useObjectList() {
   const navigate = useNavigate();
   const [objects, setObjects] = useState([]);
+  const [templates, setTemplates] = useState([]);
   const [selected, setSelected] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [isEmpty, setIsEmpty] = useState(false);
@@ -70,7 +71,9 @@ export function useObjectList() {
       }
     }
     if (savedId) {
-      const saved = data.find((o) => o.id === Number(savedId));
+      const saved = data.find(
+        (o) => o.id === Number(savedId) || o.id === savedId,
+      );
       if (saved) setSelected(saved);
       else if (!selected && data.length) setSelected(data[0]);
     } else if (!selected && data.length) {
@@ -127,6 +130,64 @@ export function useObjectList() {
       return true;
     }
   }
+
+  const loadTemplates = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("templates-list");
+      if (error) {
+        toast.error("Ошибка загрузки шаблонов: " + (error.message || ""));
+        await handleSupabaseError(error, navigate, "Ошибка загрузки шаблонов");
+        return { data: null, error };
+      }
+      const list = data?.templates ?? [];
+      setTemplates(list);
+      return { data: list, error: null };
+    } catch (err) {
+      toast.error("Ошибка загрузки шаблонов: " + err.message);
+      return { data: null, error: err };
+    }
+  }, [navigate]);
+
+  const createFromTemplate = useCallback(
+    async ({ templateId, name, description }) => {
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          "templates-clone",
+          {
+            body: { templateId, name, description },
+          },
+        );
+        if (error) {
+          toast.error("Ошибка создания объекта из шаблона: " + error.message);
+          await handleSupabaseError(
+            error,
+            navigate,
+            "Ошибка создания объекта из шаблона",
+          );
+          return { data: null, error };
+        }
+        const created = data?.object;
+        if (created) {
+          setObjects((prev) => [...prev, created]);
+          setSelected(created);
+          setIsEmpty(false);
+          if (typeof localStorage !== "undefined") {
+            try {
+              localStorage.setItem(SELECTED_OBJECT_KEY, created.id);
+            } catch {
+              /* empty */
+            }
+          }
+          toast.success("Объект создан по шаблону");
+        }
+        return { data: created ?? null, error: null };
+      } catch (err) {
+        toast.error("Ошибка создания объекта из шаблона: " + err.message);
+        return { data: null, error: err };
+      }
+    },
+    [navigate],
+  );
 
   async function deleteObject(id) {
     const { error } = await supabase.from("objects").delete().eq("id", id);
@@ -214,12 +275,15 @@ export function useObjectList() {
 
   return {
     objects,
+    templates,
     selected,
     fetchError,
     isEmpty,
     handleSelect,
     handleUpdateSelected,
     saveObject,
+    loadTemplates,
+    createFromTemplate,
     deleteObject,
     importFromFile,
     exportToFile,
