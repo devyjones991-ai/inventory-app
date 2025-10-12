@@ -52,13 +52,17 @@ type SupabaseClient = ReturnType<typeof createClient>;
 const ALLOWED_REPORT_TYPES: ReportType[] = ["tasks", "workAct"];
 const ALLOWED_FORMATS: ReportFormat[] = ["pdf", "xlsx"];
 
-const TIME_CANDIDATES = [
-  "time_spent_minutes",
-  "duration_minutes",
-  "worked_minutes",
-  "work_minutes",
-  "time_spent",
-  "duration",
+type TimeColumn = { name: string; multiplier: number };
+
+const TIME_CANDIDATES: TimeColumn[] = [
+  { name: "time_spent_minutes", multiplier: 1 },
+  { name: "duration_minutes", multiplier: 1 },
+  { name: "worked_minutes", multiplier: 1 },
+  { name: "work_minutes", multiplier: 1 },
+  { name: "time_spent", multiplier: 1 },
+  { name: "duration", multiplier: 1 },
+  { name: "time_spent_hours", multiplier: 60 },
+  { name: "duration_hours", multiplier: 60 },
 ];
 const COST_CANDIDATES = [
   "total_cost",
@@ -136,12 +140,14 @@ async function collectAggregatedData(
   dateTo: string,
 ): Promise<AggregatedPayload> {
   const columns = await fetchAvailableColumns(client);
-  const timeColumn = TIME_CANDIDATES.find((name) => columns.has(name));
+  const timeColumn = TIME_CANDIDATES.find((candidate) =>
+    columns.has(candidate.name)
+  );
   const costColumns = COST_CANDIDATES.filter((name) => columns.has(name));
 
   const selectParts = ["status", "count:id"];
   if (timeColumn) {
-    selectParts.push(`total_time:${timeColumn}.sum()`);
+    selectParts.push(`total_time:${timeColumn.name}.sum()`);
   }
   costColumns.forEach((col) => {
     selectParts.push(`${col}_sum:${col}.sum()`);
@@ -163,9 +169,9 @@ async function collectAggregatedData(
     };
     if (timeColumn) {
       Object.assign(base, {
-        totalTimeMinutes: parseNumber(
-          (row as Record<string, unknown>).total_time,
-        ),
+        totalTimeMinutes:
+          parseNumber((row as Record<string, unknown>).total_time) *
+          timeColumn.multiplier,
       });
     }
     if (costColumns.length) {
@@ -186,7 +192,7 @@ async function collectAggregatedData(
     "due_date",
     "notes",
   ];
-  if (timeColumn) detailColumns.push(timeColumn);
+  if (timeColumn) detailColumns.push(timeColumn.name);
   costColumns.forEach((col) => detailColumns.push(col));
 
   const completedQuery = applyDateFilters(
@@ -212,9 +218,9 @@ async function collectAggregatedData(
       notes: row.notes ?? null,
     };
     if (timeColumn) {
-      base.timeMinutes = parseNumber(
-        (row as Record<string, unknown>)[timeColumn],
-      );
+      base.timeMinutes =
+        parseNumber((row as Record<string, unknown>)[timeColumn.name]) *
+        timeColumn.multiplier;
     }
     if (costColumns.length) {
       base.cost = costColumns.reduce((sum, col) => {
