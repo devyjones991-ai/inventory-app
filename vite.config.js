@@ -89,8 +89,15 @@ export default defineConfig(async ({ mode }) => {
               return path.basename(id, ".jsx").toLowerCase();
             }
           },
+          // Ensure proper file extensions for nginx
+          entryFileNames: "assets/[name]-[hash].js",
+          chunkFileNames: "assets/[name]-[hash].js",
+          assetFileNames: "assets/[name]-[hash].[ext]",
         },
       },
+      // Ensure proper module format
+      target: "esnext",
+      minify: "esbuild",
     },
     server: {
       host: true, // 0.0.0.0
