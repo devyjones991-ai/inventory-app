@@ -49,12 +49,12 @@ export default function ThemeToggle({
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       {showLabel && (
-        <span className="text-sm font-medium text-foreground">
+        <span className="text-sm font-medium text-foreground leading-none">
           {isDark ? "Темная" : "Светлая"}
         </span>
       )}
 
-      <div className={`toggle-switch ${sizeClasses[size]}`}>
+      <div className={`toggle-switch ${sizeClasses[size]} flex items-center`}>
         <label className="switch-label">
           <input
             type="checkbox"
