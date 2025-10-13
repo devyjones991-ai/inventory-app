@@ -78,7 +78,6 @@
 }
 
 .chat-message {
-  width: 100%;
   min-height: 40px;
   padding: 12px 16px;
   border-radius: 8px;
@@ -88,6 +87,10 @@
   line-height: 1.4;
   word-wrap: break-word;
   gap: 4px;
+  max-width: 80%;
+  min-width: 100px;
+  width: fit-content;
+  align-self: flex-start;
 }
 
 .chat-message.user {
@@ -167,6 +170,29 @@
 .chat-message-content .url {
   word-break: break-all;
   overflow-wrap: anywhere;
+}
+
+/* Авторасширение для длинных сообщений */
+.chat-message.long-message {
+  max-width: 95%;
+  min-width: 200px;
+}
+
+.chat-message.very-long-message {
+  max-width: 98%;
+  min-width: 300px;
+}
+
+/* Специальные стили для сообщений с кодом */
+.chat-message.code-message {
+  min-width: 150px;
+  max-width: 90%;
+}
+
+/* Стили для сообщений с ссылками */
+.chat-message.link-message {
+  min-width: 120px;
+  max-width: 85%;
 }
 
 /* Стили для времени отправки */
@@ -418,12 +444,17 @@
     line-height: 1.4;
     margin-bottom: 4px;
     max-width: 85%;
+    min-width: 60px;
+    width: fit-content;
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
     position: relative;
     white-space: pre-wrap;
     hyphens: auto;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
   }
 
   .chat-message.user {
@@ -499,6 +530,29 @@
   .chat-message-content .url {
     word-break: break-all;
     overflow-wrap: anywhere;
+  }
+
+  /* Авторасширение для длинных сообщений (мобильные) */
+  .chat-message.long-message {
+    max-width: 95%;
+    min-width: 80px;
+  }
+
+  .chat-message.very-long-message {
+    max-width: 98%;
+    min-width: 120px;
+  }
+
+  /* Специальные стили для сообщений с кодом (мобильные) */
+  .chat-message.code-message {
+    min-width: 100px;
+    max-width: 90%;
+  }
+
+  /* Стили для сообщений с ссылками (мобильные) */
+  .chat-message.link-message {
+    min-width: 80px;
+    max-width: 85%;
   }
 
   .chat-message-time {
@@ -604,10 +658,15 @@
     padding: 6px 10px;
     font-size: 15px;
     max-width: 90%;
+    min-width: 50px;
+    width: fit-content;
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: pre-wrap;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
   }
 
   .chat-message.user {
@@ -660,5 +719,26 @@
   .chat-attachment-icon {
     width: 16px;
     height: 16px;
+  }
+
+  /* Авторасширение для очень маленьких экранов */
+  .chat-message.long-message {
+    max-width: 95%;
+    min-width: 60px;
+  }
+
+  .chat-message.very-long-message {
+    max-width: 98%;
+    min-width: 80px;
+  }
+
+  .chat-message.code-message {
+    min-width: 80px;
+    max-width: 90%;
+  }
+
+  .chat-message.link-message {
+    min-width: 60px;
+    max-width: 85%;
   }
 }

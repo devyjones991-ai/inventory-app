@@ -21,6 +21,7 @@ import { Button, Input } from "@/components/ui";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/utils/date";
 import { linkifyText } from "@/utils/linkify.jsx";
+import { getMessageType } from "@/utils/messageUtils.js";
 import "../assets/chat-gpt-style.css";
 
 function ChatTab({
@@ -225,11 +226,15 @@ function ChatTab({
                   m.id ||
                   m.client_generated_id ||
                   `${m.created_at}-${m.sender}`;
+
+                // Определяем тип сообщения для авторасширения
+                const messageType = getMessageType(m.content);
+
                 return (
                   <div
                     key={key}
                     data-testid="chat-message"
-                    className={`chat-message ${isOwn ? "user" : "assistant"}`}
+                    className={`chat-message ${isOwn ? "user" : "assistant"} ${messageType}`}
                   >
                     {/* Отправитель (только для сообщений не от текущего пользователя) */}
                     {!isOwn && (
