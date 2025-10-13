@@ -75,8 +75,8 @@ export default defineConfig(async ({ mode }) => {
     },
     esbuild: isProd ? { drop: ["console", "debugger"] } : {},
     build: {
-      sourcemap: true, // Включаем sourcemap для отладки
-      minify: false, // Отключаем минификацию временно
+      sourcemap: mode === "staging", // Включаем sourcemap только для staging
+      minify: "esbuild", // Включаем минификацию обратно
       rollupOptions: {
         plugins: rollupPlugins,
         output: {
