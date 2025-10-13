@@ -53,18 +53,41 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const [taskDeleteId, setTaskDeleteId] = useState(null);
 
   const [filterStatus, setFilterStatus] = useState("all");
-  const [filterQuery, setFilterQuery] = useState("");
   // Debounced input state to avoid refresh on every keystroke
   const [queryInput, setQueryInput] = useState("");
   // Virtualized list responsive sizing for mobile correctness
   const [listHeight, setListHeight] = useState(400);
   const [listItemSize, setListItemSize] = useState(120);
+  // Local filtered tasks to avoid re-fetching on every search
+  const [localTasks, setLocalTasks] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
 
-  // Debounced search effect
+  // Debounced search effect - now only filters locally
   useEffect(() => {
-    const id = setTimeout(() => setFilterQuery(queryInput), 300);
+    const id = setTimeout(() => {
+      // Filter tasks locally instead of re-fetching
+      if (queryInput.trim()) {
+        const filtered = allTasks.filter((task) => {
+          const query = queryInput.toLowerCase();
+          const title = (task.title || "").toLowerCase();
+          const assignee = (task.assignee || "").toLowerCase();
+          const dueDate = task.due_date
+            ? new Date(task.due_date).toLocaleDateString("ru-RU")
+            : "";
+
+          return (
+            title.includes(query) ||
+            assignee.includes(query) ||
+            dueDate.includes(query)
+          );
+        });
+        setLocalTasks(filtered);
+      } else {
+        setLocalTasks(allTasks);
+      }
+    }, 300);
     return () => clearTimeout(id);
-  }, [queryInput]);
+  }, [queryInput, allTasks]);
 
   // Compute responsive list height and row size (prevents clipping on mobile)
   useEffect(() => {
@@ -125,12 +148,18 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     deleteTask,
   } = useTasks(selected?.id);
 
+  // Load tasks only when object or status filter changes, not on search query
   useEffect(() => {
     if (!selected?.id) return;
     const statusCode = filterStatus === "all" ? undefined : filterStatus;
-    const query = filterQuery.trim() || undefined;
-    loadTasks({ limit: PAGE_SIZE, status: statusCode, query });
-  }, [selected?.id, filterStatus, filterQuery, loadTasks]);
+    loadTasks({ limit: PAGE_SIZE, status: statusCode });
+  }, [selected?.id, filterStatus, loadTasks]);
+
+  // Update local tasks when tasks from API change
+  useEffect(() => {
+    setAllTasks(tasks);
+    setLocalTasks(tasks);
+  }, [tasks]);
 
   const openTaskModal = useCallback(() => {
     reset({
@@ -155,8 +184,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
     onCountChangeRef.current = onCountChange;
   }, [onCountChange]);
   useEffect(() => {
-    onCountChangeRef.current?.(tasks.length);
-  }, [tasks.length]);
+    onCountChangeRef.current?.(allTasks.length);
+  }, [allTasks.length]);
   // Optimized search input handler to prevent unnecessary re-renders
   const handleSearchChange = useCallback((e) => {
     setQueryInput(e.target.value);
@@ -166,8 +195,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   const handleResetFilters = useCallback(() => {
     setFilterStatus("all");
     setQueryInput("");
-    setFilterQuery("");
-  }, []);
+    setLocalTasks(allTasks);
+  }, [allTasks]);
 
   const closeTaskModal = useCallback(() => {
     setIsTaskModalOpen(false);
@@ -315,17 +344,26 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
           )}
         </div>
       </div>
-      {tasks.length === 0 ? (
-        <div className="text-gray-500 text-center py-8">{t("tasks.empty")}</div>
+      {localTasks.length === 0 ? (
+        <div className="text-gray-500 text-center py-8">
+          {queryInput.trim() ? t("tasks.noResults") : t("tasks.empty")}
+        </div>
       ) : (
-        <VirtualizedTaskList
-          tasks={tasks}
-          onEdit={handleEditTask}
-          onDelete={(id) => setTaskDeleteId(id)}
-          onView={(task) => setViewingTask(task)}
-          height={listHeight}
-          itemSize={listItemSize}
-        />
+        <>
+          {queryInput.trim() && (
+            <div className="text-sm text-gray-600 mb-2">
+              Найдено: {localTasks.length} из {allTasks.length}
+            </div>
+          )}
+          <VirtualizedTaskList
+            tasks={localTasks}
+            onEdit={handleEditTask}
+            onDelete={(id) => setTaskDeleteId(id)}
+            onView={(task) => setViewingTask(task)}
+            height={listHeight}
+            itemSize={listItemSize}
+          />
+        </>
       )}
       {/* Task Modal */}
       <Dialog
