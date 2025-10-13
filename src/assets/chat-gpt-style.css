@@ -78,31 +78,63 @@
 }
 
 .chat-message {
-  min-height: 40px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  line-height: 1.4;
-  word-wrap: break-word;
-  gap: 4px;
+  margin-bottom: 12px;
   max-width: 80%;
   min-width: 100px;
   width: fit-content;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  position: relative;
+  white-space: pre-wrap;
+  hyphens: auto;
+  display: flex;
+  flex-direction: column;
   align-self: flex-start;
 }
 
 .chat-message.user {
-  background-color: #2e2f3a;
+  align-self: flex-end;
   margin-left: 20px;
-  border-left: 3px solid #10a37f;
+  margin-right: 0;
 }
 
 .chat-message.assistant {
-  background-color: #40414f;
+  align-self: flex-start;
   margin-right: 20px;
-  border-left: 3px solid #6b6c7b;
+  margin-left: 0;
+}
+
+/* Пузыри сообщений (десктоп) */
+.chat-message-bubble {
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  max-width: 100%;
+  animation: messageSlideIn 0.3s ease-out;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.chat-message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+}
+
+.chat-message.user .chat-message-bubble {
+  background-color: #007bff;
+  color: white;
+  border-radius: 12px 12px 4px 12px;
+}
+
+.chat-message.assistant .chat-message-bubble {
+  background-color: #40414f;
+  color: #d8dbe0;
+  border-radius: 12px 12px 12px 4px;
 }
 
 .chat-message.system {
@@ -112,33 +144,50 @@
   color: #6b6c7b;
 }
 
-/* Стили для отправителя */
+/* Стили для отправителя (десктоп) */
 .chat-message-sender {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #6b6c7b;
-  margin-bottom: 2px;
-  opacity: 0.8;
+  color: #8e8e93;
+  margin-bottom: 6px;
+  display: block;
+  padding-left: 2px;
 }
 
-/* Стили для контента сообщения */
+/* Стили для контента сообщения (десктоп) */
 .chat-message-content {
-  flex: 1;
-  color: white;
+  color: inherit;
   line-height: 1.5;
   word-wrap: break-word;
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+  margin: 0;
+}
+
+/* Стили для времени (десктоп) */
+.chat-message-time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 6px;
+  text-align: right;
+  display: block;
+  padding-right: 2px;
+}
+
+.chat-message.assistant .chat-message-time {
+  color: rgba(216, 219, 224, 0.6);
+  text-align: left;
 }
 
 /* Стили для ссылок в сообщениях (десктоп) */
 .chat-message-content a {
   color: inherit;
   text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.6);
+  text-decoration-color: rgba(255, 255, 255, 0.7);
   text-underline-offset: 2px;
   transition: text-decoration-color 0.2s ease;
+  word-break: break-all;
 }
 
 .chat-message-content a:hover {
@@ -146,7 +195,7 @@
 }
 
 .chat-message.assistant .chat-message-content a {
-  text-decoration-color: rgba(216, 219, 224, 0.6);
+  text-decoration-color: rgba(216, 219, 224, 0.7);
 }
 
 .chat-message.assistant .chat-message-content a:hover {
@@ -155,15 +204,20 @@
 
 /* Стили для кода в сообщениях (десктоп) */
 .chat-message-content code {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 2px 4px;
-  border-radius: 3px;
-  font-family: "Courier New", monospace;
+  background-color: rgba(0, 0, 0, 0.25);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-family:
+    "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Courier New", monospace;
   font-size: 0.9em;
+  color: #f8f8f2;
+  display: inline-block;
+  margin: 1px 0;
 }
 
 .chat-message.assistant .chat-message-content code {
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.35);
+  color: #e6e6e6;
 }
 
 /* Стили для длинных URL (десктоп) */
@@ -439,10 +493,7 @@
 
   /* Сообщения в стиле Telegram */
   .chat-message {
-    padding: 8px 12px;
-    font-size: 16px;
-    line-height: 1.4;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     max-width: 85%;
     min-width: 60px;
     width: fit-content;
@@ -459,28 +510,65 @@
 
   .chat-message.user {
     align-self: flex-end;
-    background-color: #007bff;
-    color: white;
-    border-radius: 18px 18px 4px 18px;
     margin-left: 20px;
     margin-right: 0;
   }
 
   .chat-message.assistant {
     align-self: flex-start;
-    background-color: #40414f;
-    color: #d8dbe0;
-    border-radius: 18px 18px 18px 4px;
     margin-right: 20px;
     margin-left: 0;
   }
 
+  /* Пузыри сообщений */
+  .chat-message-bubble {
+    padding: 10px 14px;
+    font-size: 16px;
+    line-height: 1.4;
+    border-radius: 18px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    animation: messageSlideIn 0.3s ease-out;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .chat-message-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  @keyframes messageSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .chat-message.user .chat-message-bubble {
+    background-color: #007bff;
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+  }
+
+  .chat-message.assistant .chat-message-bubble {
+    background-color: #40414f;
+    color: #d8dbe0;
+    border-radius: 18px 18px 18px 4px;
+  }
+
   .chat-message-sender {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: #6b6c7b;
-    margin-bottom: 2px;
+    color: #8e8e93;
+    margin-bottom: 4px;
     display: block;
+    padding-left: 2px;
   }
 
   .chat-message-content {
@@ -490,15 +578,31 @@
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
+    margin: 0;
   }
 
-  /* Стили для ссылок в сообщениях */
+  .chat-message-time {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 4px;
+    text-align: right;
+    display: block;
+    padding-right: 2px;
+  }
+
+  .chat-message.assistant .chat-message-time {
+    color: rgba(216, 219, 224, 0.6);
+    text-align: left;
+  }
+
+  /* Стили для ссылок в сообщениях (мобильные) */
   .chat-message-content a {
     color: inherit;
     text-decoration: underline;
-    text-decoration-color: rgba(255, 255, 255, 0.6);
+    text-decoration-color: rgba(255, 255, 255, 0.7);
     text-underline-offset: 2px;
     transition: text-decoration-color 0.2s ease;
+    word-break: break-all;
   }
 
   .chat-message-content a:hover {
@@ -506,24 +610,30 @@
   }
 
   .chat-message.assistant .chat-message-content a {
-    text-decoration-color: rgba(216, 219, 224, 0.6);
+    text-decoration-color: rgba(216, 219, 224, 0.7);
   }
 
   .chat-message.assistant .chat-message-content a:hover {
     text-decoration-color: rgba(216, 219, 224, 0.9);
   }
 
-  /* Стили для кода в сообщениях */
+  /* Стили для кода в сообщениях (мобильные) */
   .chat-message-content code {
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-family: "Courier New", monospace;
+    background-color: rgba(0, 0, 0, 0.25);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family:
+      "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Courier New",
+      monospace;
     font-size: 0.9em;
+    color: #f8f8f2;
+    display: inline-block;
+    margin: 1px 0;
   }
 
   .chat-message.assistant .chat-message-content code {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.35);
+    color: #e6e6e6;
   }
 
   /* Стили для длинных URL */
@@ -655,8 +765,7 @@
   }
 
   .chat-message {
-    padding: 6px 10px;
-    font-size: 15px;
+    margin-bottom: 6px;
     max-width: 90%;
     min-width: 50px;
     width: fit-content;
@@ -677,6 +786,21 @@
   .chat-message.assistant {
     margin-right: 10px;
     margin-left: 0;
+  }
+
+  .chat-message-bubble {
+    padding: 8px 12px;
+    font-size: 15px;
+  }
+
+  .chat-message-sender {
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+
+  .chat-message-time {
+    font-size: 11px;
+    margin-top: 3px;
   }
 
   .chat-message-sender {

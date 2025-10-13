@@ -243,19 +243,22 @@ function ChatTab({
                       </div>
                     )}
 
-                    {/* Контент сообщения */}
-                    {m.content && (
-                      <div className="chat-message-content">
-                        {linkifyText(m.content)}
-                      </div>
-                    )}
+                    {/* Пузырь сообщения */}
+                    <div className="chat-message-bubble">
+                      {/* Контент сообщения */}
+                      {m.content && (
+                        <div className="chat-message-content">
+                          {linkifyText(m.content)}
+                        </div>
+                      )}
 
-                    {/* Файл */}
-                    {m.file_url && (
-                      <div className="mt-2">
-                        <AttachmentPreview url={m.file_url} />
-                      </div>
-                    )}
+                      {/* Файл */}
+                      {m.file_url && (
+                        <div className="mt-2">
+                          <AttachmentPreview url={m.file_url} />
+                        </div>
+                      )}
+                    </div>
 
                     {/* Время отправки */}
                     <div className="chat-message-time">
