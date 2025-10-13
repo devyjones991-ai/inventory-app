@@ -21,6 +21,7 @@ import { Button, Input } from "@/components/ui";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/utils/date";
 import { linkifyText } from "@/utils/linkify.jsx";
+import "../assets/chat-gpt-style.css";
 
 function ChatTab({
   selected = null,
@@ -145,37 +146,37 @@ function ChatTab({
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-3 py-2">
-        <button
-          type="button"
-          className="p-2 rounded hover:bg-accent"
-          aria-label="Поиск"
-          onClick={handleSearchToggle}
-        >
-          <MagnifyingGlassIcon className="w-6 h-6" />
-        </button>
-        <div
-          className={`transition-all duration-300 motion-reduce:transition-none overflow-hidden ${
-            isSearchOpen ? "max-h-12 mt-1" : "max-h-0"
-          }`}
-        >
-          {isSearchOpen && (
-            <Input
-              type="text"
-              className="w-full h-8 text-sm"
-              placeholder="Поиск сообщений"
-              value={searchInput}
-              onChange={handleSearchChange}
-              autoFocus
-            />
-          )}
+    <div className="chat-container">
+      {/* Навигационная панель */}
+      <div className="chat-nav-bar">
+        <a href="#" className="text-sm font-medium">
+          Multiminder Chat
+        </a>
+        <div className="chat-close" onClick={handleSearchToggle}>
+          <div className="chat-line one"></div>
+          <div className="chat-line two"></div>
         </div>
       </div>
+
+      {/* Поиск */}
+      {isSearchOpen && (
+        <div className="chat-search">
+          <input
+            type="text"
+            className="chat-search-input"
+            placeholder="Поиск сообщений..."
+            value={searchInput}
+            onChange={handleSearchChange}
+            autoFocus
+          />
+          <MagnifyingGlassIcon className="chat-search-icon" />
+        </div>
+      )}
+      {/* Область сообщений */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="relative flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 bg-muted rounded-2xl"
+        className="chat-messages-area"
         style={{
           contentVisibility: "auto",
           containIntrinsicSize: "600px",
@@ -199,7 +200,7 @@ function ChatTab({
             {hasMore && (
               <div className="text-center">
                 <button
-                  className="px-3 py-1.5 text-sm rounded border"
+                  className="chat-message system"
                   onClick={() => loadMore()}
                 >
                   Загрузить ещё
@@ -208,11 +209,9 @@ function ChatTab({
             )}
             {messages.length === 0 ? (
               searchQuery ? (
-                <div className="text-sm text-gray-400">
-                  Сообщения не найдены
-                </div>
+                <div className="chat-message system">Сообщения не найдены</div>
               ) : (
-                <div className="text-sm text-gray-400">
+                <div className="chat-message system">
                   Сообщений пока нет — напиши первым.
                 </div>
               )
@@ -230,39 +229,42 @@ function ChatTab({
                   <div
                     key={key}
                     data-testid="chat-message"
-                    className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                    className={`chat-message ${isOwn ? "user" : "assistant"}`}
                   >
-                    <div
-                      className={`max-w-[80%] sm:max-w-[60%] whitespace-pre-wrap break-words rounded-2xl shadow-md px-4 py-2 flex flex-col ${
-                        isOwn
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100"
-                      }`}
-                    >
-                      {!isOwn && (
-                        <span className="mb-1 font-semibold">
-                          {m.sender || "user"}
-                        </span>
-                      )}
-                      {m.content && (
-                        <span className="whitespace-pre-wrap break-words">
-                          {linkifyText(m.content)}
-                        </span>
-                      )}
-                      {m.file_url && (
-                        <div className="mt-2">
-                          <AttachmentPreview url={m.file_url} />
-                        </div>
-                      )}
-                      <span className="self-end mt-1 text-xs opacity-60">
-                        {when}
-                        {m.read_at ? " ✓" : ""}
-                        {m._optimistic ? " • отправка…" : ""}
-                      </span>
+                    {!isOwn && (
+                      <div className="mb-1 font-semibold text-xs opacity-70">
+                        {m.sender || "user"}
+                      </div>
+                    )}
+                    {m.content && (
+                      <div className="whitespace-pre-wrap break-words">
+                        {linkifyText(m.content)}
+                      </div>
+                    )}
+                    {m.file_url && (
+                      <div className="mt-2">
+                        <AttachmentPreview url={m.file_url} />
+                      </div>
+                    )}
+                    <div className="self-end mt-1 text-xs opacity-60">
+                      {when}
+                      {m.read_at ? " ✓" : ""}
+                      {m._optimistic ? " • отправка…" : ""}
                     </div>
                   </div>
                 );
               })
+            )}
+            {/* Индикатор загрузки */}
+            {sending && (
+              <div className="chat-loading">
+                <span>Отправка</span>
+                <div className="chat-loading-dots">
+                  <div className="chat-loading-dot"></div>
+                  <div className="chat-loading-dot"></div>
+                  <div className="chat-loading-dot"></div>
+                </div>
+              </div>
             )}
             {/* bottom sentinel to allow precise scrollToBottom */}
             <div ref={bottomRef} />
@@ -283,19 +285,21 @@ function ChatTab({
         )}
       </div>
 
-      <div className="p-2 sm:p-3 border-t space-y-2">
+      {/* Область ввода */}
+      <div className="chat-sender-area">
         {file && filePreview && <AttachmentPreview url={filePreview} />}
-        <div className="flex items-center gap-2">
+
+        <div className="chat-input-place">
           <label
             htmlFor="chat-file-input"
-            className="p-2 rounded hover:bg-accent cursor-pointer"
+            className="chat-attachment"
             data-testid="file-label"
             aria-label="Прикрепить файл"
             title="Прикрепить файл"
             role="button"
             tabIndex={0}
           >
-            <PaperClipIcon className="w-6 h-6" />
+            <PaperClipIcon className="chat-attachment-icon" />
           </label>
           <input
             id="chat-file-input"
@@ -304,21 +308,28 @@ function ChatTab({
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          <Textarea
-            className="w-full min-h-24"
-            placeholder="Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)"
+          <input
+            className="chat-send-input"
+            placeholder="Напиши сообщение…"
             value={newMessage}
             onChange={handleMessageChange}
             onKeyDown={handleKeyDown}
           />
-        </div>
-        <div className="flex justify-end">
-          <Button
+          <button
+            className="chat-send"
             disabled={sending || (!newMessage.trim() && !file)}
             onClick={handleSend}
           >
-            {sending ? "Отправка…" : "Отправить"}
-          </Button>
+            <svg className="chat-send-icon" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M7 11L12 6L17 11M12 18V7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

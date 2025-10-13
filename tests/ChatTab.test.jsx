@@ -172,7 +172,7 @@ describe("ChatTab", () => {
 
     expect(await screen.findByText("msg50")).toBeInTheDocument();
 
-    const scrollContainer = container.querySelector(".flex-1.overflow-y-auto");
+    const scrollContainer = container.querySelector(".chat-messages-area");
     expect(scrollTopSetter).toHaveBeenCalled();
     expect(scrollContainer.scrollTop).toBe(scrollContainer.scrollHeight);
 
@@ -218,20 +218,18 @@ describe("ChatTab", () => {
 
     const myBubble = await screen.findByText("Привет");
     expect(myBubble.closest('[data-testid="chat-message"]')).toHaveClass(
-      "justify-end",
+      "chat-message user",
     );
 
     const otherBubble = await screen.findByText("Здравствуйте");
     expect(otherBubble.closest('[data-testid="chat-message"]')).toHaveClass(
-      "justify-start",
+      "chat-message assistant",
     );
 
-    const textarea = screen.getByPlaceholderText(
-      "Напиши сообщение… (Enter — отправить, Shift+Enter — новая строка)",
-    );
+    const textarea = screen.getByPlaceholderText("Напиши сообщение…");
     fireEvent.change(textarea, { target: { value: "Новое сообщение" } });
 
-    fireEvent.click(screen.getByText("Отправить"));
+    fireEvent.click(screen.getByRole("button", { name: "" }));
 
     await waitFor(() => expect(mockSendMessage).toHaveBeenCalled());
     expect(textarea.value).toBe("");
@@ -254,7 +252,7 @@ describe("ChatTab", () => {
     const file = new File(["content"], "test.png", { type: "image/png" });
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    const sendBtn = screen.getByRole("button", { name: "Отправить" });
+    const sendBtn = screen.getByRole("button", { name: "" });
     fireEvent.click(sendBtn);
 
     await waitFor(() => expect(mockSendMessage).toHaveBeenCalledTimes(1));
@@ -313,9 +311,10 @@ describe("ChatTab", () => {
     render(<ChatTab selected={{ id: 1 }} userEmail="me@example.com" />);
     await screen.findByText("Привет");
 
-    const searchBtn = screen.getByRole("button", { name: "Поиск" });
+    const searchBtn = screen.getByRole("button", { name: "" });
     fireEvent.click(searchBtn);
-    const searchInput = screen.getByPlaceholderText("Поиск сообщений");
+    const searchInput =
+      await screen.findByPlaceholderText("Поиск сообщений...");
 
     const filtered = [mockMessages[0]];
     mockFetchMessages.mockResolvedValueOnce({ data: filtered, error: null });
