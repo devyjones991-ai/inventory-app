@@ -363,7 +363,7 @@ function applyQueryFilter(items, rawQuery) {
   const m = q.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
   let iso = null;
   if (m) {
-    const [_, dd, mm, yyyy] = m;
+    const [, dd, mm, yyyy] = m;
     iso = `${yyyy}-${mm}-${dd}`;
   }
   return items.filter((t) => {
