@@ -490,6 +490,19 @@
   box-shadow: 0 -0.2em 0 hsl(0, 90%, 75%) inset;
 }
 
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .wheel-and-hamster {
+    font-size: 12px; /* Уменьшаем размер на мобильных */
+  }
+}
+
+@media (max-width: 480px) {
+  .wheel-and-hamster {
+    font-size: 10px; /* Еще больше уменьшаем на маленьких экранах */
+  }
+}
+
 [data-theme="dark"] .spoke {
   background:
     radial-gradient(

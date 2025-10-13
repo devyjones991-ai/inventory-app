@@ -195,3 +195,73 @@
 #particles {
   animation-delay: 0.4s;
 }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  #svg-global {
+    zoom: 0.8; /* Уменьшаем масштаб на мобильных */
+  }
+
+  /* Уменьшаем размеры иконок на мобильных */
+  .task-icon,
+  .document-icon,
+  .notification-icon,
+  .chat-icon,
+  .hardware-icon,
+  .user-icon,
+  .list-icon,
+  .settings-icon,
+  .folder-icon,
+  .plus-icon,
+  .cross-icon {
+    transform: scale(0.8);
+  }
+
+  /* Уменьшаем анимацию на мобильных для производительности */
+  .particle {
+    animation-duration: 3s; /* Замедляем анимацию */
+  }
+
+  .particle-sideways {
+    animation-duration: 3.5s;
+  }
+
+  .particle-glow {
+    animation-duration: 3s;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+  #svg-global {
+    zoom: 0.6; /* Еще больше уменьшаем на маленьких экранах */
+  }
+
+  /* Еще больше уменьшаем иконки */
+  .task-icon,
+  .document-icon,
+  .notification-icon,
+  .chat-icon,
+  .hardware-icon,
+  .user-icon,
+  .list-icon,
+  .settings-icon,
+  .folder-icon,
+  .plus-icon,
+  .cross-icon {
+    transform: scale(0.6);
+  }
+
+  /* Отключаем сложные анимации на очень маленьких экранах */
+  .particle-glow {
+    animation: none;
+  }
+
+  .particle {
+    animation-duration: 4s;
+  }
+
+  .particle-sideways {
+    animation-duration: 4.5s;
+  }
+}

@@ -97,18 +97,18 @@ export default function AuthPage() {
       />
 
       {/* Контент авторизации */}
-      <div className="relative z-20 flex items-center justify-center min-h-screen">
+      <div className="relative z-20 flex items-center justify-center min-h-screen p-4">
         <div className="flex w-full items-center justify-center">
           {/* Свечение за окном */}
-          <div className="relative">
+          <div className="relative w-full max-w-md">
             {/* Внешнее свечение */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl animate-pulse" />
-            <div className="absolute -inset-2 bg-gradient-to-r from-blue-400/30 via-purple-400/30 to-pink-400/30 rounded-xl blur-lg" />
+            <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl animate-pulse" />
+            <div className="absolute -inset-1 sm:-inset-2 bg-gradient-to-r from-blue-400/30 via-purple-400/30 to-pink-400/30 rounded-xl blur-lg" />
 
             {/* Само окно авторизации */}
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="relative bg-background/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md space-y-6 border border-border/50"
+              className="relative bg-background/95 backdrop-blur-sm p-4 sm:p-8 rounded-xl shadow-2xl w-full space-y-4 sm:space-y-6 border border-border/50"
             >
               <h2 className="text-lg font-bold text-center">
                 {isRegister ? t("auth.register") : t("auth.login")}

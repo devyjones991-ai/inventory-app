@@ -20,9 +20,10 @@ export default function ThemeToggle({
     // Если тема не установлена, устанавливаем по умолчанию
     if (!currentTheme) {
       const savedTheme = localStorage.getItem("theme");
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
+      const prefersDark =
+        typeof window !== "undefined" && window.matchMedia
+          ? window.matchMedia("(prefers-color-scheme: dark)").matches
+          : false;
 
       const shouldBeDark =
         savedTheme === "dark" || (!savedTheme && prefersDark);
@@ -51,9 +52,9 @@ export default function ThemeToggle({
   };
 
   const sizeClasses = {
-    small: "w-10 h-3", // 2.5rem x 0.75rem
-    default: "w-14 h-4", // 3.5rem x 1rem
-    large: "w-18 h-5", // 4.5rem x 1.25rem
+    small: "w-10 h-3 sm:w-8 sm:h-2.5", // 2.5rem x 0.75rem на десктопе, меньше на мобильных
+    default: "w-14 h-4 sm:w-11 sm:h-3.5", // 3.5rem x 1rem на десктопе, меньше на мобильных
+    large: "w-18 h-5 sm:w-14 sm:h-4", // 4.5rem x 1.25rem на десктопе, меньше на мобильных
   };
 
   return (

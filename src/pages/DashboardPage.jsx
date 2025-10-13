@@ -354,24 +354,24 @@ export default function DashboardPage() {
         )}
 
         <div className="flex-1 flex flex-col">
-          <header className="flex flex-row items-center justify-between gap-2 p-3 sm:p-4 border-b bg-background">
-            <div className="flex items-center gap-3 md:gap-4 overflow-x-auto overflow-y-visible whitespace-nowrap">
+          <header className="flex flex-row items-center justify-between gap-2 p-2 sm:p-3 md:p-4 border-b bg-background">
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4 overflow-x-auto overflow-y-visible whitespace-nowrap">
               <button
-                className="md:hidden p-2 text-blue-600 dark:text-blue-400"
+                className="md:hidden p-1.5 sm:p-2 text-blue-600 dark:text-blue-400"
                 onClick={toggleSidebar}
                 type="button"
                 aria-label={t("common.open")}
               >
-                <Bars3Icon className="w-6 h-6" />
+                <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
               <Button
                 variant="success"
                 size="xs"
-                className="flex items-center gap-1 px-2 text-sm"
+                className="flex items-center gap-1 px-1.5 sm:px-2 text-xs sm:text-sm h-7 sm:h-8"
                 onClick={addHandler}
                 type="button"
               >
-                <PlusIcon className="w-4 h-4" />
+                <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">{t("dashboard.add")}</span>
               </Button>
               <div className="hidden md:flex gap-2">

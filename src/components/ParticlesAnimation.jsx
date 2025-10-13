@@ -8,6 +8,21 @@ export default function ParticlesAnimation({
   height = 300,
   showBackground = true,
 }) {
+  // Адаптивные размеры для мобильных устройств
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const isSmallMobile =
+    typeof window !== "undefined" && window.innerWidth <= 480;
+
+  const adaptiveWidth = isSmallMobile
+    ? width * 0.6
+    : isMobile
+      ? width * 0.8
+      : width;
+  const adaptiveHeight = isSmallMobile
+    ? height * 0.6
+    : isMobile
+      ? height * 0.8
+      : height;
   return (
     <div className={`absolute inset-0 pointer-events-none z-10 ${className}`}>
       {showBackground && (
@@ -16,8 +31,8 @@ export default function ParticlesAnimation({
 
       <svg
         id="svg-global"
-        width={width}
-        height={height}
+        width={adaptiveWidth}
+        height={adaptiveHeight}
         viewBox="0 0 400 300"
         className="absolute inset-0 w-full h-full"
         xmlns="http://www.w3.org/2000/svg"
