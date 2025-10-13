@@ -89,10 +89,17 @@ export default defineConfig(async ({ mode }) => {
               return path.basename(id, ".jsx").toLowerCase();
             }
           },
-          // Ensure proper file extensions for nginx
+          // Force .js extensions for all JavaScript files
           entryFileNames: "assets/[name]-[hash].js",
           chunkFileNames: "assets/[name]-[hash].js",
-          assetFileNames: "assets/[name]-[hash].[ext]",
+          assetFileNames: (assetInfo) => {
+            if (/\.(js|mjs|jsx)$/i.test(assetInfo.name)) {
+              return "assets/[name]-[hash].js";
+            }
+            return "assets/[name]-[hash].[ext]";
+          },
+          // Ensure proper module format
+          format: "es",
         },
       },
       // Ensure proper module format
