@@ -9,6 +9,17 @@ cd ~/inventory-app
 echo "📥 Pulling latest changes..."
 git pull origin main
 
+# Setup environment variables
+echo "🔧 Setting up environment variables..."
+cat > public/env.js << 'EOF'
+// Runtime environment overrides for static hosting
+window.__ENV = {
+  VITE_SUPABASE_URL: "https://ldbdqkbstlhugikalpin.supabase.co",
+  VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkYmRxa2JzdGxodWdpa2FscGluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3NzA4OTIsImV4cCI6MjA2OTM0Njg5Mn0.V9V20mwbCzfWYXn2HZGyjWRhFiu6TW0uw_s-WiiipTg",
+  VITE_API_BASE_URL: "https://ldbdqkbstlhugikalpin.supabase.co/functions/v1"
+};
+EOF
+
 # Build the project
 echo "🔨 Building project..."
 npm run build
