@@ -8,19 +8,19 @@
   --link-hover: rgb(24, 94, 82);
 }
 
-/* Адаптация под Tailwind размеры - компактная область */
-.toggle-switch.w-12 {
-  width: 3rem;
+/* Адаптация под Tailwind размеры - точный размер хода */
+.toggle-switch.w-10 {
+  width: 2.5rem; /* 40px - точно по ходу слайдера */
   height: 0.75rem;
 }
 
-.toggle-switch.w-16 {
-  width: 4rem;
+.toggle-switch.w-14 {
+  width: 3.5rem; /* 56px - точно по ходу слайдера */
   height: 1rem;
 }
 
-.toggle-switch.w-20 {
-  width: 5rem;
+.toggle-switch.w-18 {
+  width: 4.5rem; /* 72px - точно по ходу слайдера */
   height: 1.25rem;
 }
 
@@ -76,8 +76,8 @@
   box-shadow: none;
 }
 
-/* Адаптация для разных размеров - компактный дизайн */
-.toggle-switch.w-12 .slider::before {
+/* Адаптация для разных размеров - точный ход слайдера */
+.toggle-switch.w-10 .slider::before {
   top: 0px;
   left: 1px;
   width: 8px;
@@ -86,13 +86,13 @@
   box-shadow: inset 4px -1px 0px 0px var(--light);
 }
 
-.toggle-switch.w-12 .checkbox:checked ~ .slider::before {
-  -webkit-transform: translateX(20px);
-  -ms-transform: translateX(20px);
-  transform: translateX(20px);
+.toggle-switch.w-10 .checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(24px); /* 40px - 8px - 8px = 24px */
+  -ms-transform: translateX(24px);
+  transform: translateX(24px);
 }
 
-.toggle-switch.w-16 .slider::before {
+.toggle-switch.w-14 .slider::before {
   top: 0px;
   left: 1px;
   width: 12px;
@@ -101,13 +101,13 @@
   box-shadow: inset 6px -1px 0px 0px var(--light);
 }
 
-.toggle-switch.w-16 .checkbox:checked ~ .slider::before {
-  -webkit-transform: translateX(28px);
-  -ms-transform: translateX(28px);
-  transform: translateX(28px);
+.toggle-switch.w-14 .checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(32px); /* 56px - 12px - 12px = 32px */
+  -ms-transform: translateX(32px);
+  transform: translateX(32px);
 }
 
-.toggle-switch.w-20 .slider::before {
+.toggle-switch.w-18 .slider::before {
   top: 0px;
   left: 1px;
   width: 16px;
@@ -116,10 +116,10 @@
   box-shadow: inset 8px -1px 0px 0px var(--light);
 }
 
-.toggle-switch.w-20 .checkbox:checked ~ .slider::before {
-  -webkit-transform: translateX(36px);
-  -ms-transform: translateX(36px);
-  transform: translateX(36px);
+.toggle-switch.w-18 .checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(40px); /* 72px - 16px - 16px = 40px */
+  -ms-transform: translateX(40px);
+  transform: translateX(40px);
 }
 
 /* Адаптация под темную тему */
