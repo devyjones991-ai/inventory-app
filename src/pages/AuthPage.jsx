@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import FormError from "@/components/FormError.jsx";
+import ParticlesAnimation from "@/components/ParticlesAnimation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -86,12 +87,23 @@ export default function AuthPage() {
   }, [user, isLoading, navigate]);
 
   return (
-    <div>
-      <div className="flex items-center justify-center min-h-screen bg-muted">
-        <div className="flex w-full items-center justify-center bg-background">
+    <div className="min-h-screen bg-muted relative overflow-hidden">
+      {/* Анимация частиц на фоне */}
+      <div className="absolute inset-0 z-0">
+        <ParticlesAnimation
+          className="w-full h-full"
+          width={800}
+          height={600}
+          showBackground={false}
+        />
+      </div>
+
+      {/* Контент авторизации */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen">
+        <div className="flex w-full items-center justify-center">
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="bg-background p-6 rounded shadow w-full max-w-sm space-y-4"
+            className="bg-background/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md space-y-6 border border-border/50"
           >
             <h2 className="text-lg font-bold text-center">
               {isRegister ? t("auth.register") : t("auth.login")}
