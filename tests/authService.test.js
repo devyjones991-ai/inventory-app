@@ -1,12 +1,11 @@
 // @ts-check
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-const jest = vi;
 
-const mockGetSession = jest.fn();
-const mockMaybeSingle = jest.fn();
-const mockEq = jest.fn(() => ({ maybeSingle: mockMaybeSingle }));
-const mockSelect = jest.fn(() => ({ eq: mockEq }));
-const mockFrom = jest.fn(() => ({ select: mockSelect }));
+const mockGetSession = vi.fn();
+const mockMaybeSingle = vi.fn();
+const mockEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
+const mockSelect = vi.fn(() => ({ eq: mockEq }));
+const mockFrom = vi.fn(() => ({ select: mockSelect }));
 
 vi.mock("@/supabaseClient.js", () => ({
   supabase: {
@@ -25,8 +24,8 @@ let fetchSession, fetchRole, __resetCache;
 const originalFetch = globalThis.fetch;
 
 beforeEach(async () => {
-  jest.resetModules();
-  globalThis.fetch = jest.fn();
+  vi.resetModules();
+  globalThis.fetch = vi.fn();
   const mod = await import("@/services/authService.js");
   fetchSession = mod.fetchSession;
   fetchRole = mod.fetchRole;

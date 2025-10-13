@@ -1,12 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-const jest = vi;
 import { renderHook, act } from "@testing-library/react";
 
 import { useSupabaseQuery } from "@/utils/useSupabaseQuery.js";
 
 describe("useSupabaseQuery", () => {
   it("не выставляет ошибку при отмене запроса", async () => {
-    const queryBuilder = jest.fn(
+    const queryBuilder = vi.fn(
       (_, signal) =>
         new Promise((resolve, reject) => {
           signal.addEventListener("abort", () =>

@@ -1,20 +1,19 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-const jest = vi;
 import { renderHook } from "@testing-library/react";
 
 import { useChatMessages } from "@/hooks/useChatMessages.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
 vi.mock("@/utils/handleSupabaseError", () => ({
-  handleSupabaseError: jest.fn(),
+  handleSupabaseError: vi.fn(),
 }));
 
 vi.mock("react-hot-toast", () => ({
-  toast: { error: jest.fn() },
+  toast: { error: vi.fn() },
 }));
 
 vi.mock("react-router-dom", () => ({
-  useNavigate: () => jest.fn(),
+  useNavigate: () => vi.fn(),
 }));
 
 var mockUpload;

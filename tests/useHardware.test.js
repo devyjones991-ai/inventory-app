@@ -1,16 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-const jest = vi;
 import { renderHook, act } from "@testing-library/react";
 
 import { useHardware } from "@/hooks/useHardware.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
 vi.mock("@/utils/handleSupabaseError", () => ({
-  handleSupabaseError: jest.fn(),
+  handleSupabaseError: vi.fn(),
 }));
 
 vi.mock("react-router-dom", () => ({
-  useNavigate: () => jest.fn(),
+  useNavigate: () => vi.fn(),
 }));
 
 var mockOrder;

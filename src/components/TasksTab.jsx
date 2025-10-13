@@ -6,7 +6,6 @@ import { z } from "zod";
 
 import ConfirmModal from "./ConfirmModal";
 import ErrorMessage from "./ErrorMessage";
-import TaskCard from "./TaskCard";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +59,8 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   // Virtualized list responsive sizing for mobile correctness
   const [listHeight, setListHeight] = useState(400);
   const [listItemSize, setListItemSize] = useState(120);
+
+  // Debounced search effect
   useEffect(() => {
     const id = setTimeout(() => setFilterQuery(queryInput), 300);
     return () => clearTimeout(id);
@@ -156,7 +157,17 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
   useEffect(() => {
     onCountChangeRef.current?.(tasks.length);
   }, [tasks.length]);
-  // Do not forcibly steal focus on each keystroke; keep UX stable
+  // Optimized search input handler to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((e) => {
+    setQueryInput(e.target.value);
+  }, []);
+
+  // Reset filters handler
+  const handleResetFilters = useCallback(() => {
+    setFilterStatus("all");
+    setQueryInput("");
+    setFilterQuery("");
+  }, []);
 
   const closeTaskModal = useCallback(() => {
     setIsTaskModalOpen(false);
@@ -274,7 +285,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               inputMode="search"
               autoComplete="off"
               value={queryInput}
-              onChange={(e) => setQueryInput(e.target.value)}
+              onChange={handleSearchChange}
               placeholder={t("tasks.searchPlaceholder")}
               onKeyDown={(e) => {
                 if (e.key === "Enter") e.preventDefault();
@@ -286,11 +297,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
                 type="button"
                 variant="ghost"
                 className="hidden sm:inline-flex h-8 px-2 absolute right-1 top-1/2 -translate-y-1/2"
-                onClick={() => {
-                  setFilterStatus("all");
-                  setQueryInput("");
-                  setFilterQuery("");
-                }}
+                onClick={handleResetFilters}
               >
                 {t("common.reset")}
               </Button>
@@ -301,11 +308,7 @@ function TasksTab({ selected, registerAddHandler, onCountChange }) {
               variant="ghost"
               type="button"
               className="sm:hidden mt-2"
-              onClick={() => {
-                setFilterStatus("all");
-                setQueryInput("");
-                setFilterQuery("");
-              }}
+              onClick={handleResetFilters}
             >
               {t("common.reset")}
             </Button>

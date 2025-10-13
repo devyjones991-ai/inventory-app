@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import { describe, test, expect, vi } from "vitest";
 
-const jest = vi;
 import InventoryTabs from "@/components/InventoryTabs";
 
 vi.mock("@/hooks/useAuth", () => ({
@@ -13,10 +12,10 @@ vi.mock("@/hooks/useAuth", () => ({
 vi.mock("@/hooks/useHardware", () => ({
   useHardware: () => ({
     hardware: [{ id: 1 }, { id: 2 }],
-    loadHardware: jest.fn(),
-    createHardware: jest.fn(),
-    updateHardware: jest.fn(),
-    deleteHardware: jest.fn(),
+    loadHardware: vi.fn(),
+    createHardware: vi.fn(),
+    updateHardware: vi.fn(),
+    deleteHardware: vi.fn(),
   }),
 }));
 
