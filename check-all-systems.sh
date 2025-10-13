@@ -127,7 +127,19 @@ df -h / | tail -1 | awk '{if ($5+0 > 80) print "❌ Disk usage: " $5 " (HIGH)"; 
 # Check memory
 echo ""
 echo "🧠 Memory Usage:"
-free -h | grep "Mem:" | awk '{used=$3; total=$2; percent=int(used/total*100); if(percent > 80) print "❌ Memory usage: " percent "% (HIGH)"; else print "✅ Memory usage: " percent "% (OK)"}'
+free -h | grep "Mem:" | awk '{
+    used=$3; 
+    total=$2; 
+    gsub(/[^0-9]/, "", used); 
+    gsub(/[^0-9]/, "", total); 
+    if(total > 0) {
+        percent=int(used/total*100); 
+        if(percent > 80) print "❌ Memory usage: " percent "% (HIGH)"; 
+        else print "✅ Memory usage: " percent "% (OK)"
+    } else {
+        print "⚠️ Memory usage: Unable to calculate"
+    }
+}'
 
 # Check recent errors
 echo ""

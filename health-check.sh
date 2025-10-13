@@ -6,20 +6,30 @@ echo "🏥 Health check for Inventory App..."
 if ! systemctl is-active --quiet nginx; then
     echo "❌ Nginx is not running, starting..."
     sudo systemctl start nginx
+    sleep 2
 fi
 
 # Check if app service is running
 if ! systemctl is-active --quiet inventory-app.service; then
     echo "❌ App service is not running, starting..."
     sudo systemctl start inventory-app.service
+    sleep 5
 fi
 
 # Check local accessibility
 if ! curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -q "200"; then
     echo "❌ App not accessible locally, restarting services..."
     sudo systemctl restart nginx
+    sleep 3
     sudo systemctl restart inventory-app.service
     sleep 10
+    
+    # Check again after restart
+    if ! curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -q "200"; then
+        echo "❌ App still not accessible after restart, running emergency fix..."
+        cd /home/bag/inventory-app
+        ./update-server.sh
+    fi
 fi
 
 # Check external accessibility
