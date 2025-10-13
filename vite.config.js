@@ -82,8 +82,14 @@ export default defineConfig(async ({ mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes("node_modules")) {
-              if (id.includes("react")) return "react-vendor";
-              if (id.includes("react-router-dom")) return "react-router";
+              // Group all react-related packages together to ensure proper initialization order
+              if (
+                id.includes("react") ||
+                id.includes("react-dom") ||
+                id.includes("react-router")
+              ) {
+                return "react-vendor";
+              }
               if (id.includes("@supabase")) return "supabase";
             }
             if (id.includes("src/pages")) {
