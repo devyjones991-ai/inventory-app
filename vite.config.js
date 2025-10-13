@@ -80,21 +80,10 @@ export default defineConfig(async ({ mode }) => {
       rollupOptions: {
         plugins: rollupPlugins,
         output: {
-          manualChunks(id) {
-            if (id.includes("node_modules")) {
-              // Group all react-related packages together to ensure proper initialization order
-              if (
-                id.includes("react") ||
-                id.includes("react-dom") ||
-                id.includes("react-router")
-              ) {
-                return "react-vendor";
-              }
-              if (id.includes("@supabase")) return "supabase";
-            }
-            if (id.includes("src/pages")) {
-              return path.basename(id, ".jsx").toLowerCase();
-            }
+          manualChunks: {
+            // Force React to be in the first chunk to ensure proper initialization
+            "react-vendor": ["react", "react-dom", "react-router-dom"],
+            supabase: ["@supabase/supabase-js"],
           },
           // Force .js extensions for all JavaScript files
           entryFileNames: "assets/[name]-[hash].js",
