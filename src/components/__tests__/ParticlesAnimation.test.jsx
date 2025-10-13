@@ -57,7 +57,14 @@ describe("ParticlesAnimation", () => {
     expect(node).toBeInTheDocument();
   });
 
-  test("renders particles group", () => {
+  test("renders Multiminder-themed particles", () => {
+    render(<ParticlesAnimation />);
+
+    const particles = document.querySelector("#particles");
+    expect(particles).toBeInTheDocument();
+  });
+
+  test("renders particles with different animation types", () => {
     render(<ParticlesAnimation />);
 
     const particles = document.querySelector("#particles");

@@ -22,7 +22,7 @@
 
 @keyframes floatUp {
   0% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
     opacity: 0;
   }
   10% {
@@ -30,10 +30,39 @@
   }
   50% {
     opacity: 1;
+    transform: translateY(-30px) rotate(180deg);
   }
   100% {
-    transform: translateY(-60px);
+    transform: translateY(-60px) rotate(360deg);
     opacity: 0;
+  }
+}
+
+@keyframes floatSideways {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(20px) translateY(-40px) rotate(180deg);
+  }
+  100% {
+    transform: translateX(-20px) translateY(-80px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 12px currentColor);
   }
 }
 
@@ -42,6 +71,51 @@
 }
 .particle {
   animation: floatUp linear infinite;
+}
+
+.particle-sideways {
+  animation: floatSideways linear infinite;
+}
+
+.particle-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Стили для иконок Multiminder */
+.task-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.document-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.notification-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.chat-icon {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.hardware-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.user-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
 }
 
 .p1 {
