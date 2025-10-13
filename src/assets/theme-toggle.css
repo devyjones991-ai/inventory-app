@@ -1,0 +1,192 @@
+.toggle-switch {
+  position: relative;
+  width: 100px;
+  height: 50px;
+  --light: #d8dbe0;
+  --dark: #28292c;
+  --link: rgb(27, 129, 112);
+  --link-hover: rgb(24, 94, 82);
+}
+
+/* Адаптация под Tailwind размеры */
+.toggle-switch.w-16 {
+  width: 4rem;
+  height: 2rem;
+}
+
+.toggle-switch.w-24 {
+  width: 6rem;
+  height: 3rem;
+}
+
+.toggle-switch.w-32 {
+  width: 8rem;
+  height: 4rem;
+}
+
+.switch-label {
+  position: absolute;
+  width: 100%;
+  height: 50px;
+  background-color: var(--dark);
+  border-radius: 25px;
+  cursor: pointer;
+  border: 3px solid var(--dark);
+}
+
+.checkbox {
+  position: absolute;
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 25px;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+}
+
+.checkbox:checked ~ .slider {
+  background-color: var(--light);
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  -webkit-box-shadow: inset 12px -4px 0px 0px var(--light);
+  box-shadow: inset 12px -4px 0px 0px var(--light);
+  background-color: var(--dark);
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+}
+
+.checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(50px);
+  -ms-transform: translateX(50px);
+  transform: translateX(50px);
+  background-color: var(--dark);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+/* Адаптация для разных размеров */
+.toggle-switch.w-16 .slider::before {
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  -webkit-box-shadow: inset 8px -2px 0px 0px var(--light);
+  box-shadow: inset 8px -2px 0px 0px var(--light);
+}
+
+.toggle-switch.w-16 .checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(32px);
+  -ms-transform: translateX(32px);
+  transform: translateX(32px);
+}
+
+.toggle-switch.w-24 .slider::before {
+  top: 6px;
+  left: 6px;
+  width: 20px;
+  height: 20px;
+  -webkit-box-shadow: inset 10px -3px 0px 0px var(--light);
+  box-shadow: inset 10px -3px 0px 0px var(--light);
+}
+
+.toggle-switch.w-24 .checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(40px);
+  -ms-transform: translateX(40px);
+  transform: translateX(40px);
+}
+
+.toggle-switch.w-32 .slider::before {
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  -webkit-box-shadow: inset 14px -4px 0px 0px var(--light);
+  box-shadow: inset 14px -4px 0px 0px var(--light);
+}
+
+.toggle-switch.w-32 .checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(56px);
+  -ms-transform: translateX(56px);
+  transform: translateX(56px);
+}
+
+/* Адаптация под темную тему */
+[data-theme="dark"] .toggle-switch {
+  --light: #d8dbe0;
+  --dark: #28292c;
+}
+
+[data-theme="light"] .toggle-switch {
+  --light: #d8dbe0;
+  --dark: #28292c;
+}
+
+/* Улучшенная анимация */
+.toggle-switch:hover .slider {
+  transform: scale(1.05);
+}
+
+.toggle-switch:active .slider {
+  transform: scale(0.95);
+}
+
+/* Анимация для иконок */
+.slider::after {
+  content: "🌙";
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.checkbox:checked ~ .slider::after {
+  content: "☀️";
+  left: 65px;
+  opacity: 1;
+}
+
+.checkbox:not(:checked) ~ .slider::after {
+  opacity: 1;
+}
+
+/* Иконки для разных размеров */
+.toggle-switch.w-16 .slider::after {
+  left: 8px;
+  font-size: 12px;
+}
+
+.toggle-switch.w-16 .checkbox:checked ~ .slider::after {
+  left: 40px;
+}
+
+.toggle-switch.w-24 .slider::after {
+  left: 12px;
+  font-size: 14px;
+}
+
+.toggle-switch.w-24 .checkbox:checked ~ .slider::after {
+  left: 48px;
+}
+
+.toggle-switch.w-32 .slider::after {
+  left: 16px;
+  font-size: 18px;
+}
+
+.toggle-switch.w-32 .checkbox:checked ~ .slider::after {
+  left: 64px;
+}

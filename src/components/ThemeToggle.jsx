@@ -1,53 +1,77 @@
-import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import PropTypes from "prop-types";
 import React, { useState, useEffect } from "react";
+import "../assets/theme-toggle.css";
 
-import { Button } from "@/components/ui/button";
-import { t } from "@/i18n";
-
-const THEME_KEY = "theme";
-const DEFAULT_THEME = "light";
-
-export default function ThemeToggle() {
-  const [theme, setTheme] = useState(() => {
-    try {
-      const stored =
-        typeof localStorage !== "undefined" && localStorage.getItem(THEME_KEY);
-      if (stored === "light" || stored === "dark") return stored;
-      const prefersDark =
-        typeof window !== "undefined" &&
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches;
-      return prefersDark ? "dark" : DEFAULT_THEME;
-    } catch {
-      return DEFAULT_THEME;
-    }
-  });
+export default function ThemeToggle({
+  className = "",
+  showLabel = true,
+  size = "default",
+}) {
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(THEME_KEY, theme);
-    }
-  }, [theme]);
+    // Проверяем сохраненную тему или системную
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
 
-  function toggleTheme() {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  }
+    const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark);
+    setIsDark(shouldBeDark);
+
+    // Применяем тему
+    document.documentElement.setAttribute(
+      "data-theme",
+      shouldBeDark ? "dark" : "light",
+    );
+  }, []);
+
+  const handleToggle = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+
+    // Сохраняем в localStorage
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
+
+    // Применяем тему
+    document.documentElement.setAttribute(
+      "data-theme",
+      newTheme ? "dark" : "light",
+    );
+  };
+
+  const sizeClasses = {
+    small: "w-16 h-8",
+    default: "w-24 h-12",
+    large: "w-32 h-16",
+  };
 
   return (
-    <Button
-      size="sm"
-      className="transition-none"
-      onClick={toggleTheme}
-      aria-label={t("common.themeToggle")}
-    >
-      {theme === "light" ? (
-        <MoonIcon className="w-4 h-4" />
-      ) : (
-        <SunIcon className="w-4 h-4" />
+    <div className={`flex items-center gap-3 ${className}`}>
+      {showLabel && (
+        <span className="text-sm font-medium text-foreground">
+          {isDark ? "Темная" : "Светлая"}
+        </span>
       )}
-    </Button>
+
+      <div className={`toggle-switch ${sizeClasses[size]}`}>
+        <label className="switch-label">
+          <input
+            type="checkbox"
+            className="checkbox"
+            checked={isDark}
+            onChange={handleToggle}
+            aria-label="Переключить тему"
+          />
+          <span className="slider"></span>
+        </label>
+      </div>
+    </div>
   );
 }
+
+ThemeToggle.propTypes = {
+  className: PropTypes.string,
+  showLabel: PropTypes.bool,
+  size: PropTypes.oneOf(["small", "default", "large"]),
+};
