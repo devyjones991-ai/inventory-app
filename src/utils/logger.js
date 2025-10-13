@@ -1,14 +1,38 @@
 const isProd = globalThis.process?.env?.NODE_ENV === "production";
 
+// Check if API is available for logging
+let apiAvailable = null;
+async function checkApiAvailability() {
+  if (apiAvailable !== null) return apiAvailable;
+  try {
+    const response = await fetch("/api/logs", {
+      method: "HEAD",
+      signal: AbortSignal.timeout(1000), // 1 second timeout
+    });
+    apiAvailable = response.ok;
+  } catch {
+    apiAvailable = false;
+  }
+  return apiAvailable;
+}
+
 async function send(level, args) {
   try {
+    const isApiReady = await checkApiAvailability();
+    if (!isApiReady) {
+      // Fallback to console if API is not available
+      console[level](...args);
+      return;
+    }
+
     await fetch("/api/logs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ level, args }),
     });
   } catch {
-    // ignore logging errors
+    // Fallback to console on error
+    console[level](...args);
   }
 }
 
