@@ -41,9 +41,9 @@ export default function ThemeToggle({
   };
 
   const sizeClasses = {
-    small: "w-16 h-8",
-    default: "w-24 h-12",
-    large: "w-32 h-16",
+    small: "w-12 h-6",
+    default: "w-16 h-8",
+    large: "w-20 h-10",
   };
 
   return (

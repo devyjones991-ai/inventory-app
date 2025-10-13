@@ -57,11 +57,11 @@ describe("ThemeToggle", () => {
   test("applies correct size classes", () => {
     const { rerender } = render(<ThemeToggle size="small" />);
     let toggleContainer = document.querySelector(".toggle-switch");
-    expect(toggleContainer).toHaveClass("w-16", "h-8");
+    expect(toggleContainer).toHaveClass("w-12", "h-6");
 
     rerender(<ThemeToggle size="large" />);
     toggleContainer = document.querySelector(".toggle-switch");
-    expect(toggleContainer).toHaveClass("w-32", "h-16");
+    expect(toggleContainer).toHaveClass("w-20", "h-10");
   });
 
   test("toggles theme on click", () => {

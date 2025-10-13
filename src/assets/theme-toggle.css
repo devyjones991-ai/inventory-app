@@ -9,19 +9,19 @@
 }
 
 /* Адаптация под Tailwind размеры */
+.toggle-switch.w-12 {
+  width: 3rem;
+  height: 1.5rem;
+}
+
 .toggle-switch.w-16 {
   width: 4rem;
   height: 2rem;
 }
 
-.toggle-switch.w-24 {
-  width: 6rem;
-  height: 3rem;
-}
-
-.toggle-switch.w-32 {
-  width: 8rem;
-  height: 4rem;
+.toggle-switch.w-20 {
+  width: 5rem;
+  height: 2.5rem;
 }
 
 .switch-label {
@@ -77,6 +77,21 @@
 }
 
 /* Адаптация для разных размеров */
+.toggle-switch.w-12 .slider::before {
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  -webkit-box-shadow: inset 6px -1px 0px 0px var(--light);
+  box-shadow: inset 6px -1px 0px 0px var(--light);
+}
+
+.toggle-switch.w-12 .checkbox:checked ~ .slider::before {
+  -webkit-transform: translateX(24px);
+  -ms-transform: translateX(24px);
+  transform: translateX(24px);
+}
+
 .toggle-switch.w-16 .slider::before {
   top: 4px;
   left: 4px;
@@ -92,34 +107,19 @@
   transform: translateX(32px);
 }
 
-.toggle-switch.w-24 .slider::before {
-  top: 6px;
-  left: 6px;
+.toggle-switch.w-20 .slider::before {
+  top: 5px;
+  left: 5px;
   width: 20px;
   height: 20px;
-  -webkit-box-shadow: inset 10px -3px 0px 0px var(--light);
-  box-shadow: inset 10px -3px 0px 0px var(--light);
+  -webkit-box-shadow: inset 10px -2px 0px 0px var(--light);
+  box-shadow: inset 10px -2px 0px 0px var(--light);
 }
 
-.toggle-switch.w-24 .checkbox:checked ~ .slider::before {
+.toggle-switch.w-20 .checkbox:checked ~ .slider::before {
   -webkit-transform: translateX(40px);
   -ms-transform: translateX(40px);
   transform: translateX(40px);
-}
-
-.toggle-switch.w-32 .slider::before {
-  top: 8px;
-  left: 8px;
-  width: 28px;
-  height: 28px;
-  -webkit-box-shadow: inset 14px -4px 0px 0px var(--light);
-  box-shadow: inset 14px -4px 0px 0px var(--light);
-}
-
-.toggle-switch.w-32 .checkbox:checked ~ .slider::before {
-  -webkit-transform: translateX(56px);
-  -ms-transform: translateX(56px);
-  transform: translateX(56px);
 }
 
 /* Адаптация под темную тему */
@@ -142,51 +142,4 @@
   transform: scale(0.95);
 }
 
-/* Анимация для иконок */
-.slider::after {
-  content: "🌙";
-  position: absolute;
-  top: 50%;
-  left: 15px;
-  transform: translateY(-50%);
-  font-size: 16px;
-  transition: all 0.3s;
-}
-
-.checkbox:checked ~ .slider::after {
-  content: "☀️";
-  left: 65px;
-  opacity: 1;
-}
-
-.checkbox:not(:checked) ~ .slider::after {
-  opacity: 1;
-}
-
-/* Иконки для разных размеров */
-.toggle-switch.w-16 .slider::after {
-  left: 8px;
-  font-size: 12px;
-}
-
-.toggle-switch.w-16 .checkbox:checked ~ .slider::after {
-  left: 40px;
-}
-
-.toggle-switch.w-24 .slider::after {
-  left: 12px;
-  font-size: 14px;
-}
-
-.toggle-switch.w-24 .checkbox:checked ~ .slider::after {
-  left: 48px;
-}
-
-.toggle-switch.w-32 .slider::after {
-  left: 16px;
-  font-size: 18px;
-}
-
-.toggle-switch.w-32 .checkbox:checked ~ .slider::after {
-  left: 64px;
-}
+/* Убираем иконки - только чистый переключатель */
