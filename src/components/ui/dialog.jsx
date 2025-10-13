@@ -1,7 +1,13 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { createFocusTrap } from "focus-trap";
 import PropTypes from "prop-types";
-import React from "react";
+import React, {
+  forwardRef,
+  useRef,
+  useState,
+  useEffect,
+  useImperativeHandle,
+} from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -9,7 +15,7 @@ export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 
-const DialogOverlay = React.forwardRef(function DialogOverlay(
+const DialogOverlay = forwardRef(function DialogOverlay(
   { className, ...props },
   ref,
 ) {
@@ -26,19 +32,19 @@ const DialogOverlay = React.forwardRef(function DialogOverlay(
 });
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-export const DialogContent = React.forwardRef(function DialogContent(
+export const DialogContent = forwardRef(function DialogContent(
   { className, children, draggable = false, ...props },
   ref,
 ) {
-  const contentRef = React.useRef(null);
-  const trapRef = React.useRef(null);
-  const previousRef = React.useRef(null);
-  const [position, setPosition] = React.useState({ x: 0, y: 0 });
-  const dragStart = React.useRef(null);
+  const contentRef = useRef(null);
+  const trapRef = useRef(null);
+  const previousRef = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const dragStart = useRef(null);
 
-  React.useImperativeHandle(ref, () => contentRef.current);
+  useImperativeHandle(ref, () => contentRef.current);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!contentRef.current) return undefined;
     trapRef.current = createFocusTrap(contentRef.current, {
       fallbackFocus: contentRef.current,
@@ -133,7 +139,7 @@ export const DialogFooter = ({ className, ...props }) => (
 );
 DialogFooter.displayName = "DialogFooter";
 
-export const DialogTitle = React.forwardRef(function DialogTitle(
+export const DialogTitle = forwardRef(function DialogTitle(
   { className, ...props },
   ref,
 ) {
@@ -150,7 +156,7 @@ export const DialogTitle = React.forwardRef(function DialogTitle(
 });
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
-export const DialogDescription = React.forwardRef(function DialogDescription(
+export const DialogDescription = forwardRef(function DialogDescription(
   { className, ...props },
   ref,
 ) {
