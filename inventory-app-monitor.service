@@ -1,0 +1,16 @@
+[Unit]
+Description=Inventory App Monitor Service
+After=network.target nginx.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/bag/inventory-app
+ExecStart=/bin/bash -c 'while true; do /home/bag/inventory-app/update-server.sh && sleep 300; done'
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
