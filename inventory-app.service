@@ -1,14 +1,19 @@
 [Unit]
-Description=Inventory App Auto-Update Service
+Description=Inventory App Service
 After=network.target nginx.service
+Wants=nginx.service
 
 [Service]
-Type=oneshot
-User=root
+Type=simple
+User=bag
+Group=bag
 WorkingDirectory=/home/bag/inventory-app
-ExecStart=/home/bag/inventory-app/update-server.sh
+ExecStart=/bin/bash -c 'cd /home/bag/inventory-app && ./update-server.sh && while true; do sleep 300; ./update-server.sh; done'
+Restart=always
+RestartSec=10
 StandardOutput=journal
 StandardError=journal
+Environment=NODE_ENV=production
 
 [Install]
 WantedBy=multi-user.target
