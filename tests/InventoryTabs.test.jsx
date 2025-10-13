@@ -11,24 +11,26 @@ var mockLoadHardware,
   mockUpdateHardware,
   mockReset;
 
-vi.mock("@/hooks/usePersistedForm.js", () => () => {
-  mockReset = jest.fn();
-  return {
-    register: jest.fn(),
-    handleSubmit: (fn) => fn,
-    reset: mockReset,
-    setValue: jest.fn(),
-    watch: jest.fn((field) =>
-      field === "purchase_status" ? "не оплачен" : "не установлен",
-    ),
-    formState: { errors: {} },
-  };
-});
+vi.mock("@/hooks/usePersistedForm.js", () => ({
+  default: () => {
+    mockReset = vi.fn();
+    return {
+      register: vi.fn(),
+      handleSubmit: (fn) => fn,
+      reset: mockReset,
+      setValue: vi.fn(),
+      watch: vi.fn((field) =>
+        field === "purchase_status" ? "не оплачен" : "не установлен",
+      ),
+      formState: { errors: {} },
+    };
+  },
+}));
 
 vi.mock("@/hooks/useHardware.js", () => {
-  mockLoadHardware = jest.fn().mockResolvedValue({ data: [], error: null });
-  mockCreateHardware = jest.fn();
-  mockUpdateHardware = jest.fn();
+  mockLoadHardware = vi.fn().mockResolvedValue({ data: [], error: null });
+  mockCreateHardware = vi.fn();
+  mockUpdateHardware = vi.fn();
   mockHardware = [];
 
   return {
@@ -39,7 +41,7 @@ vi.mock("@/hooks/useHardware.js", () => {
       loadHardware: mockLoadHardware,
       createHardware: mockCreateHardware,
       updateHardware: mockUpdateHardware,
-      deleteHardware: jest.fn(),
+      deleteHardware: vi.fn(),
     }),
   };
 });
@@ -50,28 +52,28 @@ vi.mock("@/hooks/useTasks.js", () => {
     tasks,
     loading: false,
     error: null,
-    loadTasks: jest.fn(),
-    createTask: jest.fn(),
-    updateTask: jest.fn(),
-    deleteTask: jest.fn(),
-    importTasks: jest.fn(),
+    loadTasks: vi.fn(),
+    createTask: vi.fn(),
+    updateTask: vi.fn(),
+    deleteTask: vi.fn(),
+    importTasks: vi.fn(),
   };
   return { useTasks: () => mocked };
 });
 
 vi.mock("@/hooks/useChatMessages.js", () => {
-  mockFetchMessages = jest.fn().mockResolvedValue({ data: [], error: null });
+  mockFetchMessages = vi.fn().mockResolvedValue({ data: [], error: null });
   return {
     useChatMessages: () => ({
       fetchMessages: mockFetchMessages,
-      subscribeToMessages: jest.fn(() => jest.fn()),
-      sendMessage: jest.fn(),
+      subscribeToMessages: vi.fn(() => vi.fn()),
+      sendMessage: vi.fn(),
     }),
   };
 });
 
 vi.mock("@/hooks/useObjects.js", () => ({
-  useObjects: () => ({ updateObject: jest.fn() }),
+  useObjects: () => ({ updateObject: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useAuth.js", () => ({
@@ -83,7 +85,7 @@ vi.mock("@/hooks/useAuth.js", () => ({
 }));
 
 vi.mock("react-hot-toast", () => ({
-  toast: { success: jest.fn(), error: jest.fn() },
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 vi.mock("react-router-dom", async () => {
@@ -101,7 +103,7 @@ describe("InventoryTabs", () => {
   const selected = { id: "1", name: "Объект 1" };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockHardware = [];
   });
 
@@ -110,10 +112,10 @@ describe("InventoryTabs", () => {
       <MemoryRouter>
         <InventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          setAddAction={vi.fn()}
+          openAddObject={vi.fn()}
         />
       </MemoryRouter>,
     );
@@ -142,10 +144,10 @@ describe("InventoryTabs", () => {
       <MemoryRouter>
         <InventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          setAddAction={vi.fn()}
+          openAddObject={vi.fn()}
         />
       </MemoryRouter>,
     );
@@ -161,10 +163,10 @@ describe("InventoryTabs", () => {
       <MemoryRouter>
         <InventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          setAddAction={vi.fn()}
+          openAddObject={vi.fn()}
         />
       </MemoryRouter>,
     );
@@ -182,10 +184,10 @@ describe("InventoryTabs", () => {
       <MemoryRouter>
         <InventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          setAddAction={vi.fn()}
+          openAddObject={vi.fn()}
         />
       </MemoryRouter>,
     );
@@ -211,10 +213,10 @@ describe("InventoryTabs", () => {
       <MemoryRouter>
         <InventoryTabs
           selected={selected}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          setAddAction={vi.fn()}
+          openAddObject={vi.fn()}
         />
       </MemoryRouter>,
     );
@@ -231,10 +233,10 @@ describe("InventoryTabs", () => {
       <MemoryRouter>
         <InventoryTabs
           selected={{ id: "1", name: "Объект", description: "старое" }}
-          onUpdateSelected={jest.fn()}
-          onTabChange={jest.fn()}
-          setAddAction={jest.fn()}
-          openAddObject={jest.fn()}
+          onUpdateSelected={vi.fn()}
+          onTabChange={vi.fn()}
+          setAddAction={vi.fn()}
+          openAddObject={vi.fn()}
         />
       </MemoryRouter>,
     );

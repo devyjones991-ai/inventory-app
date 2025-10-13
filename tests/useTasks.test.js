@@ -5,7 +5,7 @@ import { useTasks } from "@/hooks/useTasks.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
 vi.mock("@/utils/handleSupabaseError", () => ({
-  handleSupabaseError: vi.fn(),
+  handleSupabaseError: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("react-router-dom", () => ({
@@ -68,28 +68,30 @@ describe("useTasks", () => {
   });
 
   it("успешно загружает задачи при ошибке schema cache", async () => {
-    mockRangeOrder
-      .mockResolvedValueOnce({
-        data: null,
-        error: { code: "42703" },
-      })
-      .mockResolvedValueOnce({
-        data: [
-          {
-            id: 1,
-            title: "t",
-            assignee: "a",
-            created_at: "2024-05-09T00:00:00Z",
-          },
-        ],
-        error: null,
-      });
+    // Первый запрос с полными полями возвращает ошибку schema cache
+    mockRangeOrder.mockResolvedValueOnce({
+      data: null,
+      error: { code: "42703" },
+    });
+    // Fallback запрос с базовыми полями успешен
+    mockRangeBase.mockResolvedValueOnce({
+      data: [
+        {
+          id: 1,
+          title: "t",
+          assignee: "a",
+          created_at: "2024-05-09T00:00:00Z",
+        },
+      ],
+      error: null,
+    });
 
     const { result } = renderHook(() => useTasks(1));
     let response;
     await act(async () => {
       response = await result.current.loadTasks({ offset: 0, limit: 20 });
     });
+    // После fallback запроса ошибки быть не должно
     expect(response.error).toBeNull();
     expect(response.data).toEqual([
       {

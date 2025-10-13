@@ -1,52 +1,53 @@
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const jest = vi;
 import { render, fireEvent, waitFor, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 vi.mock("@/supabaseClient.js", () => {
-  const channelMock = { on: jest.fn().mockReturnThis(), subscribe: jest.fn() };
+  const channelMock = { on: vi.fn().mockReturnThis(), subscribe: vi.fn() };
   return {
     isSupabaseConfigured: true,
     supabase: {
       auth: {
-        getSession: jest.fn(() =>
+        getSession: vi.fn(() =>
           Promise.resolve({ data: { session: { user: {} } } }),
         ),
-        onAuthStateChange: jest.fn(() => ({
-          data: { subscription: { unsubscribe: jest.fn() } },
+        onAuthStateChange: vi.fn(() => ({
+          data: { subscription: { unsubscribe: vi.fn() } },
         })),
-        signOut: jest.fn(),
+        signOut: vi.fn(),
       },
-      channel: jest.fn(() => channelMock),
-      removeChannel: jest.fn(),
-      from: jest.fn(() => ({
-        select: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+      channel: vi.fn(() => channelMock),
+      removeChannel: vi.fn(),
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
           data: [{ id: 1, name: "Obj", description: "" }],
           error: null,
         }),
-        insert: jest.fn().mockReturnThis(),
-        update: jest.fn().mockReturnThis(),
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: null, error: null }),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
       })),
-      functions: { invoke: jest.fn() },
+      functions: { invoke: vi.fn() },
     },
   };
 });
 
 vi.mock("react-hot-toast", () => ({
-  toast: { success: jest.fn(), error: jest.fn() },
+  toast: { success: vi.fn(), error: vi.fn() },
   Toaster: () => null,
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-vi.mock("@/components/InventoryTabs", () => () => <div />);
+vi.mock("@/components/InventoryTabs", () => ({
+  default: () => <div />,
+}));
 
 import { useAuth } from "@/hooks/useAuth";
 import DashboardPage from "@/pages/DashboardPage";
@@ -126,11 +127,11 @@ describe("DashboardPage import/export", () => {
 
   it("показывает уведомление об успешном экспорте", async () => {
     const blob = new Blob(["id"], { type: "text/csv" });
-    const spy = jest
+    const spy = vi
       .spyOn(exportImport, "exportInventory")
       .mockResolvedValueOnce(blob);
-    const createObjectURL = jest.fn(() => "blob:url");
-    const revokeObjectURL = jest.fn();
+    const createObjectURL = vi.fn(() => "blob:url");
+    const revokeObjectURL = vi.fn();
     globalThis.URL.createObjectURL = createObjectURL;
     globalThis.URL.revokeObjectURL = revokeObjectURL;
 

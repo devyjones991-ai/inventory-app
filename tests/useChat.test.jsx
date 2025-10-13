@@ -12,33 +12,33 @@ const mockError = new Error("update failed");
 
 // Mock Supabase client first
 const updateChain = {
-  is: jest.fn(() => ({
-    eq: jest.fn(() => Promise.resolve({ data: null, error: mockError })),
+  is: vi.fn(() => ({
+    eq: vi.fn(() => Promise.resolve({ data: null, error: mockError })),
   })),
 };
 
 mockSupabase = {
-  from: jest.fn(() => ({
-    update: jest.fn(() => updateChain),
+  from: vi.fn(() => ({
+    update: vi.fn(() => updateChain),
   })),
-  channel: jest.fn(() => {
+  channel: vi.fn(() => {
     const channelObj = {
-      on: jest.fn((event, filter, cb) => {
+      on: vi.fn((event, filter, cb) => {
         onPayload = cb;
         return channelObj;
       }),
-      subscribe: jest.fn((cb) => {
+      subscribe: vi.fn((cb) => {
         cb("SUBSCRIBED");
-        return { unsubscribe: jest.fn() };
+        return { unsubscribe: vi.fn() };
       }),
     };
     return channelObj;
   }),
-  removeChannel: jest.fn(),
+  removeChannel: vi.fn(),
 };
 
 vi.mock("@/utils/handleSupabaseError", () => ({
-  handleSupabaseError: jest.fn(),
+  handleSupabaseError: vi.fn(),
 }));
 
 // Test data
@@ -68,13 +68,13 @@ const page2 = [
   },
 ];
 
-const mockFetchMessages = jest
+const mockFetchMessages = vi
   .fn()
   .mockResolvedValueOnce({ data: page1, error: null })
   .mockResolvedValueOnce({ data: page2, error: null })
   .mockResolvedValue({ data: [], error: null });
 let sendId = 10;
-const mockSendMessage = jest.fn(() => {
+const mockSendMessage = vi.fn(() => {
   const id = String(sendId++);
   return Promise.resolve({
     data: {
@@ -100,13 +100,12 @@ vi.mock("@/hooks/useChatMessages.js", () => ({
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-const jest = vi;
 import useChat from "@/hooks/useChat.js";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
 describe("useChat markMessagesAsRead", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     onPayload = null;
     sendId = 10;
   });
