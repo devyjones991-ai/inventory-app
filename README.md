@@ -1,6 +1,6 @@
-# Inventory App
+# Multiminder
 
-Inventory App — веб‑приложение на React + Vite с Tailwind CSS и Supabase для учёта объектов, оборудования и задач.
+Multiminder — веб‑приложение на React + Vite с Tailwind CSS и Supabase для учёта объектов, оборудования и задач.
 
 [![Build](https://github.com/devyjones991-ai/inventory-app/actions/workflows/supabase-migrate.yml/badge.svg)](https://github.com/devyjones991-ai/inventory-app/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/devyjones991-ai/inventory-app)](https://codecov.io/gh/devyjones991-ai/inventory-app)

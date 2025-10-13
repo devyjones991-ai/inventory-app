@@ -28,7 +28,7 @@ const supabaseOptions = {
   global: {
     // Headers for all requests
     headers: {
-      "X-Client-Info": "inventory-app",
+      "X-Client-Info": "multiminder",
     },
   },
 };
