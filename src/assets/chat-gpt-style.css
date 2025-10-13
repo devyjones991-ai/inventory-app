@@ -123,6 +123,50 @@
   flex: 1;
   color: white;
   line-height: 1.5;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Стили для ссылок в сообщениях (десктоп) */
+.chat-message-content a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.6);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.chat-message-content a:hover {
+  text-decoration-color: rgba(255, 255, 255, 0.9);
+}
+
+.chat-message.assistant .chat-message-content a {
+  text-decoration-color: rgba(216, 219, 224, 0.6);
+}
+
+.chat-message.assistant .chat-message-content a:hover {
+  text-decoration-color: rgba(216, 219, 224, 0.9);
+}
+
+/* Стили для кода в сообщениях (десктоп) */
+.chat-message-content code {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.chat-message.assistant .chat-message-content code {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для длинных URL (десктоп) */
+.chat-message-content .url {
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 /* Стили для времени отправки */
@@ -375,7 +419,11 @@
     margin-bottom: 4px;
     max-width: 85%;
     word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
     position: relative;
+    white-space: pre-wrap;
+    hyphens: auto;
   }
 
   .chat-message.user {
@@ -408,6 +456,49 @@
     font-size: 16px;
     line-height: 1.4;
     color: inherit;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Стили для ссылок в сообщениях */
+  .chat-message-content a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.6);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .chat-message-content a:hover {
+    text-decoration-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .chat-message.assistant .chat-message-content a {
+    text-decoration-color: rgba(216, 219, 224, 0.6);
+  }
+
+  .chat-message.assistant .chat-message-content a:hover {
+    text-decoration-color: rgba(216, 219, 224, 0.9);
+  }
+
+  /* Стили для кода в сообщениях */
+  .chat-message-content code {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: "Courier New", monospace;
+    font-size: 0.9em;
+  }
+
+  .chat-message.assistant .chat-message-content code {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Стили для длинных URL */
+  .chat-message-content .url {
+    word-break: break-all;
+    overflow-wrap: anywhere;
   }
 
   .chat-message-time {
@@ -513,6 +604,10 @@
     padding: 6px 10px;
     font-size: 15px;
     max-width: 90%;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   .chat-message.user {
