@@ -231,22 +231,29 @@ function ChatTab({
                     data-testid="chat-message"
                     className={`chat-message ${isOwn ? "user" : "assistant"}`}
                   >
+                    {/* Отправитель (только для сообщений не от текущего пользователя) */}
                     {!isOwn && (
-                      <div className="mb-1 font-semibold text-xs opacity-70">
+                      <div className="chat-message-sender">
                         {m.sender || "user"}
                       </div>
                     )}
+
+                    {/* Контент сообщения */}
                     {m.content && (
-                      <div className="whitespace-pre-wrap break-words">
+                      <div className="chat-message-content">
                         {linkifyText(m.content)}
                       </div>
                     )}
+
+                    {/* Файл */}
                     {m.file_url && (
                       <div className="mt-2">
                         <AttachmentPreview url={m.file_url} />
                       </div>
                     )}
-                    <div className="self-end mt-1 text-xs opacity-60">
+
+                    {/* Время отправки */}
+                    <div className="chat-message-time">
                       {when}
                       {m.read_at ? " ✓" : ""}
                       {m._optimistic ? " • отправка…" : ""}

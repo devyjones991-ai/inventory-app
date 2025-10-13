@@ -208,12 +208,12 @@ describe("ChatTab", () => {
 
     const firstFooter = (await screen.findByText(mockMessages[0].content))
       .closest('[data-testid="chat-message"]')
-      .querySelector(".text-xs");
+      .querySelector(".chat-message-time");
     expect(firstFooter.textContent).toContain("✓");
 
     const secondFooter = (await screen.findByText(mockMessages[1].content))
       .closest('[data-testid="chat-message"]')
-      .querySelector(".text-xs");
+      .querySelector(".chat-message-time");
     expect(secondFooter.textContent).not.toContain("✓");
 
     const myBubble = await screen.findByText("Привет");
