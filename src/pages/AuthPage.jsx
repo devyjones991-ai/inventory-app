@@ -88,92 +88,98 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-muted relative overflow-hidden">
-      {/* Анимация частиц на фоне */}
-      <div className="absolute inset-0 z-0">
-        <ParticlesAnimation
-          className="w-full h-full"
-          width={800}
-          height={600}
-          showBackground={false}
-        />
-      </div>
+      {/* Анимация частиц НАД окном */}
+      <ParticlesAnimation
+        className="w-full h-full"
+        width={800}
+        height={600}
+        showBackground={false}
+      />
 
       {/* Контент авторизации */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen">
+      <div className="relative z-20 flex items-center justify-center min-h-screen">
         <div className="flex w-full items-center justify-center">
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="bg-background/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md space-y-6 border border-border/50"
-          >
-            <h2 className="text-lg font-bold text-center">
-              {isRegister ? t("auth.register") : t("auth.login")}
-            </h2>
-            {userError && <FormError message={userError} />}
-            {authError && (
-              <div className="text-gray-500 text-xs">{authError}</div>
-            )}
-            {info && <div className="text-blue-500 text-sm">{info}</div>}
+          {/* Свечение за окном */}
+          <div className="relative">
+            {/* Внешнее свечение */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl animate-pulse" />
+            <div className="absolute -inset-2 bg-gradient-to-r from-blue-400/30 via-purple-400/30 to-pink-400/30 rounded-xl blur-lg" />
 
-            <div>
-              <Input
-                type="email"
-                className="w-full"
-                placeholder={t("auth.email")}
-                aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? "email-error" : undefined}
-                {...register("email")}
-              />
-              <FormError id="email-error" message={errors.email?.message} />
-            </div>
+            {/* Само окно авторизации */}
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="relative bg-background/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md space-y-6 border border-border/50"
+            >
+              <h2 className="text-lg font-bold text-center">
+                {isRegister ? t("auth.register") : t("auth.login")}
+              </h2>
+              {userError && <FormError message={userError} />}
+              {authError && (
+                <div className="text-gray-500 text-xs">{authError}</div>
+              )}
+              {info && <div className="text-blue-500 text-sm">{info}</div>}
 
-            {isRegister && (
               <div>
                 <Input
-                  type="text"
+                  type="email"
                   className="w-full"
-                  placeholder={t("auth.username")}
-                  aria-invalid={!!errors.username}
+                  placeholder={t("auth.email")}
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  {...register("email")}
+                />
+                <FormError id="email-error" message={errors.email?.message} />
+              </div>
+
+              {isRegister && (
+                <div>
+                  <Input
+                    type="text"
+                    className="w-full"
+                    placeholder={t("auth.username")}
+                    aria-invalid={!!errors.username}
+                    aria-describedby={
+                      errors.username ? "username-error" : undefined
+                    }
+                    {...register("username")}
+                  />
+                  <FormError
+                    id="username-error"
+                    message={errors.username?.message}
+                  />
+                </div>
+              )}
+
+              <div>
+                <Input
+                  type="password"
+                  className="w-full"
+                  placeholder={t("auth.password")}
+                  aria-invalid={!!errors.password}
                   aria-describedby={
-                    errors.username ? "username-error" : undefined
+                    errors.password ? "password-error" : undefined
                   }
-                  {...register("username")}
+                  {...register("password")}
                 />
                 <FormError
-                  id="username-error"
-                  message={errors.username?.message}
+                  id="password-error"
+                  message={errors.password?.message}
                 />
               </div>
-            )}
 
-            <div>
-              <Input
-                type="password"
+              <Button type="submit" className="w-full">
+                {isRegister ? t("auth.register") : t("auth.login")}
+              </Button>
+              <Button
+                type="button"
+                variant="link"
                 className="w-full"
-                placeholder={t("auth.password")}
-                aria-invalid={!!errors.password}
-                aria-describedby={
-                  errors.password ? "password-error" : undefined
-                }
-                {...register("password")}
-              />
-              <FormError
-                id="password-error"
-                message={errors.password?.message}
-              />
-            </div>
-
-            <Button type="submit" className="w-full">
-              {isRegister ? t("auth.register") : t("auth.login")}
-            </Button>
-            <Button
-              type="button"
-              variant="link"
-              className="w-full"
-              onClick={() => setIsRegister(!isRegister)}
-            >
-              {isRegister ? t("auth.already") : t("auth.noAccount")}
-            </Button>
-          </form>
+                onClick={() => setIsRegister(!isRegister)}
+              >
+                {isRegister ? t("auth.already") : t("auth.noAccount")}
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

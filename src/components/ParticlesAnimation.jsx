@@ -9,7 +9,7 @@ export default function ParticlesAnimation({
   showBackground = true,
 }) {
   return (
-    <div className={`relative ${className}`}>
+    <div className={`absolute inset-0 pointer-events-none z-10 ${className}`}>
       {showBackground && (
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 rounded-lg opacity-50" />
       )}
@@ -164,6 +164,31 @@ export default function ParticlesAnimation({
             r="4"
             fill="currentColor"
             className="text-orange-500 dark:text-orange-400"
+          />
+          {/* Дополнительные частицы для лучшего эффекта */}
+          <circle
+            className="particle p10"
+            cx="60"
+            cy="140"
+            r="2"
+            fill="currentColor"
+            className="text-cyan-500 dark:text-cyan-400"
+          />
+          <circle
+            className="particle p11"
+            cx="340"
+            cy="140"
+            r="3"
+            fill="currentColor"
+            className="text-emerald-500 dark:text-emerald-400"
+          />
+          <circle
+            className="particle p12"
+            cx="180"
+            cy="80"
+            r="2"
+            fill="currentColor"
+            className="text-violet-500 dark:text-violet-400"
           />
         </g>
       </svg>
