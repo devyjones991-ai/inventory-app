@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Предотвращаем FOUC - скрываем контент до загрузки темы */
+html:not([data-theme]) {
+  visibility: hidden;
+}
+
+html[data-theme] {
+  visibility: visible;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -10,20 +10,30 @@ export default function ThemeToggle({
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Проверяем сохраненную тему или системную
-    const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
+    // Проверяем, что уже установлено в HTML (из скрипта в index.html)
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const isCurrentlyDark = currentTheme === "dark";
 
-    const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark);
-    setIsDark(shouldBeDark);
+    // Синхронизируем состояние с HTML
+    setIsDark(isCurrentlyDark);
 
-    // Применяем тему
-    document.documentElement.setAttribute(
-      "data-theme",
-      shouldBeDark ? "dark" : "light",
-    );
+    // Если тема не установлена, устанавливаем по умолчанию
+    if (!currentTheme) {
+      const savedTheme = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+
+      const shouldBeDark =
+        savedTheme === "dark" || (!savedTheme && prefersDark);
+      setIsDark(shouldBeDark);
+
+      // Применяем тему
+      document.documentElement.setAttribute(
+        "data-theme",
+        shouldBeDark ? "dark" : "light",
+      );
+    }
   }, []);
 
   const handleToggle = () => {
