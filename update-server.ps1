@@ -19,9 +19,19 @@ window.__ENV = {
 };
 "@ | Out-File -FilePath "public/env.js" -Encoding UTF8
 
+# Clean dist directory and fix permissions
+Write-Host "🧹 Cleaning dist directory..." -ForegroundColor Yellow
+sudo rm -rf dist/
+mkdir -p dist/
+
 # Build the project
 Write-Host "🔨 Building project..." -ForegroundColor Yellow
 npm run build
+
+# Fix permissions after build
+Write-Host "🔐 Fixing build permissions..." -ForegroundColor Yellow
+sudo chown -R bag:bag dist/
+chmod -R 755 dist/
 
 # Copy files to web directory
 Write-Host "📁 Copying files..." -ForegroundColor Yellow

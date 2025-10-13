@@ -1,16 +1,30 @@
 #!/bin/bash
 
-echo "🚀 Updating server..."
+echo "🧹 Complete clean and rebuild for Inventory App..."
 
 # Navigate to project directory
 cd ~/inventory-app
 
-# Pull latest changes
-echo "📥 Pulling latest changes..."
-git pull origin main
+# Stop any running services
+echo "⏹️ Stopping services..."
+sudo systemctl stop inventory-app.service 2>/dev/null || true
 
-# Setup environment variables
-echo "🔧 Setting up environment variables..."
+# Clean everything
+echo "🧹 Cleaning all build artifacts..."
+sudo rm -rf dist/
+sudo rm -rf node_modules/
+sudo rm -f package-lock.json
+
+# Fix ownership
+echo "👤 Fixing ownership..."
+sudo chown -R bag:bag ~/inventory-app/
+
+# Reinstall dependencies
+echo "📦 Installing dependencies..."
+npm install
+
+# Setup environment
+echo "🔧 Setting up environment..."
 cat > public/env.js << 'EOF'
 // Runtime environment overrides for static hosting
 window.__ENV = {
@@ -20,26 +34,16 @@ window.__ENV = {
 };
 EOF
 
-# Clean dist directory and fix permissions
-echo "🧹 Cleaning dist directory..."
-sudo rm -rf dist/
-mkdir -p dist/
-
-# Build the project
+# Build project
 echo "🔨 Building project..."
 npm run build
 
-# Fix permissions after build
-echo "🔐 Fixing build permissions..."
-sudo chown -R bag:bag dist/
-chmod -R 755 dist/
-
-# Copy files to web directory
+# Copy to web directory
 echo "📁 Copying files..."
 sudo cp -r dist/* /var/www/multiminder.duckdns.org/
 
-# Set proper permissions
-echo "🔐 Setting permissions..."
+# Set web permissions
+echo "🔐 Setting web permissions..."
 sudo chown -R www-data:www-data /var/www/multiminder.duckdns.org/
 sudo chmod -R 755 /var/www/multiminder.duckdns.org/
 
@@ -47,5 +51,9 @@ sudo chmod -R 755 /var/www/multiminder.duckdns.org/
 echo "🔄 Reloading nginx..."
 sudo systemctl reload nginx
 
-echo "✅ Update complete!"
-echo "🌐 Check: https://multiminder.duckdns.org"
+# Restart services
+echo "🔄 Restarting services..."
+sudo systemctl start inventory-app.service 2>/dev/null || true
+
+echo "✅ Clean rebuild complete!"
+echo "🌐 App available at: https://multiminder.duckdns.org"
