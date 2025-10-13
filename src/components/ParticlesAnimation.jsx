@@ -95,9 +95,8 @@ export default function ParticlesAnimation({
         <g id="particles">
           {/* Иконка задачи */}
           <g
-            className="particle p1"
+            className="particle p1 text-blue-500 dark:text-blue-400"
             transform="translate(80, 200)"
-            className="text-blue-500 dark:text-blue-400"
           >
             <rect
               x="-8"
@@ -123,9 +122,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка документа */}
           <g
-            className="particle p2"
+            className="particle p2 text-purple-500 dark:text-purple-400"
             transform="translate(120, 180)"
-            className="text-purple-500 dark:text-purple-400"
           >
             <path
               d="M-6,-8 L6,-8 L6,8 L-2,8 L-6,4 Z"
@@ -165,9 +163,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка уведомления */}
           <g
-            className="particle p3 particle-glow"
+            className="particle p3 particle-glow text-green-500 dark:text-green-400"
             transform="translate(160, 220)"
-            className="text-green-500 dark:text-green-400"
           >
             <circle cx="0" cy="0" r="6" fill="currentColor" opacity="0.8" />
             <circle cx="0" cy="0" r="4" fill="white" opacity="0.9" />
@@ -185,9 +182,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка чата */}
           <g
-            className="particle p4 particle-sideways"
+            className="particle p4 particle-sideways text-yellow-500 dark:text-yellow-400"
             transform="translate(200, 200)"
-            className="text-yellow-500 dark:text-yellow-400"
           >
             <path
               d="M-8,-6 Q-8,-8 0,-8 L6,-8 Q8,-8 8,-6 L8,2 Q8,4 6,4 L0,4 L-2,6 L-2,4 Q-8,4 -8,2 Z"
@@ -201,9 +197,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка оборудования */}
           <g
-            className="particle p5"
+            className="particle p5 text-pink-500 dark:text-pink-400"
             transform="translate(240, 180)"
-            className="text-pink-500 dark:text-pink-400"
           >
             <rect
               x="-8"
@@ -237,9 +232,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка пользователя */}
           <g
-            className="particle p6 particle-glow"
+            className="particle p6 particle-glow text-indigo-500 dark:text-indigo-400"
             transform="translate(280, 220)"
-            className="text-indigo-500 dark:text-indigo-400"
           >
             <circle cx="0" cy="-2" r="4" fill="currentColor" opacity="0.8" />
             <path
@@ -257,9 +251,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка списка */}
           <g
-            className="particle p7 particle-sideways"
+            className="particle p7 particle-sideways text-red-500 dark:text-red-400"
             transform="translate(320, 200)"
-            className="text-red-500 dark:text-red-400"
           >
             <rect
               x="-8"
@@ -309,9 +302,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка настроек */}
           <g
-            className="particle p8"
+            className="particle p8 text-teal-500 dark:text-teal-400"
             transform="translate(90, 160)"
-            className="text-teal-500 dark:text-teal-400"
           >
             <circle cx="0" cy="0" r="6" fill="currentColor" opacity="0.8" />
             <circle cx="0" cy="0" r="4" fill="white" opacity="0.9" />
@@ -321,9 +313,8 @@ export default function ParticlesAnimation({
 
           {/* Иконка папки */}
           <g
-            className="particle p9 particle-glow"
+            className="particle p9 particle-glow text-orange-500 dark:text-orange-400"
             transform="translate(310, 160)"
-            className="text-orange-500 dark:text-orange-400"
           >
             <path
               d="M-8,-4 L-4,-6 L4,-6 L8,-4 L8,4 L-8,4 Z"
@@ -347,9 +338,8 @@ export default function ParticlesAnimation({
 
           {/* Дополнительные элементы */}
           <g
-            className="particle p10 particle-sideways"
+            className="particle p10 particle-sideways text-cyan-500 dark:text-cyan-400"
             transform="translate(60, 140)"
-            className="text-cyan-500 dark:text-cyan-400"
           >
             <rect
               x="-6"
@@ -376,9 +366,8 @@ export default function ParticlesAnimation({
           </g>
 
           <g
-            className="particle p11"
+            className="particle p11 text-emerald-500 dark:text-emerald-400"
             transform="translate(340, 140)"
-            className="text-emerald-500 dark:text-emerald-400"
           >
             <circle cx="0" cy="0" r="5" fill="currentColor" opacity="0.8" />
             <circle cx="0" cy="0" r="3" fill="white" opacity="0.9" />
@@ -390,9 +379,8 @@ export default function ParticlesAnimation({
           </g>
 
           <g
-            className="particle p12 particle-glow"
+            className="particle p12 particle-glow text-violet-500 dark:text-violet-400"
             transform="translate(180, 80)"
-            className="text-violet-500 dark:text-violet-400"
           >
             <rect
               x="-6"
