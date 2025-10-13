@@ -1,4 +1,23 @@
-export default function Spinner() {
+import PropTypes from "prop-types";
+
+import HamsterSpinner from "./HamsterSpinner";
+
+export default function Spinner({ variant = "hamster" }) {
+  if (variant === "hamster") {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div
+          className="flex flex-col items-center justify-center p-8"
+          data-testid="spinner"
+        >
+          <HamsterSpinner size="large" />
+          <p className="mt-4 text-sm text-muted-foreground">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback to original spinner
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <div className="flex justify-center p-4" data-testid="spinner">
@@ -21,3 +40,7 @@ export default function Spinner() {
     </div>
   );
 }
+
+Spinner.propTypes = {
+  variant: PropTypes.oneOf(["hamster", "default"]),
+};

@@ -1,7 +1,22 @@
 import PropTypes from "prop-types";
 import React from "react";
 
-export default function InlineSpinner({ size = 20 }) {
+import InlineHamsterSpinner from "./InlineHamsterSpinner";
+
+export default function InlineSpinner({ size = 20, variant = "hamster" }) {
+  if (variant === "hamster") {
+    const sizeMap = {
+      16: "xs",
+      20: "small",
+      24: "medium",
+      32: "large",
+    };
+
+    const hamsterSize = sizeMap[size] || "small";
+    return <InlineHamsterSpinner size={hamsterSize} />;
+  }
+
+  // Fallback to original spinner
   const px = typeof size === "number" ? `${size}px` : size;
   return (
     <svg
@@ -32,4 +47,5 @@ export default function InlineSpinner({ size = 20 }) {
 
 InlineSpinner.propTypes = {
   size: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  variant: PropTypes.oneOf(["hamster", "default"]),
 };
