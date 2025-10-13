@@ -313,8 +313,7 @@ describe("ChatTab", () => {
 
     const searchBtn = screen.getByRole("button", { name: "" });
     fireEvent.click(searchBtn);
-    const searchInput =
-      await screen.findByPlaceholderText("Поиск сообщений...");
+    const searchInput = screen.getByPlaceholderText("Поиск сообщений...");
 
     const filtered = [mockMessages[0]];
     mockFetchMessages.mockResolvedValueOnce({ data: filtered, error: null });
