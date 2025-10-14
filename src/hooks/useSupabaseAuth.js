@@ -57,5 +57,30 @@ export function useSupabaseAuth() {
 
   const signOut = () => supabase.auth.signOut();
 
-  return { getSession, onAuthStateChange, signUp, signIn, signOut, error };
+  const resetPassword = async (email) => {
+    setError(null);
+    try {
+      const { data, error: resetError } =
+        await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+      if (resetError) {
+        setError(resetError.message);
+      }
+      return { data, error: resetError };
+    } catch (err) {
+      setError(err.message);
+      return { data: null, error: err };
+    }
+  };
+
+  return {
+    getSession,
+    onAuthStateChange,
+    signUp,
+    signIn,
+    signOut,
+    resetPassword,
+    error,
+  };
 }

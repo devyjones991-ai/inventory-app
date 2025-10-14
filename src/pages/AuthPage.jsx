@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
+import ForgotPasswordModal from "@/components/ForgotPasswordModal";
 import FormError from "@/components/FormError.jsx";
 import ParticlesAnimation from "@/components/ParticlesAnimation";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false);
   const [userError, setUserError] = useState(null);
   const [info, setInfo] = useState(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { signUp, signIn, error: authError } = useSupabaseAuth();
   const { user, isLoading } = useAuth();
@@ -170,6 +172,18 @@ export default function AuthPage() {
               <Button type="submit" className="w-full">
                 {isRegister ? t("auth.register") : t("auth.login")}
               </Button>
+
+              {!isRegister && (
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full text-sm"
+                  onClick={() => setShowForgotPassword(true)}
+                >
+                  {t("auth.forgotPassword")}
+                </Button>
+              )}
+
               <Button
                 type="button"
                 variant="link"
@@ -182,6 +196,11 @@ export default function AuthPage() {
           </div>
         </div>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </div>
   );
 }
