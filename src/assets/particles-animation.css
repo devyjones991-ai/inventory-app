@@ -1,6 +1,6 @@
 #svg-global {
   zoom: 1.2;
-  overflow: visible;
+  overflow: hidden;
   position: absolute;
   top: 0;
   left: 0;
@@ -30,10 +30,10 @@
   }
   50% {
     opacity: 1;
-    transform: translateY(-30px) rotate(180deg);
+    transform: translateY(-20px) rotate(180deg);
   }
   100% {
-    transform: translateY(-60px) rotate(360deg);
+    transform: translateY(-40px) rotate(360deg);
     opacity: 0;
   }
 }
@@ -48,10 +48,10 @@
   }
   50% {
     opacity: 1;
-    transform: translateX(20px) translateY(-40px) rotate(180deg);
+    transform: translateX(15px) translateY(-25px) rotate(180deg);
   }
   100% {
-    transform: translateX(-20px) translateY(-80px) rotate(360deg);
+    transform: translateX(-15px) translateY(-50px) rotate(360deg);
     opacity: 0;
   }
 }
@@ -177,16 +177,11 @@
   }
 }
 
-#line-v1,
-#line-v2,
 #node-server,
 #panel-rigth,
 #reflectores,
 #particles {
   animation: bounce-lines 3s ease-in-out infinite alternate;
-}
-#line-v2 {
-  animation-delay: 0.2s;
 }
 
 #node-server,
@@ -199,7 +194,8 @@
 /* Мобильная адаптация */
 @media (max-width: 768px) {
   #svg-global {
-    zoom: 0.8; /* Уменьшаем масштаб на мобильных */
+    zoom: 0.7; /* Уменьшаем масштаб на мобильных */
+    overflow: hidden; /* Убеждаемся, что ничего не вылетает */
   }
 
   /* Уменьшаем размеры иконок на мобильных */
@@ -234,7 +230,8 @@
 /* Очень маленькие экраны */
 @media (max-width: 480px) {
   #svg-global {
-    zoom: 0.6; /* Еще больше уменьшаем на маленьких экранах */
+    zoom: 0.5; /* Еще больше уменьшаем на маленьких экранах */
+    overflow: hidden; /* Убеждаемся, что ничего не вылетает */
   }
 
   /* Еще больше уменьшаем иконки */

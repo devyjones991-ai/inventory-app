@@ -90,7 +90,7 @@ export default function AuthPage() {
     <div className="min-h-screen bg-muted relative overflow-hidden">
       {/* Анимация частиц НАД окном */}
       <ParticlesAnimation
-        className="w-full h-full"
+        className="w-full h-full overflow-hidden"
         width={800}
         height={600}
         showBackground={false}

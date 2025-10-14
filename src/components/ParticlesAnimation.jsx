@@ -34,34 +34,11 @@ export default function ParticlesAnimation({
         width={adaptiveWidth}
         height={adaptiveHeight}
         viewBox="0 0 400 300"
+        preserveAspectRatio="xMidYMid meet"
         className="absolute inset-0 w-full h-full"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Фоновые линии */}
-        <g id="lines">
-          <line
-            id="line-v1"
-            x1="50"
-            y1="50"
-            x2="50"
-            y2="250"
-            stroke="currentColor"
-            strokeWidth="2"
-            opacity="0.3"
-            className="text-blue-400 dark:text-blue-300"
-          />
-          <line
-            id="line-v2"
-            x1="350"
-            y1="50"
-            x2="350"
-            y2="250"
-            stroke="currentColor"
-            strokeWidth="2"
-            opacity="0.3"
-            className="text-purple-400 dark:text-purple-300"
-          />
-        </g>
+        {/* Фоновые линии - убраны для чистого дизайна */}
 
         {/* Центральная панель */}
         <rect
