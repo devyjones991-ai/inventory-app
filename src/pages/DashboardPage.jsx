@@ -20,6 +20,9 @@ const InventorySidebar = lazy(() => import("@/components/InventorySidebar"));
 const InventoryTabs = lazy(() => import("@/components/InventoryTabs"));
 const AccountModal = lazy(() => import("@/components/AccountModal"));
 const ConfirmModal = lazy(() => import("@/components/ConfirmModal"));
+const NotificationCenter = lazy(
+  () => import("@/components/NotificationCenter"),
+);
 import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -433,6 +436,9 @@ export default function DashboardPage() {
               />
             </div>
             <div className="flex items-center gap-3 md:gap-4">
+              <Suspense fallback={<div className="w-8 h-8" />}>
+                <NotificationCenter />
+              </Suspense>
               <ThemeToggle />
               <Button
                 className="p-2 text-sm md:text-base"
