@@ -88,7 +88,7 @@ export function useChatMessages() {
         }
 
         let fileUrl = null;
-        const fileName = null;
+        let fileName = null;
 
         if (file) {
           // Validate file

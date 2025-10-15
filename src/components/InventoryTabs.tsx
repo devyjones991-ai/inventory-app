@@ -55,6 +55,7 @@ export default function InventoryTabs({
   selected,
   userEmail,
 }: InventoryTabsProps) {
+  const [activeTab, setActiveTab] = useState("desc");
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
   const [hardwareFormData, setHardwareFormData] = useState<
@@ -146,7 +147,7 @@ export default function InventoryTabs({
 
   return (
     <div className="space-y-4">
-      <Tabs value="hardware" onValueChange={() => {}}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="desc">Описание</TabsTrigger>
           <TabsTrigger value="hw">

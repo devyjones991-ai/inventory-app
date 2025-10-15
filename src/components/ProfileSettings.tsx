@@ -24,11 +24,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 // Схемы валидации для разных вкладок
 const personalInfoSchema = z.object({
-  fullName: z.string().min(1, t("profile.validation.fullNameRequired")),
-  email: z.string().email(t("profile.validation.emailInvalid")),
+  fullName: z.string().min(1, "Полное имя обязательно"),
+  email: z.string().email("Неверный формат email"),
   backupEmail: z
     .string()
-    .email(t("profile.validation.backupEmailInvalid"))
+    .email("Неверный формат резервного email")
     .optional()
     .or(z.literal("")),
   phone: z.string().optional(),
@@ -40,24 +40,24 @@ const securitySchema = z
   .object({
     currentPassword: z
       .string()
-      .min(1, t("profile.validation.currentPasswordRequired")),
+      .min(1, "Текущий пароль обязателен"),
     newPassword: z
       .string()
-      .min(8, t("profile.validation.newPasswordMinLength")),
+      .min(8, "Новый пароль должен содержать минимум 8 символов"),
     confirmPassword: z
       .string()
-      .min(1, t("profile.validation.confirmPasswordRequired")),
+      .min(1, "Подтверждение пароля обязательно"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: t("profile.validation.passwordsDoNotMatch"),
+    message: "Пароли не совпадают",
     path: ["confirmPassword"],
   });
 
 const preferencesSchema = z.object({
   theme: z.enum(["light", "dark", "auto"]),
   language: z.enum(["ru", "en"]),
-  timezone: z.string().min(1, t("profile.validation.timezoneRequired")),
-  dateFormat: z.string().min(1, t("profile.validation.dateFormatRequired")),
+  timezone: z.string().min(1, "Часовой пояс обязателен"),
+  dateFormat: z.string().min(1, "Формат даты обязателен"),
   timeFormat: z.enum(["12h", "24h"]),
   emailNotifications: z.boolean(),
   pushNotifications: z.boolean(),
@@ -180,17 +180,17 @@ export default function ProfileSettings({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t("profile.title")}</DialogTitle>
+          <DialogTitle>Настройки профиля</DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="personal">
-              {t("profile.personalInfo")}
+              Личная информация
             </TabsTrigger>
-            <TabsTrigger value="security">{t("profile.security")}</TabsTrigger>
+            <TabsTrigger value="security">Безопасность</TabsTrigger>
             <TabsTrigger value="preferences">
-              {t("profile.preferences")}
+              Настройки
             </TabsTrigger>
           </TabsList>
 
@@ -201,7 +201,7 @@ export default function ProfileSettings({
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="fullName">{t("profile.fullName")}</Label>
+                  <Label htmlFor="fullName">Полное имя</Label>
                   <Input
                     {...personalForm.register("fullName")}
                     id="fullName"
@@ -212,7 +212,7 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">{t("profile.email")}</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     {...personalForm.register("email")}
                     id="email"
@@ -226,7 +226,7 @@ export default function ProfileSettings({
                 </div>
                 <div>
                   <Label htmlFor="backupEmail">
-                    {t("profile.backupEmail")}
+                    Резервный email
                   </Label>
                   <Input
                     {...personalForm.register("backupEmail")}
@@ -239,7 +239,7 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">{t("profile.phone")}</Label>
+                  <Label htmlFor="phone">Телефон</Label>
                   <Input
                     {...personalForm.register("phone")}
                     id="phone"
@@ -251,7 +251,7 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="position">{t("profile.position")}</Label>
+                  <Label htmlFor="position">Должность</Label>
                   <Input
                     {...personalForm.register("position")}
                     id="position"
@@ -262,7 +262,7 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="department">{t("profile.department")}</Label>
+                  <Label htmlFor="department">Отдел</Label>
                   <Input
                     {...personalForm.register("department")}
                     id="department"
@@ -275,10 +275,10 @@ export default function ProfileSettings({
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={onClose}>
-                  {t("common.cancel")}
+                  Отмена
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? t("common.loading") : t("common.save")}
+                  {isLoading ? "Загрузка..." : "Сохранить"}
                 </Button>
               </DialogFooter>
             </form>
@@ -339,10 +339,10 @@ export default function ProfileSettings({
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={onClose}>
-                  {t("common.cancel")}
+                  Отмена
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? t("common.loading") : t("common.save")}
+                  {isLoading ? "Загрузка..." : "Сохранить"}
                 </Button>
               </DialogFooter>
             </form>
@@ -467,10 +467,10 @@ export default function ProfileSettings({
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={onClose}>
-                  {t("common.cancel")}
+                  Отмена
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? t("common.loading") : t("common.save")}
+                  {isLoading ? "Загрузка..." : "Сохранить"}
                 </Button>
               </DialogFooter>
             </form>
