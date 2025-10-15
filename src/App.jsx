@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { isApiConfigured } from "./apiConfig";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivateRoute from "./components/PrivateRoute";
+import { AuthProvider } from "./context/AuthContext";
 import { isSupabaseConfigured } from "./supabaseClient";
 
 import { t } from "@/i18n";
@@ -31,23 +32,25 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Toaster position="top-right" />
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route
-              path="/*"
-              element={
-                <PrivateRoute>
-                  <DashboardPage />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </ErrorBoundary>
-      </Suspense>
+      <AuthProvider>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Toaster position="top-right" />
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route
+                path="/*"
+                element={
+                  <PrivateRoute>
+                    <DashboardPage />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </Suspense>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
