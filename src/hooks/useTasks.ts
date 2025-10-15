@@ -28,9 +28,8 @@ const isSchemaCacheError = (err: unknown): boolean => {
   return code.startsWith("PGRST") || msg.includes("schema cache");
 };
 
-const TASK_FIELDS =
-  "id, title, status, assignee, due_date, assigned_at, notes, created_at";
-const TASK_FIELDS_FALLBACK = "id, title, status, assignee, notes, created_at";
+const TASK_FIELDS = "id, title, status, notes, created_at, updated_at, object_id, user_id";
+const TASK_FIELDS_FALLBACK = "id, title, status, notes, created_at, updated_at, object_id, user_id";
 
 interface FetchTasksParams {
   offset?: number;

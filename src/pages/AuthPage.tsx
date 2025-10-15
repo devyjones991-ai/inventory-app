@@ -11,7 +11,8 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { useAuth } from "../hooks/useAuth";
 import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
-import { t } from "../i18n";
+// import { t } from "../i18n";
+import "../assets/auth-styles.css";
 // import logger from "../utils/logger";
 
 export default function AuthPage() {
@@ -121,120 +122,114 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <ParticlesAnimation />
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="rounded-lg bg-white p-8 shadow-xl dark:bg-gray-800">
-            <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {isRegister ? "Регистрация" : "Вход"}
-              </h1>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                {isRegister
-                  ? "Создайте аккаунт для доступа к системе"
-                  : "Войдите в свой аккаунт"}
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Input
-                  {...register("email")}
-                  type="email"
-                  placeholder="Введите email"
-                  className="w-full"
-                />
-                <FormError error={errors.email?.message} />
+    <>
+      <div className="auth-page">
+        <ParticlesAnimation />
+        <div className="auth-container">
+          <div className="text-center">
+                <h1 className="auth-title">
+                  {isRegister ? "Регистрация" : "Вход"}
+                </h1>
+                <p className="auth-subtitle">
+                  {isRegister
+                    ? "Создайте аккаунт для доступа к системе"
+                    : "Войдите в свой аккаунт"}
+                </p>
               </div>
 
-              {isRegister && (
+              <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
                 <div>
-                  <Input
-                    {...register("username")}
-                    type="text"
-                    placeholder="Введите имя пользователя"
-                    className="w-full"
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="Введите email"
+                    className="auth-input"
                   />
-                  <FormError error={errors.username?.message} />
+                  <FormError error={errors.email?.message} />
                 </div>
-              )}
 
-              <div>
-                <Input
-                  {...register("password")}
-                  type="password"
-                  placeholder="Введите пароль"
-                  className="w-full"
-                />
-                <FormError error={errors.password?.message} />
-              </div>
+                {isRegister && (
+                  <div>
+                    <input
+                      {...register("username")}
+                      type="text"
+                      placeholder="Введите имя пользователя"
+                      className="auth-input"
+                    />
+                    <FormError error={errors.username?.message} />
+                  </div>
+                )}
 
-              {isRegister && (
                 <div>
-                  <Input
-                    {...register("confirmPassword")}
+                  <input
+                    {...register("password")}
                     type="password"
-                    placeholder="Подтвердите пароль"
-                    className="w-full"
+                    placeholder="Введите пароль"
+                    className="auth-input"
                   />
-                  <FormError error={errors.confirmPassword?.message} />
+                  <FormError error={errors.password?.message} />
                 </div>
-              )}
 
-              {userError && (
-                <div className="rounded-md bg-red-50 p-3 dark:bg-red-900/20">
-                  <p className="text-sm text-red-600 dark:text-red-400">
-                    {userError}
-                  </p>
-                </div>
-              )}
+                {isRegister && (
+                  <div>
+                    <input
+                      {...register("confirmPassword")}
+                      type="password"
+                      placeholder="Подтвердите пароль"
+                      className="auth-input"
+                    />
+                    <FormError error={errors.confirmPassword?.message} />
+                  </div>
+                )}
 
-              {info && (
-                <div className="rounded-md bg-green-50 p-3 dark:bg-green-900/20">
-                  <p className="text-sm text-green-600 dark:text-green-400">
-                    {info}
-                  </p>
-                </div>
-              )}
+                {userError && (
+                  <div className="auth-error">
+                    <p>{userError}</p>
+                  </div>
+                )}
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting
-                  ? "Загрузка..."
-                  : isRegister
-                    ? "Зарегистрироваться"
-                    : "Войти"}
-              </Button>
-            </form>
+                {info && (
+                  <div className="auth-info">
+                    <p>{info}</p>
+                  </div>
+                )}
 
-            <div className="mt-6 space-y-4">
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={toggleMode}
-              >
-                {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}
-              </Button>
+                <button type="submit" className="auth-button" disabled={isSubmitting}>
+                  {isSubmitting
+                    ? "Загрузка..."
+                    : isRegister
+                      ? "Зарегистрироваться"
+                      : "Войти"}
+                </button>
+              </form>
 
-              {!isRegister && (
-                <Button
+              <div className="auth-toggle">
+                <button
                   type="button"
-                  variant="link"
-                  className="w-full text-sm"
-                  onClick={() => setShowForgotPassword(true)}
+                  className="auth-toggle-button"
+                  onClick={toggleMode}
                 >
-                  Забыли пароль?
-                </Button>
-              )}
+                  {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}
+                </button>
+
+                {!isRegister && (
+                  <div className="auth-forgot">
+                    <button
+                      type="button"
+                      className="auth-forgot-button"
+                      onClick={() => setShowForgotPassword(true)}
+                    >
+                      Забыли пароль?
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
       {showForgotPassword && (
         <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />
       )}
-    </div>
+    </>
   );
 }

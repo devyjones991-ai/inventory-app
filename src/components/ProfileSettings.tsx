@@ -11,6 +11,7 @@ import { t } from "../i18n";
 
 import FormError from "./FormError";
 import { Button } from "./ui/button";
+import "../assets/profile-modal-styles.css";
 import {
   Dialog,
   DialogContent,
@@ -75,7 +76,7 @@ export default function ProfileSettings({
 }: ProfileSettingsProps) {
   const [activeTab, setActiveTab] = useState("personal");
   const [isLoading, setIsLoading] = useState(false);
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { requestPermission, permission } = useNotifications();
 
@@ -114,7 +115,7 @@ export default function ProfileSettings({
     },
   });
 
-  const handlePersonalSubmit = async (data: any) => {
+  const handlePersonalSubmit = async (data: Record<string, unknown>) => {
     setIsLoading(true);
     try {
       await updateProfile({
@@ -125,27 +126,27 @@ export default function ProfileSettings({
         department: data.department,
       });
       toast.success(t("profile.personalInfoUpdated"));
-    } catch (error) {
+    } catch {
       toast.error(t("profile.updateError"));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSecuritySubmit = async (data: any) => {
+  const handleSecuritySubmit = async (_data: Record<string, unknown>) => {
     setIsLoading(true);
     try {
       // Здесь должна быть логика обновления пароля
       toast.success(t("profile.passwordUpdated"));
       securityForm.reset();
-    } catch (error) {
+    } catch {
       toast.error(t("profile.updateError"));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handlePreferencesSubmit = async (data: any) => {
+  const handlePreferencesSubmit = async (data: Record<string, unknown>) => {
     setIsLoading(true);
     try {
       await updateProfile({
@@ -163,7 +164,7 @@ export default function ProfileSettings({
         },
       });
       toast.success(t("profile.preferencesUpdated"));
-    } catch (error) {
+    } catch {
       toast.error(t("profile.updateError"));
     } finally {
       setIsLoading(false);
@@ -180,7 +181,7 @@ export default function ProfileSettings({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-0 shadow-2xl rounded-xl">
         <DialogHeader className="pb-6">
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <DialogTitle className="profile-title">
             Настройки профиля
           </DialogTitle>
           <p className="text-muted-foreground">Управляйте своими данными и настройками</p>
@@ -206,72 +207,72 @@ export default function ProfileSettings({
               >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="fullName">Полное имя</Label>
+                  <Label htmlFor="fullName" className="profile-label">Полное имя</Label>
                   <Input
                     {...personalForm.register("fullName")}
                     id="fullName"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={personalForm.formState.errors.fullName?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="profile-label">Email</Label>
                   <Input
                     {...personalForm.register("email")}
                     id="email"
                     type="email"
                     disabled
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={personalForm.formState.errors.email?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="backupEmail">
+                  <Label htmlFor="backupEmail" className="profile-label">
                     Резервный email
                   </Label>
                   <Input
                     {...personalForm.register("backupEmail")}
                     id="backupEmail"
                     type="email"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={personalForm.formState.errors.backupEmail?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Телефон</Label>
+                  <Label htmlFor="phone" className="profile-label">Телефон</Label>
                   <Input
                     {...personalForm.register("phone")}
                     id="phone"
                     type="tel"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={personalForm.formState.errors.phone?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="position">Должность</Label>
+                  <Label htmlFor="position" className="profile-label">Должность</Label>
                   <Input
                     {...personalForm.register("position")}
                     id="position"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={personalForm.formState.errors.position?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="department">Отдел</Label>
+                  <Label htmlFor="department" className="profile-label">Отдел</Label>
                   <Input
                     {...personalForm.register("department")}
                     id="department"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={personalForm.formState.errors.department?.message}
@@ -279,10 +280,10 @@ export default function ProfileSettings({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose}>
+                <Button type="button" variant="outline" onClick={onClose} className="profile-button-secondary">
                   Отмена
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className="profile-button">
                   {isLoading ? "Загрузка..." : "Сохранить"}
                 </Button>
               </DialogFooter>
@@ -299,14 +300,14 @@ export default function ProfileSettings({
             >
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="currentPassword">
+                  <Label htmlFor="currentPassword" className="profile-label">
                     {t("profile.currentPassword")}
                   </Label>
                   <Input
                     {...securityForm.register("currentPassword")}
                     id="currentPassword"
                     type="password"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={
@@ -315,28 +316,28 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="newPassword">
+                  <Label htmlFor="newPassword" className="profile-label">
                     {t("profile.newPassword")}
                   </Label>
                   <Input
                     {...securityForm.register("newPassword")}
                     id="newPassword"
                     type="password"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={securityForm.formState.errors.newPassword?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="confirmPassword">
+                  <Label htmlFor="confirmPassword" className="profile-label">
                     {t("profile.confirmPassword")}
                   </Label>
                   <Input
                     {...securityForm.register("confirmPassword")}
                     id="confirmPassword"
                     type="password"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={
@@ -346,10 +347,10 @@ export default function ProfileSettings({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose}>
+                <Button type="button" variant="outline" onClick={onClose} className="profile-button-secondary">
                   Отмена
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className="profile-button">
                   {isLoading ? "Загрузка..." : "Сохранить"}
                 </Button>
               </DialogFooter>
@@ -366,11 +367,11 @@ export default function ProfileSettings({
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="theme">{t("profile.theme")}</Label>
+                  <Label htmlFor="theme" className="profile-label">{t("profile.theme")}</Label>
                   <select
                     {...preferencesForm.register("theme")}
                     id="theme"
-                    className="w-full p-2 border rounded"
+                    className="profile-input w-full"
                   >
                     <option value="light">{t("profile.themeLight")}</option>
                     <option value="dark">{t("profile.themeDark")}</option>
@@ -381,11 +382,11 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="language">{t("profile.language")}</Label>
+                  <Label htmlFor="language" className="profile-label">{t("profile.language")}</Label>
                   <select
                     {...preferencesForm.register("language")}
                     id="language"
-                    className="w-full p-2 border rounded"
+                    className="profile-input w-full"
                   >
                     <option value="ru">{t("profile.languageRu")}</option>
                     <option value="en">{t("profile.languageEn")}</option>
@@ -395,33 +396,33 @@ export default function ProfileSettings({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="timezone">{t("profile.timezone")}</Label>
+                  <Label htmlFor="timezone" className="profile-label">{t("profile.timezone")}</Label>
                   <Input
                     {...preferencesForm.register("timezone")}
                     id="timezone"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={preferencesForm.formState.errors.timezone?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="dateFormat">{t("profile.dateFormat")}</Label>
+                  <Label htmlFor="dateFormat" className="profile-label">{t("profile.dateFormat")}</Label>
                   <Input
                     {...preferencesForm.register("dateFormat")}
                     id="dateFormat"
-                    className="w-full"
+                    className="profile-input w-full"
                   />
                   <FormError
                     error={preferencesForm.formState.errors.dateFormat?.message}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="timeFormat">{t("profile.timeFormat")}</Label>
+                  <Label htmlFor="timeFormat" className="profile-label">{t("profile.timeFormat")}</Label>
                   <select
                     {...preferencesForm.register("timeFormat")}
                     id="timeFormat"
-                    className="w-full p-2 border rounded"
+                    className="profile-input w-full"
                   >
                     <option value="12h">{t("profile.timeFormat12h")}</option>
                     <option value="24h">{t("profile.timeFormat24h")}</option>
@@ -469,6 +470,7 @@ export default function ProfileSettings({
                     <Button
                       size="sm"
                       onClick={handleRequestNotificationPermission}
+                      className="profile-button"
                     >
                       {t("profile.requestPermission")}
                     </Button>
@@ -477,10 +479,10 @@ export default function ProfileSettings({
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose}>
+                <Button type="button" variant="outline" onClick={onClose} className="profile-button-secondary">
                   Отмена
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className="profile-button">
                   {isLoading ? "Загрузка..." : "Сохранить"}
                 </Button>
               </DialogFooter>

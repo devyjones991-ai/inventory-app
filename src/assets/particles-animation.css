@@ -22,7 +22,7 @@
 
 @keyframes floatUp {
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(100vh) rotate(0deg);
     opacity: 0;
   }
   10% {
@@ -30,17 +30,17 @@
   }
   50% {
     opacity: 1;
-    transform: translateY(-20px) rotate(180deg);
+    transform: translateY(50vh) rotate(180deg);
   }
   100% {
-    transform: translateY(-40px) rotate(360deg);
+    transform: translateY(-100px) rotate(360deg);
     opacity: 0;
   }
 }
 
 @keyframes floatSideways {
   0% {
-    transform: translateX(0) translateY(0) rotate(0deg);
+    transform: translateX(0) translateY(100vh) rotate(0deg);
     opacity: 0;
   }
   15% {
@@ -48,10 +48,10 @@
   }
   50% {
     opacity: 1;
-    transform: translateX(15px) translateY(-25px) rotate(180deg);
+    transform: translateX(50px) translateY(50vh) rotate(180deg);
   }
   100% {
-    transform: translateX(-15px) translateY(-50px) rotate(360deg);
+    transform: translateX(-50px) translateY(-100px) rotate(360deg);
     opacity: 0;
   }
 }
@@ -69,8 +69,47 @@
 #particles {
   animation: fade-particles 5s infinite alternate;
 }
+.particles-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .particle {
-  animation: floatUp linear infinite;
+  position: absolute !important;
+  width: 4px !important;
+  height: 4px !important;
+  background: radial-gradient(circle, #00d4ff, transparent) !important;
+  border-radius: 50% !important;
+  animation: floatUp linear infinite !important;
+  opacity: 0.9 !important;
+  z-index: 10 !important;
+  box-shadow: 0 0 10px #00d4ff !important;
+}
+
+.particle:nth-child(odd) {
+  background: radial-gradient(circle, #ff00ff, transparent) !important;
+  animation: floatSideways linear infinite !important;
+  box-shadow: 0 0 15px #ff00ff !important;
+}
+
+.particle:nth-child(3n) {
+  background: radial-gradient(circle, #00ff88, transparent) !important;
+  animation: floatUp linear infinite !important;
+  box-shadow: 0 0 12px #00ff88 !important;
+}
+
+.particle:nth-child(4n) {
+  background: radial-gradient(circle, #ff6b35, transparent) !important;
+  animation: floatSideways linear infinite !important;
+  box-shadow: 0 0 8px #ff6b35 !important;
+}
+
+.particle:nth-child(5n) {
+  background: radial-gradient(circle, #8a2be2, transparent) !important;
+  animation: floatUp linear infinite !important;
+  box-shadow: 0 0 10px #8a2be2 !important;
 }
 
 .particle-sideways {
@@ -121,50 +160,122 @@
 .p1 {
   animation-duration: 2.2s;
   animation-delay: 0s;
+  left: 10%;
+  top: 80%;
 }
 .p2 {
   animation-duration: 2.5s;
   animation-delay: 0.3s;
+  left: 20%;
+  top: 70%;
 }
 .p3 {
   animation-duration: 2s;
   animation-delay: 0.6s;
+  left: 30%;
+  top: 90%;
 }
 .p4 {
   animation-duration: 2.8s;
   animation-delay: 0.2s;
+  left: 40%;
+  top: 60%;
 }
 .p5 {
   animation-duration: 2.3s;
   animation-delay: 0.4s;
+  left: 50%;
+  top: 85%;
 }
 .p6 {
   animation-duration: 3s;
   animation-delay: 0.1s;
+  left: 60%;
+  top: 75%;
 }
 .p7 {
   animation-duration: 2.1s;
   animation-delay: 0.5s;
+  left: 70%;
+  top: 65%;
 }
 .p8 {
   animation-duration: 2.6s;
   animation-delay: 0.2s;
+  left: 80%;
+  top: 80%;
 }
 .p9 {
   animation-duration: 2.4s;
   animation-delay: 0.3s;
+  left: 90%;
+  top: 70%;
 }
 .p10 {
   animation-duration: 2.7s;
   animation-delay: 0.7s;
+  left: 15%;
+  top: 50%;
 }
 .p11 {
   animation-duration: 2.1s;
   animation-delay: 0.8s;
+  left: 25%;
+  top: 40%;
 }
 .p12 {
   animation-duration: 2.9s;
   animation-delay: 0.1s;
+  left: 35%;
+  top: 30%;
+}
+.p13 {
+  animation-duration: 2.3s;
+  animation-delay: 0.4s;
+  left: 45%;
+  top: 20%;
+}
+.p14 {
+  animation-duration: 2.8s;
+  animation-delay: 0.6s;
+  left: 55%;
+  top: 10%;
+}
+.p15 {
+  animation-duration: 2.5s;
+  animation-delay: 0.2s;
+  left: 65%;
+  top: 25%;
+}
+.p16 {
+  animation-duration: 2.7s;
+  animation-delay: 0.5s;
+  left: 75%;
+  top: 35%;
+}
+.p17 {
+  animation-duration: 2.4s;
+  animation-delay: 0.8s;
+  left: 85%;
+  top: 45%;
+}
+.p18 {
+  animation-duration: 2.6s;
+  animation-delay: 0.3s;
+  left: 5%;
+  top: 15%;
+}
+.p19 {
+  animation-duration: 2.9s;
+  animation-delay: 0.7s;
+  left: 95%;
+  top: 55%;
+}
+.p20 {
+  animation-duration: 2.2s;
+  animation-delay: 0.9s;
+  left: 50%;
+  top: 5%;
 }
 
 @keyframes bounce-lines {

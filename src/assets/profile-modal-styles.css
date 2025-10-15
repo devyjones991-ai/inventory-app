@@ -1,0 +1,309 @@
+/* Космические стили для модального окна личного кабинета */
+
+/* Оверлей модального окна */
+[data-radix-dialog-overlay] {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  animation: modalFadeIn 0.3s ease-out !important;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Контейнер модального окна */
+[data-radix-dialog-content] {
+  background: rgba(0, 0, 0, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 212, 255, 0.3) !important;
+  border-radius: 20px !important;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 212, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  animation: modalSlideIn 0.3s ease-out !important;
+  max-width: 600px !important;
+  width: 90vw !important;
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Заголовок модального окна */
+[data-radix-dialog-title] {
+  color: #00d4ff !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  margin-bottom: 20px !important;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5) !important;
+  background: linear-gradient(135deg, #00d4ff, #ff00ff) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* Вкладки */
+[data-radix-tabs-list] {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(0, 212, 255, 0.2) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  margin-bottom: 20px !important;
+}
+
+[data-radix-tabs-trigger] {
+  background: transparent !important;
+  border: none !important;
+  color: #ccc !important;
+  padding: 12px 20px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+[data-radix-tabs-trigger]:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  color: #00d4ff !important;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important;
+}
+
+[data-radix-tabs-trigger][data-state="active"] {
+  background: linear-gradient(135deg, #00d4ff, #ff00ff) !important;
+  color: white !important;
+  box-shadow: 
+    0 0 20px rgba(0, 212, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Контент вкладок */
+[data-radix-tabs-content] {
+  color: #fff !important;
+}
+
+/* Поля ввода */
+.profile-input {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 2px solid rgba(0, 212, 255, 0.3) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  padding: 12px 16px !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.profile-input:focus {
+  outline: none !important;
+  border-color: #00d4ff !important;
+  box-shadow: 
+    0 0 0 3px rgba(0, 212, 255, 0.2),
+    0 0 20px rgba(0, 212, 255, 0.4),
+    inset 0 0 20px rgba(0, 212, 255, 0.1) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+.profile-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Лейблы */
+.profile-label {
+  color: #00d4ff !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+}
+
+/* Кнопки */
+.profile-button {
+  background: linear-gradient(135deg, #00d4ff, #ff00ff) !important;
+  background-size: 200% 200% !important;
+  animation: buttonGradient 3s ease infinite !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 
+    0 0 20px rgba(0, 212, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.profile-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 0 30px rgba(0, 212, 255, 0.5),
+    0 0 60px rgba(255, 0, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.profile-button:active {
+  transform: translateY(0) !important;
+  box-shadow: 
+    0 0 15px rgba(0, 212, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+@keyframes buttonGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Вторичные кнопки */
+.profile-button-secondary {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 2px solid rgba(0, 212, 255, 0.3) !important;
+  color: #00d4ff !important;
+  border-radius: 12px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.profile-button-secondary:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  border-color: #00d4ff !important;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important;
+  color: #00d4ff !important;
+}
+
+/* Чекбоксы и переключатели */
+[type="checkbox"] {
+  accent-color: #00d4ff !important;
+}
+
+[type="checkbox"]:checked {
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5) !important;
+}
+
+/* Селекты */
+[data-radix-select-trigger] {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 2px solid rgba(0, 212, 255, 0.3) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  padding: 12px 16px !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+[data-radix-select-trigger]:focus {
+  outline: none !important;
+  border-color: #00d4ff !important;
+  box-shadow: 
+    0 0 0 3px rgba(0, 212, 255, 0.2),
+    0 0 20px rgba(0, 212, 255, 0.4) !important;
+}
+
+[data-radix-select-content] {
+  background: rgba(0, 0, 0, 0.9) !important;
+  border: 1px solid rgba(0, 212, 255, 0.3) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 212, 255, 0.1) !important;
+}
+
+[data-radix-select-item] {
+  color: white !important;
+  padding: 12px 16px !important;
+  transition: all 0.3s ease !important;
+}
+
+[data-radix-select-item]:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  color: #00d4ff !important;
+}
+
+[data-radix-select-item][data-highlighted] {
+  background: rgba(0, 212, 255, 0.2) !important;
+  color: #00d4ff !important;
+}
+
+/* Ошибки */
+.profile-error {
+  color: #ff6b35 !important;
+  font-size: 14px !important;
+  margin-top: 4px !important;
+  text-shadow: 0 0 10px rgba(255, 107, 53, 0.3) !important;
+}
+
+/* Успешные сообщения */
+.profile-success {
+  color: #00ff88 !important;
+  font-size: 14px !important;
+  margin-top: 4px !important;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
+}
+
+/* Группы полей */
+.profile-field-group {
+  margin-bottom: 20px !important;
+}
+
+/* Заголовки секций */
+.profile-section-title {
+  color: #00d4ff !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin-bottom: 16px !important;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.4) !important;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2) !important;
+  padding-bottom: 8px !important;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    width: 95vw !important;
+    max-height: 90vh !important;
+    margin: 20px !important;
+  }
+  
+  [data-radix-dialog-title] {
+    font-size: 20px !important;
+  }
+  
+  .profile-button {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+  }
+}

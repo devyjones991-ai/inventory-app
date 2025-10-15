@@ -1,19 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { supabase } from "../supabaseClient";
-import { handleSupabaseError } from "../utils/handleSupabaseError";
-import logger from "../utils/logger";
+// import { handleSupabaseError } from "../utils/handleSupabaseError";
+// import logger from "../utils/logger";
+import { ChatMessage } from "../types";
 
 import { useChatMessages } from "./useChatMessages";
 
-interface ChatMessage {
-  id: string;
-  content: string;
-  sender: string;
-  created_at: string;
-  file_url?: string;
-  file_name?: string;
-}
 
 interface UseChatParams {
   objectId: string;
@@ -43,7 +36,7 @@ interface UseChatReturn {
 export default function useChat({
   objectId,
   userEmail,
-  search,
+  search: _search,
 }: UseChatParams): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -54,24 +47,24 @@ export default function useChat({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const channelRef = useRef<any>(null);
-  const loadMoreRef = useRef(() => Promise.resolve());
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const optimisticTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+  // const scrollRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<unknown>(null);
+  // const loadMoreRef = useRef(() => Promise.resolve());
+  // const fileInputRef = useRef<HTMLInputElement>(null);
+  // const optimisticTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
   const { fetchMessages, sendMessage: sendMessageUtil } = useChatMessages();
   const LIMIT = 20;
 
   const offsetRef = useRef(0);
-  const isInitialRender = useRef(true);
-  const activeSearchRef = useRef(search);
+  // const isInitialRender = useRef(true);
+  // const activeSearchRef = useRef(search);
 
   /**
    * Загружает следующую порцию сообщений, используя внутреннее смещение.
    */
   const loadMore = useCallback(
     async (replace = false) => {
-      if (!objectId || !supabase) return { error: "No objectId or supabase" };
+      if (!objectId || objectId.trim() === "" || !supabase) return { error: "No objectId or supabase" };
 
       try {
         setLoading(true);
@@ -108,13 +101,13 @@ export default function useChat({
 
   const sendMessage = useCallback(
     async (content: string, file?: File) => {
-      if (!objectId || !supabase) return;
+      if (!objectId || objectId.trim() === "" || !supabase) return;
 
       try {
         setSending(true);
         setError(null);
 
-        const result = await sendMessageUtil(objectId, content, file);
+        const result = await sendMessageUtil(objectId, content, userEmail, file);
         if (result.error) {
           setError(result.error.message || "Ошибка отправки сообщения");
           return;
@@ -136,7 +129,7 @@ export default function useChat({
 
   const searchMessages = useCallback(
     async (query: string) => {
-      if (!objectId || !supabase) return;
+      if (!objectId || objectId.trim() === "" || !supabase) return;
 
       try {
         setLoading(true);
@@ -176,15 +169,19 @@ export default function useChat({
 
   // Загрузка сообщений при изменении objectId
   useEffect(() => {
-    if (objectId) {
+    if (objectId && objectId.trim() !== "") {
       offsetRef.current = 0;
       loadMore(true);
+    } else {
+      // Очищаем сообщения если нет objectId
+      setMessages([]);
+      setError(null);
     }
   }, [objectId, loadMore]);
 
   // Подписка на новые сообщения
   useEffect(() => {
-    if (!objectId || !supabase) return;
+    if (!objectId || objectId.trim() === "" || !supabase) return;
 
     const channel = supabase
       .channel(`chat:${objectId}`)

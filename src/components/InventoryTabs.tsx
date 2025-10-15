@@ -1,12 +1,12 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
+import React, { useState, useCallback, Suspense, lazy } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { useHardware } from "../hooks/useHardware";
 import { useTasks } from "../hooks/useTasks";
-import { t } from "../i18n";
+// import { t } from "../i18n";
 import { Object, Hardware, Task } from "../types";
 
 import FormError from "./FormError";
@@ -58,18 +58,8 @@ export default function InventoryTabs({
   const [activeTab, setActiveTab] = useState("desc");
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
-  const [hardwareFormData, setHardwareFormData] = useState<
-    Record<string, unknown>
-  >({});
-  const [hardwareFormErrors, setHardwareFormErrors] = useState<
-    Record<string, string>
-  >({});
-
   const {
     hardware,
-    loadHardware,
-    createHardware,
-    updateHardware,
     deleteHardware,
   } = useHardware();
 
@@ -119,21 +109,6 @@ export default function InventoryTabs({
     resetHardware();
   }, [resetHardware]);
 
-  const handleHardwareSubmitForm = useCallback(
-    async (data: Record<string, unknown>) => {
-      try {
-        if (editingHardware) {
-          await updateHardware(editingHardware.id, data);
-        } else {
-          await createHardware(data);
-        }
-        closeHardwareModal();
-      } catch (error) {
-        console.error("Hardware submit error:", error);
-      }
-    },
-    [editingHardware, updateHardware, createHardware, closeHardwareModal],
-  );
 
   const handleDeleteHardware = useCallback(
     async (id: string) => {
@@ -147,9 +122,24 @@ export default function InventoryTabs({
 
   return (
     <div className="space-y-4">
+      {/* Блок описания объекта - всегда видим */}
+      <div className="space-y-4 p-4 bg-card rounded-lg border">
+        <div>
+          <h3 className="text-lg font-semibold">{selected.name}</h3>
+          <p className="text-muted-foreground">{selected.description}</p>
+        </div>
+        {selected.location && (
+          <div>
+            <h4 className="font-medium">Местоположение</h4>
+            <p className="text-sm text-muted-foreground">
+              {selected.location}
+            </p>
+          </div>
+        )}
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="desc">Описание</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="hw">
             Железо ({hardware.length})
           </TabsTrigger>
@@ -160,35 +150,6 @@ export default function InventoryTabs({
             Чат
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="desc" className="space-y-4">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold">{selected.name}</h3>
-              <p className="text-muted-foreground">{selected.description}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium">Тип</h4>
-                <p className="text-sm text-muted-foreground">{selected.type}</p>
-              </div>
-              <div>
-                <h4 className="font-medium">Статус</h4>
-                <p className="text-sm text-muted-foreground">
-                  {selected.status}
-                </p>
-              </div>
-              {selected.location && (
-                <div>
-                  <h4 className="font-medium">Местоположение</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {selected.location}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </TabsContent>
 
         <TabsContent value="hw" className="space-y-4">
           <div className="flex justify-between items-center">
@@ -232,7 +193,7 @@ export default function InventoryTabs({
 
         <TabsContent value="chat" className="space-y-4">
           <Suspense fallback={<Spinner />}>
-            <ChatTab selected={selected} userEmail={userEmail} />
+            <ChatTab selected={selected} userEmail={userEmail} active={activeTab === "chat"} />
           </Suspense>
         </TabsContent>
       </Tabs>

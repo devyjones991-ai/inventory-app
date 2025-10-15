@@ -12,6 +12,7 @@ import {
 } from "./ui/dialog";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
+import "../assets/notifications-styles.css";
 
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +53,11 @@ export default function NotificationCenter() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={`notification-button ${unreadCount > 0 ? 'has-notifications' : ''}`}
+        >
           <svg
             className="h-5 w-5"
             fill="none"
@@ -67,32 +72,29 @@ export default function NotificationCenter() {
             />
           </svg>
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
+            <div className="notification-badge absolute -top-1 -right-1">
               {unreadCount}
-            </Badge>
+            </div>
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="notification-center max-w-md">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Уведомления</DialogTitle>
+            <DialogTitle className="notification-header">Уведомления</DialogTitle>
             {notifications.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleClearAll}
-                className="text-muted-foreground"
+                className="notification-action-button danger"
               >
                 Очистить все
               </Button>
             )}
           </div>
         </DialogHeader>
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className="notification-list">
           {permission === "default" && (
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground mb-2">
@@ -104,27 +106,23 @@ export default function NotificationCenter() {
             </div>
           )}
           {notifications.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="notification-empty">
               Нет уведомлений
             </p>
           ) : (
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                  notification.read
-                    ? "bg-background"
-                    : "bg-muted border-primary"
-                }`}
+                className={`notification-item ${!notification.read ? 'unread' : ''}`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="font-medium text-sm">{notification.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <h4 className="notification-text font-medium text-sm">{notification.title}</h4>
+                    <p className="notification-text text-xs mt-1">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="notification-time">
                       {formatDistanceToNow(new Date(notification.created_at), {
                         addSuffix: true,
                         locale: ru,
@@ -138,7 +136,7 @@ export default function NotificationCenter() {
                       e.stopPropagation();
                       handleRemoveNotification(notification.id);
                     }}
-                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    className="notification-action-button danger h-6 w-6 p-0"
                   >
                     ×
                   </Button>

@@ -74,7 +74,13 @@
   padding: 10px;
   display: flex;
   flex-direction: column;
+}
+
+.chat-messages-container {
+  display: flex;
+  flex-direction: column-reverse;
   gap: 8px;
+  min-height: 100%;
 }
 
 .chat-message {
@@ -284,6 +290,97 @@
 
 .chat-input-place:focus-within {
   border-color: #10a37f;
+}
+
+/* Стили для области ввода сообщения */
+.chat-input-area {
+  background-color: #40414f;
+  border-top: 1px solid #2e2f3a;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-input-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background-color: #40414f;
+  border: 1px solid #2e2f3a;
+  border-radius: 20px;
+  padding: 8px 12px;
+  transition: border-color 0.2s ease;
+}
+
+.chat-input-container:focus-within {
+  border-color: #10a37f;
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+}
+
+.chat-textarea-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.chat-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #d8dbe0;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: none;
+  min-height: 20px;
+  max-height: 120px;
+  padding: 4px 0;
+  font-family: inherit;
+}
+
+.chat-textarea::placeholder {
+  color: #6b6c7b;
+}
+
+.chat-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-attach-button,
+.chat-send-button {
+  background: transparent;
+  border: none;
+  color: #6b6c7b;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-attach-button:hover,
+.chat-send-button:hover {
+  background-color: #2e2f3a;
+  color: #d8dbe0;
+}
+
+.chat-send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-send-button:not(:disabled) {
+  color: #10a37f;
+}
+
+.chat-send-button:not(:disabled):hover {
+  background-color: #10a37f;
+  color: white;
 }
 
 .chat-send-input {
@@ -691,7 +788,21 @@
     gap: 8px;
     background-color: #40414f;
     border-radius: 20px;
-    border: none;
+  }
+
+  /* Мобильные стили для области ввода */
+  .chat-input-area {
+    padding: 8px;
+  }
+
+  .chat-input-container {
+    border-radius: 16px;
+    padding: 6px 10px;
+  }
+
+  .chat-textarea {
+    font-size: 16px;
+    min-height: 18px;
   }
 
   .chat-send-input {
@@ -826,9 +937,330 @@
     gap: 6px;
   }
 
+  /* Стили для очень маленьких экранов */
+  .chat-input-area {
+    padding: 6px;
+  }
+
+  .chat-input-container {
+    border-radius: 12px;
+    padding: 4px 8px;
+  }
+
+  .chat-textarea {
+    font-size: 14px;
+    min-height: 16px;
+  }
+
+  .chat-attach-button,
+  .chat-send-button {
+    padding: 6px;
+  }
+
   .chat-send-input {
     font-size: 15px;
   }
+
+/* Стили для страницы авторизации */
+.auth-page {
+  min-height: 100vh !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background-size: 400% 400% !important;
+  animation: gradientShift 15s ease infinite !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.auth-container {
+  width: 100% !important;
+  max-width: 400px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 20px !important;
+  padding: 40px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  animation: slideInUp 0.8s ease-out !important;
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.auth-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  margin-bottom: 8px !important;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  animation: titleGlow 2s ease-in-out infinite alternate !important;
+}
+
+@keyframes titleGlow {
+  from {
+    filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3));
+  }
+  to {
+    filter: drop-shadow(0 0 15px rgba(102, 126, 234, 0.6));
+  }
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-input {
+  width: 100% !important;
+  padding: 15px 20px !important;
+  border: 2px solid #e1e5e9 !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  transition: all 0.3s ease !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  position: relative !important;
+}
+
+.auth-input:focus {
+  outline: none !important;
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), 0 0 20px rgba(102, 126, 234, 0.2) !important;
+  background: white !important;
+  transform: translateY(-2px) !important;
+}
+
+.auth-input:hover {
+  border-color: #667eea !important;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.1) !important;
+}
+
+.auth-button {
+  width: 100% !important;
+  padding: 15px !important;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  background-size: 200% 200% !important;
+  animation: buttonGradient 3s ease infinite !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  margin-top: 10px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.auth-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.auth-button:hover::before {
+  left: 100%;
+}
+
+.auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.auth-button:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 10px rgba(102, 126, 234, 0.2);
+}
+
+.auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  animation: none;
+}
+
+@keyframes buttonGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.auth-toggle {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+}
+
+.auth-toggle-button {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.auth-error {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #fcc;
+  animation: shake 0.5s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-error::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.1), transparent);
+  animation: errorShimmer 2s infinite;
+}
+
+.auth-info {
+  background: #efe;
+  color: #363;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #cfc;
+  animation: slideInDown 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+  animation: infoShimmer 2s infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes errorShimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+@keyframes infoShimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.auth-forgot {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.auth-forgot-button {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+/* Темная тема для авторизации */
+@media (prefers-color-scheme: dark) {
+  .auth-container {
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .auth-subtitle {
+    color: #ccc;
+  }
+  
+  .auth-input {
+    background: rgba(40, 40, 40, 0.8);
+    border-color: #444;
+    color: white;
+  }
+  
+  .auth-input:focus {
+    background: #333;
+  }
+  
+  .auth-toggle {
+    color: #ccc;
+  }
+}
 
   .chat-send,
   .chat-attachment {

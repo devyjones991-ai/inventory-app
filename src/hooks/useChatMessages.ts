@@ -1,11 +1,12 @@
 import { useCallback, useMemo } from "react";
-import { toast } from "react-hot-toast";
+// import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
 import { supabase } from "../supabaseClient";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
 import logger from "../utils/logger";
+import { ChatMessage } from "../types";
 
 const ALLOWED_MIME_TYPES = [
   "image/jpeg",
@@ -16,14 +17,6 @@ const ALLOWED_MIME_TYPES = [
 ];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-interface ChatMessage {
-  id: string;
-  content: string;
-  sender: string;
-  created_at: string;
-  file_url?: string;
-  file_name?: string;
-}
 
 interface FetchMessagesParams {
   limit?: number;
@@ -81,7 +74,7 @@ export function useChatMessages() {
   );
 
   const sendMessage = useCallback(
-    async (objectId: string, content: string, file?: File) => {
+    async (objectId: string, content: string, userEmail: string, file?: File) => {
       try {
         if (!supabase) {
           throw new Error("Supabase client not initialized");
@@ -122,14 +115,22 @@ export function useChatMessages() {
         }
 
         // Send message
+        const messageData: Record<string, unknown> = {
+          object_id: objectId,
+          content,
+          sender: userEmail,
+        };
+
+        if (fileUrl) {
+          messageData.file_url = fileUrl;
+        }
+        if (fileName) {
+          messageData.file_name = fileName;
+        }
+
         const { data, error } = await supabase
           .from("chat_messages")
-          .insert({
-            object_id: objectId,
-            content,
-            file_url: fileUrl,
-            file_name: fileName,
-          })
+          .insert(messageData)
           .select()
           .single();
 

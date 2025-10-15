@@ -3,8 +3,9 @@ import { memo, useMemo } from "react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-import { t } from "../i18n";
+// import { t } from "../i18n";
 import { Object } from "../types";
+import "../assets/notifications-styles.css";
 
 interface InventorySidebarProps {
   objects: Object[];
@@ -48,17 +49,14 @@ function InventorySidebar({
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium">{o.name}</CardTitle>
               {notifications[o.id] > 0 && (
-                <Badge variant="destructive" className="text-xs">
+                <div className="notification-badge">
                   {notifications[o.id]}
-                </Badge>
+                </div>
               )}
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="flex items-center justify-between">
-              <div className="text-xs text-muted-foreground">
-                {o.description || "Нет описания"}
-              </div>
+            <div className="flex items-center justify-end">
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"

@@ -6,6 +6,7 @@ import {
 import {
   memo,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -34,6 +35,13 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
 
   const { messages, loading, error, sendMessage, searchMessages, clearSearch } =
     useChat({
@@ -42,17 +50,38 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
       search: searchQuery,
     });
 
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  // Автофокус на поле ввода при активации вкладки
+  useEffect(() => {
+    if (active && textareaRef.current) {
+      textareaRef.current.focus();
     }
-  }, []);
+  }, [active]);
 
   useLayoutEffect(() => {
     if (active) {
       scrollToBottom();
     }
   }, [messages, active, scrollToBottom]);
+
+  // Автоскролл к окну ввода при открытии чата
+  useLayoutEffect(() => {
+    if (!isCollapsed) {
+      // Небольшая задержка для рендера
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [isCollapsed, scrollToBottom]);
+
+  // Автоскролл при переключении на вкладку чата
+  useLayoutEffect(() => {
+    if (active && !isCollapsed) {
+      // Небольшая задержка для рендера
+      setTimeout(() => {
+        scrollToBottom();
+      }, 200);
+    }
+  }, [active, isCollapsed, scrollToBottom]);
 
   const handleSendMessage = useCallback(async () => {
     if (!message.trim() || !selected?.id) return;
@@ -107,10 +136,34 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
     clearSearch();
   }, [clearSearch]);
 
+  // Если нет выбранного объекта, показываем сообщение
   if (!selected) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        Выберите объект для просмотра чата
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Выберите объект для просмотра чата</p>
+      </div>
+    );
+  }
+
+
+  // Обработка ошибок
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">Произошла ошибка при загрузке чата</p>
+          <p className="text-sm text-muted-foreground">{error}</p>
+          {error.includes("No objectId") && (
+            <p className="text-xs text-yellow-500 mt-2">
+              Выберите объект для просмотра чата
+            </p>
+          )}
+          {error.includes("Supabase") && (
+            <p className="text-xs text-yellow-500 mt-2">
+              Проверьте настройки Supabase в public/env.js
+            </p>
+          )}
+        </div>
       </div>
     );
   }
@@ -164,48 +217,51 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
       {!isCollapsed && (
         <>
           <div className="chat-messages-area">
-            {loading && (
-              <div className="chat-loading">
-                Загрузка сообщений...
-              </div>
-            )}
+            <div className="chat-messages-container">
+              {loading && (
+                <div className="chat-loading">
+                  Загрузка сообщений...
+                </div>
+              )}
 
-            {error && (
-              <div className="chat-error">
-                Ошибка загрузки сообщений: {error}
-              </div>
-            )}
+              {error && (
+                <div className="chat-error">
+                  Ошибка загрузки сообщений: {error}
+                </div>
+              )}
 
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`chat-message ${msg.sender === userEmail ? "user" : "assistant"}`}
-              >
-                <div className="chat-message-bubble">
-                  <div className="chat-message-sender">{msg.sender}</div>
-                  <div className="chat-message-content">
-                    {msg.file_url ? (
-                      <div>
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`chat-message ${msg.sender === userEmail ? "user" : "assistant"}`}
+                >
+                  <div className="chat-message-bubble">
+                    <div className="chat-message-sender">{msg.sender}</div>
+                    <div className="chat-message-content">
+                      {msg.file_url ? (
+                        <div>
+                          <p>{linkifyText(msg.content)}</p>
+                          <AttachmentPreview url={msg.file_url} />
+                        </div>
+                      ) : (
                         <p>{linkifyText(msg.content)}</p>
-                        <AttachmentPreview url={msg.file_url} />
-                      </div>
-                    ) : (
-                      <p>{linkifyText(msg.content)}</p>
-                    )}
-                  </div>
-                  <div className="chat-message-time">
-                    {formatDateTime(msg.created_at)}
+                      )}
+                    </div>
+                    <div className="chat-message-time">
+                      {formatDateTime(msg.created_at)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
           <div className="chat-input-area">
             <div className="chat-input-container">
               <div className="chat-textarea-wrapper">
                 <textarea
+                  ref={textareaRef}
                   className="chat-textarea"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}

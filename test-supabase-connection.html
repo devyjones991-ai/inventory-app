@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест подключения к Supabase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        .info { background: #2d4a5a; }
+        button {
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ff00ff;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #333;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Тест подключения к Supabase</h1>
+    
+    <div class="info">
+        <h3>Настройки:</h3>
+        <p><strong>URL:</strong> <span id="url">Загрузка...</span></p>
+        <p><strong>Key:</strong> <span id="key">Загрузка...</span></p>
+    </div>
+
+    <button onclick="testConnection()">🔗 Тест подключения</button>
+    <button onclick="testTables()">📊 Проверить таблицы</button>
+    <button onclick="testAuth()">🔐 Тест авторизации</button>
+
+    <div id="results"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
+        
+        // Получаем настройки из window.__ENV
+        const supabaseUrl = window.__ENV?.VITE_SUPABASE_URL || 'Не настроено';
+        const supabaseKey = window.__ENV?.VITE_SUPABASE_ANON_KEY || 'Не настроено';
+        
+        document.getElementById('url').textContent = supabaseUrl;
+        document.getElementById('key').textContent = supabaseKey.substring(0, 20) + '...';
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        window.testConnection = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>🔗 Тестирование подключения...</h3>';
+            
+            try {
+                // Простой запрос для проверки подключения
+                const { data, error } = await supabase
+                    .from('objects')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    results.innerHTML += `<div class="error">❌ Ошибка подключения: ${error.message}</div>`;
+                } else {
+                    results.innerHTML += `<div class="success">✅ Подключение успешно!</div>`;
+                }
+            } catch (err) {
+                results.innerHTML += `<div class="error">❌ Ошибка: ${err.message}</div>`;
+            }
+        };
+        
+        window.testTables = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>📊 Проверка таблиц...</h3>';
+            
+            const tables = ['objects', 'chat_messages'];
+            
+            for (const table of tables) {
+                try {
+                    const { data, error } = await supabase
+                        .from(table)
+                        .select('*')
+                        .limit(1);
+                    
+                    if (error) {
+                        results.innerHTML += `<div class="error">❌ Таблица ${table}: ${error.message}</div>`;
+                    } else {
+                        results.innerHTML += `<div class="success">✅ Таблица ${table} доступна</div>`;
+                    }
+                } catch (err) {
+                    results.innerHTML += `<div class="error">❌ Таблица ${table}: ${err.message}</div>`;
+                }
+            }
+        };
+        
+        window.testAuth = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>🔐 Тест авторизации...</h3>';
+            
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    results.innerHTML += `<div class="error">❌ Ошибка авторизации: ${error.message}</div>`;
+                } else if (user) {
+                    results.innerHTML += `<div class="success">✅ Пользователь авторизован: ${user.email}</div>`;
+                } else {
+                    results.innerHTML += `<div class="info">ℹ️ Пользователь не авторизован</div>`;
+                }
+            } catch (err) {
+                results.innerHTML += `<div class="error">❌ Ошибка: ${err.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>

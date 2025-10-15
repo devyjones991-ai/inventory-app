@@ -1,0 +1,433 @@
+/* Стили для страницы авторизации с максимальным приоритетом */
+
+/* Сброс всех Tailwind стилей для auth-page */
+.auth-page {
+  min-height: 100vh !important;
+  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%) !important;
+  background-attachment: fixed !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  height: 100vh !important;
+}
+
+/* Звездное небо */
+.auth-page::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 160px 30px, #ddd, transparent),
+    radial-gradient(1px 1px at 200px 60px, #fff, transparent),
+    radial-gradient(1px 1px at 240px 20px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 280px 90px, #eee, transparent),
+    radial-gradient(1px 1px at 320px 50px, #fff, transparent),
+    radial-gradient(1px 1px at 360px 10px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 400px 70px, #ddd, transparent),
+    radial-gradient(1px 1px at 440px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 480px 80px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 520px 40px, #eee, transparent),
+    radial-gradient(1px 1px at 560px 90px, #fff, transparent),
+    radial-gradient(1px 1px at 600px 20px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 640px 60px, #ddd, transparent),
+    radial-gradient(1px 1px at 680px 10px, #fff, transparent),
+    radial-gradient(1px 1px at 720px 50px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 760px 80px, #eee, transparent),
+    radial-gradient(1px 1px at 800px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 840px 70px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 880px 20px, #ddd, transparent),
+    radial-gradient(1px 1px at 920px 60px, #fff, transparent),
+    radial-gradient(1px 1px at 960px 90px, rgba(255,255,255,0.7), transparent) !important;
+  background-repeat: repeat !important;
+  background-size: 200px 200px !important;
+  animation: twinkle 4s ease-in-out infinite alternate !important;
+  z-index: 1 !important;
+}
+
+/* Туманность */
+.auth-page::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 60%, rgba(120, 219, 255, 0.2) 0%, transparent 50%) !important;
+  animation: nebula 20s ease-in-out infinite alternate !important;
+  z-index: 2 !important;
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes nebula {
+  0% {
+    opacity: 0.3;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05) rotate(1deg);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(1.1) rotate(-1deg);
+  }
+}
+
+/* Контейнер с blur эффектом */
+.auth-container {
+  width: 100% !important;
+  max-width: 400px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 20px !important;
+  padding: 40px !important;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  animation: slideInUp 0.8s ease-out !important;
+  position: relative !important;
+  z-index: 20 !important;
+  margin: 0 !important;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Заголовок с градиентом */
+.auth-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  margin-bottom: 8px !important;
+  background: linear-gradient(135deg, #00d4ff, #ff00ff, #00ff88) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  animation: titleGlow 2s ease-in-out infinite alternate !important;
+  color: transparent !important;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5) !important;
+}
+
+@keyframes titleGlow {
+  from {
+    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5)) drop-shadow(0 0 20px rgba(255, 0, 255, 0.3));
+  }
+  to {
+    filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 40px rgba(255, 0, 255, 0.5)) drop-shadow(0 0 60px rgba(0, 255, 136, 0.3));
+  }
+}
+
+/* Подзаголовок */
+.auth-subtitle {
+  text-align: center !important;
+  color: #ccc !important;
+  margin-bottom: 30px !important;
+  font-size: 16px !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Форма */
+.auth-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+}
+
+/* Поля ввода */
+.auth-input {
+  width: 100% !important;
+  padding: 15px 20px !important;
+  border: 2px solid rgba(0, 212, 255, 0.3) !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  transition: all 0.3s ease !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  color: white !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.auth-input:focus {
+  outline: none !important;
+  border-color: #00d4ff !important;
+  box-shadow: 
+    0 0 0 3px rgba(0, 212, 255, 0.2), 
+    0 0 20px rgba(0, 212, 255, 0.4),
+    inset 0 0 20px rgba(0, 212, 255, 0.1) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+.auth-input:hover {
+  border-color: #00d4ff !important;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important;
+}
+
+/* Кнопка */
+.auth-button {
+  width: 100% !important;
+  padding: 15px !important;
+  background: linear-gradient(135deg, #00d4ff, #ff00ff, #00ff88) !important;
+  background-size: 200% 200% !important;
+  animation: buttonGradient 3s ease infinite !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  margin-top: 10px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 
+    0 0 20px rgba(0, 212, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.auth-button::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+  transition: left 0.5s !important;
+}
+
+.auth-button:hover::before {
+  left: 100% !important;
+}
+
+.auth-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 0 30px rgba(0, 212, 255, 0.5),
+    0 0 60px rgba(255, 0, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.auth-button:active {
+  transform: translateY(0) !important;
+  box-shadow: 
+    0 0 15px rgba(0, 212, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.auth-button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+@keyframes buttonGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Переключатель режима */
+.auth-toggle {
+  text-align: center !important;
+  margin-top: 20px !important;
+  color: #666 !important;
+}
+
+.auth-toggle-button {
+  background: none !important;
+  border: none !important;
+  color: #667eea !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+  font-size: 14px !important;
+}
+
+/* Сообщения об ошибках */
+.auth-error {
+  background: #fee !important;
+  color: #c33 !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  margin-bottom: 15px !important;
+  border: 1px solid #fcc !important;
+  animation: shake 0.5s ease-in-out !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.auth-error::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.1), transparent) !important;
+  animation: errorShimmer 2s infinite !important;
+}
+
+.auth-info {
+  background: #efe !important;
+  color: #363 !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  margin-bottom: 15px !important;
+  border: 1px solid #cfc !important;
+  animation: slideInDown 0.5s ease-out !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.auth-info::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent) !important;
+  animation: infoShimmer 2s infinite !important;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes errorShimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+@keyframes infoShimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Забыли пароль */
+.auth-forgot {
+  text-align: center !important;
+  margin-top: 15px !important;
+}
+
+.auth-forgot-button {
+  background: none !important;
+  border: none !important;
+  color: #667eea !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+  font-size: 14px !important;
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+  .auth-container {
+    background: rgba(30, 30, 30, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .auth-subtitle {
+    color: #ccc !important;
+  }
+  
+  .auth-input {
+    background: rgba(40, 40, 40, 0.8) !important;
+    border-color: #444 !important;
+    color: white !important;
+  }
+  
+  .auth-input:focus {
+    background: #333 !important;
+  }
+  
+  .auth-toggle {
+    color: #ccc !important;
+  }
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 30px !important;
+    margin: 10px !important;
+  }
+  
+  .auth-title {
+    font-size: 24px !important;
+  }
+  
+  .auth-input {
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+  }
+  
+  .auth-button {
+    padding: 12px !important;
+    font-size: 16px !important;
+  }
+}
