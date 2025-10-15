@@ -1,8 +1,10 @@
 const isProd = globalThis.process?.env?.NODE_ENV === "production";
 
+type LogLevel = "none" | "error" | "warn" | "info";
+
 // Check if API is available for logging
-let apiAvailable = null;
-async function checkApiAvailability() {
+let apiAvailable: boolean | null = null;
+async function checkApiAvailability(): Promise<boolean> {
   if (apiAvailable !== null) return apiAvailable;
   try {
     const response = await fetch("/api/logs", {
@@ -16,12 +18,12 @@ async function checkApiAvailability() {
   return apiAvailable;
 }
 
-async function send(level, args) {
+async function send(level: LogLevel, args: unknown[]): Promise<void> {
   try {
     const isApiReady = await checkApiAvailability();
     if (!isApiReady) {
       // Fallback to console if API is not available
-      console[level](...args);
+      (console as Record<string, unknown>)[level](...args);
       return;
     }
 
@@ -32,24 +34,24 @@ async function send(level, args) {
     });
   } catch {
     // Fallback to console on error
-    console[level](...args);
+    (console as Record<string, unknown>)[level](...args);
   }
 }
 
-const levels = {
+const levels: Record<LogLevel, number> = {
   none: 0,
   error: 1,
   warn: 2,
   info: 3,
 };
 
-let forcedLevel;
+let forcedLevel: string | undefined;
 
-export function setLogLevel(level) {
+export function setLogLevel(level: string): void {
   forcedLevel = level;
 }
 
-function getEnvLevel() {
+function getEnvLevel(): string {
   if (forcedLevel) return forcedLevel.toLowerCase();
   const level = import.meta.env?.VITE_LOG_LEVEL;
   if (level) return String(level).toLowerCase();
@@ -57,27 +59,27 @@ function getEnvLevel() {
   return mode === "production" ? "warn" : "info";
 }
 
-function shouldLog(level) {
-  const envLevel = levels[getEnvLevel()] ?? levels.info;
+function shouldLog(level: LogLevel): boolean {
+  const envLevel = levels[getEnvLevel() as LogLevel] ?? levels.info;
   return envLevel >= levels[level];
 }
 
-function log(level, args) {
+function log(level: LogLevel, args: unknown[]): void {
   if (isProd) {
     void send(level, args);
   } else {
-    console[level](...args);
+    (console as Record<string, unknown>)[level](...args);
   }
 }
 
 const logger = {
-  info: (...args) => {
+  info: (...args: unknown[]) => {
     if (shouldLog("info")) log("info", args);
   },
-  warn: (...args) => {
+  warn: (...args: unknown[]) => {
     if (shouldLog("warn")) log("warn", args);
   },
-  error: (...args) => {
+  error: (...args: unknown[]) => {
     if (shouldLog("error")) log("error", args);
   },
 };

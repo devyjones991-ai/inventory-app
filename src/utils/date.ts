@@ -1,4 +1,8 @@
-export function formatDate(value, locale = "ru-RU", options) {
+export function formatDate(
+  value: string | number | Date | null | undefined,
+  locale = "ru-RU",
+  options?: Intl.DateTimeFormatOptions,
+): string {
   if (!value) return "";
   try {
     const date =
@@ -16,7 +20,10 @@ export function formatDate(value, locale = "ru-RU", options) {
   }
 }
 
-export function formatDateTime(value, locale = "ru-RU") {
+export function formatDateTime(
+  value: string | number | Date | null | undefined,
+  locale = "ru-RU",
+): string {
   if (!value) return "";
   try {
     const date =

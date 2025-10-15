@@ -1,16 +1,23 @@
-import PropTypes from "prop-types";
 import React from "react";
 import { Navigate } from "react-router-dom";
 
+import { useAuth } from "../hooks/useAuth";
+
 import Spinner from "./Spinner";
 
-import { useAuth } from "@/hooks/useAuth";
+interface AdminRouteProps {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+}
 
-export default function AdminRoute({ children, adminOnly = false }) {
+export default function AdminRoute({
+  children,
+  adminOnly = false,
+}: AdminRouteProps) {
   const { user, role, isLoading } = useAuth?.() || {};
 
   // Backward-compatible: if adminOnly is not requested, just render children
-  if (!adminOnly) return children;
+  if (!adminOnly) return <>{children}</>;
 
   if (isLoading) {
     return <Spinner />;
@@ -21,10 +28,5 @@ export default function AdminRoute({ children, adminOnly = false }) {
   if (role !== "admin") {
     return <Navigate to="/" replace />;
   }
-  return children;
+  return <>{children}</>;
 }
-
-AdminRoute.propTypes = {
-  children: PropTypes.node.isRequired,
-  adminOnly: PropTypes.bool,
-};

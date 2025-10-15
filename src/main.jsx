@@ -11,7 +11,12 @@ Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
 });
 
-createRoot(document.getElementById("root")).render(
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <Sentry.ErrorBoundary fallback={<p>Что-то пошло не так.</p>}>
       <AuthProvider>

@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { TASK_STATUSES } from "@/constants";
-import { supabase } from "@/supabaseClient";
-import { handleSupabaseError } from "@/utils/handleSupabaseError";
-import logger from "@/utils/logger";
+import { TASK_STATUSES } from "../constants";
+import { supabase } from "../supabaseClient";
+import type { Task, UseTasksReturn } from "../types";
+import { handleSupabaseError } from "../utils/handleSupabaseError";
+import logger from "../utils/logger";
 
-const isColumnMissingError = (err) => {
+const isColumnMissingError = (err: unknown): boolean => {
   const code = err?.code ? String(err.code) : "";
   const msg = err?.message?.toLowerCase?.() || "";
   const mentionsField = msg.includes("due_date") || msg.includes("assigned_at");
@@ -20,7 +21,7 @@ const isColumnMissingError = (err) => {
   return mentionsField && (likelyFromPostgrest || looksLikeUnknownColumn);
 };
 
-const isSchemaCacheError = (err) => {
+const isSchemaCacheError = (err: unknown): boolean => {
   const code = err?.code ? String(err.code) : "";
   const msg = err?.message?.toLowerCase?.() || "";
   // Treat generic PostgREST code or explicit schema cache mentions as cache-related
@@ -31,19 +32,41 @@ const TASK_FIELDS =
   "id, title, status, assignee, due_date, assigned_at, notes, created_at";
 const TASK_FIELDS_FALLBACK = "id, title, status, assignee, notes, created_at";
 
-export function useTasks(objectId) {
+interface FetchTasksParams {
+  offset?: number;
+  limit?: number;
+  status?: string;
+}
+
+interface LoadTasksParams {
+  offset?: number;
+  limit?: number;
+  status?: string;
+  query?: string;
+}
+
+export function useTasks(objectId: string | null): UseTasksReturn {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const requestSeqRef = useRef(0);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestSeqRef = useRef<number>(0);
 
   // helpers moved to module scope to remain stable across renders
 
   const fetchTasks = useCallback(
-    async (objId, { offset = 0, limit = 20, status } = {}) => {
+    async (
+      objId: string,
+      { offset = 0, limit = 20, status }: FetchTasksParams = {},
+    ) => {
       try {
         if (!objId) return { data: [], error: null };
+        if (!supabase)
+          return {
+            data: [],
+            error: new Error("Supabase client not initialized"),
+          };
+
         let baseQuery = supabase
           .from("tasks")
           .select(TASK_FIELDS)
@@ -82,7 +105,7 @@ export function useTasks(objectId) {
   );
 
   const insertTask = useCallback(
-    async (data) => {
+    async (data: Record<string, unknown>) => {
       try {
         const {
           planned_date: _planned_date,
@@ -143,7 +166,7 @@ export function useTasks(objectId) {
   );
 
   const updateTaskInner = useCallback(
-    async (id, data) => {
+    async (id: string, data: Record<string, unknown>) => {
       try {
         const {
           planned_date: _planned_date,
@@ -196,7 +219,7 @@ export function useTasks(objectId) {
   );
 
   const deleteTaskInner = useCallback(
-    async (id) => {
+    async (id: string) => {
       try {
         const result = await supabase.from("tasks").delete().eq("id", id);
         if (result.error) throw result.error;
@@ -210,7 +233,7 @@ export function useTasks(objectId) {
   );
 
   const loadTasks = useCallback(
-    async ({ offset = 0, limit = 20, status, query } = {}) => {
+    async ({ offset = 0, limit = 20, status, query }: LoadTasksParams = {}) => {
       setLoading(true);
       const seq = ++requestSeqRef.current;
       if (!objectId) {
@@ -231,7 +254,7 @@ export function useTasks(objectId) {
         setError(err.message || "Ошибка загрузки задач");
         setTasks([]);
       } else {
-        const filtered = applyQueryFilter(data || [], query);
+        const filtered = applyQueryFilter(data || [], query || "");
         setTasks(filtered);
         setError(null);
       }
@@ -242,35 +265,41 @@ export function useTasks(objectId) {
   );
 
   const createTask = useCallback(
-    async (data) => {
+    async (data: Partial<Task>): Promise<void> => {
       const { data: newTask, error: err } = await insertTask(data);
       if (!err && newTask) {
         // Prepend to show immediately at the top (matches newest-first order)
         setTasks((prev) => [newTask, ...prev]);
       }
-      return { data: newTask, error: err };
+      if (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
     },
     [insertTask],
   );
 
   const updateTask = useCallback(
-    async (id, data) => {
+    async (id: string, data: Partial<Task>): Promise<void> => {
       const { data: updated, error: err } = await updateTaskInner(id, data);
       if (!err && updated) {
         setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
       }
-      return { data: updated, error: err };
+      if (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
     },
     [updateTaskInner],
   );
 
   const deleteTask = useCallback(
-    async (id) => {
-      const { data: del, error: err } = await deleteTaskInner(id);
+    async (id: string): Promise<void> => {
+      const { error: err } = await deleteTaskInner(id);
       if (!err) {
         setTasks((prev) => prev.filter((t) => t.id !== id));
       }
-      return { data: del, error: err };
+      if (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
     },
     [deleteTaskInner],
   );
@@ -292,7 +321,7 @@ export function useTasks(objectId) {
           filter: `object_id=eq.${objectId}`,
         },
         (payload) => {
-          const newTask = payload?.new;
+          const newTask = payload?.new as Task;
           if (!newTask) return;
           setTasks((prev) => {
             // Skip if already present (e.g., after local create)
@@ -313,7 +342,7 @@ export function useTasks(objectId) {
           filter: `object_id=eq.${objectId}`,
         },
         (payload) => {
-          const updated = payload?.new;
+          const updated = payload?.new as Task;
           if (!updated) return;
           setTasks((prev) =>
             prev.map((t) => (t.id === updated.id ? updated : t)),
@@ -339,34 +368,40 @@ export function useTasks(objectId) {
 
     return () => {
       try {
-        supabase.removeChannel(channel);
+        if (supabase) {
+          supabase.removeChannel(channel);
+        }
       } catch {
         // ignore
       }
     };
   }, [objectId]);
 
+  const refreshTasks = useCallback(async () => {
+    await loadTasks();
+  }, [loadTasks]);
+
   return {
     tasks,
     loading,
     error,
-    loadTasks,
     createTask,
     updateTask,
     deleteTask,
+    refreshTasks,
   };
 }
 
-function applyQueryFilter(items, rawQuery) {
+function applyQueryFilter(items: Task[], rawQuery: string): Task[] {
   const q = (rawQuery || "").trim().toLowerCase();
   if (!q) return items;
   const m = q.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-  let iso = null;
+  let iso: string | null = null;
   if (m) {
     const [_fullMatch, dd, mm, yyyy] = m;
     iso = `${yyyy}-${mm}-${dd}`;
   }
-  return items.filter((t) => {
+  return items.filter((t: Task) => {
     const title = (t.title || "").toLowerCase();
     const assignee = (t.assignee || "").toLowerCase();
     const isEmailAssignee = assignee.includes("@");

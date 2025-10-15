@@ -15,32 +15,32 @@ import React, {
 } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 
-import Spinner from "@/components/Spinner";
-const InventorySidebar = lazy(() => import("@/components/InventorySidebar"));
-const InventoryTabs = lazy(() => import("@/components/InventoryTabs"));
-const AccountModal = lazy(() => import("@/components/AccountModal"));
-const ConfirmModal = lazy(() => import("@/components/ConfirmModal"));
+import Spinner from "../components/Spinner";
+const InventorySidebar = lazy(() => import("../components/InventorySidebar"));
+const InventoryTabs = lazy(() => import("../components/InventoryTabs"));
+const AccountModal = lazy(() => import("../components/AccountModal"));
+const ConfirmModal = lazy(() => import("../components/ConfirmModal"));
 const NotificationCenter = lazy(
-  () => import("@/components/NotificationCenter"),
+  () => import("../components/NotificationCenter"),
 );
-import ThemeToggle from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/button";
+import ThemeToggle from "../components/ThemeToggle";
+import { Button } from "../components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/useAuth";
-import { useDashboardModals } from "@/hooks/useDashboardModals";
-import { useObjectList } from "@/hooks/useObjectList";
-import { useObjectNotifications } from "@/hooks/useObjectNotifications";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { t } from "@/i18n";
-import { supabase } from "@/supabaseClient";
-import { handleSupabaseError } from "@/utils/handleSupabaseError";
+} from "../components/ui/dialog";
+import { Input } from "../components/ui/input";
+import { useAuth } from "../hooks/useAuth";
+import { useDashboardModals } from "../hooks/useDashboardModals";
+import { useObjectList } from "../hooks/useObjectList";
+import { useObjectNotifications } from "../hooks/useObjectNotifications";
+import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
+import { t } from "../i18n";
+import { supabase } from "../supabaseClient";
+import { handleSupabaseError } from "../utils/handleSupabaseError";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -65,7 +65,9 @@ export default function DashboardPage() {
 
   const allowedTabs = ["desc", "hw", "tasks", "chat"];
   const tabParam = searchParams.get("tab");
-  const activeTab = allowedTabs.includes(tabParam) ? tabParam : "desc";
+  const activeTab = allowedTabs.includes(tabParam || "")
+    ? (tabParam as string)
+    : "desc";
   const { chatUnread, clearNotifications } = useObjectNotifications(
     selected,
     activeTab,
@@ -89,14 +91,14 @@ export default function DashboardPage() {
 
   const [addHandler, setAddHandler] = useState(() => openAddModal);
   const registerAddHandler = useCallback(
-    (handler) => {
+    (handler: (() => void) | null) => {
       setAddHandler(() => handler || openAddModal);
     },
     [openAddModal],
   );
 
-  const importInputRef = useRef(null);
-  const menuRef = useRef(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
 
@@ -118,13 +120,13 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isMenuOpen) return;
 
-    const handlePointerDown = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    const handlePointerDown = (e: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setIsMenuOpen(false);
       }
     };
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsMenuOpen(false);
     };
 
@@ -137,7 +139,7 @@ export default function DashboardPage() {
     };
   }, [isMenuOpen]);
 
-  const onSelect = (obj) => {
+  const onSelect = (obj: Record<string, unknown>) => {
     handleSelect(obj);
     clearNotifications(obj.id);
     // sync URL: set obj and reset tab to desc
@@ -148,13 +150,13 @@ export default function DashboardPage() {
     setIsSidebarOpen(false);
   };
 
-  const onUpdateSelected = (updated) => {
+  const onUpdateSelected = (updated: Record<string, unknown>) => {
     handleUpdateSelected(updated);
     clearNotifications(updated.id);
   };
 
   const onTabChange = useCallback(
-    (tab) => {
+    (tab: string) => {
       // update URL only if actually changed
       const current = searchParams.get("tab") || "desc";
       if (current !== tab) {
@@ -191,8 +193,8 @@ export default function DashboardPage() {
   // Fetch total tasks count for header; keep updated via realtime
   useEffect(() => {
     let isCancelled = false;
-    let channel;
-    async function fetchCount(objectId) {
+    let channel: unknown;
+    async function fetchCount(objectId: string) {
       try {
         const { count, error } = await supabase
           .from("tasks")
@@ -266,7 +268,7 @@ export default function DashboardPage() {
     if (ok) setDeleteCandidate(null);
   };
 
-  const handleImport = async (e) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       await importFromFile(file);
