@@ -40,7 +40,7 @@ function InventorySidebar({
         <Card
           key={o.id}
           className={`cursor-pointer transition-colors hover:bg-accent ${
-            selected?.id === o.id ? "bg-accent" : ""
+            selected?.id === o.id ? "bg-primary/10 border-primary border-2" : ""
           }`}
           onClick={o.select}
         >
