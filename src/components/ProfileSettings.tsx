@@ -178,27 +178,32 @@ export default function ProfileSettings({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Настройки профиля</DialogTitle>
+      <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-0 shadow-2xl">
+        <DialogHeader className="pb-6">
+          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            Настройки профиля
+          </DialogTitle>
+          <p className="text-muted-foreground">Управляйте своими данными и настройками</p>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="personal">
+          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-lg">
+            <TabsTrigger value="personal" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
               Личная информация
             </TabsTrigger>
-            <TabsTrigger value="security">Безопасность</TabsTrigger>
-            <TabsTrigger value="preferences">
+            <TabsTrigger value="security" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">Безопасность</TabsTrigger>
+            <TabsTrigger value="preferences" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
               Настройки
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="personal" className="space-y-4">
-            <form
-              onSubmit={personalForm.handleSubmit(handlePersonalSubmit)}
-              className="space-y-4"
-            >
+          <TabsContent value="personal" className="space-y-6">
+            <div className="bg-card/50 p-6 rounded-xl border shadow-sm">
+              <h3 className="text-lg font-semibold mb-4 text-foreground">Личная информация</h3>
+              <form
+                onSubmit={personalForm.handleSubmit(handlePersonalSubmit)}
+                className="space-y-4"
+              >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="fullName">Полное имя</Label>
@@ -282,9 +287,12 @@ export default function ProfileSettings({
                 </Button>
               </DialogFooter>
             </form>
+            </div>
           </TabsContent>
 
-          <TabsContent value="security" className="space-y-4">
+          <TabsContent value="security" className="space-y-6">
+            <div className="bg-card/50 p-6 rounded-xl border shadow-sm">
+              <h3 className="text-lg font-semibold mb-4 text-foreground">Безопасность</h3>
             <form
               onSubmit={securityForm.handleSubmit(handleSecuritySubmit)}
               className="space-y-4"
@@ -346,9 +354,12 @@ export default function ProfileSettings({
                 </Button>
               </DialogFooter>
             </form>
+            </div>
           </TabsContent>
 
-          <TabsContent value="preferences" className="space-y-4">
+          <TabsContent value="preferences" className="space-y-6">
+            <div className="bg-card/50 p-6 rounded-xl border shadow-sm">
+              <h3 className="text-lg font-semibold mb-4 text-foreground">Настройки</h3>
             <form
               onSubmit={preferencesForm.handleSubmit(handlePreferencesSubmit)}
               className="space-y-4"
@@ -474,6 +485,7 @@ export default function ProfileSettings({
                 </Button>
               </DialogFooter>
             </form>
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>

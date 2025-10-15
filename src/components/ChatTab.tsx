@@ -116,33 +116,32 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="text-lg font-semibold">Чат</h3>
+    <div className="chat-container">
+      <div className="chat-nav-bar">
+        <h3 className="text-lg font-semibold text-white">Чат</h3>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            className="chat-close"
             onClick={() => setShowSearch(!showSearch)}
           >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+          </button>
+          <button
+            className="chat-close"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             <ChevronDownIcon
-              className={`w-4 h-4 transition-transform ${isCollapsed ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? "rotate-180" : ""}`}
             />
-          </Button>
+          </button>
         </div>
       </div>
 
       {showSearch && (
-        <div className="p-4 border-b">
+        <div className="chat-search-bar">
           <div className="flex gap-2">
-            <Input
+            <input
+              className="chat-search-input"
               placeholder="Поиск сообщений..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -152,25 +151,27 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
                 }
               }}
             />
-            <Button onClick={() => handleSearch(searchQuery)}>Найти</Button>
-            <Button variant="outline" onClick={handleClearSearch}>
+            <button className="chat-search-button" onClick={() => handleSearch(searchQuery)}>
+              Найти
+            </button>
+            <button className="chat-clear-button" onClick={handleClearSearch}>
               Очистить
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
       {!isCollapsed && (
         <>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="chat-messages">
             {loading && (
-              <div className="text-center text-muted-foreground">
+              <div className="chat-loading">
                 Загрузка сообщений...
               </div>
             )}
 
             {error && (
-              <div className="text-center text-destructive">
+              <div className="chat-error">
                 Ошибка загрузки сообщений: {error}
               </div>
             )}
@@ -178,17 +179,11 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.sender === userEmail ? "justify-end" : "justify-start"}`}
+                className={`chat-message ${msg.sender === userEmail ? "chat-message-user" : "chat-message-other"}`}
               >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    msg.sender === userEmail
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
-                >
-                  <div className="text-sm font-medium mb-1">{msg.sender}</div>
-                  <div className="text-sm">
+                <div className="chat-message-content">
+                  <div className="chat-message-sender">{msg.sender}</div>
+                  <div className="chat-message-text">
                     {msg.file_url ? (
                       <div>
                         <p>{linkifyText(msg.content)}</p>
@@ -198,7 +193,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
                       <p>{linkifyText(msg.content)}</p>
                     )}
                   </div>
-                  <div className="text-xs opacity-70 mt-1">
+                  <div className="chat-message-time">
                     {formatDateTime(msg.created_at)}
                   </div>
                 </div>
@@ -207,28 +202,31 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 border-t">
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Textarea
+          <div className="chat-input-area">
+            <div className="chat-input-container">
+              <div className="chat-textarea-wrapper">
+                <textarea
+                  className="chat-textarea"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Введите сообщение..."
-                  className="min-h-[60px] max-h-[120px] resize-none"
                 />
               </div>
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              <div className="chat-buttons">
+                <button
+                  className="chat-attach-button"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <PaperClipIcon className="w-4 h-4" />
-                </Button>
-                <Button onClick={handleSendMessage} disabled={!message.trim()}>
+                </button>
+                <button 
+                  className="chat-send-button" 
+                  onClick={handleSendMessage} 
+                  disabled={!message.trim()}
+                >
                   Отправить
-                </Button>
+                </button>
               </div>
             </div>
             <input
