@@ -25,8 +25,8 @@ export default function AuthPage() {
 
   const schema = z
     .object({
-      email: z.string().email(t("auth.email")),
-      password: z.string().min(6, t("auth.password")),
+      email: z.string().email("Неверный формат email"),
+      password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
       username: z.string().optional(),
       confirmPassword: z.string().optional(),
     })
@@ -38,7 +38,7 @@ export default function AuthPage() {
         return true;
       },
       {
-        message: t("auth.passwordMismatch"),
+        message: "Пароли не совпадают",
         path: ["confirmPassword"],
       },
     );
@@ -78,7 +78,7 @@ export default function AuthPage() {
         if (error) {
           setUserError(getNetworkErrorMessage(error));
         } else {
-          setInfo(t("auth.checkEmail"));
+          setInfo("Проверьте email для подтверждения регистрации");
         }
       } else {
         const { error } = await signIn(data.email, data.password);
@@ -126,12 +126,12 @@ export default function AuthPage() {
           <div className="rounded-lg bg-white p-8 shadow-xl dark:bg-gray-800">
             <div className="mb-6 text-center">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {isRegister ? t("auth.register") : t("auth.login")}
+                {isRegister ? "Регистрация" : "Вход"}
               </h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 {isRegister
-                  ? t("auth.registerSubtitle")
-                  : t("auth.loginSubtitle")}
+                  ? "Создайте аккаунт для доступа к системе"
+                  : "Войдите в свой аккаунт"}
               </p>
             </div>
 
@@ -140,7 +140,7 @@ export default function AuthPage() {
                 <Input
                   {...register("email")}
                   type="email"
-                  placeholder={t("auth.emailPlaceholder")}
+                  placeholder="Введите email"
                   className="w-full"
                 />
                 <FormError error={errors.email?.message} />
@@ -151,7 +151,7 @@ export default function AuthPage() {
                   <Input
                     {...register("username")}
                     type="text"
-                    placeholder={t("auth.usernamePlaceholder")}
+                    placeholder="Введите имя пользователя"
                     className="w-full"
                   />
                   <FormError error={errors.username?.message} />
@@ -162,7 +162,7 @@ export default function AuthPage() {
                 <Input
                   {...register("password")}
                   type="password"
-                  placeholder={t("auth.passwordPlaceholder")}
+                  placeholder="Введите пароль"
                   className="w-full"
                 />
                 <FormError error={errors.password?.message} />
@@ -173,7 +173,7 @@ export default function AuthPage() {
                   <Input
                     {...register("confirmPassword")}
                     type="password"
-                    placeholder={t("auth.confirmPasswordPlaceholder")}
+                    placeholder="Подтвердите пароль"
                     className="w-full"
                   />
                   <FormError error={errors.confirmPassword?.message} />
@@ -198,10 +198,10 @@ export default function AuthPage() {
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting
-                  ? t("common.loading")
+                  ? "Загрузка..."
                   : isRegister
-                    ? t("auth.register")
-                    : t("auth.login")}
+                    ? "Зарегистрироваться"
+                    : "Войти"}
               </Button>
             </form>
 
@@ -212,7 +212,7 @@ export default function AuthPage() {
                 className="w-full"
                 onClick={toggleMode}
               >
-                {isRegister ? t("auth.haveAccount") : t("auth.noAccount")}
+                {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}
               </Button>
 
               {!isRegister && (
@@ -222,7 +222,7 @@ export default function AuthPage() {
                   className="w-full text-sm"
                   onClick={() => setShowForgotPassword(true)}
                 >
-                  {t("auth.forgotPassword")}
+                  Забыли пароль?
                 </Button>
               )}
             </div>

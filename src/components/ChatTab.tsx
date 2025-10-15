@@ -163,7 +163,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
 
       {!isCollapsed && (
         <>
-          <div className="chat-messages">
+          <div className="chat-messages-area">
             {loading && (
               <div className="chat-loading">
                 Загрузка сообщений...
@@ -179,11 +179,11 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`chat-message ${msg.sender === userEmail ? "chat-message-user" : "chat-message-other"}`}
+                className={`chat-message ${msg.sender === userEmail ? "user" : "assistant"}`}
               >
-                <div className="chat-message-content">
+                <div className="chat-message-bubble">
                   <div className="chat-message-sender">{msg.sender}</div>
-                  <div className="chat-message-text">
+                  <div className="chat-message-content">
                     {msg.file_url ? (
                       <div>
                         <p>{linkifyText(msg.content)}</p>

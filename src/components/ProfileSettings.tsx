@@ -178,7 +178,7 @@ export default function ProfileSettings({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-0 shadow-2xl">
+      <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-0 shadow-2xl rounded-xl">
         <DialogHeader className="pb-6">
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             Настройки профиля
