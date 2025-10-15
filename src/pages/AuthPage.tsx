@@ -85,7 +85,9 @@ export default function AuthPage() {
         if (error) {
           setUserError(getNetworkErrorMessage(error));
         } else {
-          setInfo("Не удалось создать сессию. Попробуйте позже.");
+          console.log("Sign in successful, navigating to /");
+          // Успешный вход - перенаправляем на главную страницу
+          navigate("/");
         }
       }
     } catch (error) {

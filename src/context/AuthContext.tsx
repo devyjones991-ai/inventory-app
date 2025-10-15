@@ -57,11 +57,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state change:", event, session?.user?.id);
       if (event === "SIGNED_IN" && session?.user) {
+        console.log("User signed in:", session.user.email);
         setUser(session.user);
         const userRole = await fetchRole(session.user.id);
         setRole(userRole);
       } else if (event === "SIGNED_OUT") {
+        console.log("User signed out");
         setUser(null);
         setRole(null);
       }
