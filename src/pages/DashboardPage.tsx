@@ -298,13 +298,13 @@ export default function DashboardPage() {
     if (isEmpty) {
       return (
         <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
-          {t("dashboard.empty")}
+          Нет объектов
         </div>
       );
     }
     return (
       <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
-        {t("dashboard.selectPrompt")}
+        Выберите объект...
       </div>
     );
   }
@@ -365,7 +365,7 @@ export default function DashboardPage() {
                 className="md:hidden p-1.5 sm:p-2 text-blue-600 dark:text-blue-400"
                 onClick={toggleSidebar}
                 type="button"
-                aria-label={t("common.open")}
+                aria-label="Открыть"
               >
                 <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
@@ -377,7 +377,7 @@ export default function DashboardPage() {
                 type="button"
               >
                 <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">{t("dashboard.add")}</span>
+                <span className="hidden sm:inline">Добавить</span>
               </Button>
               <div className="hidden md:flex gap-2">
                 <Button
@@ -385,10 +385,10 @@ export default function DashboardPage() {
                   onClick={() => importInputRef.current?.click()}
                   type="button"
                 >
-                  {t("dashboard.import")}
+                  Импорт
                 </Button>
                 <Button variant="info" onClick={exportToFile} type="button">
-                  {t("dashboard.export")}
+                  Экспорт
                 </Button>
               </div>
               <div className="relative md:hidden" ref={menuRef}>
@@ -414,7 +414,7 @@ export default function DashboardPage() {
                         importInputRef.current?.click();
                       }}
                     >
-                      {t("dashboard.import")}
+                      Импорт
                     </button>
                     <button
                       type="button"
@@ -424,7 +424,7 @@ export default function DashboardPage() {
                         exportToFile();
                       }}
                     >
-                      {t("dashboard.export")}
+                      Экспорт
                     </button>
                   </div>
                 )}
@@ -447,7 +447,7 @@ export default function DashboardPage() {
                 onClick={() => setIsAccountModalOpen(true)}
                 type="button"
               >
-                {user.user_metadata?.username || t("common.account")}
+                {user.user_metadata?.username || "Аккаунт"}
               </Button>
               <Button
                 variant="destructive"
@@ -455,7 +455,7 @@ export default function DashboardPage() {
                 onClick={signOut}
                 type="button"
               >
-                {t("common.logout")}
+                Выйти
               </Button>
             </div>
           </header>
@@ -490,22 +490,22 @@ export default function DashboardPage() {
             </Button>
             <DialogHeader data-dialog-handle>
               <DialogTitle>
-                {editingObject ? t("objects.editTitle") : t("objects.addTitle")}
+                {editingObject ? "Редактировать объект" : "Добавить объект"}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
                 type="text"
                 className="w-full"
-                placeholder={t("objects.namePlaceholder")}
+                placeholder="Название объекта"
                 value={objectName}
                 onChange={(e) => setObjectName(e.target.value)}
               />
             </div>
             <DialogFooter className="flex space-x-2">
-              <Button onClick={onSaveObject}>{t("common.save")}</Button>
+              <Button onClick={onSaveObject}>Сохранить</Button>
               <Button variant="ghost" onClick={closeObjectModal}>
-                {t("common.cancel")}
+                Отмена
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -514,10 +514,10 @@ export default function DashboardPage() {
         <Suspense fallback={<Spinner />}>
           <ConfirmModal
             open={!!deleteCandidate}
-            title={t("objects.confirmDeleteTitle")}
+            title="Удалить объект?"
             confirmLabel={
               <>
-                <TrashIcon className="w-4 h-4" /> {t("common.delete")}
+                <TrashIcon className="w-4 h-4" /> Удалить
               </>
             }
             onConfirm={onConfirmDelete}
