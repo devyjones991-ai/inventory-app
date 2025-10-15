@@ -57,7 +57,7 @@ function InventorySidebar({
           <CardContent className="pt-0">
             <div className="flex items-center justify-between">
               <div className="text-xs text-muted-foreground">
-                {o.description || t("objects.noDescription")}
+                {o.description || "Нет описания"}
               </div>
               <div className="flex items-center gap-1">
                 <Button

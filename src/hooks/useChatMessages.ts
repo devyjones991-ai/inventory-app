@@ -102,8 +102,8 @@ export function useChatMessages() {
 
           // Upload file
           const fileExt = file.name.split(".").pop();
-          const fileName = `${uuidv4()}.${fileExt}`;
-          const filePath = `chat/${objectId}/${fileName}`;
+          const uploadedFileName = `${uuidv4()}.${fileExt}`;
+          const filePath = `chat/${objectId}/${uploadedFileName}`;
 
           const { error: uploadError } = await supabase.storage
             .from("chat-files")

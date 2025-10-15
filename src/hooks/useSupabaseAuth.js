@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { supabase } from "@/supabaseClient";
-import { pushNotification } from "@/utils/notifications";
+import { supabase } from "../supabaseClient";
+import { pushNotification } from "../utils/notifications";
 
 export function useSupabaseAuth() {
   const [error, setError] = useState(null);

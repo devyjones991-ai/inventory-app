@@ -139,7 +139,7 @@ export default function DashboardPage() {
     };
   }, [isMenuOpen]);
 
-  const onSelect = (obj: Record<string, unknown>) => {
+  const onSelect = (obj: Object) => {
     handleSelect(obj);
     clearNotifications(obj.id);
     // sync URL: set obj and reset tab to desc
