@@ -137,6 +137,8 @@ export interface Hardware {
   created_at: string;
   updated_at: string;
   object_id: string;
+  purchase_status?: "not_paid" | "paid";
+  install_status?: "not_installed" | "installed";
   user_id: string;
 }
 
@@ -303,7 +305,9 @@ export interface Logger {
 // Типы для контекстов
 export interface AuthContextType {
   user: User | null;
+  role: string | null;
   loading: boolean;
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (
     email: string,

@@ -71,6 +71,7 @@
     "@types/jest": "^30.0.0",
     "@types/react": "^18.3.26",
     "@types/react-dom": "^18.3.7",
+    "@types/react-window": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
     "@vheemstra/vite-plugin-imagemin": "^2.2.0",

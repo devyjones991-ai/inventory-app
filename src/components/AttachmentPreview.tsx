@@ -48,7 +48,7 @@ export default function AttachmentPreview({
               alt="Attachment preview"
               className="max-h-[80vh] w-full object-contain"
             />
-            <DialogFooter>
+            <DialogFooter className="flex justify-end">
               <button
                 onClick={handleClose}
                 className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
@@ -74,7 +74,7 @@ export default function AttachmentPreview({
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="max-w-4xl">
             <video src={url} controls className="max-h-[80vh] w-full" />
-            <DialogFooter>
+            <DialogFooter className="flex justify-end">
               <button
                 onClick={handleClose}
                 className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
