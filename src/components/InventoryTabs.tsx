@@ -34,8 +34,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
 
 const hardwareSchema = z.object({
-  name: z.string().min(1, t("hardware.nameRequired")),
-  type: z.string().min(1, t("hardware.typeRequired")),
+  name: z.string().min(1, "Название обязательно"),
+  type: z.string().min(1, "Тип обязателен"),
   location: z.string().optional(),
   model: z.string().optional(),
   serial_number: z.string().optional(),
@@ -47,23 +47,13 @@ const hardwareSchema = z.object({
 });
 
 interface InventoryTabsProps {
-  selected: Object;
-  onUpdateSelected: (updated: Object) => void;
-  onTabChange: (tab: string) => void;
-  activeTab: string;
-  registerAddHandler: (handler: (() => void) | null) => void;
-  tasksCount: number;
-  chatCount: number;
+  selected: Object | null;
+  userEmail: string;
 }
 
 export default function InventoryTabs({
   selected,
-  onUpdateSelected,
-  onTabChange,
-  activeTab,
-  registerAddHandler,
-  tasksCount,
-  chatCount,
+  userEmail,
 }: InventoryTabsProps) {
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
@@ -146,30 +136,27 @@ export default function InventoryTabs({
 
   const handleDeleteHardware = useCallback(
     async (id: string) => {
-      if (confirm(t("hardware.confirmDelete"))) {
+      if (confirm("Удалить оборудование?")) {
         await deleteHardware(id);
       }
     },
     [deleteHardware],
   );
 
-  useEffect(() => {
-    registerAddHandler(openAddHardwareModal);
-  }, [registerAddHandler, openAddHardwareModal]);
 
   return (
     <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={onTabChange}>
+      <Tabs value="hardware" onValueChange={() => {}}>
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="desc">{t("objects.description")}</TabsTrigger>
+          <TabsTrigger value="desc">Описание</TabsTrigger>
           <TabsTrigger value="hw">
-            {t("hardware.title")} ({hardware.length})
+            Железо ({hardware.length})
           </TabsTrigger>
           <TabsTrigger value="tasks">
-            {t("tasks.title")} ({tasksCount})
+            Задачи ({tasks.length})
           </TabsTrigger>
           <TabsTrigger value="chat">
-            {t("chat.title")} {chatCount > 0 && `(${chatCount})`}
+            Чат
           </TabsTrigger>
         </TabsList>
 
@@ -181,18 +168,18 @@ export default function InventoryTabs({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="font-medium">{t("objects.type")}</h4>
+                <h4 className="font-medium">Тип</h4>
                 <p className="text-sm text-muted-foreground">{selected.type}</p>
               </div>
               <div>
-                <h4 className="font-medium">{t("objects.status")}</h4>
+                <h4 className="font-medium">Статус</h4>
                 <p className="text-sm text-muted-foreground">
                   {selected.status}
                 </p>
               </div>
               {selected.location && (
                 <div>
-                  <h4 className="font-medium">{t("objects.location")}</h4>
+                  <h4 className="font-medium">Местоположение</h4>
                   <p className="text-sm text-muted-foreground">
                     {selected.location}
                   </p>
@@ -204,15 +191,15 @@ export default function InventoryTabs({
 
         <TabsContent value="hw" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">{t("hardware.title")}</h3>
+            <h3 className="text-lg font-semibold">Оборудование</h3>
             <Button onClick={openAddHardwareModal}>
               <PlusIcon className="w-4 h-4 mr-2" />
-              {t("hardware.add")}
+              Добавить
             </Button>
           </div>
 
           {hardware.length === 0 ? (
-            <p className="text-muted-foreground">{t("hardware.empty")}</p>
+            <p className="text-muted-foreground">Нет оборудования</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {hardware.map((item: Hardware) => (
@@ -221,6 +208,7 @@ export default function InventoryTabs({
                   item={item}
                   onEdit={() => openEditHardwareModal(item)}
                   onDelete={() => handleDeleteHardware(item.id)}
+                  user={null}
                 />
               ))}
             </div>
@@ -243,7 +231,7 @@ export default function InventoryTabs({
 
         <TabsContent value="chat" className="space-y-4">
           <Suspense fallback={<Spinner />}>
-            <ChatTab selected={selected} />
+            <ChatTab selected={selected} userEmail={userEmail} />
           </Suspense>
         </TabsContent>
       </Tabs>
@@ -253,7 +241,7 @@ export default function InventoryTabs({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {editingHardware ? t("hardware.edit") : t("hardware.add")}
+              {editingHardware ? "Редактировать" : "Добавить"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleHardwareSubmit} className="space-y-4">
@@ -261,7 +249,7 @@ export default function InventoryTabs({
               <div>
                 <Input
                   {...registerHardware("name")}
-                  placeholder={t("hardware.namePlaceholder")}
+                  placeholder="Название оборудования"
                   className="w-full"
                 />
                 <FormError message={hardwareErrors.name?.message} />
@@ -269,7 +257,7 @@ export default function InventoryTabs({
               <div>
                 <Input
                   {...registerHardware("type")}
-                  placeholder={t("hardware.typePlaceholder")}
+                  placeholder="Тип оборудования"
                   className="w-full"
                 />
                 <FormError message={hardwareErrors.type?.message} />
@@ -277,28 +265,28 @@ export default function InventoryTabs({
               <div>
                 <Input
                   {...registerHardware("location")}
-                  placeholder={t("hardware.locationPlaceholder")}
+                  placeholder="Местоположение"
                   className="w-full"
                 />
               </div>
               <div>
                 <Input
                   {...registerHardware("model")}
-                  placeholder={t("hardware.modelPlaceholder")}
+                  placeholder="Модель"
                   className="w-full"
                 />
               </div>
               <div>
                 <Input
                   {...registerHardware("serial_number")}
-                  placeholder={t("hardware.serialNumberPlaceholder")}
+                  placeholder="Серийный номер"
                   className="w-full"
                 />
               </div>
               <div>
                 <Input
                   {...registerHardware("vendor")}
-                  placeholder={t("hardware.vendorPlaceholder")}
+                  placeholder="Поставщик"
                   className="w-full"
                 />
               </div>
@@ -320,7 +308,7 @@ export default function InventoryTabs({
                 <Input
                   {...registerHardware("cost")}
                   type="number"
-                  placeholder={t("hardware.costPlaceholder")}
+                  placeholder="Стоимость"
                   className="w-full"
                 />
               </div>
@@ -328,7 +316,7 @@ export default function InventoryTabs({
             <div>
               <Textarea
                 {...registerHardware("notes")}
-                placeholder={t("hardware.notesPlaceholder")}
+                placeholder="Заметки"
                 className="w-full"
                 rows={3}
               />
@@ -339,10 +327,10 @@ export default function InventoryTabs({
                 variant="outline"
                 onClick={closeHardwareModal}
               >
-                {t("common.cancel")}
+                Отмена
               </Button>
               <Button type="submit">
-                {editingHardware ? t("common.save") : t("common.add")}
+                {editingHardware ? "Сохранить" : "Добавить"}
               </Button>
             </DialogFooter>
           </form>

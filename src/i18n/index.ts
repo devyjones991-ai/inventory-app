@@ -7,8 +7,14 @@ export function t(path: string): string {
   try {
     const parts = path.split(".");
     let node: unknown = dictionaries[current];
-    for (const p of parts) node = node?.[p];
-    return node ?? path;
+    for (const p of parts) {
+      if (node && typeof node === 'object' && p in node) {
+        node = (node as Record<string, unknown>)[p];
+      } else {
+        return path;
+      }
+    }
+    return typeof node === 'string' ? node : path;
   } catch {
     return path;
   }

@@ -41,7 +41,7 @@ const taskSchema = z.object({
 });
 
 interface TasksTabProps {
-  selected: Object;
+  selected: Object | null;
   tasks: Task[];
   loading: boolean;
   error: string | null;
@@ -143,7 +143,7 @@ export default function TasksTab({
         } else {
           await onCreateTask({
             ...data,
-            object_id: selected.id,
+            object_id: selected?.id || "",
           });
         }
         closeModal();
@@ -151,7 +151,7 @@ export default function TasksTab({
         console.error("Error saving task:", error);
       }
     },
-    [editingTask, onUpdateTask, onCreateTask, selected.id, closeModal],
+    [editingTask, onUpdateTask, onCreateTask, selected?.id, closeModal],
   );
 
   const handleDelete = useCallback(

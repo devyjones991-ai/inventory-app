@@ -464,12 +464,7 @@ export default function DashboardPage() {
             <Suspense fallback={<Spinner />}>
               <InventoryTabs
                 selected={selected}
-                onUpdateSelected={onUpdateSelected}
-                onTabChange={onTabChange}
-                activeTab={activeTab}
-                registerAddHandler={registerAddHandler}
-                tasksCount={tasksCount}
-                chatCount={chatCount}
+                userEmail={user?.email || ""}
               />
             </Suspense>
           </div>
