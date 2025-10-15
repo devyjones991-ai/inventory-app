@@ -1,5 +1,6 @@
 import { cva } from "class-variance-authority";
 import React from "react";
+
 import { cn } from "../../lib/utils";
 
 const alertVariants = cva("relative w-full rounded-md border p-4 text-sm", {
@@ -16,8 +17,7 @@ const alertVariants = cva("relative w-full rounded-md border p-4 text-sm", {
   },
 });
 
-export interface AlertProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "destructive" | "warning";
 }
 
@@ -31,8 +31,7 @@ function Alert({ className, variant, ...props }: AlertProps) {
   );
 }
 
-export interface AlertTitleProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+export interface AlertTitleProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 function AlertTitle({ className, ...props }: AlertTitleProps) {
   return (

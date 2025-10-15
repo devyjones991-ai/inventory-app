@@ -3,6 +3,12 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
+
+import { useAuth } from "../hooks/useAuth";
+import { useNotifications } from "../hooks/useNotifications";
+import { useProfile } from "../hooks/useProfile";
+import { t } from "../i18n";
+
 import FormError from "./FormError";
 import { Button } from "./ui/button";
 import {
@@ -15,10 +21,6 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { useAuth } from "../hooks/useAuth";
-import { useNotifications } from "../hooks/useNotifications";
-import { useProfile } from "../hooks/useProfile";
-import { t } from "../i18n";
 
 // Схемы валидации для разных вкладок
 const personalInfoSchema = z.object({
@@ -34,14 +36,22 @@ const personalInfoSchema = z.object({
   department: z.string().optional(),
 });
 
-const securitySchema = z.object({
-  currentPassword: z.string().min(1, t("profile.validation.currentPasswordRequired")),
-  newPassword: z.string().min(8, t("profile.validation.newPasswordMinLength")),
-  confirmPassword: z.string().min(1, t("profile.validation.confirmPasswordRequired")),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: t("profile.validation.passwordsDoNotMatch"),
-  path: ["confirmPassword"],
-});
+const securitySchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(1, t("profile.validation.currentPasswordRequired")),
+    newPassword: z
+      .string()
+      .min(8, t("profile.validation.newPasswordMinLength")),
+    confirmPassword: z
+      .string()
+      .min(1, t("profile.validation.confirmPasswordRequired")),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: t("profile.validation.passwordsDoNotMatch"),
+    path: ["confirmPassword"],
+  });
 
 const preferencesSchema = z.object({
   theme: z.enum(["light", "dark", "auto"]),
@@ -59,7 +69,10 @@ interface ProfileSettingsProps {
   onClose: () => void;
 }
 
-export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProps) {
+export default function ProfileSettings({
+  isOpen,
+  onClose,
+}: ProfileSettingsProps) {
   const [activeTab, setActiveTab] = useState("personal");
   const [isLoading, setIsLoading] = useState(false);
   const { user, updateUser } = useAuth();
@@ -169,16 +182,23 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
         <DialogHeader>
           <DialogTitle>{t("profile.title")}</DialogTitle>
         </DialogHeader>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="personal">{t("profile.personalInfo")}</TabsTrigger>
+            <TabsTrigger value="personal">
+              {t("profile.personalInfo")}
+            </TabsTrigger>
             <TabsTrigger value="security">{t("profile.security")}</TabsTrigger>
-            <TabsTrigger value="preferences">{t("profile.preferences")}</TabsTrigger>
+            <TabsTrigger value="preferences">
+              {t("profile.preferences")}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="personal" className="space-y-4">
-            <form onSubmit={personalForm.handleSubmit(handlePersonalSubmit)} className="space-y-4">
+            <form
+              onSubmit={personalForm.handleSubmit(handlePersonalSubmit)}
+              className="space-y-4"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="fullName">{t("profile.fullName")}</Label>
@@ -187,7 +207,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     id="fullName"
                     className="w-full"
                   />
-                  <FormError error={personalForm.formState.errors.fullName?.message} />
+                  <FormError
+                    error={personalForm.formState.errors.fullName?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="email">{t("profile.email")}</Label>
@@ -198,17 +220,23 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     disabled
                     className="w-full"
                   />
-                  <FormError error={personalForm.formState.errors.email?.message} />
+                  <FormError
+                    error={personalForm.formState.errors.email?.message}
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="backupEmail">{t("profile.backupEmail")}</Label>
+                  <Label htmlFor="backupEmail">
+                    {t("profile.backupEmail")}
+                  </Label>
                   <Input
                     {...personalForm.register("backupEmail")}
                     id="backupEmail"
                     type="email"
                     className="w-full"
                   />
-                  <FormError error={personalForm.formState.errors.backupEmail?.message} />
+                  <FormError
+                    error={personalForm.formState.errors.backupEmail?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="phone">{t("profile.phone")}</Label>
@@ -218,7 +246,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     type="tel"
                     className="w-full"
                   />
-                  <FormError error={personalForm.formState.errors.phone?.message} />
+                  <FormError
+                    error={personalForm.formState.errors.phone?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="position">{t("profile.position")}</Label>
@@ -227,7 +257,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     id="position"
                     className="w-full"
                   />
-                  <FormError error={personalForm.formState.errors.position?.message} />
+                  <FormError
+                    error={personalForm.formState.errors.position?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="department">{t("profile.department")}</Label>
@@ -236,7 +268,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     id="department"
                     className="w-full"
                   />
-                  <FormError error={personalForm.formState.errors.department?.message} />
+                  <FormError
+                    error={personalForm.formState.errors.department?.message}
+                  />
                 </div>
               </div>
               <DialogFooter>
@@ -251,37 +285,56 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
           </TabsContent>
 
           <TabsContent value="security" className="space-y-4">
-            <form onSubmit={securityForm.handleSubmit(handleSecuritySubmit)} className="space-y-4">
+            <form
+              onSubmit={securityForm.handleSubmit(handleSecuritySubmit)}
+              className="space-y-4"
+            >
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="currentPassword">{t("profile.currentPassword")}</Label>
+                  <Label htmlFor="currentPassword">
+                    {t("profile.currentPassword")}
+                  </Label>
                   <Input
                     {...securityForm.register("currentPassword")}
                     id="currentPassword"
                     type="password"
                     className="w-full"
                   />
-                  <FormError error={securityForm.formState.errors.currentPassword?.message} />
+                  <FormError
+                    error={
+                      securityForm.formState.errors.currentPassword?.message
+                    }
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="newPassword">{t("profile.newPassword")}</Label>
+                  <Label htmlFor="newPassword">
+                    {t("profile.newPassword")}
+                  </Label>
                   <Input
                     {...securityForm.register("newPassword")}
                     id="newPassword"
                     type="password"
                     className="w-full"
                   />
-                  <FormError error={securityForm.formState.errors.newPassword?.message} />
+                  <FormError
+                    error={securityForm.formState.errors.newPassword?.message}
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="confirmPassword">{t("profile.confirmPassword")}</Label>
+                  <Label htmlFor="confirmPassword">
+                    {t("profile.confirmPassword")}
+                  </Label>
                   <Input
                     {...securityForm.register("confirmPassword")}
                     id="confirmPassword"
                     type="password"
                     className="w-full"
                   />
-                  <FormError error={securityForm.formState.errors.confirmPassword?.message} />
+                  <FormError
+                    error={
+                      securityForm.formState.errors.confirmPassword?.message
+                    }
+                  />
                 </div>
               </div>
               <DialogFooter>
@@ -296,7 +349,10 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
           </TabsContent>
 
           <TabsContent value="preferences" className="space-y-4">
-            <form onSubmit={preferencesForm.handleSubmit(handlePreferencesSubmit)} className="space-y-4">
+            <form
+              onSubmit={preferencesForm.handleSubmit(handlePreferencesSubmit)}
+              className="space-y-4"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="theme">{t("profile.theme")}</Label>
@@ -309,7 +365,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     <option value="dark">{t("profile.themeDark")}</option>
                     <option value="auto">{t("profile.themeAuto")}</option>
                   </select>
-                  <FormError error={preferencesForm.formState.errors.theme?.message} />
+                  <FormError
+                    error={preferencesForm.formState.errors.theme?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="language">{t("profile.language")}</Label>
@@ -321,7 +379,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     <option value="ru">{t("profile.languageRu")}</option>
                     <option value="en">{t("profile.languageEn")}</option>
                   </select>
-                  <FormError error={preferencesForm.formState.errors.language?.message} />
+                  <FormError
+                    error={preferencesForm.formState.errors.language?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="timezone">{t("profile.timezone")}</Label>
@@ -330,7 +390,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     id="timezone"
                     className="w-full"
                   />
-                  <FormError error={preferencesForm.formState.errors.timezone?.message} />
+                  <FormError
+                    error={preferencesForm.formState.errors.timezone?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="dateFormat">{t("profile.dateFormat")}</Label>
@@ -339,7 +401,9 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     id="dateFormat"
                     className="w-full"
                   />
-                  <FormError error={preferencesForm.formState.errors.dateFormat?.message} />
+                  <FormError
+                    error={preferencesForm.formState.errors.dateFormat?.message}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="timeFormat">{t("profile.timeFormat")}</Label>
@@ -351,10 +415,12 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     <option value="12h">{t("profile.timeFormat12h")}</option>
                     <option value="24h">{t("profile.timeFormat24h")}</option>
                   </select>
-                  <FormError error={preferencesForm.formState.errors.timeFormat?.message} />
+                  <FormError
+                    error={preferencesForm.formState.errors.timeFormat?.message}
+                  />
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <h4 className="font-medium">{t("profile.notifications")}</h4>
                 <div className="space-y-2">
@@ -383,19 +449,22 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     <span>{t("profile.smsNotifications")}</span>
                   </label>
                 </div>
-                
+
                 {permission === "default" && (
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground mb-2">
                       {t("profile.notificationPermissionRequired")}
                     </p>
-                    <Button size="sm" onClick={handleRequestNotificationPermission}>
+                    <Button
+                      size="sm"
+                      onClick={handleRequestNotificationPermission}
+                    >
                       {t("profile.requestPermission")}
                     </Button>
                   </div>
                 )}
               </div>
-              
+
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={onClose}>
                   {t("common.cancel")}

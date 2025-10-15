@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useChatMessages } from "./useChatMessages";
+
 import { supabase } from "../supabaseClient";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
 import logger from "../utils/logger";
+
+import { useChatMessages } from "./useChatMessages";
 
 interface ChatMessage {
   id: string;
@@ -38,7 +40,11 @@ interface UseChatReturn {
   error: string | null;
 }
 
-export default function useChat({ objectId, userEmail, search }: UseChatParams): UseChatReturn {
+export default function useChat({
+  objectId,
+  userEmail,
+  search,
+}: UseChatParams): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [newMessage, setNewMessage] = useState("");
@@ -80,13 +86,16 @@ export default function useChat({ objectId, userEmail, search }: UseChatParams):
         }
 
         const newMessages = result.data || [];
-        setMessages((prev) => (replace ? newMessages : [...prev, ...newMessages]));
+        setMessages((prev) =>
+          replace ? newMessages : [...prev, ...newMessages],
+        );
         setHasMore(newMessages.length === LIMIT);
         offsetRef.current = offset + newMessages.length;
 
         return { error: null };
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Ошибка загрузки";
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка загрузки";
         setLoadError(errorMessage);
         setError(errorMessage);
         return { error: err };
@@ -115,7 +124,8 @@ export default function useChat({ objectId, userEmail, search }: UseChatParams):
         setFile(null);
         setFilePreview(null);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Ошибка отправки";
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка отправки";
         setError(errorMessage);
       } finally {
         setSending(false);
@@ -147,7 +157,8 @@ export default function useChat({ objectId, userEmail, search }: UseChatParams):
         setMessages(data || []);
         setHasMore(false);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Ошибка поиска";
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка поиска";
         setError(errorMessage);
       } finally {
         setLoading(false);

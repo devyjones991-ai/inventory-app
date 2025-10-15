@@ -1,9 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
+
+import { supabase } from "../supabaseClient";
+
 import { useAuth } from "./useAuth";
 import { useProfile } from "./useProfile";
-import { supabase } from "../supabaseClient";
-import { Notification } from "../types";
+
+interface Notification {
+  id: string;
+  type: "overdue_task" | "new_message" | "task_assigned" | "system";
+  title: string;
+  message: string;
+  user_id: string;
+  object_id?: string;
+  created_at: string;
+  read?: boolean;
+  _optimistic?: boolean;
+}
 
 export function useNotifications() {
   const [isChecking, setIsChecking] = useState(false);
@@ -34,28 +47,31 @@ export function useNotifications() {
   }, [user]);
 
   // Получаем предстоящие задачи
-  const getUpcomingTasks = useCallback(async (daysBefore = 3) => {
-    if (!user) return [];
+  const getUpcomingTasks = useCallback(
+    async (daysBefore = 3) => {
+      if (!user) return [];
 
-    try {
-      const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + daysBefore);
+      try {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + daysBefore);
 
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("assignee_id", user.id)
-        .eq("status", "planned")
-        .gte("due_date", new Date().toISOString())
-        .lte("due_date", futureDate.toISOString());
+        const { data, error } = await supabase
+          .from("tasks")
+          .select("*")
+          .eq("assignee_id", user.id)
+          .eq("status", "planned")
+          .gte("due_date", new Date().toISOString())
+          .lte("due_date", futureDate.toISOString());
 
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Ошибка получения предстоящих задач:", error);
-      return [];
-    }
-  }, [user]);
+        if (error) throw error;
+        return data || [];
+      } catch (error) {
+        console.error("Ошибка получения предстоящих задач:", error);
+        return [];
+      }
+    },
+    [user],
+  );
 
   // Проверяем и создаем уведомления
   const checkAndNotify = useCallback(async () => {
@@ -77,10 +93,12 @@ export function useNotifications() {
         };
 
         // Проверяем, не создано ли уже такое уведомление
-        const existingNotification = notifications.find(n => n.id === notification.id);
+        const existingNotification = notifications.find(
+          (n) => n.id === notification.id,
+        );
         if (!existingNotification) {
-          setNotifications(prev => [...prev, notification]);
-          setUnreadCount(prev => prev + 1);
+          setNotifications((prev) => [...prev, notification]);
+          setUnreadCount((prev) => prev + 1);
         }
       }
 
@@ -95,10 +113,12 @@ export function useNotifications() {
         };
 
         // Проверяем, не создано ли уже такое уведомление
-        const existingNotification = notifications.find(n => n.id === notification.id);
+        const existingNotification = notifications.find(
+          (n) => n.id === notification.id,
+        );
         if (!existingNotification) {
-          setNotifications(prev => [...prev, notification]);
-          setUnreadCount(prev => prev + 1);
+          setNotifications((prev) => [...prev, notification]);
+          setUnreadCount((prev) => prev + 1);
         }
       }
 
@@ -160,15 +180,15 @@ export function useNotifications() {
   }, [user, checkAndNotify]);
 
   const markAsRead = useCallback((notificationId: string) => {
-    setNotifications(prev => prev.map(n => 
-      n.id === notificationId ? { ...n, read: true } : n
-    ));
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
 
   const removeNotification = useCallback((notificationId: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
 
   const clearAllNotifications = useCallback(() => {

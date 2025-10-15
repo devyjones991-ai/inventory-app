@@ -1,5 +1,6 @@
-import TaskCard from "./TaskCard";
 import { Task } from "../types";
+
+import TaskCard from "./TaskCard";
 
 export default {
   title: "Components/TaskCard",

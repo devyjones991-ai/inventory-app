@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+
 import { supabase } from "../supabaseClient";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
 import logger from "../utils/logger";
@@ -34,7 +35,10 @@ export function useChatMessages() {
   const navigate = useNavigate();
 
   const fetchMessages = useCallback(
-    async (objectId: string, { limit = 20, offset = 0, search }: FetchMessagesParams = {}) => {
+    async (
+      objectId: string,
+      { limit = 20, offset = 0, search }: FetchMessagesParams = {},
+    ) => {
       try {
         let query;
         try {
@@ -53,7 +57,11 @@ export function useChatMessages() {
 
           if (error) {
             logger.error("Error fetching messages:", error);
-            await handleSupabaseError(error, navigate, "Ошибка загрузки сообщений");
+            await handleSupabaseError(
+              error,
+              navigate,
+              "Ошибка загрузки сообщений",
+            );
             return { data: null, error };
           }
 
@@ -80,7 +88,7 @@ export function useChatMessages() {
         }
 
         let fileUrl = null;
-        let fileName = null;
+        const fileName = null;
 
         if (file) {
           // Validate file
@@ -105,9 +113,9 @@ export function useChatMessages() {
             throw new Error("Ошибка загрузки файла");
           }
 
-          const { data: { publicUrl } } = supabase.storage
-            .from("chat-files")
-            .getPublicUrl(filePath);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("chat-files").getPublicUrl(filePath);
 
           fileUrl = publicUrl;
           fileName = file.name;
@@ -127,7 +135,11 @@ export function useChatMessages() {
 
         if (error) {
           logger.error("Error sending message:", error);
-          await handleSupabaseError(error, navigate, "Ошибка отправки сообщения");
+          await handleSupabaseError(
+            error,
+            navigate,
+            "Ошибка отправки сообщения",
+          );
           return { data: null, error };
         }
 

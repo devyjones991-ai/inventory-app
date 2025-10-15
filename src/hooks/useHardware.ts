@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { t } from "../i18n";
 import { supabase } from "../supabaseClient";
-import { handleSupabaseError } from "../utils/handleSupabaseError";
 import { Hardware } from "../types";
+import { handleSupabaseError } from "../utils/handleSupabaseError";
 
 const PURCHASE_ALLOWED = ["not_paid", "paid"];
 const INSTALL_ALLOWED = ["not_installed", "installed"];
@@ -33,7 +34,11 @@ export function useHardware() {
         return result;
       } catch (error) {
         console.error("Error fetching hardware:", error);
-        await handleSupabaseError(error, navigate, "Ошибка загрузки оборудования");
+        await handleSupabaseError(
+          error,
+          navigate,
+          "Ошибка загрузки оборудования",
+        );
         return { data: null, error };
       }
     },
@@ -55,7 +60,11 @@ export function useHardware() {
         return result;
       } catch (error) {
         console.error("Error creating hardware:", error);
-        await handleSupabaseError(error, navigate, "Ошибка создания оборудования");
+        await handleSupabaseError(
+          error,
+          navigate,
+          "Ошибка создания оборудования",
+        );
         return { data: null, error };
       }
     },
@@ -78,7 +87,11 @@ export function useHardware() {
         return result;
       } catch (error) {
         console.error("Error updating hardware:", error);
-        await handleSupabaseError(error, navigate, "Ошибка обновления оборудования");
+        await handleSupabaseError(
+          error,
+          navigate,
+          "Ошибка обновления оборудования",
+        );
         return { data: null, error };
       }
     },
@@ -91,15 +104,16 @@ export function useHardware() {
         if (!supabase) {
           throw new Error("Supabase client not initialized");
         }
-        const result = await supabase
-          .from("hardware")
-          .delete()
-          .eq("id", id);
+        const result = await supabase.from("hardware").delete().eq("id", id);
         if (result.error) throw result.error;
         return result;
       } catch (error) {
         console.error("Error deleting hardware:", error);
-        await handleSupabaseError(error, navigate, "Ошибка удаления оборудования");
+        await handleSupabaseError(
+          error,
+          navigate,
+          "Ошибка удаления оборудования",
+        );
         return { data: null, error };
       }
     },
@@ -122,7 +136,7 @@ export function useHardware() {
     async (data: Partial<Hardware>) => {
       const result = await createHardwareRecord(data);
       if (result.data) {
-        setHardware(prev => [...prev, result.data]);
+        setHardware((prev) => [...prev, result.data]);
       }
       return result;
     },
@@ -133,7 +147,9 @@ export function useHardware() {
     async (id: string, data: Partial<Hardware>) => {
       const result = await updateHardwareRecord(id, data);
       if (result.data) {
-        setHardware(prev => prev.map(item => item.id === id ? result.data : item));
+        setHardware((prev) =>
+          prev.map((item) => (item.id === id ? result.data : item)),
+        );
       }
       return result;
     },
@@ -144,7 +160,7 @@ export function useHardware() {
     async (id: string) => {
       const result = await deleteHardwareRecord(id);
       if (!result.error) {
-        setHardware(prev => prev.filter(item => item.id !== id));
+        setHardware((prev) => prev.filter((item) => item.id !== id));
       }
       return result;
     },

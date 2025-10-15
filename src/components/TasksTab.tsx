@@ -2,8 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { TASK_STATUSES } from "../constants";
+import { Task, Object } from "../types";
+
 import ConfirmModal from "./ConfirmModal";
 import ErrorMessage from "./ErrorMessage";
+import FormError from "./FormError";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +17,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "./ui/dialog";
-import VirtualizedTaskList from "./VirtualizedTaskList";
-import FormError from "./FormError";
-import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
@@ -24,8 +27,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
-import { TASK_STATUSES } from "../constants";
-import { Task, Object } from "../types";
+import VirtualizedTaskList from "./VirtualizedTaskList";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Название задачи обязательно"),
@@ -86,16 +88,18 @@ export default function TasksTab({
   });
 
   const filteredTasks = tasks.filter((task) => {
-    const matchesFilter = task.title.toLowerCase().includes(filter.toLowerCase()) ||
+    const matchesFilter =
+      task.title.toLowerCase().includes(filter.toLowerCase()) ||
       task.description?.toLowerCase().includes(filter.toLowerCase());
-    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || task.status === statusFilter;
     return matchesFilter && matchesStatus;
   });
 
   const sortedTasks = [...filteredTasks].sort((a, b) => {
     const aValue = a[sortBy as keyof Task];
     const bValue = b[sortBy as keyof Task];
-    
+
     if (sortOrder === "asc") {
       return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
     } else {
@@ -109,18 +113,21 @@ export default function TasksTab({
     setIsModalOpen(true);
   }, [reset]);
 
-  const openEditModal = useCallback((task: Task) => {
-    setEditingTask(task);
-    setValue("title", task.title);
-    setValue("description", task.description || "");
-    setValue("status", task.status);
-    setValue("priority", task.priority);
-    setValue("assignee", task.assignee || "");
-    setValue("due_date", task.due_date || "");
-    setValue("estimated_hours", task.estimated_hours || 0);
-    setValue("notes", task.notes || "");
-    setIsModalOpen(true);
-  }, [setValue]);
+  const openEditModal = useCallback(
+    (task: Task) => {
+      setEditingTask(task);
+      setValue("title", task.title);
+      setValue("description", task.description || "");
+      setValue("status", task.status);
+      setValue("priority", task.priority);
+      setValue("assignee", task.assignee || "");
+      setValue("due_date", task.due_date || "");
+      setValue("estimated_hours", task.estimated_hours || 0);
+      setValue("notes", task.notes || "");
+      setIsModalOpen(true);
+    },
+    [setValue],
+  );
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
@@ -128,33 +135,41 @@ export default function TasksTab({
     reset();
   }, [reset]);
 
-  const handleSubmit = useCallback(async (data: any) => {
-    try {
-      if (editingTask) {
-        await onUpdateTask(editingTask.id, data);
-      } else {
-        await onCreateTask({
-          ...data,
-          object_id: selected.id,
-        });
+  const handleTaskSubmit = useCallback(
+    async (data: any) => {
+      try {
+        if (editingTask) {
+          await onUpdateTask(editingTask.id, data);
+        } else {
+          await onCreateTask({
+            ...data,
+            object_id: selected.id,
+          });
+        }
+        closeModal();
+      } catch (error) {
+        console.error("Error saving task:", error);
       }
-      closeModal();
-    } catch (error) {
-      console.error("Error saving task:", error);
-    }
-  }, [editingTask, onUpdateTask, onCreateTask, selected.id, closeModal]);
+    },
+    [editingTask, onUpdateTask, onCreateTask, selected.id, closeModal],
+  );
 
-  const handleDelete = useCallback(async (taskId: string) => {
-    try {
-      await onDeleteTask(taskId);
-      setDeleteTaskId(null);
-    } catch (error) {
-      console.error("Error deleting task:", error);
-    }
-  }, [onDeleteTask]);
+  const handleDelete = useCallback(
+    async (taskId: string) => {
+      try {
+        await onDeleteTask(taskId);
+        setDeleteTaskId(null);
+      } catch (error) {
+        console.error("Error deleting task:", error);
+      }
+    },
+    [onDeleteTask],
+  );
 
   if (loading) {
-    return <div className="text-center text-muted-foreground">Загрузка задач...</div>;
+    return (
+      <div className="text-center text-muted-foreground">Загрузка задач...</div>
+    );
   }
 
   if (error) {
@@ -165,9 +180,7 @@ export default function TasksTab({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Задачи</h3>
-        <Button onClick={openAddModal}>
-          Добавить задачу
-        </Button>
+        <Button onClick={openAddModal}>Добавить задачу</Button>
       </div>
 
       <div className="space-y-4">
@@ -225,15 +238,11 @@ export default function TasksTab({
               {editingTask ? "Редактировать задачу" : "Добавить задачу"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(handleTaskSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="title">Название</Label>
-                <Input
-                  {...register("title")}
-                  id="title"
-                  className="w-full"
-                />
+                <Input {...register("title")} id="title" className="w-full" />
                 <FormError error={errors.title?.message} />
               </div>
               <div>

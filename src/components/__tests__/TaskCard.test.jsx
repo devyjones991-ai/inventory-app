@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, test, expect, vi } from "vitest";
 const jest = vi;
 
-import TaskCard from "@/components/TaskCard.jsx";
+import TaskCard from "../TaskCard";
 
 const task = {
   id: "t1",

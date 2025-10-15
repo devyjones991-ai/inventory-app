@@ -1,11 +1,13 @@
 import { memo, useState, forwardRef } from "react";
 import { FixedSizeList as List } from "react-window";
+
+import { t } from "../i18n";
+import { Object } from "../types";
+import logger from "../utils/logger";
+
 import ErrorMessage from "./ErrorMessage";
 import Spinner from "./Spinner";
 import { Input } from "./ui/input";
-import { t } from "../i18n";
-import logger from "../utils/logger";
-import { Object } from "../types";
 
 interface ObjectListProps {
   objects?: Object[];
@@ -26,27 +28,31 @@ function ObjectList({
   if (error) return <ErrorMessage message={error} />;
 
   const filteredObjects = objects.filter((item) =>
-    item.name.toLowerCase().includes(filter.toLowerCase())
+    item.name.toLowerCase().includes(filter.toLowerCase()),
   );
 
-  const Item = memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const item = filteredObjects[index];
-    if (!item) return null;
+  const Item = memo(
+    ({ index, style }: { index: number; style: React.CSSProperties }) => {
+      const item = filteredObjects[index];
+      if (!item) return null;
 
-    return (
-      <div style={style} className="px-2 py-1">
-        <div
-          className="cursor-pointer rounded border p-3 hover:bg-accent"
-          onClick={() => onItemClick(item)}
-        >
-          <h3 className="font-medium">{item.name}</h3>
-          {item.description && (
-            <p className="text-sm text-muted-foreground">{item.description}</p>
-          )}
+      return (
+        <div style={style} className="px-2 py-1">
+          <div
+            className="cursor-pointer rounded border p-3 hover:bg-accent"
+            onClick={() => onItemClick(item)}
+          >
+            <h3 className="font-medium">{item.name}</h3>
+            {item.description && (
+              <p className="text-sm text-muted-foreground">
+                {item.description}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-    );
-  });
+      );
+    },
+  );
 
   Item.displayName = "Item";
 

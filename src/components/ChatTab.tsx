@@ -6,20 +6,20 @@ import {
 import {
   memo,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
+
 import useChat from "../hooks/useChat";
+import { Object } from "../types";
+import { formatDateTime } from "../utils/date";
+import { linkifyText } from "../utils/linkify";
+
 import AttachmentPreview from "./AttachmentPreview";
 import { Button, Input } from "./ui";
 import { Textarea } from "./ui/textarea";
-import { formatDateTime } from "../utils/date";
-import { linkifyText } from "../utils/linkify";
-import { getMessageType } from "../utils/messageUtils";
 import "../assets/chat-gpt-style.css";
-import { Object } from "../types";
 
 interface ChatTabProps {
   selected?: Object | null;
@@ -27,11 +27,7 @@ interface ChatTabProps {
   active?: boolean;
 }
 
-function ChatTab({
-  selected = null,
-  userEmail,
-  active = false,
-}: ChatTabProps) {
+function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -39,18 +35,12 @@ function ChatTab({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    messages,
-    loading,
-    error,
-    sendMessage,
-    searchMessages,
-    clearSearch,
-  } = useChat({
-    objectId: selected?.id || "",
-    userEmail: userEmail || "",
-    search: searchQuery,
-  });
+  const { messages, loading, error, sendMessage, searchMessages, clearSearch } =
+    useChat({
+      objectId: selected?.id || "",
+      userEmail: userEmail || "",
+      search: searchQuery,
+    });
 
   const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current) {
@@ -75,33 +65,42 @@ function ChatTab({
     }
   }, [message, selected?.id, sendMessage]);
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  }, [handleSendMessage]);
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+      }
+    },
+    [handleSendMessage],
+  );
 
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !selected?.id) return;
+  const handleFileUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !selected?.id) return;
 
-    try {
-      await sendMessage("", file);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    }
-  }, [selected?.id, sendMessage]);
+      try {
+        await sendMessage("", file);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
+    },
+    [selected?.id, sendMessage],
+  );
 
-  const handleSearch = useCallback(async (query: string) => {
-    if (!query.trim() || !selected?.id) return;
+  const handleSearch = useCallback(
+    async (query: string) => {
+      if (!query.trim() || !selected?.id) return;
 
-    try {
-      await searchMessages(query.trim());
-    } catch (error) {
-      console.error("Error searching messages:", error);
-    }
-  }, [selected?.id, searchMessages]);
+      try {
+        await searchMessages(query.trim());
+      } catch (error) {
+        console.error("Error searching messages:", error);
+      }
+    },
+    [selected?.id, searchMessages],
+  );
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
@@ -133,7 +132,9 @@ function ChatTab({
             size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
-            <ChevronDownIcon className={`w-4 h-4 transition-transform ${isCollapsed ? "rotate-180" : ""}`} />
+            <ChevronDownIcon
+              className={`w-4 h-4 transition-transform ${isCollapsed ? "rotate-180" : ""}`}
+            />
           </Button>
         </div>
       </div>
@@ -151,9 +152,7 @@ function ChatTab({
                 }
               }}
             />
-            <Button onClick={() => handleSearch(searchQuery)}>
-              Найти
-            </Button>
+            <Button onClick={() => handleSearch(searchQuery)}>Найти</Button>
             <Button variant="outline" onClick={handleClearSearch}>
               Очистить
             </Button>
@@ -169,7 +168,7 @@ function ChatTab({
                 Загрузка сообщений...
               </div>
             )}
-            
+
             {error && (
               <div className="text-center text-destructive">
                 Ошибка загрузки сообщений: {error}
@@ -188,9 +187,7 @@ function ChatTab({
                       : "bg-muted"
                   }`}
                 >
-                  <div className="text-sm font-medium mb-1">
-                    {msg.sender}
-                  </div>
+                  <div className="text-sm font-medium mb-1">{msg.sender}</div>
                   <div className="text-sm">
                     {msg.file_url ? (
                       <div>

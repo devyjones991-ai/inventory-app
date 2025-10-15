@@ -1,9 +1,11 @@
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { Button } from "./ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+
 import { t } from "../i18n";
 import { Hardware, User } from "../types";
+
+import { Button } from "./ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 
 interface HardwareCardProps {
   item: Hardware;
@@ -12,11 +14,11 @@ interface HardwareCardProps {
   user?: User | null;
 }
 
-export default function HardwareCard({ 
-  item, 
-  onEdit, 
-  onDelete, 
-  user = null 
+export default function HardwareCard({
+  item,
+  onEdit,
+  onDelete,
+  user: _user = null,
 }: HardwareCardProps) {
   const normalize = (v: unknown, allowed: string[]) => {
     const s = String(v ?? "").trim();

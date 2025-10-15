@@ -3,11 +3,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { useHardware } from "../hooks/useHardware";
+import { useTasks } from "../hooks/useTasks";
+import { t } from "../i18n";
+import { Object, Hardware, Task } from "../types";
+
+import FormError from "./FormError";
 import HardwareCard from "./HardwareCard";
 import Spinner from "./Spinner";
 const ChatTab = lazy(() => import("./ChatTab"));
 const TasksTab = lazy(() => import("./TasksTab"));
-import FormError from "./FormError";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -26,10 +32,6 @@ import {
 } from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
-import { useHardware } from "../hooks/useHardware";
-import { useTasks } from "../hooks/useTasks";
-import { t } from "../i18n";
-import { Object, Hardware, Task } from "../types";
 
 const hardwareSchema = z.object({
   name: z.string().min(1, t("hardware.nameRequired")),
@@ -65,8 +67,12 @@ export default function InventoryTabs({
 }: InventoryTabsProps) {
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
-  const [hardwareFormData, setHardwareFormData] = useState<Record<string, unknown>>({});
-  const [hardwareFormErrors, setHardwareFormErrors] = useState<Record<string, string>>({});
+  const [hardwareFormData, setHardwareFormData] = useState<
+    Record<string, unknown>
+  >({});
+  const [hardwareFormErrors, setHardwareFormErrors] = useState<
+    Record<string, string>
+  >({});
 
   const {
     hardware,
@@ -76,12 +82,9 @@ export default function InventoryTabs({
     deleteHardware,
   } = useHardware();
 
-  const {
-    tasks,
-    createTask,
-    updateTask,
-    deleteTask,
-  } = useTasks(selected?.id || "");
+  const { tasks, createTask, updateTask, deleteTask } = useTasks(
+    selected?.id || "",
+  );
 
   const {
     register: registerHardware,
@@ -125,24 +128,30 @@ export default function InventoryTabs({
     resetHardware();
   }, [resetHardware]);
 
-  const handleHardwareSubmitForm = useCallback(async (data: Record<string, unknown>) => {
-    try {
-      if (editingHardware) {
-        await updateHardware(editingHardware.id, data);
-      } else {
-        await createHardware(data);
+  const handleHardwareSubmitForm = useCallback(
+    async (data: Record<string, unknown>) => {
+      try {
+        if (editingHardware) {
+          await updateHardware(editingHardware.id, data);
+        } else {
+          await createHardware(data);
+        }
+        closeHardwareModal();
+      } catch (error) {
+        console.error("Hardware submit error:", error);
       }
-      closeHardwareModal();
-    } catch (error) {
-      console.error("Hardware submit error:", error);
-    }
-  }, [editingHardware, updateHardware, createHardware, closeHardwareModal]);
+    },
+    [editingHardware, updateHardware, createHardware, closeHardwareModal],
+  );
 
-  const handleDeleteHardware = useCallback(async (id: string) => {
-    if (confirm(t("hardware.confirmDelete"))) {
-      await deleteHardware(id);
-    }
-  }, [deleteHardware]);
+  const handleDeleteHardware = useCallback(
+    async (id: string) => {
+      if (confirm(t("hardware.confirmDelete"))) {
+        await deleteHardware(id);
+      }
+    },
+    [deleteHardware],
+  );
 
   useEffect(() => {
     registerAddHandler(openAddHardwareModal);
@@ -152,9 +161,7 @@ export default function InventoryTabs({
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={onTabChange}>
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="desc">
-            {t("objects.description")}
-          </TabsTrigger>
+          <TabsTrigger value="desc">{t("objects.description")}</TabsTrigger>
           <TabsTrigger value="hw">
             {t("hardware.title")} ({hardware.length})
           </TabsTrigger>
@@ -179,12 +186,16 @@ export default function InventoryTabs({
               </div>
               <div>
                 <h4 className="font-medium">{t("objects.status")}</h4>
-                <p className="text-sm text-muted-foreground">{selected.status}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selected.status}
+                </p>
               </div>
               {selected.location && (
                 <div>
                   <h4 className="font-medium">{t("objects.location")}</h4>
-                  <p className="text-sm text-muted-foreground">{selected.location}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selected.location}
+                  </p>
                 </div>
               )}
             </div>
@@ -199,7 +210,7 @@ export default function InventoryTabs({
               {t("hardware.add")}
             </Button>
           </div>
-          
+
           {hardware.length === 0 ? (
             <p className="text-muted-foreground">{t("hardware.empty")}</p>
           ) : (
@@ -323,7 +334,11 @@ export default function InventoryTabs({
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeHardwareModal}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeHardwareModal}
+              >
                 {t("common.cancel")}
               </Button>
               <Button type="submit">

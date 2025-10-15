@@ -1,7 +1,9 @@
 import { forwardRef, useCallback, useEffect, useRef } from "react";
 import { VariableSizeList as List } from "react-window";
-import TaskCard from "./TaskCard";
+
 import { Task } from "../types";
+
+import TaskCard from "./TaskCard";
 
 interface VirtualizedTaskListProps {
   tasks: Task[];
@@ -37,24 +39,25 @@ function VirtualizedTaskList({
     [],
   );
 
-  const Item = forwardRef<HTMLDivElement, { index: number; style: React.CSSProperties }>(
-    ({ index, style }, ref) => {
-      const task = tasks[index];
-      if (!task) return null;
+  const Item = forwardRef<
+    HTMLDivElement,
+    { index: number; style: React.CSSProperties }
+  >(({ index, style }, ref) => {
+    const task = tasks[index];
+    if (!task) return null;
 
-      return (
-        <div ref={ref} style={style} className="px-2 py-1">
-          <TaskCard
-            item={task}
-            onView={() => onView(task)}
-            onEdit={() => onEdit(task)}
-            onDelete={() => onDelete(task)}
-            canManage={true}
-          />
-        </div>
-      );
-    },
-  );
+    return (
+      <div ref={ref} style={style} className="px-2 py-1">
+        <TaskCard
+          item={task}
+          onView={() => onView(task)}
+          onEdit={() => onEdit(task)}
+          onDelete={() => onDelete(task)}
+          canManage={true}
+        />
+      </div>
+    );
+  });
 
   Item.displayName = "Item";
 

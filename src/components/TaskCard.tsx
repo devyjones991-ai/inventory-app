@@ -1,11 +1,13 @@
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { memo, useCallback } from "react";
+
+import { t } from "../i18n";
+import { Task } from "../types";
+import { formatDate } from "../utils/date";
+
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-import { t } from "../i18n";
-import { formatDate } from "../utils/date";
-import { Task } from "../types";
 
 const STATUS_VARIANTS: Record<string, string> = {
   planned: "info",
@@ -22,12 +24,12 @@ interface TaskCardProps {
   canManage?: boolean;
 }
 
-function TaskCard({ 
-  item, 
-  onEdit, 
-  onDelete, 
-  onView, 
-  canManage = true 
+function TaskCard({
+  item,
+  onEdit,
+  onDelete,
+  onView,
+  canManage = true,
 }: TaskCardProps) {
   const assignee = item.assignee || null;
   const dueDate = item.due_date || null;
@@ -104,7 +106,8 @@ function TaskCard({
           )}
           {assignedAt && (
             <div>
-              <span className="font-medium">Назначено:</span> {formatDate(assignedAt)}
+              <span className="font-medium">Назначено:</span>{" "}
+              {formatDate(assignedAt)}
             </div>
           )}
           {item.notes && (
