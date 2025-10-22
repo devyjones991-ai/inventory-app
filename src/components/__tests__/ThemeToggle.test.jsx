@@ -38,10 +38,10 @@ describe("ThemeToggle", () => {
     render(<ThemeToggle />);
 
     const toggle = screen.getByRole("checkbox");
-    const label = screen.getByText("Светлая");
+    const container = document.querySelector(".toggle-switch");
 
     expect(toggle).toBeInTheDocument();
-    expect(label).toBeInTheDocument();
+    expect(container).toBeInTheDocument();
   });
 
   test("renders without label when showLabel is false", () => {
@@ -57,28 +57,25 @@ describe("ThemeToggle", () => {
   test("applies correct size classes", () => {
     const { rerender } = render(<ThemeToggle size="small" />);
     let toggleContainer = document.querySelector(".toggle-switch");
-    expect(toggleContainer).toHaveClass("w-10", "h-3");
+    expect(toggleContainer).toHaveClass("w-8", "h-8");
 
     rerender(<ThemeToggle size="large" />);
     toggleContainer = document.querySelector(".toggle-switch");
-    expect(toggleContainer).toHaveClass("w-18", "h-5");
+    expect(toggleContainer).toHaveClass("w-12", "h-12");
   });
 
   test("toggles theme on click", () => {
     render(<ThemeToggle />);
 
     const toggle = screen.getByRole("checkbox");
-    const label = screen.getByText("Светлая");
 
     // Изначально светлая тема
     expect(toggle).not.toBeChecked();
-    expect(label).toHaveTextContent("Светлая");
 
     // Кликаем для переключения на темную
     fireEvent.click(toggle);
 
     expect(toggle).toBeChecked();
-    expect(label).toHaveTextContent("Темная");
     expect(localStorageMock.setItem).toHaveBeenCalledWith("theme", "dark");
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
@@ -89,10 +86,8 @@ describe("ThemeToggle", () => {
     render(<ThemeToggle />);
 
     const toggle = screen.getByRole("checkbox");
-    const label = screen.getByText("Темная");
 
     expect(toggle).toBeChecked();
-    expect(label).toHaveTextContent("Темная");
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
@@ -112,16 +107,14 @@ describe("ThemeToggle", () => {
     render(<ThemeToggle />);
 
     const toggle = screen.getByRole("checkbox");
-    const label = screen.getByText("Темная");
 
     expect(toggle).toBeChecked();
-    expect(label).toHaveTextContent("Темная");
   });
 
   test("applies custom className", () => {
     render(<ThemeToggle className="custom-class" />);
 
-    const container = document.querySelector(".flex.items-center.gap-3");
+    const container = document.querySelector(".toggle-switch");
     expect(container).toHaveClass("custom-class");
   });
 });

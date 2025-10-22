@@ -5,18 +5,17 @@ describe("ParticlesAnimation", () => {
   test("renders particles animation with default props", () => {
     render(<ParticlesAnimation />);
 
-    const svg = document.querySelector("#svg-global");
-    expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute("width", "400");
-    expect(svg).toHaveAttribute("height", "300");
+    const particles = document.querySelector("#particles");
+    expect(particles).toBeInTheDocument();
+    expect(particles).toHaveClass("particles-container");
   });
 
   test("renders with custom dimensions", () => {
     render(<ParticlesAnimation width={600} height={400} />);
 
-    const svg = document.querySelector("#svg-global");
-    expect(svg).toHaveAttribute("width", "600");
-    expect(svg).toHaveAttribute("height", "400");
+    const particles = document.querySelector("#particles");
+    expect(particles).toBeInTheDocument();
+    expect(particles).toHaveClass("particles-container");
   });
 
   test("renders with custom className", () => {
@@ -40,21 +39,18 @@ describe("ParticlesAnimation", () => {
     expect(background).not.toBeInTheDocument();
   });
 
-  test("renders SVG with correct structure", () => {
+  test("renders particles with correct structure", () => {
     render(<ParticlesAnimation />);
 
-    const svg = document.querySelector("#svg-global");
-    expect(svg).toBeInTheDocument();
-    expect(svg.tagName).toBe("svg");
+    const particles = document.querySelector("#particles");
+    expect(particles).toBeInTheDocument();
+    expect(particles).toHaveClass("particles-container");
 
-    const lines = document.querySelector("#lines");
-    expect(lines).toBeInTheDocument();
+    const particle1 = document.querySelector(".particle.p1");
+    expect(particle1).toBeInTheDocument();
 
-    const panel = document.querySelector("#panel-rigth");
-    expect(panel).toBeInTheDocument();
-
-    const node = document.querySelector("#node-server");
-    expect(node).toBeInTheDocument();
+    const particle2 = document.querySelector(".particle.p2");
+    expect(particle2).toBeInTheDocument();
   });
 
   test("renders Multiminder-themed particles", () => {

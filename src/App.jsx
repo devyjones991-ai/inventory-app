@@ -14,6 +14,7 @@ const AuthPage = lazy(() => import("./pages/AuthPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const MissingEnvPage = lazy(() => import("./pages/MissingEnvPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 export default function App() {
   useEffect(() => {
@@ -39,6 +40,14 @@ export default function App() {
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <AdminPage />
+                  </PrivateRoute>
+                }
+              />
               <Route
                 path="/*"
                 element={

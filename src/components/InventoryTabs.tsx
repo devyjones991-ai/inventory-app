@@ -58,6 +58,8 @@ export default function InventoryTabs({
   const [activeTab, setActiveTab] = useState("desc");
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
+  const [hardwareFormData, setHardwareFormData] = useState<Partial<Hardware>>({});
+  const [hardwareFormErrors, setHardwareFormErrors] = useState<Record<string, string>>({});
   const {
     hardware,
     deleteHardware,

@@ -73,6 +73,7 @@ export default function TasksTab({
     formState: { errors },
     reset,
     setValue,
+    watch,
   } = useForm({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -87,7 +88,7 @@ export default function TasksTab({
     },
   });
 
-  const filteredTasks = tasks.filter((task) => {
+  const filteredTasks = (tasks || []).filter((task) => {
     const matchesFilter =
       task.title.toLowerCase().includes(filter.toLowerCase()) ||
       task.description?.toLowerCase().includes(filter.toLowerCase());
@@ -248,7 +249,7 @@ export default function TasksTab({
               <div>
                 <Label htmlFor="status">Статус</Label>
                 <Select
-                  value={register("status").value}
+                  value={watch("status")}
                   onValueChange={(value) => setValue("status", value)}
                 >
                   <SelectTrigger>
@@ -267,7 +268,7 @@ export default function TasksTab({
               <div>
                 <Label htmlFor="priority">Приоритет</Label>
                 <Select
-                  value={register("priority").value}
+                  value={watch("priority")}
                   onValueChange={(value) => setValue("priority", value)}
                 >
                   <SelectTrigger>

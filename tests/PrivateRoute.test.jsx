@@ -3,9 +3,9 @@ import React from "react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 
 import PrivateRoute from "@/components/PrivateRoute.jsx";
-import { useAuth } from "@/hooks/useAuth.js";
+import { useAuth } from "@/hooks/useAuth";
 
-vi.mock("@/hooks/useAuth.js", () => ({
+vi.mock("@/hooks/useAuth", () => ({
   useAuth: jest.fn(),
 }));
 

@@ -76,6 +76,7 @@ function TaskCard({
                   size="sm"
                   onClick={handleView}
                   className="h-6 w-6 p-0"
+                  aria-label="Редактировать"
                 >
                   <PencilIcon className="h-3 w-3" />
                 </Button>

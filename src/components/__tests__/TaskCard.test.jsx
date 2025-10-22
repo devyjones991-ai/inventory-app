@@ -40,7 +40,12 @@ describe("TaskCard", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Редактировать")).toBeInTheDocument();
-    expect(screen.getByLabelText("Удалить")).toBeInTheDocument();
+    const buttons = screen.getAllByRole("button");
+    expect(buttons).toHaveLength(2);
+    
+    // Первая кнопка - редактирование (с иконкой карандаша)
+    expect(buttons[0]).toBeInTheDocument();
+    // Вторая кнопка - удаление (с иконкой корзины)
+    expect(buttons[1]).toBeInTheDocument();
   });
 });

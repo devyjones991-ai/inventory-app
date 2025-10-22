@@ -1,13 +1,15 @@
 // @ts-check
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { describe, test, expect, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 
 import ObjectList from "@/components/ObjectList";
+import { render } from "../../../tests/test-utils";
 
 describe("ObjectList", () => {
   test("рендерит пустое состояние", () => {
     render(<ObjectList objects={[]} onItemClick={() => {}} />);
-    expect(screen.getByText("Нет объектов")).toBeInTheDocument();
+    expect(screen.getByText("objects.notFound")).toBeInTheDocument();
   });
 
   test("рендерит элементы списка", () => {
@@ -34,7 +36,7 @@ describe("ObjectList", () => {
       { id: 2, name: "Собака" },
     ];
     render(<ObjectList objects={objects} onItemClick={() => {}} />);
-    const input = screen.getByPlaceholderText("Поиск");
+    const input = screen.getByPlaceholderText("objects.search");
     fireEvent.change(input, { target: { value: "Соб" } });
     expect(screen.queryByText("Кошка")).not.toBeInTheDocument();
     expect(screen.getByText("Собака")).toBeInTheDocument();
@@ -46,7 +48,7 @@ describe("ObjectList", () => {
   });
 
   test("показывает ошибку", () => {
-    const error = new Error("Ошибка загрузки");
+    const error = "Ошибка загрузки";
     render(<ObjectList error={error} onItemClick={() => {}} />);
     expect(screen.getByRole("alert")).toHaveTextContent("Ошибка загрузки");
   });

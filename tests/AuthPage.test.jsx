@@ -1,23 +1,24 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor, act } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
+import { render } from "./test-utils";
 
-const mockFrom = jest.fn();
-const mockSignUp = jest
+const mockFrom = vi.hoisted(() => vi.fn());
+const mockSignUp = vi.hoisted(() => vi
   .fn()
-  .mockResolvedValue({ data: { user: { id: "user-id" } }, error: null });
-const mockGetSession = jest.fn(() =>
+  .mockResolvedValue({ data: { user: { id: "user-id" } }, error: null }));
+const mockGetSession = vi.hoisted(() => vi.fn(() =>
   Promise.resolve({ data: { session: null } }),
-);
-const mockOnAuthStateChange = jest.fn(() => ({
-  data: { subscription: { unsubscribe: jest.fn() } },
-}));
+));
+const mockOnAuthStateChange = vi.hoisted(() => vi.fn(() => ({
+  data: { subscription: { unsubscribe: vi.fn() } },
+})));
 
-vi.mock("@/supabaseClient.js", () => ({
+vi.mock("@/supabaseClient", () => ({
   supabase: {
     auth: {
       signUp: mockSignUp,
-      signInWithPassword: jest.fn(),
+      signInWithPassword: vi.fn(),
       getSession: mockGetSession,
       onAuthStateChange: mockOnAuthStateChange,
     },
@@ -29,27 +30,35 @@ vi.mock("@/supabaseClient.js", () => ({
 describe("AuthPage", () => {
   it("регистрирует пользователя без создания профиля", async () => {
     const AuthPage = (await import("@/pages/AuthPage.jsx")).default;
-    render(
-      <MemoryRouter>
-        <AuthPage />
-      </MemoryRouter>,
-    );
+    render(<AuthPage />);
+
+    // Ждем пока загрузка завершится
+    await waitFor(() => {
+      expect(screen.queryByText("Загрузка...")).not.toBeInTheDocument();
+    });
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Нет аккаунта? Зарегистрироваться" }),
+      screen.getByRole("button", { name: "Нет аккаунта?" }),
     );
 
-    fireEvent.change(screen.getByPlaceholderText("Email"), {
+    fireEvent.change(screen.getByPlaceholderText("Введите email"), {
       target: { value: "test@example.com" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Пароль"), {
+    fireEvent.change(screen.getByPlaceholderText("Введите пароль"), {
       target: { value: "password" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Имя пользователя"), {
+    fireEvent.change(screen.getByPlaceholderText("Введите имя пользователя"), {
       target: { value: "testuser" },
     });
+    fireEvent.change(screen.getByPlaceholderText("Подтвердите пароль"), {
+      target: { value: "password" },
+    });
 
-    fireEvent.click(screen.getByRole("button", { name: "Регистрация" }));
+    // Находим форму и отправляем её
+    const submitButton = screen.getByRole("button", { name: "Зарегистрироваться" });
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalled();

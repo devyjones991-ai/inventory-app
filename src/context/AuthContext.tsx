@@ -39,7 +39,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const initAuth = async () => {
       try {
-        const { user: sessionUser } = await fetchSession();
+        const { user: sessionUser, error } = await fetchSession();
+        if (error) {
+          logger.error("Ошибка инициализации аутентификации:", error);
+          return;
+        }
         if (sessionUser) {
           setUser(sessionUser);
           const userRole = await fetchRole(sessionUser.id);

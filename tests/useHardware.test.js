@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 
-import { useHardware } from "@/hooks/useHardware.js";
+import { useHardware } from "@/hooks/useHardware";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
 vi.mock("@/utils/handleSupabaseError", () => ({

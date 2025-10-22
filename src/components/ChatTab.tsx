@@ -38,7 +38,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
+    if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
@@ -176,6 +176,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
           <button
             className="chat-close"
             onClick={() => setShowSearch(!showSearch)}
+            aria-label="Найти"
           >
             <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
           </button>
@@ -273,6 +274,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
                 <button
                   className="chat-attach-button"
                   onClick={() => fileInputRef.current?.click()}
+                  aria-label="Прикрепить файл"
                 >
                   <PaperClipIcon className="w-4 h-4" />
                 </button>

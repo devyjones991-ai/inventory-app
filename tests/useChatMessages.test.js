@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 
-import { useChatMessages } from "@/hooks/useChatMessages.js";
+import { useChatMessages } from "@/hooks/useChatMessages";
 import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
 vi.mock("@/utils/handleSupabaseError", () => ({
@@ -53,12 +53,12 @@ describe("useChatMessages", () => {
     const file = new File(["data"], "test.bin", {
       type: "application/octet-stream",
     });
-    const { error } = await result.current.sendMessage({
-      objectId: 1,
-      sender: "user@example.com",
-      content: "msg",
-      file,
-    });
+    const { error } = await result.current.sendMessage(
+      "1",
+      "msg", 
+      "user@example.com",
+      file
+    );
     expect(error).toBeDefined();
     expect(mockUpload).not.toHaveBeenCalled();
     expect(mockInsert).not.toHaveBeenCalled();
@@ -68,12 +68,12 @@ describe("useChatMessages", () => {
     const { result } = renderHook(() => useChatMessages());
     const big = new Uint8Array(6 * 1024 * 1024);
     const file = new File([big], "big.png", { type: "image/png" });
-    const { error } = await result.current.sendMessage({
-      objectId: 1,
-      sender: "user@example.com",
-      content: "msg",
-      file,
-    });
+    const { error } = await result.current.sendMessage(
+      "1",
+      "msg", 
+      "user@example.com",
+      file
+    );
     expect(error).toBeDefined();
     expect(mockUpload).not.toHaveBeenCalled();
     expect(mockInsert).not.toHaveBeenCalled();
@@ -100,22 +100,22 @@ describe("useChatMessages", () => {
     const { result } = renderHook(() => useChatMessages());
     const file = new File(["data"], "img.png", { type: "image/png" });
     mockSingle.mockResolvedValueOnce({ data: { id: 1 }, error: null });
-    const res1 = await result.current.sendMessage({
-      objectId: 1,
-      sender: "user@example.com",
-      content: "msg1",
-      file,
-    });
+    const res1 = await result.current.sendMessage(
+      "1",
+      "msg1", 
+      "user@example.com",
+      file
+    );
     expect(res1.error).toBeNull();
     expect(mockUpload).toHaveBeenCalledTimes(1);
     expect(mockInsert).toHaveBeenCalledTimes(1);
 
     mockSingle.mockResolvedValueOnce({ data: { id: 2 }, error: null });
-    const res2 = await result.current.sendMessage({
-      objectId: 1,
-      sender: "user@example.com",
-      content: "msg2",
-    });
+    const res2 = await result.current.sendMessage(
+      "1",
+      "msg2", 
+      "user@example.com"
+    );
     expect(res2.error).toBeNull();
     expect(mockUpload).toHaveBeenCalledTimes(1);
     expect(mockInsert).toHaveBeenCalledTimes(2);

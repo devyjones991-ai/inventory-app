@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../hooks/useNotifications";
@@ -11,6 +12,7 @@ import { t } from "../i18n";
 
 import FormError from "./FormError";
 import { Button } from "./ui/button";
+import { Shield } from "lucide-react";
 import "../assets/profile-modal-styles.css";
 import {
   Dialog,
@@ -76,9 +78,10 @@ export default function ProfileSettings({
 }: ProfileSettingsProps) {
   const [activeTab, setActiveTab] = useState("personal");
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { requestPermission, permission } = useNotifications();
+  const navigate = useNavigate();
 
   const personalForm = useForm({
     resolver: zodResolver(personalInfoSchema),
@@ -212,6 +215,7 @@ export default function ProfileSettings({
                     {...personalForm.register("fullName")}
                     id="fullName"
                     className="profile-input w-full"
+                    autoFocus
                   />
                   <FormError
                     error={personalForm.formState.errors.fullName?.message}
@@ -490,6 +494,29 @@ export default function ProfileSettings({
             </div>
           </TabsContent>
         </Tabs>
+        
+        {/* Ссылка на админку для администраторов */}
+        {role === 'admin' && (
+          <div className="mt-6 pt-6 border-t border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Администрирование</h3>
+                <p className="text-sm text-muted-foreground">Управление пользователями системы</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  onClose();
+                  navigate('/admin');
+                }}
+                className="flex items-center gap-2"
+              >
+                <Shield className="w-4 h-4" />
+                Панель администратора
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -38,6 +38,16 @@ const CardTitle = forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadin
   },
 );
 
+const CardDescription = forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, children, ...props }, ref) => {
+    return (
+      <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props}>
+        {children}
+      </p>
+    );
+  },
+);
+
 const CardContent = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, ...props }, ref) => {
     return (
@@ -51,6 +61,7 @@ const CardContent = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEleme
 Card.displayName = "Card";
 CardHeader.displayName = "CardHeader";
 CardTitle.displayName = "CardTitle";
+CardDescription.displayName = "CardDescription";
 CardContent.displayName = "CardContent";
 
-export { Card, CardHeader, CardTitle, CardContent };
+export { Card, CardHeader, CardTitle, CardDescription, CardContent };

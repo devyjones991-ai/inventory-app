@@ -50,7 +50,7 @@ export default function ConfirmModal({
           <Button variant="outline" onClick={onCancel}>
             {cancelLabel}
           </Button>
-          <Button variant={confirmVariant} onClick={onConfirm}>
+          <Button variant={confirmVariant} onClick={onConfirm} autoFocus>
             {confirmLabel}
           </Button>
         </DialogFooter>

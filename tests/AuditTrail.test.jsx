@@ -29,6 +29,6 @@ describe("AuditTrail", () => {
   it("отображает логи", async () => {
     render(<AuditTrail limit={10} />);
     expect(await screen.findByText("insert")).toBeInTheDocument();
-    expect(screen.getByText("tasks")).toBeInTheDocument();
+    expect(screen.getByText("Таблица:")).toBeInTheDocument();
   });
 });

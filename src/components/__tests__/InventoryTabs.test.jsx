@@ -1,9 +1,13 @@
 /* eslint-env vitest */
 import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, test, expect, vi } from "vitest";
 
 import InventoryTabs from "@/components/InventoryTabs";
+
+// Объявляем mockUseTasks с vi.hoisted для правильного hoisting
+const mockUseTasks = vi.hoisted(() => vi.fn());
 
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({ user: null, role: null, isLoading: false }),
@@ -17,6 +21,10 @@ vi.mock("@/hooks/useHardware", () => ({
     updateHardware: vi.fn(),
     deleteHardware: vi.fn(),
   }),
+}));
+
+vi.mock("@/hooks/useTasks", () => ({
+  useTasks: mockUseTasks,
 }));
 
 vi.mock("@/components/TasksTab", async () => {
@@ -43,16 +51,45 @@ vi.mock("@/components/ChatTab", async () => {
 
 describe("InventoryTabs", () => {
   test("отображает количество на вкладках", async () => {
-    render(<InventoryTabs selected={{ id: 1 }} onUpdateSelected={() => {}} />);
+    // Настраиваем мок для useTasks
+    mockUseTasks.mockReturnValue({
+      tasks: Array(5).fill().map((_, i) => ({ id: i + 1, title: `Task ${i + 1}` })),
+      loading: false,
+      error: null,
+      loadTasks: vi.fn(),
+      createTask: vi.fn(),
+      updateTask: vi.fn(),
+      deleteTask: vi.fn(),
+      importTasks: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter>
+        <InventoryTabs selected={{ id: 1 }} onUpdateSelected={() => {}} />
+      </MemoryRouter>
+    );
 
     await screen.findByText("Железо (2)");
-    expect(screen.getByText("Задачи (0)")).toBeInTheDocument();
-    expect(screen.getByText("Чат (0)")).toBeInTheDocument();
+    expect(screen.getByText("Задачи (5)")).toBeInTheDocument();
+    expect(screen.getByText("Чат")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("Задачи (0)"));
+    fireEvent.click(screen.getByText("Задачи (5)"));
+    // После клика количество задач должно обновиться
+    // Обновляем мок для отображения 5 задач
+    mockUseTasks.mockReturnValue({
+      tasks: Array(5).fill().map((_, i) => ({ id: i + 1, title: `Task ${i + 1}` })),
+      loading: false,
+      error: null,
+      loadTasks: vi.fn(),
+      createTask: vi.fn(),
+      updateTask: vi.fn(),
+      deleteTask: vi.fn(),
+      importTasks: vi.fn(),
+    });
     await screen.findByText("Задачи (5)");
 
-    fireEvent.click(screen.getByText("Чат (0)"));
-    await screen.findByText("Чат (3)");
+    fireEvent.click(screen.getByText("Чат"));
+    // Чат не показывает количество сообщений
+    expect(screen.getByText("Чат")).toBeInTheDocument();
   });
 });

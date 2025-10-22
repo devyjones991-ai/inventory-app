@@ -64,7 +64,7 @@ export default function useChat({
    */
   const loadMore = useCallback(
     async (replace = false) => {
-      if (!objectId || objectId.trim() === "" || !supabase) return { error: "No objectId or supabase" };
+      if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return { error: "No objectId or supabase" };
 
       try {
         setLoading(true);
@@ -101,7 +101,7 @@ export default function useChat({
 
   const sendMessage = useCallback(
     async (content: string, file?: File) => {
-      if (!objectId || objectId.trim() === "" || !supabase) return;
+      if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return;
 
       try {
         setSending(true);
@@ -129,7 +129,7 @@ export default function useChat({
 
   const searchMessages = useCallback(
     async (query: string) => {
-      if (!objectId || objectId.trim() === "" || !supabase) return;
+      if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return;
 
       try {
         setLoading(true);
@@ -169,7 +169,7 @@ export default function useChat({
 
   // Загрузка сообщений при изменении objectId
   useEffect(() => {
-    if (objectId && objectId.trim() !== "") {
+    if (objectId && typeof objectId === 'string' && objectId.trim() !== "") {
       offsetRef.current = 0;
       loadMore(true);
     } else {
@@ -181,7 +181,7 @@ export default function useChat({
 
   // Подписка на новые сообщения
   useEffect(() => {
-    if (!objectId || objectId.trim() === "" || !supabase) return;
+    if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return;
 
     const channel = supabase
       .channel(`chat:${objectId}`)

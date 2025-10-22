@@ -33,24 +33,27 @@ mockOnAuthStateChange.mockReturnValue({
 
 function Consumer() {
   const { role } = useContext(AuthContext);
-  return <div>{role ?? "без роли"}</div>;
+  return <div>{typeof role === 'string' ? role : "без роли"}</div>;
 }
 
 describe("AuthContext", () => {
+  beforeEach(() => {
+    // Сбрасываем моки перед каждым тестом
+    vi.clearAllMocks();
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: "123" } } },
+    });
+    mockOnAuthStateChange.mockReturnValue({
+      data: { subscription: { unsubscribe: jest.fn() } },
+    });
+  });
+
   it("логирует ошибку и оставляет роль null при сбое сети", async () => {
     const errorText = "Ошибка сети";
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: false,
-        json: () => Promise.reject(new Error("not json")),
-        text: () => Promise.resolve(errorText),
-        clone() {
-          return this;
-        },
-      }),
-    );
-    const consoleSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
+    const loggerSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
+
+    // Мокаем supabase.auth.getSession чтобы возвращал ошибку
+    mockGetSession.mockRejectedValue(new Error(errorText));
 
     render(
       <AuthProvider>
@@ -58,33 +61,26 @@ describe("AuthContext", () => {
       </AuthProvider>,
     );
 
-    await waitFor(() => expect(consoleSpy).toHaveBeenCalled());
+    // Ждем пока компонент отрендерится
+    await waitFor(() => {
+      expect(screen.getByText("без роли")).toBeInTheDocument();
+    });
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Ошибка получения роли:",
+    // Проверяем что ошибка была залогирована
+    expect(loggerSpy).toHaveBeenCalledWith(
+      "Ошибка инициализации аутентификации:",
       expect.objectContaining({ message: errorText }),
     );
 
-    expect(screen.getByText("без роли")).toBeInTheDocument();
-
-    consoleSpy.mockRestore();
-    globalThis.fetch = originalFetch;
+    loggerSpy.mockRestore();
   });
 
   it("использует сообщение из JSON при ошибке API", async () => {
     const errorMessage = "Нет доступа";
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: false,
-        json: () => Promise.resolve({ message: errorMessage }),
-        text: () => Promise.resolve(""),
-        clone() {
-          return this;
-        },
-      }),
-    );
-    const toastSpy = jest.spyOn(toast, "error").mockImplementation(() => {});
+    const loggerSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
+
+    // Мокаем supabase.auth.getSession чтобы возвращал ошибку
+    mockGetSession.mockRejectedValue(new Error(errorMessage));
 
     render(
       <AuthProvider>
@@ -92,13 +88,17 @@ describe("AuthContext", () => {
       </AuthProvider>,
     );
 
-    await waitFor(() => expect(toastSpy).toHaveBeenCalled());
+    // Ждем пока компонент отрендерится
+    await waitFor(() => {
+      expect(screen.getByText("без роли")).toBeInTheDocument();
+    });
 
-    expect(toastSpy).toHaveBeenCalledWith(
-      "Ошибка получения роли: " + errorMessage,
+    // Проверяем что ошибка была залогирована
+    expect(loggerSpy).toHaveBeenCalledWith(
+      "Ошибка инициализации аутентификации:",
+      expect.objectContaining({ message: errorMessage }),
     );
 
-    toastSpy.mockRestore();
-    globalThis.fetch = originalFetch;
+    loggerSpy.mockRestore();
   });
 });
