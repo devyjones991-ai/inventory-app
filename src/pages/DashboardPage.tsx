@@ -37,8 +37,6 @@ import { useDashboardModals } from "../hooks/useDashboardModals";
 import { useObjectList } from "../hooks/useObjectList";
 import { useObjectNotifications } from "../hooks/useObjectNotifications";
 import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
-import { supabase } from "../supabaseClient";
-import { handleSupabaseError } from "../utils/handleSupabaseError";
 import "../assets/space-theme.css";
 
 export default function DashboardPage() {
@@ -173,74 +171,6 @@ export default function DashboardPage() {
       }
     }
   }, [searchParams, objects, selected, handleSelect]);
-
-  // Fetch total tasks count for header; keep updated via realtime
-  useEffect(() => {
-    let isCancelled = false;
-    let channel: unknown;
-    async function fetchCount(objectId: string) {
-      try {
-        const { count, error } = await supabase
-          .from("tasks")
-          .select("*", { count: "exact", head: true })
-          .eq("object_id", objectId);
-        if (!isCancelled) {
-          if (error) throw error;
-          setTasksCount(count || 0);
-        }
-      } catch (err) {
-        if (!isCancelled) {
-          setTasksCount(0);
-          await handleSupabaseError(
-            err,
-            null,
-            "Не удалось получить количество задач",
-          );
-        }
-      }
-    }
-    if (selected?.id) {
-      fetchCount(selected.id);
-      channel = supabase
-        .channel(`tasks:count:${selected.id}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "tasks",
-            filter: `object_id=eq.${selected.id}`,
-          },
-          () => setTasksCount((c) => (typeof c === "number" ? c + 1 : 1)),
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "DELETE",
-            schema: "public",
-            table: "tasks",
-            filter: `object_id=eq.${selected.id}`,
-          },
-          () =>
-            setTasksCount((c) =>
-              Math.max(0, (typeof c === "number" ? c : 0) - 1),
-            ),
-        )
-        .subscribe();
-    } else {
-      setTasksCount(0);
-    }
-    return () => {
-      isCancelled = true;
-      if (channel) {
-        try {
-          supabase.removeChannel(channel);
-        } catch {
-          // ignore
-        }
-      }
-    };
-  }, [selected?.id]);
 
   const onSaveObject = async () => {
     const ok = await saveObject(objectName, editingObject);
