@@ -3,13 +3,11 @@ import "../assets/theme-toggle.css";
 
 interface ThemeToggleProps {
   className?: string;
-  showLabel?: boolean;
   size?: "small" | "default" | "large";
 }
 
 export default function ThemeToggle({
   className = "",
-  showLabel = true,
   size = "default",
 }: ThemeToggleProps) {
   const [isDark, setIsDark] = useState(false);
@@ -53,12 +51,6 @@ export default function ThemeToggle({
     large: "w-12 h-12",
   };
 
-  const iconSizes = {
-    small: "w-4 h-4",
-    default: "w-5 h-5",
-    large: "w-6 h-6",
-  };
-
   return (
     <div className={`toggle-switch ${sizeClasses[size]} ${className}`}>
       <label className="switch-label">
@@ -67,6 +59,11 @@ export default function ThemeToggle({
           className="checkbox"
           checked={isDark}
           onChange={toggleTheme}
+          aria-label={
+            isDark
+              ? "Переключить на светлую тему"
+              : "Переключить на темную тему"
+          }
         />
         <span className="slider"></span>
       </label>
