@@ -36,8 +36,7 @@ export default function UserAutocomplete({
     const searchLower = searchTerm.toLowerCase();
     return (
       user.full_name?.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
-      user.username?.toLowerCase().includes(searchLower)
+      user.email.toLowerCase().includes(searchLower)
     );
   });
 
@@ -54,12 +53,8 @@ export default function UserAutocomplete({
     setSelectedIndex(-1);
   };
 
-  const handleUserSelect = (user: {
-    full_name?: string;
-    email: string;
-    username?: string;
-  }) => {
-    const displayName = user.full_name || user.username || user.email;
+  const handleUserSelect = (user: { full_name?: string; email: string }) => {
+    const displayName = user.full_name || user.email;
     setSearchTerm(displayName);
     onChange(displayName);
     setIsOpen(false);
@@ -102,22 +97,13 @@ export default function UserAutocomplete({
     setSelectedIndex(-1);
   };
 
-  const getDisplayName = (user: {
-    full_name?: string;
-    email: string;
-    username?: string;
-  }) => {
-    return user.full_name || user.username || user.email;
+  const getDisplayName = (user: { full_name?: string; email: string }) => {
+    return user.full_name || user.email;
   };
 
-  const getSubText = (user: {
-    full_name?: string;
-    email: string;
-    username?: string;
-  }) => {
+  const getSubText = (user: { full_name?: string; email: string }) => {
     const parts = [];
-    if (user.full_name && user.username) parts.push(user.username);
-    if (user.email) parts.push(user.email);
+    if (user.full_name && user.email) parts.push(user.email);
     return parts.join(" • ");
   };
 

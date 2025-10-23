@@ -6,7 +6,6 @@ interface User {
   id: string;
   email: string;
   full_name?: string;
-  username?: string;
 }
 
 export function useUsers() {
@@ -21,13 +20,14 @@ export function useUsers() {
 
       const { data, error: fetchError } = await supabase
         .from("profiles")
-        .select("id, email, full_name, username")
+        .select("id, email, full_name")
         .order("full_name", { ascending: true });
 
       if (fetchError) {
         throw fetchError;
       }
 
+      console.log("Fetched users:", data);
       setUsers(data || []);
     } catch (err) {
       const errorMessage =
