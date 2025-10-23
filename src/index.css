@@ -1,11 +1,33 @@
 @import "tailwindcss";
+@import "./assets/space-theme.css";
 
-/* Предотвращаем FOUC - скрываем контент до загрузки темы */
-html:not([data-theme]) {
-  visibility: hidden;
+/* Smart Link Styles */
+.smart-link {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
-html[data-theme] {
+.link-container {
+  word-break: break-all;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Prevent long URLs from breaking layout */
+.url {
+  word-break: break-all;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  display: inline-block;
+}
+
+/* Космическая тема всегда активна */
+html {
   visibility: visible;
 }
 
@@ -41,8 +63,7 @@ html[data-theme] {
     --radius: 0.5rem;
   }
 
-  .dark,
-  [data-theme="dark"] {
+  :root {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -69,37 +90,6 @@ html[data-theme] {
 
     --border: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
-
-    --radius: 0.5rem;
-  }
-
-  [data-theme="light"] {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    /* Accent should be distinct from muted for clear selection */
-    --accent: 210 40% 92%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
   }

@@ -1,11 +1,14 @@
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { memo, useMemo } from "react";
+
+import { Object } from "../types";
+
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 // import { t } from "../i18n";
-import { Object } from "../types";
 import "../assets/notifications-styles.css";
+import "../assets/space-theme.css";
 
 interface InventorySidebarProps {
   objects: Object[];
@@ -36,54 +39,52 @@ function InventorySidebar({
   );
 
   return (
-    <nav className="flex flex-col space-y-2">
+    <nav className="flex flex-col space-y-3 p-4">
       {items.map((o) => (
-        <Card
+        <div
           key={o.id}
-          className={`cursor-pointer transition-colors hover:bg-accent ${
-            selected?.id === o.id ? "bg-primary/20 border-primary border-2 shadow-lg ring-2 ring-primary/30" : ""
+          className={`space-card cursor-pointer transition-all duration-300 hover:space-active ${
+            selected?.id === o.id ? "space-card-selected" : ""
           }`}
           onClick={o.select}
         >
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">{o.name}</CardTitle>
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="space-title text-lg font-semibold text-space-text">
+                {o.name}
+              </h3>
               {notifications[o.id] > 0 && (
-                <div className="notification-badge">
+                <div className="space-notification-badge">
                   {notifications[o.id]}
                 </div>
               )}
             </div>
-          </CardHeader>
-          <CardContent className="pt-0">
             <div className="flex items-center justify-end">
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              <div className="flex items-center gap-2">
+                <button
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     o.edit();
                   }}
-                  className="h-6 w-6 p-0"
+                  className="space-sidebar-button"
+                  aria-label="Редактировать объект"
                 >
-                  <PencilIcon className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                  ✏️
+                </button>
+                <button
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     o.remove();
                   }}
-                  className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                  className="space-sidebar-button danger"
+                  aria-label="Удалить объект"
                 >
-                  <TrashIcon className="h-3 w-3" />
-                </Button>
+                  🗑️
+                </button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </nav>
   );

@@ -1,4 +1,9 @@
-export const TASK_STATUSES = ["planned", "in_progress", "done", "canceled"];
+export const TASK_STATUSES = [
+  { value: "pending", label: "Ожидает" },
+  { value: "in_progress", label: "В работе" },
+  { value: "completed", label: "Завершено" },
+  { value: "cancelled", label: "Отменено" },
+];
 
 export const PURCHASE_STATUSES = ["not_paid", "paid"];
 

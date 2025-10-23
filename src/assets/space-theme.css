@@ -1,0 +1,556 @@
+/* Космическая тема для всего приложения */
+
+/* Космическая тема - только темная */
+:root {
+  --space-bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+  --space-card-bg: rgba(22, 33, 62, 0.8);
+  --space-text: #e2e8f0;
+  --space-text-muted: #94a3b8;
+  --space-border: rgba(99, 102, 241, 0.3);
+  --space-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  --space-glow-strong: 0 0 30px rgba(99, 102, 241, 0.5);
+  --space-button-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --space-primary: #6366f1;
+  --space-primary-dark: #4f46e5;
+  --space-secondary: #8b5cf6;
+  --space-accent: #06b6d4;
+  --space-bg: #0f0f23;
+  --space-bg-light: #1a1a2e;
+  --space-bg-card: #16213e;
+  --space-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --space-gradient-dark: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+/* Космические карточки */
+.space-card {
+  background: var(--space-card-bg);
+  border: 1px solid var(--space-border);
+  border-radius: 12px;
+  box-shadow: var(--space-glow);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+/* Стили для чата */
+.space-list {
+  overflow-y: auto !important;
+  -webkit-scrollbar-width: thin;
+  scrollbar-width: thin;
+  -webkit-scrollbar-color: #6366f1 #1a1a2e;
+  scrollbar-color: #6366f1 #1a1a2e;
+  height: calc(100vh - 200px) !important;
+  max-height: calc(100vh - 200px) !important;
+}
+
+.space-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.space-list::-webkit-scrollbar-track {
+  background: #1a1a2e;
+  border-radius: 4px;
+}
+
+.space-list::-webkit-scrollbar-thumb {
+  background: #6366f1;
+  border-radius: 4px;
+}
+
+.space-list::-webkit-scrollbar-thumb:hover {
+  background: #4f46e5;
+}
+
+.space-card:hover {
+  box-shadow: var(--space-glow-strong);
+  transform: translateY(-2px);
+  border-color: var(--space-primary);
+}
+
+/* Космические кнопки */
+.space-button {
+  background: var(--space-button-gradient);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+  box-shadow: var(--space-glow);
+}
+
+.space-button:hover {
+  background: var(--space-gradient-dark);
+  box-shadow: var(--space-glow-strong);
+  transform: translateY(-1px);
+}
+
+.space-button:active {
+  transform: translateY(0);
+}
+
+/* Космические инпуты */
+.space-input {
+  background: var(--space-bg-light);
+  border: 1px solid var(--space-border);
+  border-radius: 8px;
+  color: var(--space-text);
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+}
+
+.space-input:focus {
+  border-color: var(--space-primary);
+  box-shadow: var(--space-glow);
+  outline: none;
+}
+
+.space-input::placeholder {
+  color: var(--space-text-muted);
+}
+
+/* Космические селекты */
+.space-select {
+  background: var(--space-bg-light);
+  border: 1px solid var(--space-border);
+  border-radius: 8px;
+  color: var(--space-text);
+  transition: all 0.3s ease;
+}
+
+.space-select:hover {
+  border-color: var(--space-primary);
+  box-shadow: var(--space-glow);
+}
+
+.space-select:focus {
+  border-color: var(--space-primary);
+  box-shadow: var(--space-glow-strong);
+}
+
+/* Космические модальные окна */
+.space-modal {
+  background: var(--space-bg-card);
+  border: 1px solid var(--space-border);
+  border-radius: 16px;
+  box-shadow: var(--space-glow-strong);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.space-modal-header {
+  background: var(--space-gradient);
+  color: white;
+  padding: 20px;
+  border-radius: 16px 16px 0 0;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+/* Космические статусы */
+.space-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.space-status-pending {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.space-status-in-progress {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.space-status-completed {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.space-status-cancelled {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+/* Космические приоритеты */
+.space-priority {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.space-priority-low {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.space-priority-medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.space-priority-high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.space-priority-urgent {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Космические списки */
+.space-list {
+  background: var(--space-bg-light);
+  border: 1px solid var(--space-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.space-list-item {
+  padding: 16px;
+  border-bottom: 1px solid var(--space-border);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.space-list-item:hover {
+  background: var(--space-bg-card);
+  border-left: 4px solid var(--space-primary);
+}
+
+.space-list-item:last-child {
+  border-bottom: none;
+}
+
+/* Космические заголовки */
+.space-title {
+  background: var(--space-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.space-subtitle {
+  color: var(--space-text-muted);
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+/* Космические иконки */
+.space-icon {
+  color: var(--space-primary);
+  transition: all 0.3s ease;
+}
+
+.space-icon:hover {
+  color: var(--space-accent);
+  transform: scale(1.1);
+}
+
+/* Космические анимации */
+.space-fade-in {
+  animation: spaceFadeIn 0.5s ease-out;
+}
+
+@keyframes spaceFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.space-slide-in {
+  animation: spaceSlideIn 0.3s ease-out;
+}
+
+@keyframes spaceSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Космические градиенты для фона */
+.space-bg-gradient {
+  background: var(--space-bg-gradient);
+  min-height: 100vh;
+}
+
+/* Космические эффекты для активных элементов */
+.space-active {
+  background: var(--space-gradient);
+  color: white;
+  box-shadow: var(--space-glow-strong);
+  transform: scale(1.02);
+}
+
+/* Космические стили для выбранных карточек в сайдбаре */
+.space-card-selected {
+  background: var(--space-card-bg);
+  border: 2px solid var(--space-primary);
+  box-shadow: var(--space-glow-strong);
+  transform: scale(1.02);
+}
+
+.space-card-selected:hover {
+  box-shadow: var(--space-glow-strong);
+  transform: scale(1.05);
+}
+
+/* Космические кнопки в сайдбаре */
+.space-sidebar-button {
+  background: var(--space-button-gradient);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  padding: 6px 12px;
+  transition: all 0.3s ease;
+  box-shadow: var(--space-glow);
+  font-size: 0.875rem;
+}
+
+.space-sidebar-button:hover {
+  background: var(--space-gradient-dark);
+  box-shadow: var(--space-glow-strong);
+  transform: translateY(-1px);
+}
+
+.space-sidebar-button.danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.space-sidebar-button.danger:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
+
+/* Космические тени */
+.space-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.space-shadow-lg {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.space-shadow-xl {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Адаптивность для космической темы */
+/* Космическая кнопка уведомлений */
+.space-notification-button {
+  position: relative !important;
+  background: linear-gradient(
+    135deg,
+    var(--background) 0%,
+    var(--muted) 100%
+  ) !important;
+  border: 2px solid var(--primary) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  color: var(--primary) !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.3) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.space-notification-button:hover {
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-foreground) 100%
+  ) !important;
+  color: var(--primary-foreground) !important;
+  box-shadow: 0 6px 25px rgba(var(--primary-rgb), 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+.space-notification-button.has-notifications {
+  animation: notificationGlow 2s ease-in-out infinite !important;
+  border-color: #ff6b35 !important;
+  box-shadow:
+    0 4px 15px rgba(255, 107, 53, 0.4),
+    0 0 20px rgba(255, 107, 53, 0.3) !important;
+}
+
+@keyframes notificationGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 15px rgba(255, 107, 53, 0.4),
+      0 0 20px rgba(255, 107, 53, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 6px 25px rgba(255, 107, 53, 0.6),
+      0 0 30px rgba(255, 107, 53, 0.5);
+  }
+}
+
+.space-notification-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.space-notification-button:hover .space-notification-icon {
+  transform: scale(1.1);
+}
+
+.space-notification-badge {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  background: linear-gradient(135deg, #ff00ff, #ff6b35) !important;
+  color: white !important;
+  border-radius: 50% !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  box-shadow:
+    0 0 15px rgba(255, 0, 255, 0.6),
+    0 0 30px rgba(255, 107, 53, 0.4) !important;
+  animation: notificationPulse 2s ease-in-out infinite !important;
+  z-index: 10 !important;
+}
+
+@keyframes notificationPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 15px rgba(255, 0, 255, 0.6),
+      0 0 30px rgba(255, 107, 53, 0.4);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow:
+      0 0 25px rgba(255, 0, 255, 0.8),
+      0 0 50px rgba(255, 107, 53, 0.6);
+  }
+}
+
+.space-notification-pulse {
+  position: absolute !important;
+  top: -12px !important;
+  right: -12px !important;
+  width: 24px !important;
+  height: 24px !important;
+  border: 2px solid rgba(255, 107, 53, 0.6) !important;
+  border-radius: 50% !important;
+  animation: notificationRipple 2s ease-in-out infinite !important;
+  pointer-events: none !important;
+}
+
+@keyframes notificationRipple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Планшеты и меньше */
+@media (max-width: 1024px) {
+  .space-card {
+    padding: 12px;
+  }
+  .space-button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  .space-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Мобильные устройства */
+@media (max-width: 768px) {
+  .space-card {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .space-button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  .space-title {
+    font-size: 1.25rem;
+  }
+  .space-notification-button {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  .space-bg-gradient {
+    padding: 12px;
+  }
+  .space-input {
+    padding: 10px 14px;
+  }
+}
+
+/* Маленькие мобильные */
+@media (max-width: 480px) {
+  .space-card {
+    padding: 8px;
+  }
+  .space-button {
+    padding: 6px 10px;
+  }
+  .space-input {
+    padding: 8px;
+  }
+}

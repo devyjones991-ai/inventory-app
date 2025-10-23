@@ -1,18 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Shield } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../hooks/useNotifications";
 import { useProfile } from "../hooks/useProfile";
 import { t } from "../i18n";
+import "../assets/space-theme.css";
 
 import FormError from "./FormError";
 import { Button } from "./ui/button";
-import { Shield } from "lucide-react";
 import "../assets/profile-modal-styles.css";
 import {
   Dialog,
@@ -41,15 +42,11 @@ const personalInfoSchema = z.object({
 
 const securitySchema = z
   .object({
-    currentPassword: z
-      .string()
-      .min(1, "Текущий пароль обязателен"),
+    currentPassword: z.string().min(1, "Текущий пароль обязателен"),
     newPassword: z
       .string()
       .min(8, "Новый пароль должен содержать минимум 8 символов"),
-    confirmPassword: z
-      .string()
-      .min(1, "Подтверждение пароля обязательно"),
+    confirmPassword: z.string().min(1, "Подтверждение пароля обязательно"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Пароли не совпадают",
@@ -57,7 +54,6 @@ const securitySchema = z
   });
 
 const preferencesSchema = z.object({
-  theme: z.enum(["light", "dark", "auto"]),
   language: z.enum(["ru", "en"]),
   timezone: z.string().min(1, "Часовой пояс обязателен"),
   dateFormat: z.string().min(1, "Формат даты обязателен"),
@@ -107,7 +103,6 @@ export default function ProfileSettings({
   const preferencesForm = useForm({
     resolver: zodResolver(preferencesSchema),
     defaultValues: {
-      theme: profile?.preferences?.theme || "auto",
       language: profile?.preferences?.language || "ru",
       timezone: profile?.preferences?.timezone || "Europe/Moscow",
       dateFormat: profile?.preferences?.date_format || "DD.MM.YYYY",
@@ -154,7 +149,6 @@ export default function ProfileSettings({
     try {
       await updateProfile({
         preferences: {
-          theme: data.theme,
           language: data.language,
           timezone: data.timezone,
           date_format: data.dateFormat,
@@ -182,337 +176,445 @@ export default function ProfileSettings({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-0 shadow-2xl rounded-xl">
-        <DialogHeader className="pb-6">
-          <DialogTitle className="profile-title">
-            Настройки профиля
+      <DialogContent className="max-w-4xl space-modal space-fade-in">
+        <DialogHeader className="space-modal-header">
+          <DialogTitle className="text-white text-2xl font-bold">
+            👤 Настройки профиля
           </DialogTitle>
-          <p className="text-muted-foreground">Управляйте своими данными и настройками</p>
+          <p className="text-white/80 mt-2">
+            Управляйте своими данными и настройками
+          </p>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-lg">
-            <TabsTrigger value="personal" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
-              Личная информация
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="p-6">
+          <TabsList className="grid w-full grid-cols-3 bg-space-bg-light p-1 rounded-lg border border-space-border">
+            <TabsTrigger
+              value="personal"
+              className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+            >
+              👤 Личная информация
             </TabsTrigger>
-            <TabsTrigger value="security" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">Безопасность</TabsTrigger>
-            <TabsTrigger value="preferences" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
-              Настройки
+            <TabsTrigger
+              value="security"
+              className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+            >
+              🔒 Безопасность
+            </TabsTrigger>
+            <TabsTrigger
+              value="preferences"
+              className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+            >
+              ⚙️ Настройки
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="personal" className="space-y-6">
-            <div className="bg-card/50 p-6 rounded-xl border shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Личная информация</h3>
+            <div className="space-card p-6 space-fade-in">
+              <h3 className="space-title text-xl mb-6">👤 Личная информация</h3>
               <form
                 onSubmit={personalForm.handleSubmit(handlePersonalSubmit)}
-                className="space-y-4"
+                className="space-y-6"
               >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="fullName" className="profile-label">Полное имя</Label>
-                  <Input
-                    {...personalForm.register("fullName")}
-                    id="fullName"
-                    className="profile-input w-full"
-                    autoFocus
-                  />
-                  <FormError
-                    error={personalForm.formState.errors.fullName?.message}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="fullName"
+                      className="text-space-text font-semibold"
+                    >
+                      👤 Полное имя
+                    </Label>
+                    <Input
+                      {...personalForm.register("fullName")}
+                      id="fullName"
+                      className="space-input w-full"
+                      placeholder="Введите ваше полное имя..."
+                      autoFocus
+                    />
+                    <FormError
+                      error={personalForm.formState.errors.fullName?.message}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="email"
+                      className="text-space-text font-semibold"
+                    >
+                      📧 Email
+                    </Label>
+                    <Input
+                      {...personalForm.register("email")}
+                      id="email"
+                      type="email"
+                      disabled
+                      className="space-input w-full bg-space-bg-light/50"
+                    />
+                    <FormError
+                      error={personalForm.formState.errors.email?.message}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="backupEmail"
+                      className="text-space-text font-semibold"
+                    >
+                      📧 Резервный email
+                    </Label>
+                    <Input
+                      {...personalForm.register("backupEmail")}
+                      id="backupEmail"
+                      type="email"
+                      className="space-input w-full"
+                      placeholder="Введите резервный email..."
+                    />
+                    <FormError
+                      error={personalForm.formState.errors.backupEmail?.message}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="phone"
+                      className="text-space-text font-semibold"
+                    >
+                      📱 Телефон
+                    </Label>
+                    <Input
+                      {...personalForm.register("phone")}
+                      id="phone"
+                      type="tel"
+                      className="space-input w-full"
+                      placeholder="+7 (999) 123-45-67"
+                    />
+                    <FormError
+                      error={personalForm.formState.errors.phone?.message}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="position"
+                      className="text-space-text font-semibold"
+                    >
+                      💼 Должность
+                    </Label>
+                    <Input
+                      {...personalForm.register("position")}
+                      id="position"
+                      className="space-input w-full"
+                      placeholder="Введите вашу должность..."
+                    />
+                    <FormError
+                      error={personalForm.formState.errors.position?.message}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="department"
+                      className="text-space-text font-semibold"
+                    >
+                      🏢 Отдел
+                    </Label>
+                    <Input
+                      {...personalForm.register("department")}
+                      id="department"
+                      className="space-input w-full"
+                      placeholder="Введите название отдела..."
+                    />
+                    <FormError
+                      error={personalForm.formState.errors.department?.message}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="email" className="profile-label">Email</Label>
-                  <Input
-                    {...personalForm.register("email")}
-                    id="email"
-                    type="email"
-                    disabled
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={personalForm.formState.errors.email?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="backupEmail" className="profile-label">
-                    Резервный email
-                  </Label>
-                  <Input
-                    {...personalForm.register("backupEmail")}
-                    id="backupEmail"
-                    type="email"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={personalForm.formState.errors.backupEmail?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone" className="profile-label">Телефон</Label>
-                  <Input
-                    {...personalForm.register("phone")}
-                    id="phone"
-                    type="tel"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={personalForm.formState.errors.phone?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="position" className="profile-label">Должность</Label>
-                  <Input
-                    {...personalForm.register("position")}
-                    id="position"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={personalForm.formState.errors.position?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="department" className="profile-label">Отдел</Label>
-                  <Input
-                    {...personalForm.register("department")}
-                    id="department"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={personalForm.formState.errors.department?.message}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose} className="profile-button-secondary">
-                  Отмена
-                </Button>
-                <Button type="submit" disabled={isLoading} className="profile-button">
-                  {isLoading ? "Загрузка..." : "Сохранить"}
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter className="flex gap-4 pt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    className="space-button"
+                  >
+                    ❌ Отмена
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="space-button space-active"
+                  >
+                    {isLoading ? "⏳ Загрузка..." : "💾 Сохранить"}
+                  </Button>
+                </DialogFooter>
+              </form>
             </div>
           </TabsContent>
 
           <TabsContent value="security" className="space-y-6">
-            <div className="bg-card/50 p-6 rounded-xl border shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Безопасность</h3>
-            <form
-              onSubmit={securityForm.handleSubmit(handleSecuritySubmit)}
-              className="space-y-4"
-            >
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="currentPassword" className="profile-label">
-                    {t("profile.currentPassword")}
-                  </Label>
-                  <Input
-                    {...securityForm.register("currentPassword")}
-                    id="currentPassword"
-                    type="password"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={
-                      securityForm.formState.errors.currentPassword?.message
-                    }
-                  />
+            <div className="space-card p-6 space-fade-in">
+              <h3 className="space-title text-xl mb-6">🔒 Безопасность</h3>
+              <form
+                onSubmit={securityForm.handleSubmit(handleSecuritySubmit)}
+                className="space-y-6"
+              >
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="currentPassword"
+                      className="text-space-text font-semibold"
+                    >
+                      🔑 Текущий пароль
+                    </Label>
+                    <Input
+                      {...securityForm.register("currentPassword")}
+                      id="currentPassword"
+                      type="password"
+                      className="space-input w-full"
+                      placeholder="Введите текущий пароль..."
+                    />
+                    <FormError
+                      error={
+                        securityForm.formState.errors.currentPassword?.message
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="newPassword"
+                      className="text-space-text font-semibold"
+                    >
+                      🆕 Новый пароль
+                    </Label>
+                    <Input
+                      {...securityForm.register("newPassword")}
+                      id="newPassword"
+                      type="password"
+                      className="space-input w-full"
+                      placeholder="Введите новый пароль..."
+                    />
+                    <FormError
+                      error={securityForm.formState.errors.newPassword?.message}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-space-text font-semibold"
+                    >
+                      🔐 Подтвердите пароль
+                    </Label>
+                    <Input
+                      {...securityForm.register("confirmPassword")}
+                      id="confirmPassword"
+                      type="password"
+                      className="space-input w-full"
+                      placeholder="Подтвердите новый пароль..."
+                    />
+                    <FormError
+                      error={
+                        securityForm.formState.errors.confirmPassword?.message
+                      }
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="newPassword" className="profile-label">
-                    {t("profile.newPassword")}
-                  </Label>
-                  <Input
-                    {...securityForm.register("newPassword")}
-                    id="newPassword"
-                    type="password"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={securityForm.formState.errors.newPassword?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirmPassword" className="profile-label">
-                    {t("profile.confirmPassword")}
-                  </Label>
-                  <Input
-                    {...securityForm.register("confirmPassword")}
-                    id="confirmPassword"
-                    type="password"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={
-                      securityForm.formState.errors.confirmPassword?.message
-                    }
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose} className="profile-button-secondary">
-                  Отмена
-                </Button>
-                <Button type="submit" disabled={isLoading} className="profile-button">
-                  {isLoading ? "Загрузка..." : "Сохранить"}
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter className="flex gap-4 pt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    className="space-button"
+                  >
+                    ❌ Отмена
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="space-button space-active"
+                  >
+                    {isLoading ? "⏳ Загрузка..." : "🔒 Сохранить"}
+                  </Button>
+                </DialogFooter>
+              </form>
             </div>
           </TabsContent>
 
           <TabsContent value="preferences" className="space-y-6">
-            <div className="bg-card/50 p-6 rounded-xl border shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Настройки</h3>
-            <form
-              onSubmit={preferencesForm.handleSubmit(handlePreferencesSubmit)}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="theme" className="profile-label">{t("profile.theme")}</Label>
-                  <select
-                    {...preferencesForm.register("theme")}
-                    id="theme"
-                    className="profile-input w-full"
-                  >
-                    <option value="light">{t("profile.themeLight")}</option>
-                    <option value="dark">{t("profile.themeDark")}</option>
-                    <option value="auto">{t("profile.themeAuto")}</option>
-                  </select>
-                  <FormError
-                    error={preferencesForm.formState.errors.theme?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="language" className="profile-label">{t("profile.language")}</Label>
-                  <select
-                    {...preferencesForm.register("language")}
-                    id="language"
-                    className="profile-input w-full"
-                  >
-                    <option value="ru">{t("profile.languageRu")}</option>
-                    <option value="en">{t("profile.languageEn")}</option>
-                  </select>
-                  <FormError
-                    error={preferencesForm.formState.errors.language?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="timezone" className="profile-label">{t("profile.timezone")}</Label>
-                  <Input
-                    {...preferencesForm.register("timezone")}
-                    id="timezone"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={preferencesForm.formState.errors.timezone?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dateFormat" className="profile-label">{t("profile.dateFormat")}</Label>
-                  <Input
-                    {...preferencesForm.register("dateFormat")}
-                    id="dateFormat"
-                    className="profile-input w-full"
-                  />
-                  <FormError
-                    error={preferencesForm.formState.errors.dateFormat?.message}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="timeFormat" className="profile-label">{t("profile.timeFormat")}</Label>
-                  <select
-                    {...preferencesForm.register("timeFormat")}
-                    id="timeFormat"
-                    className="profile-input w-full"
-                  >
-                    <option value="12h">{t("profile.timeFormat12h")}</option>
-                    <option value="24h">{t("profile.timeFormat24h")}</option>
-                  </select>
-                  <FormError
-                    error={preferencesForm.formState.errors.timeFormat?.message}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-medium">{t("profile.notifications")}</h4>
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      {...preferencesForm.register("emailNotifications")}
-                      type="checkbox"
-                      className="rounded"
-                    />
-                    <span>{t("profile.emailNotifications")}</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      {...preferencesForm.register("pushNotifications")}
-                      type="checkbox"
-                      className="rounded"
-                    />
-                    <span>{t("profile.pushNotifications")}</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      {...preferencesForm.register("smsNotifications")}
-                      type="checkbox"
-                      className="rounded"
-                    />
-                    <span>{t("profile.smsNotifications")}</span>
-                  </label>
-                </div>
-
-                {permission === "default" && (
-                  <div className="p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {t("profile.notificationPermissionRequired")}
-                    </p>
-                    <Button
-                      size="sm"
-                      onClick={handleRequestNotificationPermission}
-                      className="profile-button"
+            <div className="space-card p-6 space-fade-in">
+              <h3 className="space-title text-xl mb-6">⚙️ Настройки</h3>
+              <form
+                onSubmit={preferencesForm.handleSubmit(handlePreferencesSubmit)}
+                className="space-y-6"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="language"
+                      className="text-space-text font-semibold"
                     >
-                      {t("profile.requestPermission")}
-                    </Button>
+                      🌍 Язык
+                    </Label>
+                    <select
+                      {...preferencesForm.register("language")}
+                      id="language"
+                      className="space-select w-full"
+                    >
+                      <option value="ru">🇷🇺 Русский</option>
+                      <option value="en">🇺🇸 English</option>
+                    </select>
+                    <FormError
+                      error={preferencesForm.formState.errors.language?.message}
+                    />
                   </div>
-                )}
-              </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="timezone"
+                      className="text-space-text font-semibold"
+                    >
+                      🕐 Часовой пояс
+                    </Label>
+                    <Input
+                      {...preferencesForm.register("timezone")}
+                      id="timezone"
+                      className="space-input w-full"
+                      placeholder="Europe/Moscow"
+                    />
+                    <FormError
+                      error={preferencesForm.formState.errors.timezone?.message}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="dateFormat"
+                      className="text-space-text font-semibold"
+                    >
+                      📅 Формат даты
+                    </Label>
+                    <Input
+                      {...preferencesForm.register("dateFormat")}
+                      id="dateFormat"
+                      className="space-input w-full"
+                      placeholder="DD.MM.YYYY"
+                    />
+                    <FormError
+                      error={
+                        preferencesForm.formState.errors.dateFormat?.message
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="timeFormat"
+                      className="text-space-text font-semibold"
+                    >
+                      ⏰ Формат времени
+                    </Label>
+                    <select
+                      {...preferencesForm.register("timeFormat")}
+                      id="timeFormat"
+                      className="space-select w-full"
+                    >
+                      <option value="12h">🕐 12-часовой</option>
+                      <option value="24h">🕒 24-часовой</option>
+                    </select>
+                    <FormError
+                      error={
+                        preferencesForm.formState.errors.timeFormat?.message
+                      }
+                    />
+                  </div>
+                </div>
 
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose} className="profile-button-secondary">
-                  Отмена
-                </Button>
-                <Button type="submit" disabled={isLoading} className="profile-button">
-                  {isLoading ? "Загрузка..." : "Сохранить"}
-                </Button>
-              </DialogFooter>
-            </form>
+                <div className="space-y-6">
+                  <h4 className="text-space-text font-semibold text-lg">
+                    🔔 Уведомления
+                  </h4>
+                  <div className="space-y-4">
+                    <label className="flex items-center space-x-3 p-3 space-card hover:space-active transition-all duration-300">
+                      <input
+                        {...preferencesForm.register("emailNotifications")}
+                        type="checkbox"
+                        className="rounded space-icon"
+                      />
+                      <span className="text-space-text font-medium">
+                        📧 Email уведомления
+                      </span>
+                    </label>
+                    <label className="flex items-center space-x-3 p-3 space-card hover:space-active transition-all duration-300">
+                      <input
+                        {...preferencesForm.register("pushNotifications")}
+                        type="checkbox"
+                        className="rounded space-icon"
+                      />
+                      <span className="text-space-text font-medium">
+                        🔔 Push уведомления
+                      </span>
+                    </label>
+                    <label className="flex items-center space-x-3 p-3 space-card hover:space-active transition-all duration-300">
+                      <input
+                        {...preferencesForm.register("smsNotifications")}
+                        type="checkbox"
+                        className="rounded space-icon"
+                      />
+                      <span className="text-space-text font-medium">
+                        📱 SMS уведомления
+                      </span>
+                    </label>
+                  </div>
+
+                  {permission === "default" && (
+                    <div className="p-4 space-card">
+                      <p className="text-space-text-muted mb-3">
+                        🔔 Требуется разрешение на уведомления
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={handleRequestNotificationPermission}
+                        className="space-button"
+                      >
+                        🔔 Запросить разрешение
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter className="flex gap-4 pt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    className="space-button"
+                  >
+                    ❌ Отмена
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="space-button space-active"
+                  >
+                    {isLoading ? "⏳ Загрузка..." : "⚙️ Сохранить"}
+                  </Button>
+                </DialogFooter>
+              </form>
             </div>
           </TabsContent>
         </Tabs>
-        
+
         {/* Ссылка на админку для администраторов */}
-        {role === 'admin' && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <div className="flex items-center justify-between">
+        {role === "admin" && (
+          <div className="mt-6 pt-6 border-t border-space-border">
+            <div className="flex items-center justify-between p-4 space-card">
               <div>
-                <h3 className="text-sm font-medium text-foreground">Администрирование</h3>
-                <p className="text-sm text-muted-foreground">Управление пользователями системы</p>
+                <h3 className="text-space-text font-semibold text-lg">
+                  🛡️ Администрирование
+                </h3>
+                <p className="text-space-text-muted">
+                  Управление пользователями системы
+                </p>
               </div>
               <Button
                 variant="outline"
                 onClick={() => {
                   onClose();
-                  navigate('/admin');
+                  navigate("/admin");
                 }}
-                className="flex items-center gap-2"
+                className="space-button flex items-center gap-2"
               >
                 <Shield className="w-4 h-4" />
-                Панель администратора
+                🛡️ Панель администратора
               </Button>
             </div>
           </div>

@@ -1,6 +1,10 @@
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 import React, { useState } from "react";
+
+import { useNotifications } from "../hooks/useNotifications";
+import { Notification } from "../types";
+
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
@@ -10,9 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { useNotifications } from "../hooks/useNotifications";
-import { Notification } from "../types";
 import "../assets/notifications-styles.css";
+import "../assets/space-theme.css";
 
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,81 +56,87 @@ export default function NotificationCenter() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className={`notification-button ${unreadCount > 0 ? 'has-notifications' : ''}`}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`space-notification-button ${unreadCount > 0 ? "has-notifications" : ""}`}
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 17h5l-5 5v-5zM9 12l2 2 4-4M21 12c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z"
-            />
-          </svg>
-          {unreadCount > 0 && (
-            <div className="notification-badge absolute -top-1 -right-1">
-              {unreadCount}
-            </div>
-          )}
+          <div className="relative">
+            <div className="space-notification-icon">🔔</div>
+            {unreadCount > 0 && (
+              <div className="space-notification-badge">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </div>
+            )}
+            {unreadCount > 0 && (
+              <div className="space-notification-pulse"></div>
+            )}
+          </div>
         </Button>
       </DialogTrigger>
-      <DialogContent className="notification-center max-w-md">
-        <DialogHeader>
+      <DialogContent className="space-modal space-fade-in max-w-md">
+        <DialogHeader className="space-modal-header">
           <div className="flex items-center justify-between">
-            <DialogTitle className="notification-header">Уведомления</DialogTitle>
+            <DialogTitle className="text-white text-xl font-bold">
+              🔔 Уведомления
+            </DialogTitle>
             {notifications.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleClearAll}
-                className="notification-action-button danger"
+                className="space-button"
               >
-                Очистить все
+                🗑️ Очистить все
               </Button>
             )}
           </div>
         </DialogHeader>
-        <div className="notification-list">
+        <div className="space-list max-h-96 overflow-y-auto">
           {permission === "default" && (
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">
-                Разрешите уведомления для получения важных обновлений
+            <div className="space-card p-4 mb-4">
+              <p className="text-space-text-muted mb-3">
+                🔔 Разрешите уведомления для получения важных обновлений
               </p>
-              <Button size="sm" onClick={handleRequestPermission}>
-                Разрешить
+              <Button
+                size="sm"
+                onClick={handleRequestPermission}
+                className="space-button"
+              >
+                🔔 Разрешить
               </Button>
             </div>
           )}
           {notifications.length === 0 ? (
-            <p className="notification-empty">
-              Нет уведомлений
-            </p>
+            <div className="space-card p-6 text-center text-space-text-muted">
+              <div className="text-4xl mb-2">🔔</div>
+              <p>Нет уведомлений</p>
+              <p className="text-sm">
+                Здесь будут появляться важные обновления
+              </p>
+            </div>
           ) : (
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                className={`space-card p-4 mb-3 cursor-pointer transition-all duration-300 hover:space-active ${notification.read ? "opacity-70" : "space-fade-in"}`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="notification-text font-medium text-sm">{notification.title}</h4>
-                    <p className="notification-text text-xs mt-1">
+                    <div className="text-space-text font-semibold mb-1">
+                      {notification.read ? "📖" : "📬"} {notification.title}
+                    </div>
+                    <div className="text-space-text-muted text-sm mb-2">
                       {notification.message}
-                    </p>
-                    <p className="notification-time">
+                    </div>
+                    <div className="text-space-text-muted text-xs">
+                      ⏰{" "}
                       {formatDistanceToNow(new Date(notification.created_at), {
                         addSuffix: true,
                         locale: ru,
                       })}
-                    </p>
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
@@ -136,9 +145,9 @@ export default function NotificationCenter() {
                       e.stopPropagation();
                       handleRemoveNotification(notification.id);
                     }}
-                    className="notification-action-button danger h-6 w-6 p-0"
+                    className="space-button p-1 h-6 w-6"
                   >
-                    ×
+                    ❌
                   </Button>
                 </div>
               </div>

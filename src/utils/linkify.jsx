@@ -1,6 +1,8 @@
 import React from "react";
 
-export function linkifyText(text = "") {
+import { getDisplayText, isUrl } from "./linkUtils";
+
+export function linkifyText(text = "", maxLength = 50, _context = "default") {
   if (!text) return text;
 
   // Улучшенное регулярное выражение для URL
@@ -34,19 +36,21 @@ export function linkifyText(text = "") {
       href = "http://" + href;
     }
 
-    // Сокращаем длинные URL для отображения
-    const displayUrl = url.length > 50 ? url.substring(0, 47) + "..." : url;
+    // Используем новую утилиту для отображения ссылки
+    const displayUrl = getDisplayText(url, maxLength);
+    const isExternal = isUrl(href);
 
     parts.push(
       <a
         key={`link-${index}`}
         href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="url"
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
+        className="smart-link text-blue-400 hover:text-blue-300 underline break-all"
         title={url}
       >
         {displayUrl}
+        {isExternal && <span className="ml-1 text-xs">🔗</span>}
       </a>,
     );
     index++;

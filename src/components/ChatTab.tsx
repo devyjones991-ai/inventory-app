@@ -16,6 +16,7 @@ import useChat from "../hooks/useChat";
 import { Object } from "../types";
 import { formatDateTime } from "../utils/date";
 import { linkifyText } from "../utils/linkify";
+import "../assets/space-theme.css";
 
 import AttachmentPreview from "./AttachmentPreview";
 import { Button, Input } from "./ui";
@@ -38,7 +39,10 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
+    if (
+      messagesEndRef.current &&
+      typeof messagesEndRef.current.scrollIntoView === "function"
+    ) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
@@ -58,8 +62,12 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   }, [active]);
 
   useLayoutEffect(() => {
-    if (active) {
-      scrollToBottom();
+    if (active && messages.length > 0) {
+      // Небольшая задержка для рендера DOM
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [messages, active, scrollToBottom]);
 
@@ -89,6 +97,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
     try {
       await sendMessage(message.trim());
       setMessage("");
+      // Автоскролл произойдет автоматически через useLayoutEffect при изменении messages
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -139,20 +148,25 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   // Если нет выбранного объекта, показываем сообщение
   if (!selected) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Выберите объект для просмотра чата</p>
+      <div className="space-card flex items-center justify-center h-64 text-space-text-muted">
+        <div className="text-center">
+          <div className="text-4xl mb-2">💬</div>
+          <p>Выберите объект для просмотра чата</p>
+        </div>
       </div>
     );
   }
 
-
   // Обработка ошибок
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="space-card flex items-center justify-center h-64 text-space-text-muted">
         <div className="text-center">
-          <p className="text-red-500 mb-2">Произошла ошибка при загрузке чата</p>
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <div className="text-4xl mb-2">⚠️</div>
+          <p className="text-red-500 mb-2">
+            Произошла ошибка при загрузке чата
+          </p>
+          <p className="text-sm">{error}</p>
           {error.includes("No objectId") && (
             <p className="text-xs text-yellow-500 mt-2">
               Выберите объект для просмотра чата
@@ -169,83 +183,114 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   }
 
   return (
-    <div className="chat-container">
-      <div className="chat-nav-bar">
-        <h3 className="text-lg font-semibold text-white">Чат</h3>
-        <div className="flex items-center gap-2">
-          <button
-            className="chat-close"
-            onClick={() => setShowSearch(!showSearch)}
-            aria-label="Найти"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
-          </button>
-          <button
-            className="chat-close"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-          >
-            <ChevronDownIcon
-              className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? "rotate-180" : ""}`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {showSearch && (
-        <div className="chat-search-bar">
-          <div className="flex gap-2">
-            <input
-              className="chat-search-input"
-              placeholder="Поиск сообщений..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch(searchQuery);
-                }
-              }}
-            />
-            <button className="chat-search-button" onClick={() => handleSearch(searchQuery)}>
-              Найти
+    <div className="flex flex-col h-full min-h-0 space-bg-gradient rounded-xl">
+      {/* Заголовок чата - фиксированный */}
+      <div className="flex-shrink-0 space-card p-4 border-b border-space-border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="space-title text-xl">💬 Чат</h3>
+            <p className="text-space-text-muted">
+              Обсуждение по объекту "{selected.name}"
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="space-button p-2"
+              onClick={() => setShowSearch(!showSearch)}
+              aria-label="Найти"
+            >
+              <MagnifyingGlassIcon className="w-4 h-4" />
             </button>
-            <button className="chat-clear-button" onClick={handleClearSearch}>
-              Очистить
+            <button
+              className="space-button p-2"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              aria-label={isCollapsed ? "Развернуть чат" : "Свернуть чат"}
+            >
+              <ChevronDownIcon
+                className={`w-4 h-4 transition-transform ${isCollapsed ? "rotate-180" : ""}`}
+              />
             </button>
           </div>
         </div>
-      )}
+
+        {showSearch && (
+          <div className="mt-4">
+            <div className="flex gap-3">
+              <input
+                className="space-input flex-1"
+                placeholder="🔍 Поиск сообщений..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch(searchQuery);
+                  }
+                }}
+              />
+              <button
+                className="space-button"
+                onClick={() => handleSearch(searchQuery)}
+              >
+                🔍 Найти
+              </button>
+              <button className="space-button" onClick={handleClearSearch}>
+                ❌ Очистить
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {!isCollapsed && (
         <>
-          <div className="chat-messages-area">
-            <div className="chat-messages-container">
-              {loading && (
-                <div className="chat-loading">
-                  Загрузка сообщений...
-                </div>
-              )}
+          {/* Контейнер сообщений - ГЛАВНОЕ! */}
+          <div className="flex-1 overflow-y-auto min-h-0 space-list">
+            {loading && (
+              <div className="space-card p-4 text-center text-space-text-muted">
+                <div className="text-2xl mb-2">⏳</div>
+                Загрузка сообщений...
+              </div>
+            )}
 
-              {error && (
-                <div className="chat-error">
-                  Ошибка загрузки сообщений: {error}
-                </div>
-              )}
+            {error && (
+              <div className="space-card p-4 text-center text-red-500">
+                <div className="text-2xl mb-2">⚠️</div>
+                Ошибка загрузки сообщений: {error}
+              </div>
+            )}
 
-              {messages.map((msg) => (
+            {/* Кнопка загрузки старых сообщений */}
+
+            {messages.map((msg, index) => {
+              const isCurrentUser = msg.sender === userEmail;
+              const prevMsg = index > 0 ? messages[index - 1] : null;
+              const isNewSender = !prevMsg || prevMsg.sender !== msg.sender;
+
+              return (
                 <div
                   key={msg.id}
-                  className={`chat-message ${msg.sender === userEmail ? "user" : "assistant"}`}
+                  className={`chat-message ${isCurrentUser ? "user" : "assistant"}`}
                 >
+                  {isNewSender && (
+                    <div className="chat-message-sender-header">
+                      <span className="chat-sender-name">
+                        {isCurrentUser ? "Вы" : msg.sender}
+                      </span>
+                    </div>
+                  )}
                   <div className="chat-message-bubble">
-                    <div className="chat-message-sender">{msg.sender}</div>
                     <div className="chat-message-content">
                       {msg.file_url ? (
                         <div>
-                          <p>{linkifyText(msg.content)}</p>
+                          <p className="link-container">
+                            {linkifyText(msg.content, 50, "CHAT")}
+                          </p>
                           <AttachmentPreview url={msg.file_url} />
                         </div>
                       ) : (
-                        <p>{linkifyText(msg.content)}</p>
+                        <p className="link-container">
+                          {linkifyText(msg.content, 50, "CHAT")}
+                        </p>
                       )}
                     </div>
                     <div className="chat-message-time">
@@ -253,37 +298,39 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
                     </div>
                   </div>
                 </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
           </div>
 
-          <div className="chat-input-area">
-            <div className="chat-input-container">
-              <div className="chat-textarea-wrapper">
+          {/* Поле ввода - фиксированное внизу */}
+          <div className="flex-shrink-0 space-card p-4 border-t border-space-border">
+            <div className="flex gap-3">
+              <div className="flex-1">
                 <textarea
                   ref={textareaRef}
-                  className="chat-textarea"
+                  className="space-input w-full resize-none"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Введите сообщение..."
+                  placeholder="💬 Введите сообщение..."
+                  rows={3}
                 />
               </div>
-              <div className="chat-buttons">
+              <div className="flex flex-col gap-2">
                 <button
-                  className="chat-attach-button"
+                  className="space-button p-2"
                   onClick={() => fileInputRef.current?.click()}
                   aria-label="Прикрепить файл"
                 >
-                  <PaperClipIcon className="w-4 h-4" />
+                  📎
                 </button>
-                <button 
-                  className="chat-send-button" 
-                  onClick={handleSendMessage} 
+                <button
+                  className="space-button space-active p-2"
+                  onClick={handleSendMessage}
                   disabled={!message.trim()}
                 >
-                  Отправить
+                  📤
                 </button>
               </div>
             </div>
@@ -292,6 +339,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
               type="file"
               className="hidden"
               onChange={handleFileUpload}
+              aria-label="Выберите файл для загрузки"
             />
           </div>
         </>

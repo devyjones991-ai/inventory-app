@@ -23,7 +23,6 @@ const ConfirmModal = lazy(() => import("../components/ConfirmModal"));
 const NotificationCenter = lazy(
   () => import("../components/NotificationCenter"),
 );
-import ThemeToggle from "../components/ThemeToggle";
 import { Button } from "../components/ui/button";
 import {
   Dialog,
@@ -38,9 +37,9 @@ import { useDashboardModals } from "../hooks/useDashboardModals";
 import { useObjectList } from "../hooks/useObjectList";
 import { useObjectNotifications } from "../hooks/useObjectNotifications";
 import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
-import { t } from "../i18n";
 import { supabase } from "../supabaseClient";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
+import "../assets/space-theme.css";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -48,7 +47,6 @@ export default function DashboardPage() {
   // Active tab is derived from URL (single source of truth)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tasksCount, setTasksCount] = useState(0);
 
   const {
     objects,
@@ -56,7 +54,6 @@ export default function DashboardPage() {
     fetchError,
     isEmpty,
     handleSelect,
-    handleUpdateSelected,
     saveObject,
     deleteObject,
     importFromFile,
@@ -68,12 +65,10 @@ export default function DashboardPage() {
   const activeTab = allowedTabs.includes(tabParam || "")
     ? (tabParam as string)
     : "desc";
-  const { chatUnread, clearNotifications } = useObjectNotifications(
-    selected,
-    activeTab,
-    user,
-  );
+  const { chatUnread, hardwareUnread, clearNotifications } =
+    useObjectNotifications(selected, activeTab, user);
   const chatCount = selected?.id ? chatUnread[selected.id] || 0 : 0;
+  const hardwareCount = selected?.id ? hardwareUnread[selected.id] || 0 : 0;
 
   const {
     isObjectModalOpen,
@@ -89,13 +84,7 @@ export default function DashboardPage() {
     closeObjectModal,
   } = useDashboardModals();
 
-  const [addHandler, setAddHandler] = useState(() => openAddModal);
-  const registerAddHandler = useCallback(
-    (handler: (() => void) | null) => {
-      setAddHandler(() => handler || openAddModal);
-    },
-    [openAddModal],
-  );
+  const [addHandler] = useState(() => openAddModal);
 
   const importInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -139,7 +128,7 @@ export default function DashboardPage() {
     };
   }, [isMenuOpen]);
 
-  const onSelect = (obj: Object) => {
+  const onSelect = (obj: object) => {
     handleSelect(obj);
     clearNotifications(obj.id);
     // sync URL: set obj and reset tab to desc
@@ -148,11 +137,6 @@ export default function DashboardPage() {
     params.set("tab", "desc");
     setSearchParams(params, { replace: true });
     setIsSidebarOpen(false);
-  };
-
-  const onUpdateSelected = (updated: Record<string, unknown>) => {
-    handleUpdateSelected(updated);
-    clearNotifications(updated.id);
   };
 
   const onTabChange = useCallback(
@@ -164,7 +148,7 @@ export default function DashboardPage() {
         params.set("tab", tab);
         setSearchParams(params, { replace: true });
       }
-      if ((tab === "tasks" || tab === "chat") && selected) {
+      if ((tab === "tasks" || tab === "chat" || tab === "hw") && selected) {
         clearNotifications(selected.id);
       }
     },
@@ -441,7 +425,6 @@ export default function DashboardPage() {
               <Suspense fallback={<div className="w-8 h-8" />}>
                 <NotificationCenter />
               </Suspense>
-              <ThemeToggle />
               <Button
                 className="p-2 text-sm md:text-base"
                 onClick={() => setIsAccountModalOpen(true)}
@@ -465,6 +448,10 @@ export default function DashboardPage() {
               <InventoryTabs
                 selected={selected}
                 userEmail={user?.email || ""}
+                chatCount={chatCount}
+                tasksCount={0}
+                hardwareCount={hardwareCount}
+                onTabChange={onTabChange}
               />
             </Suspense>
           </div>
@@ -478,34 +465,53 @@ export default function DashboardPage() {
             }
           }}
         >
-          <DialogContent draggable className="w-full max-w-md">
+          <DialogContent
+            draggable
+            className="w-full max-w-md space-modal space-fade-in"
+          >
             <Button
               size="icon"
               type="button"
-              className="absolute right-2 top-2 bg-background/90"
+              className="absolute right-2 top-2 space-button"
               onClick={closeObjectModal}
               aria-label="Close"
             >
               <XMarkIcon className="w-5 h-5" />
             </Button>
-            <DialogHeader data-dialog-handle>
-              <DialogTitle>
-                {editingObject ? "Редактировать объект" : "Добавить объект"}
+            <DialogHeader data-dialog-handle className="space-modal-header">
+              <DialogTitle className="text-white text-xl font-bold">
+                {editingObject
+                  ? "✏️ Редактировать объект"
+                  : "➕ Добавить объект"}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                type="text"
-                className="w-full"
-                placeholder="Название объекта"
-                value={objectName}
-                onChange={(e) => setObjectName(e.target.value)}
-              />
+            <div className="space-y-4 p-6">
+              <div className="space-y-2">
+                <label className="text-space-text font-semibold">
+                  📦 Название объекта
+                </label>
+                <Input
+                  type="text"
+                  className="w-full space-input"
+                  placeholder="Введите название объекта..."
+                  value={objectName}
+                  onChange={(e) => setObjectName(e.target.value)}
+                />
+              </div>
             </div>
-            <DialogFooter className="flex space-x-2">
-              <Button onClick={onSaveObject}>Сохранить</Button>
-              <Button variant="ghost" onClick={closeObjectModal}>
-                Отмена
+            <DialogFooter className="flex space-x-2 pt-6">
+              <Button
+                onClick={onSaveObject}
+                className="space-button space-active"
+              >
+                💾 Сохранить
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={closeObjectModal}
+                className="space-button"
+              >
+                ❌ Отмена
               </Button>
             </DialogFooter>
           </DialogContent>

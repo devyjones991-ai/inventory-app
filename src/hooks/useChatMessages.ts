@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
 import { supabase } from "../supabaseClient";
+import { ChatMessage } from "../types";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
 import logger from "../utils/logger";
-import { ChatMessage } from "../types";
 
 const ALLOWED_MIME_TYPES = [
   "image/jpeg",
@@ -16,7 +16,6 @@ const ALLOWED_MIME_TYPES = [
   "text/plain",
 ];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-
 
 interface FetchMessagesParams {
   limit?: number;
@@ -35,12 +34,22 @@ export function useChatMessages() {
       try {
         let query;
         try {
+          if (!supabase) {
+            throw new Error("Supabase client not initialized");
+          }
+          // Всегда загружаем сообщения в хронологическом порядке (старые первыми)
           query = supabase
             .from("chat_messages")
             .select("*")
             .eq("object_id", objectId)
-            .order("created_at", { ascending: false })
-            .range(offset, offset + limit - 1);
+            .order("created_at", { ascending: true });
+
+          // Если offset не отрицательный, используем range для пагинации
+          if (offset >= 0) {
+            query = query.range(offset, offset + limit - 1);
+          } else {
+            query = query.limit(limit);
+          }
 
           if (search) {
             query = query.ilike("content", `%${search}%`);
@@ -58,7 +67,10 @@ export function useChatMessages() {
             return { data: null, error };
           }
 
-          return { data: data || [], error: null };
+          // Проверяем, есть ли еще сообщения для загрузки
+          const hasMore = data && data.length === limit;
+
+          return { data: data || [], error: null, hasMore };
         } catch (err) {
           logger.error("Error in fetchMessages:", err);
           await handleSupabaseError(err, navigate, "Ошибка загрузки сообщений");
@@ -74,7 +86,12 @@ export function useChatMessages() {
   );
 
   const sendMessage = useCallback(
-    async (objectId: string, content: string, userEmail: string, file?: File) => {
+    async (
+      objectId: string,
+      content: string,
+      userEmail: string,
+      file?: File,
+    ) => {
       try {
         if (!supabase) {
           throw new Error("Supabase client not initialized");

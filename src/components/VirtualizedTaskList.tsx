@@ -2,6 +2,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
 
 import { Task } from "../types";
+import "../assets/space-theme.css";
 
 import TaskCard from "./TaskCard";
 
@@ -24,8 +25,14 @@ function VirtualizedTaskList({
 }: VirtualizedTaskListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  const virtualizer = useVirtualizer({
+    count: tasks.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => itemSize,
+  });
+
   // В тестовой среде используем простой рендеринг без виртуализации
-  if (process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === "test") {
     if (tasks.length === 0) {
       return (
         <div className="flex items-center justify-center h-32 text-muted-foreground">
@@ -51,16 +58,14 @@ function VirtualizedTaskList({
     );
   }
 
-  const virtualizer = useVirtualizer({
-    count: tasks.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => itemSize,
-  });
-
   if (tasks.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 text-muted-foreground">
-        Нет задач
+      <div className="space-card flex items-center justify-center h-32 text-space-text-muted">
+        <div className="text-center">
+          <div className="text-4xl mb-2">🚀</div>
+          <p>Нет задач для отображения</p>
+          <p className="text-sm">Создайте первую задачу!</p>
+        </div>
       </div>
     );
   }
@@ -68,7 +73,7 @@ function VirtualizedTaskList({
   return (
     <div
       ref={parentRef}
-      className="rounded border overflow-auto"
+      className="space-list overflow-auto space-shadow-lg"
       style={{ height }}
     >
       <div

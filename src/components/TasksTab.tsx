@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { TASK_STATUSES } from "../constants";
 import { Task, Object } from "../types";
+import "../assets/space-theme.css";
 
 import ConfirmModal from "./ConfirmModal";
 import ErrorMessage from "./ErrorMessage";
@@ -27,6 +28,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
+import UserAutocomplete from "./UserAutocomplete";
 import VirtualizedTaskList from "./VirtualizedTaskList";
 
 const taskSchema = z.object({
@@ -137,7 +139,7 @@ export default function TasksTab({
   }, [reset]);
 
   const handleTaskSubmit = useCallback(
-    async (data: any) => {
+    async (data: Partial<Task>) => {
       try {
         if (editingTask) {
           await onUpdateTask(editingTask.id, data);
@@ -178,49 +180,57 @@ export default function TasksTab({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 space-bg-gradient p-6 rounded-xl">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Задачи</h3>
-        <Button onClick={openAddModal}>Добавить задачу</Button>
+        <div>
+          <h3 className="space-title">✅ Задачи</h3>
+          <p className="space-subtitle">Управление задачами и проектами</p>
+        </div>
+        <Button onClick={openAddModal} className="space-button space-fade-in">
+          ✨ Добавить задачу
+        </Button>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex gap-4">
-          <Input
-            placeholder="Поиск задач..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="flex-1"
-          />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Статус" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все статусы</SelectItem>
-              <SelectItem value="pending">Ожидает</SelectItem>
-              <SelectItem value="in_progress">В работе</SelectItem>
-              <SelectItem value="completed">Завершено</SelectItem>
-              <SelectItem value="cancelled">Отменено</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Сортировка" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="created_at">Дата создания</SelectItem>
-              <SelectItem value="title">Название</SelectItem>
-              <SelectItem value="status">Статус</SelectItem>
-              <SelectItem value="priority">Приоритет</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-          >
-            {sortOrder === "asc" ? "↑" : "↓"}
-          </Button>
+      <div className="space-y-6">
+        <div className="space-card p-6">
+          <div className="flex gap-4 flex-wrap">
+            <Input
+              placeholder="🔍 Поиск задач..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="flex-1 space-input"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48 space-select">
+                <SelectValue placeholder="📊 Статус" />
+              </SelectTrigger>
+              <SelectContent className="space-modal">
+                <SelectItem value="all">🌟 Все статусы</SelectItem>
+                <SelectItem value="pending">⏳ Ожидает</SelectItem>
+                <SelectItem value="in_progress">🚀 В работе</SelectItem>
+                <SelectItem value="completed">✅ Завершено</SelectItem>
+                <SelectItem value="cancelled">❌ Отменено</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-48 space-select">
+                <SelectValue placeholder="🔄 Сортировка" />
+              </SelectTrigger>
+              <SelectContent className="space-modal">
+                <SelectItem value="created_at">📅 Дата создания</SelectItem>
+                <SelectItem value="title">📝 Название</SelectItem>
+                <SelectItem value="status">📊 Статус</SelectItem>
+                <SelectItem value="priority">⚡ Приоритет</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+              className="space-button"
+            >
+              {sortOrder === "asc" ? "⬆️" : "⬇️"}
+            </Button>
+          </div>
         </div>
 
         <VirtualizedTaskList
@@ -233,29 +243,47 @@ export default function TasksTab({
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingTask ? "Редактировать задачу" : "Добавить задачу"}
+        <DialogContent className="max-w-2xl space-modal space-fade-in">
+          <DialogHeader className="space-modal-header">
+            <DialogTitle className="text-white">
+              {editingTask ? "✏️ Редактировать задачу" : "✨ Добавить задачу"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(handleTaskSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="title">Название</Label>
-                <Input {...register("title")} id="title" className="w-full" />
+          <form
+            onSubmit={handleSubmit(handleTaskSubmit)}
+            className="space-y-6 p-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="title"
+                  className="text-space-text font-semibold"
+                >
+                  📝 Название
+                </Label>
+                <Input
+                  {...register("title")}
+                  id="title"
+                  className="w-full space-input"
+                  placeholder="Введите название задачи..."
+                />
                 <FormError error={errors.title?.message} />
               </div>
-              <div>
-                <Label htmlFor="status">Статус</Label>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="status"
+                  className="text-space-text font-semibold"
+                >
+                  📊 Статус
+                </Label>
                 <Select
                   value={watch("status")}
                   onValueChange={(value) => setValue("status", value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="space-select">
                     <SelectValue placeholder="Выберите статус" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="space-modal">
                     {TASK_STATUSES.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -265,82 +293,113 @@ export default function TasksTab({
                 </Select>
                 <FormError error={errors.status?.message} />
               </div>
-              <div>
-                <Label htmlFor="priority">Приоритет</Label>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="priority"
+                  className="text-space-text font-semibold"
+                >
+                  ⚡ Приоритет
+                </Label>
                 <Select
                   value={watch("priority")}
                   onValueChange={(value) => setValue("priority", value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="space-select">
                     <SelectValue placeholder="Выберите приоритет" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Низкий</SelectItem>
-                    <SelectItem value="medium">Средний</SelectItem>
-                    <SelectItem value="high">Высокий</SelectItem>
-                    <SelectItem value="urgent">Срочный</SelectItem>
+                  <SelectContent className="space-modal">
+                    <SelectItem value="low">🟢 Низкий</SelectItem>
+                    <SelectItem value="medium">🟡 Средний</SelectItem>
+                    <SelectItem value="high">🔴 Высокий</SelectItem>
+                    <SelectItem value="urgent">🚨 Срочный</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormError error={errors.priority?.message} />
               </div>
-              <div>
-                <Label htmlFor="assignee">Исполнитель</Label>
-                <Input
-                  {...register("assignee")}
+              <div className="space-y-2">
+                <UserAutocomplete
+                  value={watch("assignee") || ""}
+                  onChange={(value) => setValue("assignee", value)}
+                  placeholder="Введите имя исполнителя..."
+                  label="👤 Исполнитель"
+                  error={errors.assignee?.message}
                   id="assignee"
-                  className="w-full"
                 />
-                <FormError error={errors.assignee?.message} />
               </div>
-              <div>
-                <Label htmlFor="due_date">Срок выполнения</Label>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="due_date"
+                  className="text-space-text font-semibold"
+                >
+                  📅 Срок выполнения
+                </Label>
                 <Input
                   {...register("due_date")}
                   id="due_date"
                   type="date"
-                  className="w-full"
+                  className="w-full space-input"
                 />
                 <FormError error={errors.due_date?.message} />
               </div>
-              <div>
-                <Label htmlFor="estimated_hours">Оценка времени (часы)</Label>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="estimated_hours"
+                  className="text-space-text font-semibold"
+                >
+                  ⏱️ Оценка времени (часы)
+                </Label>
                 <Input
                   {...register("estimated_hours", { valueAsNumber: true })}
                   id="estimated_hours"
                   type="number"
                   min="0"
                   step="0.5"
-                  className="w-full"
+                  className="w-full space-input"
+                  placeholder="0"
                 />
                 <FormError error={errors.estimated_hours?.message} />
               </div>
             </div>
-            <div>
-              <Label htmlFor="description">Описание</Label>
+            <div className="space-y-2">
+              <Label
+                htmlFor="description"
+                className="text-space-text font-semibold"
+              >
+                📄 Описание
+              </Label>
               <Textarea
                 {...register("description")}
                 id="description"
-                className="w-full"
+                className="w-full space-input"
                 rows={3}
+                placeholder="Опишите задачу подробнее..."
               />
               <FormError error={errors.description?.message} />
             </div>
-            <div>
-              <Label htmlFor="notes">Заметки</Label>
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-space-text font-semibold">
+                📝 Заметки
+              </Label>
               <Textarea
                 {...register("notes")}
                 id="notes"
-                className="w-full"
+                className="w-full space-input"
                 rows={2}
+                placeholder="Дополнительные заметки..."
               />
               <FormError error={errors.notes?.message} />
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeModal}>
-                Отмена
+            <DialogFooter className="flex gap-4 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeModal}
+                className="space-button"
+              >
+                ❌ Отмена
               </Button>
-              <Button type="submit">
-                {editingTask ? "Сохранить" : "Добавить"}
+              <Button type="submit" className="space-button space-active">
+                {editingTask ? "💾 Сохранить" : "✨ Добавить"}
               </Button>
             </DialogFooter>
           </form>
@@ -349,9 +408,9 @@ export default function TasksTab({
 
       <ConfirmModal
         open={!!deleteTaskId}
-        title="Удалить задачу"
-        message="Вы уверены, что хотите удалить эту задачу?"
-        confirmLabel="Удалить"
+        title="🗑️ Удалить задачу"
+        message="Вы уверены, что хотите удалить эту задачу? Это действие нельзя отменить."
+        confirmLabel="🗑️ Удалить"
         confirmVariant="destructive"
         onConfirm={() => deleteTaskId && handleDelete(deleteTaskId)}
         onCancel={() => setDeleteTaskId(null)}

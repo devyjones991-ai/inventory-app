@@ -7,7 +7,6 @@ import { ChatMessage } from "../types";
 
 import { useChatMessages } from "./useChatMessages";
 
-
 interface UseChatParams {
   objectId: string;
   userEmail: string;
@@ -17,7 +16,7 @@ interface UseChatParams {
 interface UseChatReturn {
   messages: ChatMessage[];
   hasMore: boolean;
-  loadMore: (replace?: boolean) => Promise<{ error: any } | undefined>;
+  loadMore: (replace?: boolean) => Promise<{ error: unknown } | undefined>;
   newMessage: string;
   setNewMessage: (message: string) => void;
   sending: boolean;
@@ -64,13 +63,20 @@ export default function useChat({
    */
   const loadMore = useCallback(
     async (replace = false) => {
-      if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return { error: "No objectId or supabase" };
+      if (
+        !objectId ||
+        typeof objectId !== "string" ||
+        objectId.trim() === "" ||
+        !supabase
+      )
+        return { error: "No objectId or supabase" };
 
       try {
         setLoading(true);
         setLoadError(null);
 
-        const offset = replace ? 0 : offsetRef.current;
+        // Для загрузки последних сообщений используем отрицательный offset
+        const offset = replace ? -LIMIT : offsetRef.current;
         const result = await fetchMessages(objectId, { offset, limit: LIMIT });
 
         if (result.error) {
@@ -79,11 +85,25 @@ export default function useChat({
         }
 
         const newMessages = result.data || [];
-        setMessages((prev) =>
-          replace ? newMessages : [...prev, ...newMessages],
-        );
-        setHasMore(newMessages.length === LIMIT);
-        offsetRef.current = offset + newMessages.length;
+        const hasMoreMessages = result.hasMore || false;
+        console.log("Loading messages:", {
+          replace,
+          newMessages: newMessages.length,
+          offset,
+          hasMoreMessages,
+        });
+
+        if (replace) {
+          // При замене загружаем последние сообщения (они в обратном порядке, нужно перевернуть)
+          setMessages(newMessages.reverse());
+          setHasMore(hasMoreMessages);
+          offsetRef.current = newMessages.length;
+        } else {
+          // При добавлении добавляем к существующим (старые сообщения в начало)
+          setMessages((prev) => [...newMessages, ...prev]);
+          setHasMore(hasMoreMessages);
+          offsetRef.current = offset + newMessages.length;
+        }
 
         return { error: null };
       } catch (err) {
@@ -101,18 +121,30 @@ export default function useChat({
 
   const sendMessage = useCallback(
     async (content: string, file?: File) => {
-      if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return;
+      if (
+        !objectId ||
+        typeof objectId !== "string" ||
+        objectId.trim() === "" ||
+        !supabase
+      )
+        return;
 
       try {
         setSending(true);
         setError(null);
 
-        const result = await sendMessageUtil(objectId, content, userEmail, file);
+        const result = await sendMessageUtil(
+          objectId,
+          content,
+          userEmail,
+          file,
+        );
         if (result.error) {
           setError(result.error.message || "Ошибка отправки сообщения");
           return;
         }
 
+        // Очищаем форму после успешной отправки
         setNewMessage("");
         setFile(null);
         setFilePreview(null);
@@ -124,12 +156,18 @@ export default function useChat({
         setSending(false);
       }
     },
-    [objectId, sendMessageUtil],
+    [objectId, userEmail, sendMessageUtil],
   );
 
   const searchMessages = useCallback(
     async (query: string) => {
-      if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return;
+      if (
+        !objectId ||
+        typeof objectId !== "string" ||
+        objectId.trim() === "" ||
+        !supabase
+      )
+        return;
 
       try {
         setLoading(true);
@@ -140,7 +178,7 @@ export default function useChat({
           .select("*")
           .eq("object_id", objectId)
           .ilike("content", `%${query}%`)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: true });
 
         if (err) {
           setError(err.message);
@@ -160,28 +198,70 @@ export default function useChat({
     [objectId],
   );
 
+  // Загрузка всех сообщений для объекта
+  const loadAllMessages = useCallback(async () => {
+    if (
+      !objectId ||
+      typeof objectId !== "string" ||
+      objectId.trim() === "" ||
+      !supabase
+    )
+      return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Загружаем все сообщения сразу
+      const result = await fetchMessages(objectId, { limit: 1000 }); // Большой лимит для всех сообщений
+
+      if (result.error) {
+        setError(result.error.message || "Ошибка загрузки сообщений");
+        return;
+      }
+
+      const allMessages = result.data || [];
+      console.log("Loading all messages:", { count: allMessages.length });
+
+      // Устанавливаем все сообщения в хронологическом порядке
+      setMessages(allMessages);
+      setHasMore(false); // Больше не нужно загружать
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Ошибка загрузки";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [objectId, fetchMessages]);
+
   const clearSearch = useCallback(() => {
     setMessages([]);
-    setHasMore(true);
+    setHasMore(false);
     offsetRef.current = 0;
-    loadMore(true);
-  }, [loadMore]);
+    loadAllMessages();
+  }, [loadAllMessages]);
 
-  // Загрузка сообщений при изменении objectId
+  // Загрузка всех сообщений при изменении objectId
   useEffect(() => {
-    if (objectId && typeof objectId === 'string' && objectId.trim() !== "") {
-      offsetRef.current = 0;
-      loadMore(true);
+    if (objectId && typeof objectId === "string" && objectId.trim() !== "") {
+      loadAllMessages();
     } else {
       // Очищаем сообщения если нет objectId
       setMessages([]);
       setError(null);
     }
-  }, [objectId, loadMore]);
+  }, [objectId, loadAllMessages]);
 
   // Подписка на новые сообщения
   useEffect(() => {
-    if (!objectId || typeof objectId !== 'string' || objectId.trim() === "" || !supabase) return;
+    if (
+      !objectId ||
+      typeof objectId !== "string" ||
+      objectId.trim() === "" ||
+      !supabase
+    )
+      return;
 
     const channel = supabase
       .channel(`chat:${objectId}`)
@@ -195,7 +275,21 @@ export default function useChat({
         },
         (payload) => {
           const newMessage = payload.new as ChatMessage;
-          setMessages((prev) => [newMessage, ...prev]);
+          console.log("New message received:", newMessage);
+          setMessages((prev) => {
+            // Проверяем, нет ли уже такого сообщения (избегаем дублирования)
+            const exists = prev.some((msg) => msg.id === newMessage.id);
+            if (exists) {
+              console.log("Message already exists, skipping");
+              return prev;
+            }
+            console.log("Adding new message to list");
+            // Добавляем новое сообщение в конец списка
+            return [...prev, newMessage];
+          });
+
+          // Принудительно обновляем hasMore для новых сообщений
+          setHasMore(true);
         },
       )
       .subscribe();

@@ -11,6 +11,8 @@ import {
 
 const NOTIF_KEY = "objectNotifications";
 const CHAT_UNREAD_KEY = "objectChatUnread";
+const TASKS_UNREAD_KEY = "objectTasksUnread";
+const HARDWARE_UNREAD_KEY = "objectHardwareUnread";
 
 export function useObjectNotifications(selected, activeTab, user) {
   const [notifications, setNotifications] = useState(() => {
@@ -26,6 +28,24 @@ export function useObjectNotifications(selected, activeTab, user) {
     if (typeof localStorage === "undefined") return {};
     try {
       return JSON.parse(localStorage.getItem(CHAT_UNREAD_KEY)) || {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [tasksUnread, setTasksUnread] = useState(() => {
+    if (typeof localStorage === "undefined") return {};
+    try {
+      return JSON.parse(localStorage.getItem(TASKS_UNREAD_KEY)) || {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [hardwareUnread, setHardwareUnread] = useState(() => {
+    if (typeof localStorage === "undefined") return {};
+    try {
+      return JSON.parse(localStorage.getItem(HARDWARE_UNREAD_KEY)) || {};
     } catch {
       return {};
     }
@@ -58,6 +78,18 @@ export function useObjectNotifications(selected, activeTab, user) {
   }, [chatUnread]);
 
   useEffect(() => {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(TASKS_UNREAD_KEY, JSON.stringify(tasksUnread));
+    }
+  }, [tasksUnread]);
+
+  useEffect(() => {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(HARDWARE_UNREAD_KEY, JSON.stringify(hardwareUnread));
+    }
+  }, [hardwareUnread]);
+
+  useEffect(() => {
     requestNotificationPermission();
   }, []);
 
@@ -71,6 +103,13 @@ export function useObjectNotifications(selected, activeTab, user) {
           const objId = payload.new.object_id;
           const isCurrent =
             selectedRef.current?.id === objId && tabRef.current === "tasks";
+
+          // Обновляем счетчик задач
+          setTasksUnread((prev) => {
+            if (isCurrent) return prev;
+            return { ...prev, [objId]: (prev[objId] || 0) + 1 };
+          });
+
           setNotifications((prev) => {
             if (isCurrent) return prev;
             return { ...prev, [objId]: (prev[objId] || 0) + 1 };
@@ -114,9 +153,39 @@ export function useObjectNotifications(selected, activeTab, user) {
       )
       .subscribe();
 
+    const hardwareChannel = supabase
+      .channel("hardware_all")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "hardware" },
+        (payload) => {
+          const objId = payload.new.object_id;
+          const isCurrent =
+            selectedRef.current?.id === objId && tabRef.current === "hw";
+
+          // Обновляем счетчик железа
+          setHardwareUnread((prev) => {
+            if (isCurrent) return prev;
+            return { ...prev, [objId]: (prev[objId] || 0) + 1 };
+          });
+
+          setNotifications((prev) => {
+            if (isCurrent) return prev;
+            return { ...prev, [objId]: (prev[objId] || 0) + 1 };
+          });
+          if (!isCurrent) {
+            toast.success(`Добавлено оборудование: ${payload.new.name}`);
+            pushNotification("Новое оборудование", payload.new.name);
+            playTaskSound();
+          }
+        },
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(tasksChannel);
       supabase.removeChannel(chatChannel);
+      supabase.removeChannel(hardwareChannel);
     };
   }, []);
 
@@ -204,7 +273,25 @@ export function useObjectNotifications(selected, activeTab, user) {
       delete updated[objectId];
       return updated;
     });
+    setTasksUnread((prev) => {
+      if (!prev[objectId]) return prev;
+      const updated = { ...prev };
+      delete updated[objectId];
+      return updated;
+    });
+    setHardwareUnread((prev) => {
+      if (!prev[objectId]) return prev;
+      const updated = { ...prev };
+      delete updated[objectId];
+      return updated;
+    });
   };
 
-  return { notifications, chatUnread, clearNotifications };
+  return {
+    notifications,
+    chatUnread,
+    tasksUnread,
+    hardwareUnread,
+    clearNotifications,
+  };
 }
