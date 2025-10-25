@@ -10,15 +10,15 @@ export default function HamsterSpinner({
   size = "medium",
   className = "",
 }: HamsterSpinnerProps) {
-  const sizeClasses = {
-    small: "text-xs",
-    medium: "text-sm",
-    large: "text-base",
-    xl: "text-lg",
+  const sizeStyles = {
+    small: { fontSize: "10px" },
+    medium: { fontSize: "14px" },
+    large: { fontSize: "18px" },
+    xl: { fontSize: "22px" },
   };
 
   return (
-    <div className={`wheel-and-hamster ${sizeClasses[size]} ${className}`}>
+    <div className={`wheel-and-hamster ${className}`} style={sizeStyles[size]}>
       <div className="wheel">
         <div className="spoke"></div>
       </div>

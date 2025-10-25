@@ -10,16 +10,16 @@ export default function InlineHamsterSpinner({
   size = "small",
   className = "",
 }: InlineHamsterSpinnerProps) {
-  const sizeClasses = {
-    xs: "text-xs",
-    small: "text-sm",
-    medium: "text-base",
-    large: "text-lg",
+  const sizeStyles = {
+    xs: { fontSize: "8px" },
+    small: { fontSize: "12px" },
+    medium: { fontSize: "14px" },
+    large: { fontSize: "18px" },
   };
 
   return (
     <div className={`inline-flex items-center justify-center ${className}`}>
-      <div className={`wheel-and-hamster ${sizeClasses[size]}`}>
+      <div className="wheel-and-hamster" style={sizeStyles[size]}>
         <div className="wheel">
           <div className="spoke"></div>
         </div>

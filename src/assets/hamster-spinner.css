@@ -1,83 +1,10 @@
+/* From Uiverse.io by Nawsome */
 .wheel-and-hamster {
   --dur: 1s;
-  position: relative;
-  width: 12em;
-  height: 12em;
-  font-size: 14px;
-  /* Базовые стили для предотвращения FOUC */
-  color: #28292c;
-}
-
-/* Стили по умолчанию для светлой темы */
-.wheel-and-hamster .wheel {
-  background: radial-gradient(
-    100% 100% at center,
-    hsla(0, 0%, 60%, 0) 47.8%,
-    hsl(0, 0%, 60%) 48%
-  );
-}
-
-.wheel-and-hamster .hamster__head {
-  background: hsl(30, 90%, 55%);
-  box-shadow:
-    0 -0.25em 0 hsl(30, 90%, 80%) inset,
-    0.75em -1.55em 0 hsl(30, 90%, 90%) inset;
-}
-
-.wheel-and-hamster .hamster__body {
-  background: hsl(30, 90%, 90%);
-  box-shadow:
-    0.1em 0.75em 0 hsl(30, 90%, 55%) inset,
-    0.15em -0.5em 0 hsl(30, 90%, 80%) inset;
-}
-
-.wheel-and-hamster .hamster__ear {
-  background: hsl(0, 90%, 85%);
-  box-shadow: -0.25em 0 hsl(30, 90%, 55%) inset;
-}
-
-.wheel-and-hamster .hamster__eye {
-  background-color: hsl(0, 0%, 0%);
-}
-
-.wheel-and-hamster .hamster__nose {
-  background: hsl(0, 90%, 75%);
-}
-
-.wheel-and-hamster .hamster__limb--fr {
-  background: linear-gradient(hsl(30, 90%, 80%) 80%, hsl(0, 90%, 75%) 80%);
-}
-
-.wheel-and-hamster .hamster__limb--fl {
-  background: linear-gradient(hsl(30, 90%, 90%) 80%, hsl(0, 90%, 85%) 80%);
-}
-
-.wheel-and-hamster .hamster__limb--br {
-  background: linear-gradient(hsl(30, 90%, 80%) 90%, hsl(0, 90%, 75%) 90%);
-}
-
-.wheel-and-hamster .hamster__limb--bl {
-  background: linear-gradient(hsl(30, 90%, 90%) 90%, hsl(0, 90%, 85%) 90%);
-}
-
-.wheel-and-hamster .hamster__tail {
-  background: hsl(0, 90%, 85%);
-  box-shadow: 0 -0.2em 0 hsl(0, 90%, 75%) inset;
-}
-
-.wheel-and-hamster .spoke {
-  background:
-    radial-gradient(
-      100% 100% at center,
-      hsl(0, 0%, 60%) 4.8%,
-      hsla(0, 0%, 60%, 0) 5%
-    ),
-    linear-gradient(
-        hsla(0, 0%, 55%, 0) 46.9%,
-        hsl(0, 0%, 65%) 47% 52.9%,
-        hsla(0, 0%, 65%, 0) 53%
-      )
-      50% 50% / 99% 99% no-repeat;
+  position: relative !important;
+  width: 12em !important;
+  height: 12em !important;
+  font-size: 14px !important;
 }
 
 .wheel,
@@ -114,8 +41,6 @@
   transform: rotate(4deg) translate(-0.8em, 1.85em);
   transform-origin: 50% 0;
   z-index: 1;
-  /* Обеспечиваем синхронизацию головы и тела */
-  transform-style: preserve-3d;
 }
 
 .hamster__head {
@@ -125,12 +50,11 @@
   box-shadow:
     0 -0.25em 0 hsl(30, 90%, 80%) inset,
     0.75em -1.55em 0 hsl(30, 90%, 90%) inset;
-  top: -0.5em;
-  left: -2.2em;
+  top: 0.25em;
+  left: -0.75em;
   width: 2.75em;
   height: 2.5em;
   transform-origin: 100% 50%;
-  z-index: 2;
 }
 
 .hamster__ear {
@@ -172,12 +96,11 @@
     0.1em 0.75em 0 hsl(30, 90%, 55%) inset,
     0.15em -0.5em 0 hsl(30, 90%, 80%) inset;
   top: 0.25em;
-  left: 1.8em;
+  left: 2em;
   width: 4.5em;
   height: 3em;
   transform-origin: 17% 50%;
   transform-style: preserve-3d;
-  z-index: 1;
 }
 
 .hamster__limb--fr,
@@ -281,14 +204,14 @@
   50%,
   75%,
   to {
-    transform: rotate(0) translate(0, 0);
+    transform: rotate(0);
   }
 
   12.5%,
   37.5%,
   62.5%,
   87.5% {
-    transform: rotate(6deg) translate(0.05em, 0.02em);
+    transform: rotate(8deg);
   }
 }
 
@@ -327,14 +250,14 @@
   50%,
   75%,
   to {
-    transform: rotate(0) translate(0, 0);
+    transform: rotate(0);
   }
 
   12.5%,
   37.5%,
   62.5%,
   87.5% {
-    transform: rotate(-1deg) translate(-0.02em, 0.01em);
+    transform: rotate(-2deg);
   }
 }
 
@@ -431,93 +354,4 @@
   to {
     transform: rotate(-1turn);
   }
-}
-
-/* Обеспечиваем видимость хомячка в темной теме */
-.wheel-and-hamster {
-  color: #d8dbe0;
-}
-
-.wheel {
-  background: radial-gradient(
-    100% 100% at center,
-    hsla(0, 0%, 60%, 0) 47.8%,
-    hsl(0, 0%, 60%) 48%
-  );
-}
-
-.hamster__head {
-  background: hsl(30, 90%, 55%);
-  box-shadow:
-    0 -0.25em 0 hsl(30, 90%, 80%) inset,
-    0.75em -1.55em 0 hsl(30, 90%, 90%) inset;
-}
-
-.hamster__body {
-  background: hsl(30, 90%, 90%);
-  box-shadow:
-    0.1em 0.75em 0 hsl(30, 90%, 55%) inset,
-    0.15em -0.5em 0 hsl(30, 90%, 80%) inset;
-}
-
-.hamster__ear {
-  background: hsl(0, 90%, 85%);
-  box-shadow: -0.25em 0 hsl(30, 90%, 55%) inset;
-}
-
-.hamster__eye {
-  background-color: hsl(0, 0%, 0%);
-}
-
-.hamster__nose {
-  background: hsl(0, 90%, 75%);
-}
-
-.hamster__limb--fr {
-  background: linear-gradient(hsl(30, 90%, 80%) 80%, hsl(0, 90%, 75%) 80%);
-}
-
-.hamster__limb--fl {
-  background: linear-gradient(hsl(30, 90%, 90%) 80%, hsl(0, 90%, 85%) 80%);
-}
-
-.hamster__limb--br {
-  background: linear-gradient(hsl(30, 90%, 80%) 90%, hsl(0, 90%, 75%) 90%);
-}
-
-[data-theme="dark"] .hamster__limb--bl {
-  background: linear-gradient(hsl(30, 90%, 90%) 90%, hsl(0, 90%, 85%) 90%);
-}
-
-[data-theme="dark"] .hamster__tail {
-  background: hsl(0, 90%, 85%);
-  box-shadow: 0 -0.2em 0 hsl(0, 90%, 75%) inset;
-}
-
-/* Мобильная адаптация */
-@media (max-width: 768px) {
-  .wheel-and-hamster {
-    font-size: 12px; /* Уменьшаем размер на мобильных */
-  }
-}
-
-@media (max-width: 480px) {
-  .wheel-and-hamster {
-    font-size: 10px; /* Еще больше уменьшаем на маленьких экранах */
-  }
-}
-
-[data-theme="dark"] .spoke {
-  background:
-    radial-gradient(
-      100% 100% at center,
-      hsl(0, 0%, 60%) 4.8%,
-      hsla(0, 0%, 60%, 0) 5%
-    ),
-    linear-gradient(
-        hsla(0, 0%, 55%, 0) 46.9%,
-        hsl(0, 0%, 65%) 47% 52.9%,
-        hsla(0, 0%, 65%, 0) 53%
-      )
-      50% 50% / 99% 99% no-repeat;
 }
