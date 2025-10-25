@@ -1,6 +1,19 @@
 import React from "react";
 
-import { getDisplayText, isUrl } from "./linkUtils";
+// Встроенные функции для работы с ссылками
+const isUrl = (str) => {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const getDisplayText = (url, maxLength = 50) => {
+  if (url.length <= maxLength) return url;
+  return url.substring(0, maxLength - 3) + "...";
+};
 
 export function linkifyText(text = "", maxLength = 50, _context = "default") {
   if (!text) return text;

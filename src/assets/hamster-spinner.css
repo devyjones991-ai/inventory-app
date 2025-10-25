@@ -114,6 +114,8 @@
   transform: rotate(4deg) translate(-0.8em, 1.85em);
   transform-origin: 50% 0;
   z-index: 1;
+  /* Обеспечиваем синхронизацию головы и тела */
+  transform-style: preserve-3d;
 }
 
 .hamster__head {
@@ -286,7 +288,7 @@
   37.5%,
   62.5%,
   87.5% {
-    transform: rotate(8deg) translate(0.1em, 0.05em);
+    transform: rotate(6deg) translate(0.05em, 0.02em);
   }
 }
 
@@ -332,7 +334,7 @@
   37.5%,
   62.5%,
   87.5% {
-    transform: rotate(-2deg) translate(-0.05em, 0.02em);
+    transform: rotate(-1deg) translate(-0.02em, 0.01em);
   }
 }
 
