@@ -1,6 +1,4 @@
 import React from "react";
-import { render, RenderOptions } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "../src/context/AuthContext";
 import { User } from "../src/types";
 
@@ -17,10 +15,10 @@ const mockUser: User = {
 };
 
 // Mock AuthProvider for tests
-const TestAuthProvider: React.FC<{ children: React.ReactNode; user?: User | null }> = ({ 
-  children, 
-  user = mockUser 
-}) => {
+const TestAuthProvider: React.FC<{
+  children: React.ReactNode;
+  user?: User | null;
+}> = ({ children, user = mockUser }) => {
   const mockAuthContext = {
     user,
     role: "user",
@@ -33,44 +31,8 @@ const TestAuthProvider: React.FC<{ children: React.ReactNode; user?: User | null
     refreshUser: vi.fn().mockResolvedValue(undefined),
   };
 
-  return (
-    <AuthProvider value={mockAuthContext}>
-      {children}
-    </AuthProvider>
-  );
+  return <AuthProvider value={mockAuthContext}>{children}</AuthProvider>;
 };
 
-// Custom render function with providers
-interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  user?: User | null;
-  withRouter?: boolean;
-}
-
-const customRender = (
-  ui: React.ReactElement,
-  options: CustomRenderOptions = {}
-) => {
-  const { user, withRouter = true, ...renderOptions } = options;
-
-  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    let content = children;
-    
-    if (withRouter) {
-      content = <BrowserRouter>{content}</BrowserRouter>;
-    }
-    
-    return (
-      <TestAuthProvider user={user}>
-        {content}
-      </TestAuthProvider>
-    );
-  };
-
-  return render(ui, { wrapper: Wrapper, ...renderOptions });
-};
-
-// Re-export everything
-export * from "@testing-library/react";
-export { customRender as render };
+// Export only components for React Refresh
 export { TestAuthProvider };
-export { mockUser };

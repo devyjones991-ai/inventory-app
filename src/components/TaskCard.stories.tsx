@@ -20,10 +20,10 @@ const sampleItem: Task = {
   due_date: "2024-12-31",
 };
 
-const Template = (props: any) => <TaskCard {...props} />;
+const Template = (props: Record<string, unknown>) => <TaskCard {...props} />;
 
 export const Mobile = {
-  render: (args: any) => (
+  render: (args: Record<string, unknown>) => (
     <div className="w-80">
       <TaskCard {...args} />
     </div>
@@ -38,7 +38,7 @@ export const Mobile = {
 };
 
 export const Desktop = {
-  render: (args: any) => (
+  render: (args: Record<string, unknown>) => (
     <div className="w-96">
       <TaskCard {...args} />
     </div>

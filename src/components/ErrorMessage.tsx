@@ -5,9 +5,9 @@ interface ErrorMessageProps {
   message?: string;
 }
 
-export default function ErrorMessage({ 
-  error, 
-  message = "Произошла ошибка" 
+export default function ErrorMessage({
+  error,
+  message = "Произошла ошибка",
 }: ErrorMessageProps) {
   const text = typeof error === "string" ? error : error?.message || message;
   return (

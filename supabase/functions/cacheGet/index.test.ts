@@ -95,10 +95,10 @@ Deno.test("возвращает данные из кеша", async () => {
 Deno.test(
   "обращается к БД и записывает результат в кеш при промахе",
   async () => {
-    const request = new Request("https://example.com?table=objects", {
-      method: "GET",
-      headers: { Authorization: "Bearer token" },
-    });
+    // const request = new Request("https://example.com?table=objects", {
+    //   method: "GET",
+    //   headers: { Authorization: "Bearer token" },
+    // });
     const setCalls: { key: string; value: string }[] = [];
     const deps: CacheGetDependencies = {
       createSupabaseClient: () => ({

@@ -8,13 +8,13 @@ export function t(path: string): string {
     const parts = path.split(".");
     let node: unknown = dictionaries[current];
     for (const p of parts) {
-      if (node && typeof node === 'object' && p in node) {
+      if (node && typeof node === "object" && p in node) {
         node = (node as Record<string, unknown>)[p];
       } else {
         return path;
       }
     }
-    return typeof node === 'string' ? node : path;
+    return typeof node === "string" ? node : path;
   } catch {
     return path;
   }

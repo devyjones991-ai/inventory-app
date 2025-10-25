@@ -127,105 +127,109 @@ export default function AuthPage() {
         <ParticlesAnimation />
         <div className="auth-container">
           <div className="text-center">
-                <h1 className="auth-title">
-                  {isRegister ? "Регистрация" : "Вход"}
-                </h1>
-                <p className="auth-subtitle">
-                  {isRegister
-                    ? "Создайте аккаунт для доступа к системе"
-                    : "Войдите в свой аккаунт"}
-                </p>
+            <h1 className="auth-title">
+              {isRegister ? "Регистрация" : "Вход"}
+            </h1>
+            <p className="auth-subtitle">
+              {isRegister
+                ? "Создайте аккаунт для доступа к системе"
+                : "Войдите в свой аккаунт"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+            <div>
+              <input
+                {...register("email")}
+                type="email"
+                placeholder="Введите email"
+                className="auth-input"
+              />
+              <FormError error={errors.email?.message} />
+            </div>
+
+            {isRegister && (
+              <div>
+                <input
+                  {...register("username")}
+                  type="text"
+                  placeholder="Введите имя пользователя"
+                  className="auth-input"
+                />
+                <FormError error={errors.username?.message} />
               </div>
+            )}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
-                <div>
-                  <input
-                    {...register("email")}
-                    type="email"
-                    placeholder="Введите email"
-                    className="auth-input"
-                  />
-                  <FormError error={errors.email?.message} />
-                </div>
+            <div>
+              <input
+                {...register("password")}
+                type="password"
+                placeholder="Введите пароль"
+                className="auth-input"
+              />
+              <FormError error={errors.password?.message} />
+            </div>
 
-                {isRegister && (
-                  <div>
-                    <input
-                      {...register("username")}
-                      type="text"
-                      placeholder="Введите имя пользователя"
-                      className="auth-input"
-                    />
-                    <FormError error={errors.username?.message} />
-                  </div>
-                )}
+            {isRegister && (
+              <div>
+                <input
+                  {...register("confirmPassword")}
+                  type="password"
+                  placeholder="Подтвердите пароль"
+                  className="auth-input"
+                />
+                <FormError error={errors.confirmPassword?.message} />
+              </div>
+            )}
 
-                <div>
-                  <input
-                    {...register("password")}
-                    type="password"
-                    placeholder="Введите пароль"
-                    className="auth-input"
-                  />
-                  <FormError error={errors.password?.message} />
-                </div>
+            {userError && (
+              <div className="auth-error">
+                <p>{userError}</p>
+              </div>
+            )}
 
-                {isRegister && (
-                  <div>
-                    <input
-                      {...register("confirmPassword")}
-                      type="password"
-                      placeholder="Подтвердите пароль"
-                      className="auth-input"
-                    />
-                    <FormError error={errors.confirmPassword?.message} />
-                  </div>
-                )}
+            {info && (
+              <div className="auth-info">
+                <p>{info}</p>
+              </div>
+            )}
 
-                {userError && (
-                  <div className="auth-error">
-                    <p>{userError}</p>
-                  </div>
-                )}
+            <button
+              type="submit"
+              className="auth-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? "Загрузка..."
+                : isRegister
+                  ? "Зарегистрироваться"
+                  : "Войти"}
+            </button>
+          </form>
 
-                {info && (
-                  <div className="auth-info">
-                    <p>{info}</p>
-                  </div>
-                )}
+          <div className="auth-toggle">
+            <button
+              type="button"
+              className="auth-toggle-button"
+              onClick={toggleMode}
+            >
+              {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}
+            </button>
 
-                <button type="submit" className="auth-button" disabled={isSubmitting}>
-                  {isSubmitting
-                    ? "Загрузка..."
-                    : isRegister
-                      ? "Зарегистрироваться"
-                      : "Войти"}
-                </button>
-              </form>
-
-              <div className="auth-toggle">
+            {!isRegister && (
+              <div className="auth-forgot">
                 <button
                   type="button"
-                  className="auth-toggle-button"
-                  onClick={toggleMode}
+                  className="auth-forgot-button"
+                  onClick={() => setShowForgotPassword(true)}
                 >
-                  {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}
+                  Забыли пароль?
                 </button>
-
-                {!isRegister && (
-                  <div className="auth-forgot">
-                    <button
-                      type="button"
-                      className="auth-forgot-button"
-                      onClick={() => setShowForgotPassword(true)}
-                    >
-                      Забыли пароль?
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
+            )}
           </div>
+        </div>
+      </div>
 
       {showForgotPassword && (
         <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />

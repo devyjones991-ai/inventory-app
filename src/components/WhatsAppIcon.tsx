@@ -4,7 +4,9 @@ interface WhatsAppIconProps {
   className?: string;
 }
 
-export default function WhatsAppIcon({ className = "w-5 h-5" }: WhatsAppIconProps) {
+export default function WhatsAppIcon({
+  className = "w-5 h-5",
+}: WhatsAppIconProps) {
   return (
     <svg
       viewBox="0 0 24 24"

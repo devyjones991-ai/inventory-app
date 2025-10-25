@@ -1,6 +1,8 @@
 import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+
 import { linkifyText } from "../utils/linkify";
+
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 
 interface ChatMessage {
   id: string;

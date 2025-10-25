@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { t } from "../i18n";
+// import { t } from "../i18n";
 import { supabase } from "../supabaseClient";
 import { Hardware } from "../types";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
@@ -9,10 +9,10 @@ import { handleSupabaseError } from "../utils/handleSupabaseError";
 const PURCHASE_ALLOWED = ["not_paid", "paid"];
 const INSTALL_ALLOWED = ["not_installed", "installed"];
 
-function normalizeStatus(value: unknown, allowed: string[]): string {
-  const v = String(value ?? "").trim();
-  return allowed.includes(v) ? v : allowed[0];
-}
+// function normalizeStatus(value: unknown, allowed: string[]): string {
+//   const v = String(value ?? "").trim();
+//   return allowed.includes(v) ? v : allowed[0];
+// }
 
 export function useHardware() {
   const navigate = useNavigate();

@@ -1,4 +1,5 @@
 import React from "react";
+
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -14,7 +15,14 @@ interface ConfirmModalProps {
   message?: string;
   confirmLabel?: string | React.ReactNode;
   cancelLabel?: string;
-  confirmVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "info";
+  confirmVariant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+    | "info";
   onConfirm?: () => void;
   onCancel?: () => void;
 }

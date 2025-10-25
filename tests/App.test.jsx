@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
-import { render } from "./test-utils";
+import { render } from "./test-utilities";
 
 vi.mock("@/utils/notifications", () => ({
   requestNotificationPermission: jest.fn(),
@@ -36,7 +36,7 @@ vi.mock("react-hot-toast", () => ({
 }));
 
 vi.mock("@/pages/AuthPage", () => ({
-  default: () => <div>Auth Page</div>
+  default: () => <div>Auth Page</div>,
 }));
 import App from "@/App";
 describe("App", () => {
@@ -44,8 +44,6 @@ describe("App", () => {
     window.history.pushState({}, "", "/auth");
     render(<App />, { withRouter: false });
     expect(screen.getByText(/Loading|Загрузка/i)).toBeInTheDocument();
-    expect(
-      await screen.findByText("Auth Page"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Auth Page")).toBeInTheDocument();
   });
 });

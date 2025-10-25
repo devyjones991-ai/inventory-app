@@ -1,4 +1,5 @@
 import React from "react";
+
 import InlineHamsterSpinner from "./InlineHamsterSpinner";
 
 interface InlineSpinnerProps {
@@ -6,9 +7,9 @@ interface InlineSpinnerProps {
   variant?: "hamster" | "default";
 }
 
-export default function InlineSpinner({ 
-  size = 20, 
-  variant = "hamster" 
+export default function InlineSpinner({
+  size = 20,
+  variant = "hamster",
 }: InlineSpinnerProps) {
   if (variant === "hamster") {
     const sizeMap: Record<number, "xs" | "small" | "medium" | "large"> = {

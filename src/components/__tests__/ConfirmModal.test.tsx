@@ -6,22 +6,28 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("../ui/button", () => ({
-  Button: ({ children, ...props }: any) => (
+  Button: ({ children, ...props }: Record<string, unknown>) => (
     <button {...props}>{children}</button>
   ),
 }));
 
 vi.mock("../ui/dialog", () => ({
-  Dialog: ({ open, onOpenChange, children }: any) =>
+  Dialog: ({ open, onOpenChange, children }: Record<string, unknown>) =>
     open ? (
       <div data-testid="dialog" onClick={() => onOpenChange?.(false)}>
         {children}
       </div>
     ) : null,
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
-  DialogFooter: ({ children }: any) => <div>{children}</div>,
+  DialogContent: ({ children }: Record<string, unknown>) => (
+    <div>{children}</div>
+  ),
+  DialogHeader: ({ children }: Record<string, unknown>) => (
+    <div>{children}</div>
+  ),
+  DialogTitle: ({ children }: Record<string, unknown>) => <div>{children}</div>,
+  DialogFooter: ({ children }: Record<string, unknown>) => (
+    <div>{children}</div>
+  ),
 }));
 
 import ConfirmModal from "../ConfirmModal";

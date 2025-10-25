@@ -1,9 +1,9 @@
-import { memo, useState, forwardRef, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { memo, useState, useRef } from "react";
 
-import { t } from "../i18n";
+// import { t } from "../i18n";
 import { Object } from "../types";
-import logger from "../utils/logger";
+// import logger from "../utils/logger";
 
 import ErrorMessage from "./ErrorMessage";
 import Spinner from "./Spinner";
@@ -23,13 +23,20 @@ function ObjectList({
   onItemClick = () => {},
 }: ObjectListProps) {
   const [filter, setFilter] = useState("");
-
-  if (loading) return <Spinner />;
-  if (error) return <ErrorMessage message={error} />;
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const filteredObjects = objects.filter((item) =>
     item.name.toLowerCase().includes(filter.toLowerCase()),
   );
+
+  const virtualizer = useVirtualizer({
+    count: filteredObjects.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 80,
+  });
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorMessage message={error} />;
 
   const Item = memo(
     ({ index, style }: { index: number; style: React.CSSProperties }) => {
@@ -56,10 +63,8 @@ function ObjectList({
 
   Item.displayName = "Item";
 
-  const parentRef = useRef<HTMLDivElement>(null);
-
   // В тестовой среде используем простой рендеринг без виртуализации
-  if (process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === "test") {
     if (filteredObjects.length === 0) {
       return (
         <div className="space-y-4">
@@ -104,12 +109,6 @@ function ObjectList({
       </div>
     );
   }
-
-  const virtualizer = useVirtualizer({
-    count: filteredObjects.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 80,
-  });
 
   return (
     <div className="space-y-4">

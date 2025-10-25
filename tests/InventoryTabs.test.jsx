@@ -1,7 +1,7 @@
 // Tests for InventoryTabs component
 import "@testing-library/jest-dom/vitest";
 import { BrowserRouter } from "react-router-dom";
-import { waitFor } from "@testing-library/react";
+// import { waitFor } from "@testing-library/react";
 
 /* eslint-env jest */
 
@@ -136,9 +136,7 @@ describe("InventoryTabs", () => {
     expect(await screen.findByText("Оборудование")).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("tab", { name: /Задачи/ }));
-    expect(
-      await screen.findByText("Загрузка..."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Загрузка...")).toBeInTheDocument();
   });
 
   it("показывает сообщение при отсутствии задач", async () => {
@@ -155,9 +153,7 @@ describe("InventoryTabs", () => {
     );
 
     await userEvent.click(screen.getByRole("tab", { name: /Задачи/ }));
-    expect(
-      await screen.findByText("Загрузка..."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Загрузка...")).toBeInTheDocument();
   });
 
   it("отображает чат", async () => {
@@ -194,9 +190,11 @@ describe("InventoryTabs", () => {
 
     await userEvent.click(screen.getByRole("tab", { name: /Железо/ }));
     await userEvent.click(screen.getByRole("button", { name: "Добавить" }));
-    
+
     // Проверяем, что кнопка "Добавить" была нажата
-    expect(screen.getByRole("button", { name: "Добавить" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Добавить" }),
+    ).toBeInTheDocument();
   });
 
   it("открывает форму редактирования оборудования", async () => {
@@ -223,7 +221,7 @@ describe("InventoryTabs", () => {
     );
 
     await userEvent.click(screen.getByRole("tab", { name: /Железо/ }));
-    
+
     // Проверяем, что компонент отрендерился
     expect(screen.getByText("Оборудование")).toBeInTheDocument();
   });
@@ -242,8 +240,11 @@ describe("InventoryTabs", () => {
     );
 
     await userEvent.click(screen.getByRole("tab", { name: /Железо/ }));
-    
+
     // Проверяем, что вкладка переключилась
-    expect(screen.getByRole("tab", { name: /Железо/ })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /Железо/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
   });
 });

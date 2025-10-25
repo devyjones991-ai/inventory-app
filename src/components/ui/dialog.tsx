@@ -1,6 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { createFocusTrap } from "focus-trap";
 import React from "react";
+
 import { cn } from "../../lib/utils";
 
 export const Dialog = DialogPrimitive.Root;
@@ -36,24 +37,30 @@ export const DialogContent = React.forwardRef<
   const [position, setPosition] = React.useState({ x: 0, y: 0 });
   const dialogRef = React.useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
-    if (!draggable) return;
-    if ((e.target as HTMLElement).closest('[data-dialog-handle]')) {
-      setIsDragging(true);
-      setDragOffset({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      });
-    }
-  }, [draggable, position]);
+  const handleMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (!draggable) return;
+      if ((e.target as HTMLElement).closest("[data-dialog-handle]")) {
+        setIsDragging(true);
+        setDragOffset({
+          x: e.clientX - position.x,
+          y: e.clientY - position.y,
+        });
+      }
+    },
+    [draggable, position],
+  );
 
-  const handleMouseMove = React.useCallback((e: MouseEvent) => {
-    if (!isDragging || !draggable) return;
-    setPosition({
-      x: e.clientX - dragOffset.x,
-      y: e.clientY - dragOffset.y,
-    });
-  }, [isDragging, draggable, dragOffset]);
+  const handleMouseMove = React.useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !draggable) return;
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y,
+      });
+    },
+    [isDragging, draggable, dragOffset],
+  );
 
   const handleMouseUp = React.useCallback(() => {
     setIsDragging(false);
@@ -94,11 +101,7 @@ export const DialogContent = React.forwardRef<
         }}
         {...props}
       >
-        <div
-          ref={dialogRef}
-          onMouseDown={handleMouseDown}
-          className="relative"
-        >
+        <div ref={dialogRef} onMouseDown={handleMouseDown} className="relative">
           {children}
         </div>
       </DialogPrimitive.Content>

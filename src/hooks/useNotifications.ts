@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 import { supabase } from "../supabaseClient";
 
 import { useAuth } from "./useAuth";
-import { useProfile } from "./useProfile";
+// import { useProfile } from "./useProfile";
 
 interface Notification {
   id: string;
@@ -24,7 +24,7 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuth();
-  const { profile } = useProfile();
+  // const { profile } = useProfile();
 
   // Получаем просроченные задачи
   const getOverdueTasks = useCallback(async () => {
@@ -131,7 +131,7 @@ export function useNotifications() {
   }, [user, isChecking, getOverdueTasks, getUpcomingTasks, notifications]);
 
   // Тестовая функция для проверки уведомлений
-  const testNotification = useCallback(async (type = "test") => {
+  const testNotification = useCallback(async (_type = "test") => {
     try {
       if (!("Notification" in window)) {
         throw new Error("Браузер не поддерживает уведомления");

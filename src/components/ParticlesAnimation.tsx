@@ -30,7 +30,10 @@ export default function ParticlesAnimation({
   //     ? height * 0.8
   //     : height;
   return (
-    <div className={`absolute inset-0 pointer-events-none z-10 ${className}`} style={{ zIndex: 10 }}>
+    <div
+      className={`absolute inset-0 pointer-events-none z-10 ${className}`}
+      style={{ zIndex: 10 }}
+    >
       {showBackground && (
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 rounded-lg opacity-50" />
       )}

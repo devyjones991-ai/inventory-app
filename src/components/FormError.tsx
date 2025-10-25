@@ -1,4 +1,5 @@
 import React from "react";
+
 import { cn } from "../lib/utils";
 
 interface FormErrorProps {
@@ -8,11 +9,11 @@ interface FormErrorProps {
   className?: string;
 }
 
-export default function FormError({ 
-  id, 
-  message, 
-  hint, 
-  className 
+export default function FormError({
+  id,
+  message,
+  hint,
+  className,
 }: FormErrorProps) {
   if (!message && !hint) return null;
   return (

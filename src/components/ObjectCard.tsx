@@ -1,6 +1,8 @@
 import { memo } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+
 import { Object } from "../types";
+
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 
 interface ObjectCardProps {
   item: Object;

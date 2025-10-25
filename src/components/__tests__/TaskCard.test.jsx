@@ -42,7 +42,7 @@ describe("TaskCard", () => {
 
     const buttons = screen.getAllByRole("button");
     expect(buttons).toHaveLength(2);
-    
+
     // Первая кнопка - редактирование (с иконкой карандаша)
     expect(buttons[0]).toBeInTheDocument();
     // Вторая кнопка - удаление (с иконкой корзины)

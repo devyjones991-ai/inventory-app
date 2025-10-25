@@ -12,9 +12,7 @@ const corsHeaders = {
 export interface CacheGetDependencies {
   createSupabaseClient?: () => {
     auth: {
-      getUser: (
-        token: string,
-      ) => Promise<{
+      getUser: (token: string) => Promise<{
         data: { user: unknown } | null;
         error: { message: string } | null;
       }>;

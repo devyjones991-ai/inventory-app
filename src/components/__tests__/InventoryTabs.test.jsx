@@ -53,7 +53,9 @@ describe("InventoryTabs", () => {
   test("отображает количество на вкладках", async () => {
     // Настраиваем мок для useTasks
     mockUseTasks.mockReturnValue({
-      tasks: Array(5).fill().map((_, i) => ({ id: i + 1, title: `Task ${i + 1}` })),
+      tasks: Array(5)
+        .fill()
+        .map((_, i) => ({ id: i + 1, title: `Task ${i + 1}` })),
       loading: false,
       error: null,
       loadTasks: vi.fn(),
@@ -66,7 +68,7 @@ describe("InventoryTabs", () => {
     render(
       <MemoryRouter>
         <InventoryTabs selected={{ id: 1 }} onUpdateSelected={() => {}} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     await screen.findByText("Железо (2)");
@@ -77,7 +79,9 @@ describe("InventoryTabs", () => {
     // После клика количество задач должно обновиться
     // Обновляем мок для отображения 5 задач
     mockUseTasks.mockReturnValue({
-      tasks: Array(5).fill().map((_, i) => ({ id: i + 1, title: `Task ${i + 1}` })),
+      tasks: Array(5)
+        .fill()
+        .map((_, i) => ({ id: i + 1, title: `Task ${i + 1}` })),
       loading: false,
       error: null,
       loadTasks: vi.fn(),

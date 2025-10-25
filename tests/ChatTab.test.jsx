@@ -70,26 +70,26 @@ vi.mock("@/hooks/useChatMessages", () => {
   };
 });
 
-  vi.mock("@/hooks/useChat", () => ({
-    default: vi.fn(() => ({
-      messages: mockMessages,
-      loading: false,
-      error: null,
-      hasMore: false,
-      loadMore: mockFetchMessages,
-      newMessage: "",
-      setNewMessage: vi.fn(),
-      sending: false,
-      file: null,
-      setFile: vi.fn(),
-      filePreview: null,
-      setFilePreview: vi.fn(),
-      loadError: null,
-      sendMessage: mockSendMessage,
-      searchMessages: mockFetchMessages,
-      clearSearch: vi.fn(),
-    })),
-  }));
+vi.mock("@/hooks/useChat", () => ({
+  default: vi.fn(() => ({
+    messages: mockMessages,
+    loading: false,
+    error: null,
+    hasMore: false,
+    loadMore: mockFetchMessages,
+    newMessage: "",
+    setNewMessage: vi.fn(),
+    sending: false,
+    file: null,
+    setFile: vi.fn(),
+    filePreview: null,
+    setFilePreview: vi.fn(),
+    loadError: null,
+    sendMessage: mockSendMessage,
+    searchMessages: mockFetchMessages,
+    clearSearch: vi.fn(),
+  })),
+}));
 
 describe("ChatTab", () => {
   beforeEach(() => {
@@ -221,28 +221,28 @@ describe("ChatTab", () => {
     }
 
     const firstMessage = await screen.findByText(mockMessages[0].content);
-    const firstMessageContainer = firstMessage.closest('.chat-message');
+    const firstMessageContainer = firstMessage.closest(".chat-message");
     expect(firstMessageContainer).toBeInTheDocument();
-    
-    const firstFooter = firstMessageContainer?.querySelector(".chat-message-time");
+
+    const firstFooter =
+      firstMessageContainer?.querySelector(".chat-message-time");
     // Проверяем что сообщение отображается (галочка может отсутствовать в тестах)
     expect(firstFooter).toBeInTheDocument();
 
     const secondMessage = await screen.findByText(mockMessages[1].content);
-    const secondMessageContainer = secondMessage.closest('.chat-message');
+    const secondMessageContainer = secondMessage.closest(".chat-message");
     expect(secondMessageContainer).toBeInTheDocument();
-    
-    const secondFooter = secondMessageContainer?.querySelector(".chat-message-time");
+
+    const secondFooter =
+      secondMessageContainer?.querySelector(".chat-message-time");
     // Проверяем что сообщение отображается
     expect(secondFooter).toBeInTheDocument();
 
     const myBubble = await screen.findByText("Привет");
-    expect(myBubble.closest('.chat-message')).toHaveClass(
-      "chat-message user",
-    );
+    expect(myBubble.closest(".chat-message")).toHaveClass("chat-message user");
 
     const otherBubble = await screen.findByText("Здравствуйте");
-    expect(otherBubble.closest('.chat-message')).toHaveClass(
+    expect(otherBubble.closest(".chat-message")).toHaveClass(
       "chat-message assistant",
     );
 
@@ -314,17 +314,20 @@ describe("ChatTab", () => {
     // Проверяем, что сообщения загружены
     expect(await screen.findByText("Привет")).toBeInTheDocument();
     expect(await screen.findByText("Здравствуйте")).toBeInTheDocument();
-    
+
     // Проверяем, что сообщения отображаются
     expect(screen.getByText("Привет")).toBeInTheDocument();
-    
+
     // Проверяем, что есть кнопка загрузки дополнительных сообщений
     const loadMoreButton = screen.queryByRole("button", { name: "↓" });
     if (loadMoreButton) {
       fireEvent.click(loadMoreButton);
-      await waitFor(() => {
-        expect(mockFetchMessages).toHaveBeenCalledTimes(2);
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(mockFetchMessages).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 3000 },
+      );
     }
   });
 
@@ -345,10 +348,10 @@ describe("ChatTab", () => {
     const filtered = [mockMessages[0]];
     mockFetchMessages.mockResolvedValueOnce({ data: filtered, error: null });
     fireEvent.change(searchInput, { target: { value: "Прив" } });
-    
+
     // Кликаем на кнопку "Найти" после ввода текста
     fireEvent.click(searchBtn);
-    
+
     // Проверяем, что поиск работает (поле заполнено)
     expect(searchInput.value).toBe("Прив");
 

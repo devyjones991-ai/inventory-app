@@ -16,7 +16,7 @@ const mockLoadTasks = jest.fn();
 const mockCreateTask = vi.fn().mockResolvedValue(undefined);
 const mockUpdateTask = vi.fn().mockResolvedValue(undefined);
 const mockDeleteTask = vi.fn().mockResolvedValue(undefined);
-const mockImportTasks = jest.fn();
+// const mockImportTasks = jest.fn();
 
 // TasksTab получает функции как props, не использует useTasks
 
@@ -56,15 +56,15 @@ describe("TasksTab", () => {
     mockCreateTask.mockResolvedValue({ data: null, error: null });
     mockUpdateTask.mockResolvedValue({ data: null, error: null });
     vi.clearAllMocks();
-    
+
     // TasksTab получает функции как props, не использует useTasks
   });
 
   it("показывает сообщение при отсутствии задач", async () => {
     render(
       <MemoryRouter>
-        <TasksTab 
-          selected={selected} 
+        <TasksTab
+          selected={selected}
           tasks={[]}
           loading={false}
           error={null}
@@ -94,8 +94,8 @@ describe("TasksTab", () => {
 
     render(
       <MemoryRouter>
-        <TasksTab 
-          selected={selected} 
+        <TasksTab
+          selected={selected}
           tasks={[]}
           loading={false}
           error={null}
@@ -110,7 +110,9 @@ describe("TasksTab", () => {
 
     // Ждем пока модальное окно полностью откроется
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Добавить задачу" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Добавить задачу" }),
+      ).toBeInTheDocument();
     });
 
     const titleInput = screen.getByLabelText(/Название/);
@@ -125,7 +127,9 @@ describe("TasksTab", () => {
 
     // Ждем пока модальное окно откроется
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Добавить задачу" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Добавить задачу" }),
+      ).toBeInTheDocument();
     });
 
     const submitButton = screen.getByRole("button", { name: "Добавить" });
@@ -135,7 +139,9 @@ describe("TasksTab", () => {
 
     // Проверяем что форма была отправлена (модальное окно закрылось)
     await waitFor(() => {
-      expect(screen.queryByRole("heading", { name: "Добавить задачу" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { name: "Добавить задачу" }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -155,8 +161,8 @@ describe("TasksTab", () => {
 
     render(
       <MemoryRouter>
-        <TasksTab 
-          selected={selected} 
+        <TasksTab
+          selected={selected}
           tasks={[task]}
           loading={false}
           error={null}
@@ -168,17 +174,24 @@ describe("TasksTab", () => {
     );
 
     // Ждем пока задача отобразится (может потребоваться время для виртуализации)
-    await waitFor(() => {
-      expect(screen.getByText("Существующая задача")).toBeInTheDocument();
-    }, { timeout: 20000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Существующая задача")).toBeInTheDocument();
+      },
+      { timeout: 20000 },
+    );
 
     // Находим кнопку редактирования
-    const editButton = await screen.findByRole("button", { name: "Редактировать" });
+    const editButton = await screen.findByRole("button", {
+      name: "Редактировать",
+    });
     fireEvent.click(editButton);
 
     // Ждем пока модальное окно откроется
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Редактировать задачу" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Редактировать задачу" }),
+      ).toBeInTheDocument();
     });
 
     // Ждем пока поля формы заполнятся
@@ -201,7 +214,9 @@ describe("TasksTab", () => {
 
     // Проверяем что форма была отправлена (модальное окно закрылось)
     await waitFor(() => {
-      expect(screen.queryByRole("heading", { name: "Редактировать задачу" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { name: "Редактировать задачу" }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -211,8 +226,8 @@ describe("TasksTab", () => {
 
     render(
       <MemoryRouter>
-        <TasksTab 
-          selected={selected} 
+        <TasksTab
+          selected={selected}
           tasks={[task]}
           loading={false}
           error={null}
@@ -224,9 +239,10 @@ describe("TasksTab", () => {
     );
 
     const buttons = screen.getAllByRole("button");
-    const actionButtons = buttons.filter(button => 
-      button.querySelector('svg[data-slot="icon"]') && 
-      button.className.includes("h-6 w-6")
+    const actionButtons = buttons.filter(
+      (button) =>
+        button.querySelector('svg[data-slot="icon"]') &&
+        button.className.includes("h-6 w-6"),
     );
     expect(actionButtons).toHaveLength(2); // Редактировать и удалить
   });

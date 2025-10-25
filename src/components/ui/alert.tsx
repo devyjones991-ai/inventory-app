@@ -31,7 +31,7 @@ function Alert({ className, variant, ...props }: AlertProps) {
   );
 }
 
-export interface AlertTitleProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type AlertTitleProps = React.HTMLAttributes<HTMLDivElement>;
 
 function AlertTitle({ className, ...props }: AlertTitleProps) {
   return (
@@ -42,8 +42,7 @@ function AlertTitle({ className, ...props }: AlertTitleProps) {
   );
 }
 
-export interface AlertDescriptionProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+export type AlertDescriptionProps = React.HTMLAttributes<HTMLDivElement>;
 
 function AlertDescription({ className, ...props }: AlertDescriptionProps) {
   return <div className={cn("text-sm opacity-90", className)} {...props} />;

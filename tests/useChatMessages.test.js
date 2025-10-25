@@ -55,9 +55,9 @@ describe("useChatMessages", () => {
     });
     const { error } = await result.current.sendMessage(
       "1",
-      "msg", 
+      "msg",
       "user@example.com",
-      file
+      file,
     );
     expect(error).toBeDefined();
     expect(mockUpload).not.toHaveBeenCalled();
@@ -70,9 +70,9 @@ describe("useChatMessages", () => {
     const file = new File([big], "big.png", { type: "image/png" });
     const { error } = await result.current.sendMessage(
       "1",
-      "msg", 
+      "msg",
       "user@example.com",
-      file
+      file,
     );
     expect(error).toBeDefined();
     expect(mockUpload).not.toHaveBeenCalled();
@@ -102,9 +102,9 @@ describe("useChatMessages", () => {
     mockSingle.mockResolvedValueOnce({ data: { id: 1 }, error: null });
     const res1 = await result.current.sendMessage(
       "1",
-      "msg1", 
+      "msg1",
       "user@example.com",
-      file
+      file,
     );
     expect(res1.error).toBeNull();
     expect(mockUpload).toHaveBeenCalledTimes(1);
@@ -113,8 +113,8 @@ describe("useChatMessages", () => {
     mockSingle.mockResolvedValueOnce({ data: { id: 2 }, error: null });
     const res2 = await result.current.sendMessage(
       "1",
-      "msg2", 
-      "user@example.com"
+      "msg2",
+      "user@example.com",
     );
     expect(res2.error).toBeNull();
     expect(mockUpload).toHaveBeenCalledTimes(1);

@@ -6,9 +6,9 @@ interface HamsterSpinnerProps {
   className?: string;
 }
 
-export default function HamsterSpinner({ 
-  size = "medium", 
-  className = "" 
+export default function HamsterSpinner({
+  size = "medium",
+  className = "",
 }: HamsterSpinnerProps) {
   const sizeClasses = {
     small: "text-xs",

@@ -1,15 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/supabaseClient';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'react-hot-toast';
-import { User, Shield, UserPlus, Trash2, Edit, Search, Filter, Download, BarChart3, Activity, Users, Calendar } from 'lucide-react';
+import {
+  User,
+  Shield,
+  UserPlus,
+  Trash2,
+  Edit,
+  Search,
+  Filter,
+  Download,
+  BarChart3,
+  Activity,
+  Users,
+  Calendar,
+} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/supabaseClient";
 
 interface UserProfile {
   id: string;
@@ -21,103 +47,89 @@ interface UserProfile {
 }
 
 const AdminPage: React.FC = () => {
-  const { user, role } = useAuth();
+  const { role: _role } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({
-    full_name: '',
-    role: ''
+    full_name: "",
+    role: "",
   });
-  
+
   // Новые состояния для улучшенного функционала
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [stats, setStats] = useState({
     totalUsers: 0,
     adminUsers: 0,
     activeUsers: 0,
-    newUsersToday: 0
+    newUsersToday: 0,
   });
 
-  // Проверяем права администратора
-  if (role !== 'admin') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-96">
-          <CardHeader>
-            <CardTitle className="text-center text-red-600">Доступ запрещен</CardTitle>
-            <CardDescription className="text-center">
-              У вас нет прав для доступа к этой странице
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  // Загружаем список пользователей
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       setUsers(data || []);
       calculateStats(data || []);
     } catch (error) {
-      console.error('Ошибка загрузки пользователей:', error);
-      toast.error('Не удалось загрузить список пользователей');
+      console.error("Ошибка загрузки пользователей:", error);
+      toast.error("Не удалось загрузить список пользователей");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const calculateStats = (usersData: UserProfile[]) => {
     const today = new Date().toDateString();
-    const newUsersToday = usersData.filter(user => 
-      new Date(user.created_at).toDateString() === today
+    const newUsersToday = usersData.filter(
+      (user) => new Date(user.created_at).toDateString() === today,
     ).length;
-    
-    const activeUsers = usersData.filter(user => 
-      user.last_sign_in_at && 
-      new Date(user.last_sign_in_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
+    const activeUsers = usersData.filter(
+      (user) =>
+        user.last_sign_in_at &&
+        new Date(user.last_sign_in_at) >
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     ).length;
 
     setStats({
       totalUsers: usersData.length,
-      adminUsers: usersData.filter(u => u.role === 'admin').length,
+      adminUsers: usersData.filter((u) => u.role === "admin").length,
       activeUsers,
-      newUsersToday
+      newUsersToday,
     });
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+  // Загружаем список пользователей
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
       user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    
+
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+
     return matchesSearch && matchesRole;
   });
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     const aValue = a[sortBy as keyof UserProfile];
     const bValue = b[sortBy as keyof UserProfile];
-    
-    if (sortOrder === 'asc') {
+
+    if (sortOrder === "asc") {
       return aValue > bValue ? 1 : -1;
     } else {
       return aValue < bValue ? 1 : -1;
@@ -126,21 +138,25 @@ const AdminPage: React.FC = () => {
 
   const exportUsers = () => {
     const csvContent = [
-      ['Email', 'Имя', 'Роль', 'Дата создания', 'Последний вход'],
-      ...sortedUsers.map(user => [
+      ["Email", "Имя", "Роль", "Дата создания", "Последний вход"],
+      ...sortedUsers.map((user) => [
         user.email,
-        user.full_name || '',
+        user.full_name || "",
         user.role,
         new Date(user.created_at).toLocaleDateString(),
-        user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Никогда'
-      ])
-    ].map(row => row.join(',')).join('\n');
+        user.last_sign_in_at
+          ? new Date(user.last_sign_in_at).toLocaleDateString()
+          : "Никогда",
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `users_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `users_${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -148,8 +164,8 @@ const AdminPage: React.FC = () => {
   const handleEditUser = (user: UserProfile) => {
     setSelectedUser(user);
     setEditForm({
-      full_name: user.full_name || '',
-      role: user.role || 'user'
+      full_name: user.full_name || "",
+      role: user.role || "user",
     });
     setShowEditModal(true);
   };
@@ -159,46 +175,46 @@ const AdminPage: React.FC = () => {
 
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           full_name: editForm.full_name,
-          role: editForm.role
+          role: editForm.role,
         })
-        .eq('id', selectedUser.id);
+        .eq("id", selectedUser.id);
 
       if (error) throw error;
 
-      toast.success('Пользователь обновлен');
+      toast.success("Пользователь обновлен");
       setShowEditModal(false);
       setSelectedUser(null);
       loadUsers();
     } catch (error) {
-      console.error('Ошибка обновления пользователя:', error);
-      toast.error('Не удалось обновить пользователя');
+      console.error("Ошибка обновления пользователя:", error);
+      toast.error("Не удалось обновить пользователя");
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) return;
+    if (!confirm("Вы уверены, что хотите удалить этого пользователя?")) return;
 
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .delete()
-        .eq('id', userId);
+        .eq("id", userId);
 
       if (error) throw error;
 
-      toast.success('Пользователь удален');
+      toast.success("Пользователь удален");
       loadUsers();
     } catch (error) {
-      console.error('Ошибка удаления пользователя:', error);
-      toast.error('Не удалось удалить пользователя');
+      console.error("Ошибка удаления пользователя:", error);
+      toast.error("Не удалось удалить пользователя");
     }
   };
 
   const handleCreateAdmin = async () => {
-    const email = prompt('Введите email нового администратора:');
+    const email = prompt("Введите email нового администратора:");
     if (!email) return;
 
     try {
@@ -206,29 +222,27 @@ const AdminPage: React.FC = () => {
         email,
         email_confirm: true,
         user_metadata: {
-          full_name: 'Администратор'
-        }
+          full_name: "Администратор",
+        },
       });
 
       if (error) throw error;
 
       // Создаем профиль с правами администратора
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: (await supabase.auth.admin.getUserByEmail(email)).data.user.id,
-          email,
-          full_name: 'Администратор',
-          role: 'admin'
-        });
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: (await supabase.auth.admin.getUserByEmail(email)).data.user.id,
+        email,
+        full_name: "Администратор",
+        role: "admin",
+      });
 
       if (profileError) throw profileError;
 
-      toast.success('Администратор создан');
+      toast.success("Администратор создан");
       loadUsers();
     } catch (error) {
-      console.error('Ошибка создания администратора:', error);
-      toast.error('Не удалось создать администратора');
+      console.error("Ошибка создания администратора:", error);
+      toast.error("Не удалось создать администратора");
     }
   };
 
@@ -247,8 +261,12 @@ const AdminPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Панель администратора</h1>
-          <p className="mt-2 text-gray-600">Управление пользователями и мониторинг системы</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Панель администратора
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Управление пользователями и мониторинг системы
+          </p>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
@@ -274,44 +292,60 @@ const AdminPage: React.FC = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Всего пользователей</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Всего пользователей
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.totalUsers}
+                      </p>
                     </div>
                     <Users className="w-8 h-8 text-blue-600" />
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Администраторы</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.adminUsers}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Администраторы
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.adminUsers}
+                      </p>
                     </div>
                     <Shield className="w-8 h-8 text-red-600" />
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Активные (7 дней)</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.activeUsers}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Активные (7 дней)
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.activeUsers}
+                      </p>
                     </div>
                     <Activity className="w-8 h-8 text-green-600" />
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Новые сегодня</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.newUsersToday}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Новые сегодня
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.newUsersToday}
+                      </p>
                     </div>
                     <Calendar className="w-8 h-8 text-purple-600" />
                   </div>
@@ -331,7 +365,7 @@ const AdminPage: React.FC = () => {
                     className="pl-10 w-64"
                   />
                 </div>
-                
+
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Фильтр по роли" />
@@ -351,15 +385,19 @@ const AdminPage: React.FC = () => {
                     <SelectItem value="created_at">Дата создания</SelectItem>
                     <SelectItem value="full_name">Имя</SelectItem>
                     <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="last_sign_in_at">Последний вход</SelectItem>
+                    <SelectItem value="last_sign_in_at">
+                      Последний вход
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Button
                   variant="outline"
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                  onClick={() =>
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                  }
                 >
-                  {sortOrder === 'asc' ? '↑' : '↓'}
+                  {sortOrder === "asc" ? "↑" : "↓"}
                 </Button>
               </div>
 
@@ -368,7 +406,10 @@ const AdminPage: React.FC = () => {
                   <Download className="w-4 h-4 mr-2" />
                   Экспорт CSV
                 </Button>
-                <Button onClick={handleCreateAdmin} className="bg-blue-600 hover:bg-blue-700">
+                <Button
+                  onClick={handleCreateAdmin}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Создать администратора
                 </Button>
@@ -377,7 +418,10 @@ const AdminPage: React.FC = () => {
 
             <div className="grid gap-4">
               {sortedUsers.map((user) => (
-                <Card key={user.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={user.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -385,13 +429,21 @@ const AdminPage: React.FC = () => {
                           <User className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{user.full_name || 'Без имени'}</CardTitle>
+                          <CardTitle className="text-lg">
+                            {user.full_name || "Без имени"}
+                          </CardTitle>
                           <CardDescription>{user.email}</CardDescription>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'}>
-                          {user.role === 'admin' ? 'Администратор' : 'Пользователь'}
+                        <Badge
+                          variant={
+                            user.role === "admin" ? "destructive" : "secondary"
+                          }
+                        >
+                          {user.role === "admin"
+                            ? "Администратор"
+                            : "Пользователь"}
                         </Badge>
                         <div className="flex space-x-1">
                           <Button
@@ -418,16 +470,20 @@ const AdminPage: React.FC = () => {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                       <div>
-                        <span className="font-medium">Создан:</span> {new Date(user.created_at).toLocaleDateString()}
+                        <span className="font-medium">Создан:</span>{" "}
+                        {new Date(user.created_at).toLocaleDateString()}
                       </div>
                       <div>
-                        <span className="font-medium">Последний вход:</span> {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Никогда'}
+                        <span className="font-medium">Последний вход:</span>{" "}
+                        {user.last_sign_in_at
+                          ? new Date(user.last_sign_in_at).toLocaleDateString()
+                          : "Никогда"}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
-              
+
               {sortedUsers.length === 0 && (
                 <Card>
                   <CardContent className="p-8 text-center">
@@ -448,7 +504,9 @@ const AdminPage: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span>Пользователи</span>
-                      <Badge variant="secondary">{stats.totalUsers - stats.adminUsers}</Badge>
+                      <Badge variant="secondary">
+                        {stats.totalUsers - stats.adminUsers}
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Администраторы</span>
@@ -486,22 +544,26 @@ const AdminPage: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   {sortedUsers.slice(0, 10).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                           <User className="w-4 h-4 text-gray-600" />
                         </div>
                         <div>
-                          <p className="font-medium">{user.full_name || 'Без имени'}</p>
+                          <p className="font-medium">
+                            {user.full_name || "Без имени"}
+                          </p>
                           <p className="text-sm text-gray-500">{user.email}</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-500">
-                          {user.last_sign_in_at 
+                          {user.last_sign_in_at
                             ? `Вход: ${new Date(user.last_sign_in_at).toLocaleDateString()}`
-                            : 'Никогда не входил'
-                          }
+                            : "Никогда не входил"}
                         </p>
                       </div>
                     </div>
@@ -528,14 +590,18 @@ const AdminPage: React.FC = () => {
                   <Input
                     id="full_name"
                     value={editForm.full_name}
-                    onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, full_name: e.target.value })
+                    }
                   />
                 </div>
                 <div>
                   <Label htmlFor="role">Роль</Label>
                   <Select
                     value={editForm.role}
-                    onValueChange={(value) => setEditForm({ ...editForm, role: value })}
+                    onValueChange={(value) =>
+                      setEditForm({ ...editForm, role: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />

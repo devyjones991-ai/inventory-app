@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import ErrorMessage from "./ErrorMessage";
-import Spinner from "./Spinner";
+
 import { supabase } from "../supabaseClient";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
 import logger from "../utils/logger";
+
+import ErrorMessage from "./ErrorMessage";
+import Spinner from "./Spinner";
 
 interface AuditLog {
   id: string;
@@ -61,10 +63,7 @@ export default function AuditTrail({ limit = 50 }: AuditTrailProps) {
       ) : (
         <div className="space-y-2">
           {logs.map((log) => (
-            <div
-              key={log.id}
-              className="rounded border p-3 text-sm"
-            >
+            <div key={log.id} className="rounded border p-3 text-sm">
               <div className="flex justify-between">
                 <span className="font-medium">{log.action}</span>
                 <span className="text-gray-500">

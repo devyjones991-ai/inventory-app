@@ -18,3 +18,4 @@ WHERE username IS NULL AND email IS NOT NULL;
 -- Add unique constraint for username
 ALTER TABLE public.profiles 
 ADD CONSTRAINT unique_username UNIQUE (username);
+

@@ -6,7 +6,7 @@ import { useContext } from "react";
 
 import { AuthProvider, AuthContext } from "@/context/AuthContext.jsx";
 
-import { toast } from "react-hot-toast";
+// import { toast } from "react-hot-toast";
 
 import logger from "@/utils/logger";
 
@@ -33,7 +33,7 @@ mockOnAuthStateChange.mockReturnValue({
 
 function Consumer() {
   const { role } = useContext(AuthContext);
-  return <div>{typeof role === 'string' ? role : "без роли"}</div>;
+  return <div>{typeof role === "string" ? role : "без роли"}</div>;
 }
 
 describe("AuthContext", () => {

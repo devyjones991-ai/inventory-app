@@ -1,7 +1,7 @@
 /* eslint-env vitest */
 
 import "@testing-library/jest-dom/vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { describe, test, expect, vi, beforeEach } from "vitest";
@@ -14,9 +14,9 @@ import { render } from "../../../tests/test-utils";
 const mockUpdate = vi.fn();
 
 vi.mock("../../hooks/useProfile", () => ({
-  useProfile: () => ({ 
+  useProfile: () => ({
     profile: { full_name: "old" },
-    updateProfile: mockUpdate 
+    updateProfile: mockUpdate,
   }),
 }));
 
@@ -28,7 +28,7 @@ describe("AccountModal", () => {
     email: "test@example.com",
     created_at: "2024-01-01",
     updated_at: "2024-01-01",
-    user_metadata: { username: "old" }
+    user_metadata: { username: "old" },
   };
 
   beforeEach(() => {
@@ -50,10 +50,10 @@ describe("AccountModal", () => {
   test("сохраняет изменения", async () => {
     const onClose = vi.fn();
     const onUpdated = vi.fn();
-    
+
     // Настраиваем мок для успешного обновления
     mockUpdate.mockResolvedValue({ data: { full_name: "new" }, error: null });
-    
+
     render(
       <AccountModal user={user} onClose={onClose} onUpdated={onUpdated} />,
     );
@@ -66,7 +66,7 @@ describe("AccountModal", () => {
 
     // Проверяем что компонент рендерится
     expect(screen.getByLabelText("Полное имя")).toBeInTheDocument();
-    
+
     // Проверяем что мок настроен правильно
     expect(mockUpdate).toBeDefined();
   });
@@ -74,10 +74,8 @@ describe("AccountModal", () => {
   test("показывает ошибку при неудачном обновлении", async () => {
     const onClose = vi.fn();
     mockUpdate.mockResolvedValue({ data: null, error: new Error("Ошибка") });
-    
-    render(
-      <AccountModal user={user} onClose={onClose} onUpdated={vi.fn()} />,
-    );
+
+    render(<AccountModal user={user} onClose={onClose} onUpdated={vi.fn()} />);
 
     const input = screen.getByLabelText("Полное имя");
     await userEvent.clear(input);
@@ -87,7 +85,7 @@ describe("AccountModal", () => {
 
     // Проверяем что компонент рендерится
     expect(screen.getByLabelText("Полное имя")).toBeInTheDocument();
-    
+
     // Проверяем что мок настроен правильно
     expect(mockUpdate).toBeDefined();
   });

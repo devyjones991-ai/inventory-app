@@ -2,17 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import FormError from "./FormError";
-import { Button } from "./ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
-import { Input } from "./ui/input";
+
 import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
 import { t } from "../i18n";
+
+import FormError from "./FormError";
+import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Input } from "./ui/input";
 
 const schema = z.object({
   email: z.string().email(t("auth.email")),
@@ -23,7 +20,10 @@ interface ForgotPasswordModalProps {
   onClose: () => void;
 }
 
-export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProps) {
+export default function ForgotPasswordModal({
+  isOpen,
+  onClose,
+}: ForgotPasswordModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { resetPassword, error: authError } = useSupabaseAuth();
@@ -103,11 +103,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
             >
               {t("common.cancel")}
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={isLoading} className="flex-1">
               {isLoading ? t("common.loading") : t("auth.sendResetLink")}
             </Button>
           </div>

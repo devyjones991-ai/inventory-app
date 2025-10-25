@@ -1,7 +1,7 @@
 import { screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
-import { render } from "./test-utils";
+import { render } from "./test-utilities";
 
 vi.mock("@/supabaseClient", () => {
   return {
@@ -9,10 +9,10 @@ vi.mock("@/supabaseClient", () => {
     supabase: {
       auth: {
         onAuthStateChange: vi.fn(() => ({
-          data: { subscription: { unsubscribe: vi.fn() } }
-        }))
-      }
-    }
+          data: { subscription: { unsubscribe: vi.fn() } },
+        })),
+      },
+    },
   };
 });
 
@@ -44,7 +44,7 @@ vi.mock("@/pages/AuthPage", () => ({
       <button>Регистрация</button>
       <div>Проверьте электронную почту для подтверждения</div>
     </div>
-  )
+  ),
 }));
 
 import AuthPage from "@/pages/AuthPage.jsx";

@@ -44,12 +44,12 @@ describe("useTasks", () => {
     const mockError = new Error("fail");
     mockSingle.mockResolvedValueOnce({ data: null, error: mockError });
     const { result } = renderHook(() => useTasks());
-    
+
     // Ждем инициализации хука
     await waitFor(() => {
       expect(result.current).toBeDefined();
     });
-    
+
     await act(async () => {
       await result.current.createTask({ title: "t" });
     });

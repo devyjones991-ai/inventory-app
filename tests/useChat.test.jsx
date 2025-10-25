@@ -29,7 +29,7 @@ mockSupabase = {
         return channelObj;
       }),
       subscribe: vi.fn((cb) => {
-        if (typeof cb === 'function') {
+        if (typeof cb === "function") {
           cb("SUBSCRIBED");
         }
         return { unsubscribe: vi.fn() };
@@ -65,31 +65,31 @@ const page1 = [
     created_at: new Date().toISOString(),
   },
 ];
-const page2 = [
-  {
-    id: "3",
-    object_id: 1,
-    sender: "a",
-    content: "m3",
-    created_at: new Date().toISOString(),
-  },
-];
+// const page2 = [
+//   {
+//     id: "3",
+//     object_id: 1,
+//     sender: "a",
+//     content: "m3",
+//     created_at: new Date().toISOString(),
+//   },
+// ];
 
 // mockFetchMessages уже объявлен выше в vi.hoisted
-let sendId = 10;
-const mockSendMessage = vi.fn(() => {
-  const id = String(sendId++);
-  return Promise.resolve({
-    data: {
-      id,
-      object_id: 1,
-      sender: "me@example.com",
-      content: "hi",
-      created_at: new Date().toISOString(),
-    },
-    error: null,
-  });
-});
+// let sendId = 10;
+// const mockSendMessage = vi.fn(() => {
+//   const id = String(sendId++);
+//   return Promise.resolve({
+//     data: {
+//       id,
+//       object_id: 1,
+//       sender: "me@example.com",
+//       content: "hi",
+//       created_at: new Date().toISOString(),
+//     },
+//     error: null,
+//   });
+// });
 
 // Mock the useChatMessages hook
 let mockMessages = [];
@@ -130,13 +130,13 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import useChat from "@/hooks/useChat";
-import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
+// import { handleSupabaseError as mockHandleSupabaseError } from "@/utils/handleSupabaseError";
 
 describe("useChat markMessagesAsRead", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     onPayload = null;
-    sendId = 10;
+    // sendId = 10;
   });
 
   it("загружает сообщения с учётом смещения без аргументов", async () => {
@@ -161,11 +161,11 @@ describe("useChat markMessagesAsRead", () => {
     const { result } = renderHook(() =>
       useChat({ objectId: "1", userEmail: "me@example.com" }),
     );
-    
+
     // Проверяем что хук инициализирован
     expect(result.current).toBeDefined();
     expect(result.current.messages).toBeDefined();
-    
+
     // Проверяем что сообщения доступны
     expect(Array.isArray(result.current.messages)).toBe(true);
   });
@@ -271,7 +271,7 @@ describe("useChat markMessagesAsRead", () => {
       expect(result.current.messages).toHaveLength(page1.length),
     );
 
-    const prevMessages = result.current.messages;
+    // const prevMessages = result.current.messages;
     act(() => {
       onPayload({ eventType: "INSERT", new: { ...page1[0] } });
     });

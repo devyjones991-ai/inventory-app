@@ -14,21 +14,23 @@ vi.mock("@/supabaseClient", () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => ({
-        order: vi.fn(() => Promise.resolve({
-          data: [],
-          error: null
-        }))
-      }))
-    }))
-  }
+        order: vi.fn(() =>
+          Promise.resolve({
+            data: [],
+            error: null,
+          }),
+        ),
+      })),
+    })),
+  },
 }));
 
 // Мокаем toast
 vi.mock("react-hot-toast", () => ({
   toast: {
     success: vi.fn(),
-    error: vi.fn()
-  }
+    error: vi.fn(),
+  },
 }));
 
 describe("AdminPage", () => {
@@ -37,13 +39,13 @@ describe("AdminPage", () => {
     const { useAuth } = await import("@/hooks/useAuth");
     vi.mocked(useAuth).mockReturnValue({
       user: { id: "1", email: "admin@example.com" },
-      role: "admin"
+      role: "admin",
     });
 
     render(
       <MemoryRouter>
         <AdminPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // Ждем пока загрузка завершится
@@ -51,7 +53,9 @@ describe("AdminPage", () => {
       expect(screen.getByText("Панель администратора")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Управление пользователями и мониторинг системы")).toBeInTheDocument();
+    expect(
+      screen.getByText("Управление пользователями и мониторинг системы"),
+    ).toBeInTheDocument();
   });
 
   it("показывает доступ запрещен для не-админа", async () => {
@@ -59,16 +63,18 @@ describe("AdminPage", () => {
     const { useAuth } = await import("@/hooks/useAuth");
     vi.mocked(useAuth).mockReturnValue({
       user: { id: "2", email: "user@example.com" },
-      role: "user"
+      role: "user",
     });
 
     render(
       <MemoryRouter>
         <AdminPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Доступ запрещен")).toBeInTheDocument();
-    expect(screen.getByText("У вас нет прав для доступа к этой странице")).toBeInTheDocument();
+    expect(
+      screen.getByText("У вас нет прав для доступа к этой странице"),
+    ).toBeInTheDocument();
   });
 });
