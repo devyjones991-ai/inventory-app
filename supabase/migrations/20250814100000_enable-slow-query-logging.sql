@@ -14,3 +14,4 @@ CREATE TABLE IF NOT EXISTS public.slow_query_logs (
   calls BIGINT NOT NULL,
   logged_at TIMESTAMPTZ DEFAULT NOW()
 );
+
