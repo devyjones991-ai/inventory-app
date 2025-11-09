@@ -1,7 +1,46 @@
-version: "3.8"
+version: '3.8'
+
 services:
-  app:
+  postgres:
+    image: postgres:16-alpine
+    container_name: inventory-app-postgres
+    environment:
+      POSTGRES_DB: multiminder_db
+      POSTGRES_USER: multiminder_user
+      POSTGRES_PASSWORD: 1234QAZwsx
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U multiminder_user -d multiminder_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgrest:
+    image: postgrest/postgrest:latest
+    container_name: inventory-app-postgrest
+    environment:
+      PGRST_DB_URI: postgres://multiminder_user:1234QAZwsx@postgres:5432/multiminder_db
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: multiminder_user
+      PGRST_SERVER_PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  app-dev:
     image: node:20-alpine
+    container_name: inventory-app-dev
     working_dir: /app
     volumes:
       - .:/app
@@ -10,4 +49,30 @@ services:
       - "5173:5173"
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - VITE_API_BASE_URL=http://localhost:3001
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    networks:
+      - app_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: inventory-app-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      VITE_API_BASE_URL: http://localhost:3001
+    depends_on:
+      - postgrest
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge
