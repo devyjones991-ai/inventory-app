@@ -1,16 +1,29 @@
 -- Enable RLS and add policies for profiles table
-alter table profiles enable row level security;
+-- RLS уже включен в миграции 20241201_create_profiles_table.sql
+-- alter table profiles enable row level security;
 
--- Allow users to select their own profile
-create policy "Users can select own profile" on profiles
-  for select using (id = auth.uid());
+-- Политика "Users can select own profile" уже создана в 20241201_create_profiles_table.sql как "Users can view own profile"
+-- Политика "Users can update own profile" уже создана в 20241201_create_profiles_table.sql
 
--- Allow users to update their own profile without changing role
-create policy "Users can update own profile" on profiles
-  for update using (auth.uid() = id)
-  with check (auth.uid() = id and role = (select role from profiles where id = auth.uid()));
+-- Обновляем политику для обновления профиля, чтобы запретить изменение роли
+-- Сначала удаляем старую политику, если она существует
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+
+-- Создаем обновленную политику, которая запрещает изменение роли
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE 
+  USING (auth.uid() = id)
+  WITH CHECK (
+    auth.uid() = id 
+    AND role = (SELECT role FROM profiles WHERE id = auth.uid())
+  );
 
 -- Allow admins to update role
-create policy "Admins can update role" on profiles
-  for update using (auth.role() = 'admin')
-  with check (auth.role() = 'admin');
+CREATE POLICY "Admins can update role" ON profiles
+  FOR UPDATE 
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
