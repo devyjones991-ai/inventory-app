@@ -84,20 +84,59 @@ else
     exit 1
 fi
 
-# 5. Запуск сервисов
-echo -e "\n[5/6] Запуск сервисов..."
+# 5. Настройка переменных окружения для локального Supabase
+echo -e "\n[5/7] Настройка переменных окружения..."
+# Получаем IP сервера
+SERVER_IP=$(hostname -I | awk '{print $1}')
+if [ -z "$SERVER_IP" ]; then
+    SERVER_IP=$(curl -s ifconfig.me || echo "127.0.0.1")
+fi
+
+# Получаем конфигурацию Supabase (если запущен)
+if supabase status 2>/dev/null | grep -q "API URL"; then
+    API_URL=$(supabase status 2>/dev/null | grep "API URL" | awk '{print $3}' | sed "s|127.0.0.1|$SERVER_IP|g")
+    ANON_KEY=$(supabase status 2>/dev/null | grep "anon key" | awk '{print $3}')
+    
+    if [ -n "$API_URL" ] && [ -n "$ANON_KEY" ]; then
+        # Обновляем public/env.js для runtime конфигурации
+        cat > "$PROJECT_DIR/public/env.js" << EOF
+// Runtime environment overrides for static hosting
+// Локальный Supabase конфигурация (автоматически настроено)
+window.__ENV = window.__ENV || {
+  VITE_SUPABASE_URL: "$API_URL",
+  VITE_SUPABASE_ANON_KEY: "$ANON_KEY",
+  VITE_API_BASE_URL: "$API_URL",
+};
+EOF
+        echo "✓ Переменные окружения настроены"
+        echo "  API URL: $API_URL"
+    else
+        echo "⚠ Не удалось получить конфигурацию Supabase автоматически"
+        echo "  Выполните: supabase status"
+        echo "  И обновите public/env.js вручную"
+    fi
+else
+    echo "⚠ Supabase не запущен, переменные окружения не настроены"
+    echo "  Запустите: supabase start"
+    echo "  Затем обновите public/env.js"
+fi
+
+# 6. Запуск сервисов
+echo -e "\n[6/7] Запуск сервисов..."
 echo "Запуск Supabase..."
 sudo systemctl start supabase.service
-sleep 5
+sleep 10
 
 echo "Запуск приложения..."
 # Сначала собираем образ, если нужно
 cd "$PROJECT_DIR"
+echo "Сборка Docker образа приложения..."
 docker compose -f docker-compose.yml build app || echo "⚠ Ошибка сборки, продолжаем..."
 sudo systemctl start inventory-app-production.service
+sleep 5
 
-# 6. Проверка статуса
-echo -e "\n[6/6] Проверка статуса сервисов..."
+# 7. Проверка статуса
+echo -e "\n[7/7] Проверка статуса сервисов..."
 echo ""
 echo "=== Статус сервисов ==="
 echo ""
