@@ -61,8 +61,12 @@ RUN echo 'server { \
 # Copy built application
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy environment file if exists (для runtime конфигурации)
-COPY public/env.js /usr/share/nginx/html/env.js 2>/dev/null || true
+# Create env.js if it doesn't exist (для runtime конфигурации)
+# Файл env.js должен быть в dist после сборки, но на всякий случай создаем пустой
+RUN if [ ! -f /usr/share/nginx/html/env.js ]; then \
+        echo "// Runtime environment overrides" > /usr/share/nginx/html/env.js && \
+        echo "window.__ENV = window.__ENV || {};" >> /usr/share/nginx/html/env.js; \
+    fi
 
 # Set proper permissions
 RUN chown -R nginx:nginx /usr/share/nginx/html && \

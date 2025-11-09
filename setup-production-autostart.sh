@@ -214,16 +214,40 @@ else
     echo "⚠ Приложение не отвечает на localhost:3000"
 fi
 
-if curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:54321 | grep -q "200\|401"; then
-    echo "✓ Supabase API доступен на localhost:54321"
+# Проверка Supabase (может потребоваться больше времени для запуска)
+echo "Ожидание запуска Supabase..."
+for i in {1..10}; do
+    if curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/rest/v1/ | grep -q "200\|401\|404"; then
+        echo "✓ Supabase API доступен на localhost:54321"
+        break
+    fi
+    if [ $i -eq 10 ]; then
+        echo "⚠ Supabase API не отвечает на localhost:54321"
+        echo "  Проверьте статус: supabase status"
+        echo "  Проверьте логи: sudo journalctl -u supabase.service -n 50"
+    else
+        sleep 2
+    fi
+done
+
+# Проверка HTTP (без SSL)
+if curl -s -o /dev/null -w "%{http_code}" http://multiminder.duckdns.org | grep -q "200\|301\|302"; then
+    echo "✓ Сайт доступен по http://multiminder.duckdns.org"
 else
-    echo "⚠ Supabase API не отвечает на localhost:54321"
+    echo "⚠ Сайт не отвечает по http://multiminder.duckdns.org"
+    echo "  Проверьте nginx: sudo systemctl status nginx"
+    echo "  Проверьте логи: sudo tail -f /var/log/nginx/error.log"
 fi
 
-if curl -s -o /dev/null -w "%{http_code}" https://multiminder.duckdns.org | grep -q "200\|301\|302"; then
-    echo "✓ Сайт доступен по https://multiminder.duckdns.org"
+# Проверка HTTPS (если SSL установлен)
+if [ -f "/etc/letsencrypt/live/multiminder.duckdns.org/fullchain.pem" ]; then
+    if curl -s -o /dev/null -w "%{http_code}" https://multiminder.duckdns.org | grep -q "200\|301\|302"; then
+        echo "✓ Сайт доступен по https://multiminder.duckdns.org"
+    else
+        echo "⚠ Сайт не отвечает по https://multiminder.duckdns.org"
+    fi
 else
-    echo "⚠ Сайт не отвечает по https://multiminder.duckdns.org"
+    echo "ℹ SSL не установлен, проверка HTTPS пропущена"
 fi
 
 echo ""
