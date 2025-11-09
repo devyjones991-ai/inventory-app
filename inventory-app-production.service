@@ -1,0 +1,23 @@
+[Unit]
+Description=Inventory App Production (Docker Compose)
+After=docker.service supabase.service network.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=bag
+Group=bag
+WorkingDirectory=/home/bag/inventory-app
+ExecStart=/usr/bin/docker compose -f docker-compose.yml up -d app
+ExecStop=/usr/bin/docker compose -f docker-compose.yml stop app
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment="COMPOSE_PROJECT_NAME=inventory-app"
+
+[Install]
+WantedBy=multi-user.target
+

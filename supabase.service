@@ -1,0 +1,22 @@
+[Unit]
+Description=Supabase Local Development
+After=docker.service network.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=bag
+Group=bag
+WorkingDirectory=/home/bag/inventory-app
+ExecStart=/usr/local/bin/supabase start
+ExecStop=/usr/local/bin/supabase stop
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+

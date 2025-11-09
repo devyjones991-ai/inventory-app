@@ -61,6 +61,9 @@ RUN echo 'server { \
 # Copy built application
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copy environment file if exists (для runtime конфигурации)
+COPY public/env.js /usr/share/nginx/html/env.js 2>/dev/null || true
+
 # Set proper permissions
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chmod -R 755 /usr/share/nginx/html
