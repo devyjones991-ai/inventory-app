@@ -51,7 +51,7 @@ sudo systemctl enable inventory-app-production.service
 echo "✓ Приложение service настроен"
 
 # 4. Настройка nginx
-echo -e "\n[4/6] Настройка nginx..."
+echo -e "\n[4/7] Настройка nginx..."
 # Проверяем, установлен ли nginx
 if ! command -v nginx &> /dev/null; then
     echo "Установка nginx..."
@@ -59,7 +59,7 @@ if ! command -v nginx &> /dev/null; then
     sudo apt install -y nginx
 fi
 
-# Копируем конфигурацию nginx
+# Копируем конфигурацию nginx (HTTP only, без SSL)
 NGINX_CONF="/etc/nginx/sites-available/multiminder.duckdns.org"
 sudo cp "$PROJECT_DIR/nginx.conf" "$NGINX_CONF"
 
@@ -82,6 +82,57 @@ if sudo nginx -t; then
 else
     echo "✗ Ошибка в конфигурации nginx!"
     exit 1
+fi
+
+# 4.5. Настройка SSL сертификата
+echo -e "\n[4.5/7] Настройка SSL сертификата..."
+if [ ! -f "/etc/letsencrypt/live/multiminder.duckdns.org/fullchain.pem" ]; then
+    echo "SSL сертификат не найден. Установка certbot..."
+    
+    # Устанавливаем certbot, если не установлен
+    if ! command -v certbot &> /dev/null; then
+        sudo apt update
+        sudo apt install -y certbot python3-certbot-nginx
+    fi
+    
+    echo ""
+    echo "⚠ Для получения SSL сертификата нужен доступ к домену multiminder.duckdns.org"
+    echo "⚠ Убедитесь, что домен указывает на IP этого сервера"
+    echo ""
+    read -p "Продолжить установку SSL сертификата? (y/n): " install_ssl
+    
+    if [ "$install_ssl" = "y" ] || [ "$install_ssl" = "Y" ]; then
+        echo "Получение SSL сертификата через certbot..."
+        # Используем --nginx для автоматической настройки nginx
+        # --non-interactive для автоматического режима
+        # --agree-tos для принятия условий
+        # --email можно указать, но для duckdns можно использовать временный
+        if sudo certbot --nginx -d multiminder.duckdns.org --non-interactive --agree-tos --register-unsafely-without-email --redirect; then
+            echo "✓ SSL сертификат успешно установлен!"
+            echo "✓ Nginx автоматически настроен для HTTPS"
+        else
+            echo "⚠ Не удалось установить SSL сертификат автоматически"
+            echo "  Возможные причины:"
+            echo "  - Домен не указывает на IP этого сервера"
+            echo "  - Порт 80 не доступен извне"
+            echo "  - Проблемы с DNS"
+            echo ""
+            echo "  Вы можете установить SSL позже вручную:"
+            echo "  sudo certbot --nginx -d multiminder.duckdns.org"
+            echo ""
+            echo "  Продолжаем без SSL..."
+        fi
+    else
+        echo "Пропуск установки SSL. Продолжаем без HTTPS..."
+    fi
+else
+    echo "✓ SSL сертификат уже установлен"
+    # Обновляем конфигурацию nginx для использования SSL
+    echo "Проверка конфигурации nginx с SSL..."
+    if sudo nginx -t; then
+        sudo systemctl reload nginx
+        echo "✓ Nginx настроен для работы с SSL"
+    fi
 fi
 
 # 5. Настройка переменных окружения для локального Supabase
