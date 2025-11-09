@@ -24,9 +24,13 @@ dist-ssr
 *.sw?
 
 .env
+.env.local
 .venv/
 coverage/
 cypress/screenshots/
 cypress/videos/
 supabase/.temp/
+
+# Supabase local files (не коммитить ссылки на удаленный проект)
+.supabase/
 
