@@ -1,6 +1,13 @@
 version: '3.8'
 
+# ВАЖНО: Если вы используете локальный Supabase (через supabase start),
+# то сервисы postgres и postgrest НЕ НУЖНЫ - Supabase включает их в себя.
+# Остановите эти сервисы: docker-compose stop postgres postgrest
+# Или закомментируйте их ниже.
+
 services:
+  # PostgreSQL - используется только если НЕ используется Supabase
+  # Если используете Supabase, этот сервис не нужен
   postgres:
     image: postgres:16-alpine
     container_name: inventory-app-postgres
@@ -21,6 +28,8 @@ services:
       timeout: 5s
       retries: 5
 
+  # PostgREST - используется только если НЕ используется Supabase
+  # Если используете Supabase, этот сервис не нужен (Supabase включает PostgREST)
   postgrest:
     image: postgrest/postgrest:latest
     container_name: inventory-app-postgrest
