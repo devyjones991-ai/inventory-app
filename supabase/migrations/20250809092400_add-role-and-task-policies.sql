@@ -8,7 +8,11 @@ CREATE POLICY "Admins can insert tasks" ON tasks
     EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
   );
 
--- Для UPDATE можно использовать USING для проверки существующих строк
+-- Для UPDATE: assignee - это text (email или имя), поэтому сравниваем с email из profiles
+-- или проверяем по user_id, если он совпадает с текущим пользователем
 CREATE POLICY "Users can update own tasks" ON tasks 
   FOR UPDATE 
-  USING (assignee = auth.uid());
+  USING (
+    user_id = auth.uid() 
+    OR assignee = (SELECT email FROM profiles WHERE id = auth.uid())
+  );
