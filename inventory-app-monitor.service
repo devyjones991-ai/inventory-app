@@ -1,14 +1,16 @@
 [Unit]
-Description=Inventory App Monitor Service
-After=network.target nginx.service
+Description=Inventory App Docker Monitor
+After=docker.service inventory-app-production.service
+Requires=docker.service
 
 [Service]
 Type=simple
-User=root
+User=bag
+Group=bag
 WorkingDirectory=/home/bag/inventory-app
-ExecStart=/bin/bash -c 'while true; do /home/bag/inventory-app/update-server.sh && sleep 300; done'
+ExecStart=/home/bag/inventory-app/monitor-docker.sh
 Restart=always
-RestartSec=10
+RestartSec=60
 StandardOutput=journal
 StandardError=journal
 
