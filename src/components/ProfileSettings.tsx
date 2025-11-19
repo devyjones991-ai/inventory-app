@@ -233,43 +233,68 @@ export default function ProfileSettings({
   // Отладка и проверка роли
   useEffect(() => {
     if (isOpen && user) {
-      console.log("ProfileSettings: role from context =", role, "user.id =", user.id);
-
+      console.log("ProfileSettings: Modal opened, role from context =", role, "user.id =", user.id, "user.email =", user.email);
+      
       // Всегда проверяем роль из БД для надежности
       const checkUserRole = async () => {
         try {
           console.log("ProfileSettings: Starting DB role check for user", user.id);
-
+          
           if (!supabase) {
             console.error("ProfileSettings: Supabase client not available");
             return;
           }
-
-          const { data, error } = await supabase
+          
+          // Сначала проверяем, можем ли мы вообще читать профиль
+          const { data: profileData, error: profileError } = await supabase
             .from("profiles")
-            .select("role")
+            .select("id, email, role")
             .eq("id", user.id)
             .maybeSingle();
-
-          console.log("ProfileSettings: DB query result:", { data, error });
-
-          if (error) {
-            console.error("Error checking user role:", error);
-            // Не сбрасываем роль из контекста, если запрос не удался
-            if (!role) {
-              setIsSuperuser(false);
-              setIsAdmin(false);
-              setUserRole(null);
+          
+          console.log("ProfileSettings: Full profile query result:", { profileData, profileError });
+          
+          if (profileError) {
+            console.error("Error checking user profile:", profileError);
+            // Если ошибка RLS, попробуем запросить только роль через другой способ
+            const { data: roleData, error: roleError } = await supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", user.id)
+              .maybeSingle();
+            
+            console.log("ProfileSettings: Role-only query result:", { roleData, roleError });
+            
+            if (roleError) {
+              console.error("Error checking user role (second attempt):", roleError);
+              // Не сбрасываем роль из контекста, если запрос не удался
+              if (!role) {
+                setIsSuperuser(false);
+                setIsAdmin(false);
+                setUserRole(null);
+              }
+              return;
             }
+            
+            const dbRole = roleData?.role || role || "user";
+            const isSuper = dbRole === "superuser";
+            const isAdm = dbRole === "admin" || isSuper;
+            
+            console.log("ProfileSettings: role from DB (second attempt) =", dbRole, "isSuper =", isSuper, "isAdmin =", isAdm);
+            
+            setUserRole(dbRole);
+            setIsSuperuser(isSuper);
+            setIsAdmin(isAdm);
             return;
           }
-
-          const dbRole = data?.role || role || "user"; // Используем роль из БД или контекста, или "user" по умолчанию
+          
+          const dbRole = profileData?.role || role || "user"; // Используем роль из БД или контекста, или "user" по умолчанию
           const isSuper = dbRole === "superuser";
           const isAdm = dbRole === "admin" || isSuper;
-
+          
           console.log("ProfileSettings: role from DB =", dbRole, "isSuper =", isSuper, "isAdmin =", isAdm);
-
+          console.log("ProfileSettings: Full profile data =", profileData);
+          
           setUserRole(dbRole);
           setIsSuperuser(isSuper);
           setIsAdmin(isAdm);
@@ -283,7 +308,7 @@ export default function ProfileSettings({
           }
         }
       };
-
+      
       // Проверяем роль из контекста, но также проверяем в БД
       if (role === "superuser") {
         console.log("ProfileSettings: Setting superuser from context");
@@ -305,6 +330,7 @@ export default function ProfileSettings({
       }
     } else if (!isOpen) {
       // Сбрасываем при закрытии
+      console.log("ProfileSettings: Modal closed, resetting role state");
       setIsSuperuser(false);
       setIsAdmin(false);
       setUserRole(null);
