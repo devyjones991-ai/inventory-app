@@ -37,7 +37,7 @@ import { useDashboardModals } from "../hooks/useDashboardModals";
 import { useObjectList } from "../hooks/useObjectList";
 import { useObjectNotifications } from "../hooks/useObjectNotifications";
 import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
-import { Object } from "../types";
+import { Object as ObjectType } from "../types";
 import "../assets/space-theme.css";
 
 export default function DashboardPage() {
@@ -132,7 +132,7 @@ export default function DashboardPage() {
     };
   }, [isMenuOpen]);
 
-  const onSelect = (obj: Object) => {
+  const onSelect = (obj: ObjectType) => {
     handleSelect(obj);
     clearNotifications(obj.id);
     // sync URL: set obj and reset tab to desc
@@ -170,7 +170,7 @@ export default function DashboardPage() {
       objParam &&
       (!selected || String(selected.id) !== objParam)
     ) {
-      const found = objects.find((o: Object) => String(o.id) === objParam);
+      const found = objects.find((o: ObjectType) => String(o.id) === objParam);
       if (found) {
         // Use handleSelect directly to avoid resetting tab to "desc"
         handleSelect(found);
