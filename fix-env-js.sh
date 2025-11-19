@@ -26,6 +26,18 @@ window.__ENV = window.__ENV || {
 };
 EOF
 
+# Убеждаемся, что файл создан правильно
+if [ ! -f "public/env.js" ]; then
+    echo "✗ Ошибка: не удалось создать public/env.js"
+    exit 1
+fi
+
+# Проверяем содержимое
+if ! grep -q "multiminder.duckdns.org" public/env.js; then
+    echo "✗ Ошибка: env.js не содержит локальный домен!"
+    exit 1
+fi
+
 echo "✓ env.js обновлен"
 echo "  URL: http://multiminder.duckdns.org"
 echo "  Anon key: ${ANON_KEY:0:20}..."
