@@ -409,56 +409,56 @@ export default function DashboardPage() {
           }
         }}
       >
-          <DialogContent
-            draggable
-            className="w-full max-w-md space-modal space-fade-in"
+        <DialogContent
+          draggable
+          className="w-full max-w-md space-modal space-fade-in"
+        >
+          <Button
+            size="icon"
+            type="button"
+            className="absolute right-2 top-2 space-button"
+            onClick={closeObjectModal}
+            aria-label="Close"
           >
-            <Button
-              size="icon"
-              type="button"
-              className="absolute right-2 top-2 space-button"
-              onClick={closeObjectModal}
-              aria-label="Close"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </Button>
-            <DialogHeader data-dialog-handle className="space-modal-header">
-              <DialogTitle className="text-white text-xl font-bold">
-                {editingObject
-                  ? "✏️ Редактировать объект"
-                  : "➕ Добавить объект"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 p-6">
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  📦 Название объекта
-                </label>
-                <Input
-                  type="text"
-                  className="w-full space-input"
-                  placeholder="Введите название объекта..."
-                  value={objectName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
-                />
-              </div>
+            <XMarkIcon className="w-5 h-5" />
+          </Button>
+          <DialogHeader data-dialog-handle className="space-modal-header">
+            <DialogTitle className="text-white text-xl font-bold">
+              {editingObject
+                ? "✏️ Редактировать объект"
+                : "➕ Добавить объект"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-6">
+            <div className="space-y-2">
+              <label className="text-space-text font-semibold">
+                📦 Название объекта
+              </label>
+              <Input
+                type="text"
+                className="w-full space-input"
+                placeholder="Введите название объекта..."
+                value={objectName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
+              />
             </div>
-            <DialogFooter className="flex space-x-2 pt-6">
-              <Button
-                onClick={onSaveObject}
-                className="space-button space-active"
-              >
-                💾 Сохранить
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={closeObjectModal}
-                className="space-button"
-              >
-                ❌ Отмена
-              </Button>
-            </DialogFooter>
-          </DialogContent>
+          </div>
+          <DialogFooter className="flex space-x-2 pt-6">
+            <Button
+              onClick={onSaveObject}
+              className="space-button space-active"
+            >
+              💾 Сохранить
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={closeObjectModal}
+              className="space-button"
+            >
+              ❌ Отмена
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
 
       <Suspense fallback={<Spinner />}>
