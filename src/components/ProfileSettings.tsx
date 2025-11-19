@@ -233,7 +233,7 @@ export default function ProfileSettings({
     if (isOpen && user) {
       console.log("ProfileSettings: role from context =", role, "user.id =", user.id);
       
-      // Если роль не загружена или не superuser, проверяем напрямую из БД
+      // Всегда проверяем роль из БД для надежности
       const checkSuperuser = async () => {
         try {
           const { data, error } = await supabase
@@ -244,6 +244,7 @@ export default function ProfileSettings({
           
           if (error) {
             console.error("Error checking superuser:", error);
+            setIsSuperuser(false);
             return;
           }
           
@@ -253,16 +254,22 @@ export default function ProfileSettings({
           setIsSuperuser(isSuper);
         } catch (err) {
           console.error("Exception checking superuser:", err);
+          setIsSuperuser(false);
         }
       };
       
-      // Используем роль из контекста, если она есть
+      // Проверяем роль из контекста, но также проверяем в БД
       if (role === "superuser") {
         setIsSuperuser(true);
+        // Дополнительно проверяем в БД для подтверждения
+        checkSuperuser();
       } else {
         // Если роль не superuser или не загружена, проверяем в БД
         checkSuperuser();
       }
+    } else if (!isOpen) {
+      // Сбрасываем при закрытии
+      setIsSuperuser(false);
     }
   }, [isOpen, user, role]);
 
