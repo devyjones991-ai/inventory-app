@@ -1,9 +1,7 @@
 // Runtime environment overrides for static hosting
-// Локальная конфигурация Supabase
-// Значения будут взяты из .env файла или установлены автоматически скриптом setup-local-supabase.sh
-// Оставьте пустым для использования значений из .env или import.meta.env
+// Локальный Supabase через nginx proxy
 window.__ENV = window.__ENV || {
-  // Локальный Supabase будет настроен через .env файл
-  // VITE_SUPABASE_URL будет установлен автоматически при запуске supabase start
-  // VITE_SUPABASE_ANON_KEY будет установлен автоматически при запуске supabase start
+  VITE_SUPABASE_URL: "http://multiminder.duckdns.org",
+  VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
+  VITE_API_BASE_URL: "http://multiminder.duckdns.org",
 };
