@@ -47,7 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (sessionUser) {
           setUser(sessionUser);
           const roleResult = await fetchRole(sessionUser.id);
-          setRole(roleResult.role || roleResult.error ? null : roleResult);
+          setRole(roleResult.error ? null : roleResult.role || null);
         }
       } catch (error) {
         logger.error("Ошибка инициализации аутентификации:", error);
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log("User signed in:", session.user.email);
         setUser(session.user);
         const roleResult = await fetchRole(session.user.id);
-        setRole(roleResult.role || roleResult.error ? null : roleResult);
+        setRole(roleResult.error ? null : roleResult.role || null);
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
         setUser(null);
