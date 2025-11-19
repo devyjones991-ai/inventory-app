@@ -33,8 +33,8 @@ echo "  Anon key: ${ANON_KEY:0:20}..."
 # Если используется Docker, пересобрать образ
 if docker ps --format "{{.Names}}" | grep -q "inventory-app-frontend"; then
     echo ""
-    echo "Пересборка Docker образа..."
-    docker compose -f docker-compose.prod.yml build app
+    echo "Пересборка Docker образа (без кэша)..."
+    docker compose -f docker-compose.prod.yml build --no-cache app
     docker compose -f docker-compose.prod.yml up -d app
     echo "✓ Docker контейнер перезапущен"
 fi
