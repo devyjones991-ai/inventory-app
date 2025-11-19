@@ -219,7 +219,7 @@ export default function ProfileSettings({
     } finally {
       setLoadingUsers(false);
     }
-  }, [role]);
+  }, [isSuperuserOrAdmin]);
 
   // Загружаем пользователей при открытии вкладки администрирования
   useEffect(() => {
