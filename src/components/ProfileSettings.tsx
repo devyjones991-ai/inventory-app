@@ -104,7 +104,7 @@ export default function ProfileSettings({
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editRole, setEditRole] = useState<string>("");
   const [editPermissions, setEditPermissions] = useState<string[]>([]);
-  
+
   // Доступные пермишны (можно расширять)
   const availablePermissions = [
     { id: "manage_objects", label: "Управление объектами", description: "Создание, редактирование и удаление объектов" },
@@ -115,7 +115,7 @@ export default function ProfileSettings({
     { id: "export_data", label: "Экспорт данных", description: "Экспорт данных в различные форматы" },
     { id: "import_data", label: "Импорт данных", description: "Импорт данных из файлов" },
   ];
-  
+
   // Получить пермишны пользователя на основе роли (если не заданы явно)
   const getUserPermissions = (userProfile: UserProfile): string[] => {
     if (userProfile.permissions && userProfile.permissions.length > 0) {
@@ -229,30 +229,30 @@ export default function ProfileSettings({
   const [isSuperuser, setIsSuperuser] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  
+
   // Отладка и проверка роли
   useEffect(() => {
     if (isOpen && user) {
       console.log("ProfileSettings: role from context =", role, "user.id =", user.id);
-      
+
       // Всегда проверяем роль из БД для надежности
       const checkUserRole = async () => {
         try {
           console.log("ProfileSettings: Starting DB role check for user", user.id);
-          
+
           if (!supabase) {
             console.error("ProfileSettings: Supabase client not available");
             return;
           }
-          
+
           const { data, error } = await supabase
             .from("profiles")
             .select("role")
             .eq("id", user.id)
             .maybeSingle();
-          
+
           console.log("ProfileSettings: DB query result:", { data, error });
-          
+
           if (error) {
             console.error("Error checking user role:", error);
             // Не сбрасываем роль из контекста, если запрос не удался
@@ -263,13 +263,13 @@ export default function ProfileSettings({
             }
             return;
           }
-          
+
           const dbRole = data?.role || role || "user"; // Используем роль из БД или контекста, или "user" по умолчанию
           const isSuper = dbRole === "superuser";
           const isAdm = dbRole === "admin" || isSuper;
-          
+
           console.log("ProfileSettings: role from DB =", dbRole, "isSuper =", isSuper, "isAdmin =", isAdm);
-          
+
           setUserRole(dbRole);
           setIsSuperuser(isSuper);
           setIsAdmin(isAdm);
@@ -283,7 +283,7 @@ export default function ProfileSettings({
           }
         }
       };
-      
+
       // Проверяем роль из контекста, но также проверяем в БД
       if (role === "superuser") {
         console.log("ProfileSettings: Setting superuser from context");
@@ -313,16 +313,29 @@ export default function ProfileSettings({
 
   // Загрузка списка пользователей (для superuser и admin)
   const loadUsers = useCallback(async () => {
-    if (!isSuperuser && !isAdmin) return;
+    console.log("loadUsers called: isSuperuser =", isSuperuser, "isAdmin =", isAdmin, "userRole =", userRole);
+    
+    // Проверяем роль еще раз перед загрузкой
+    if (!isSuperuser && !isAdmin) {
+      console.log("loadUsers: User is not superuser or admin, skipping");
+      return;
+    }
 
     try {
       setLoadingUsers(true);
+      console.log("loadUsers: Starting to fetch users from profiles table");
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      console.log("loadUsers: Query result:", { data, error, count: data?.length });
+
+      if (error) {
+        console.error("loadUsers: Error fetching users:", error);
+        throw error;
+      }
 
       // Преобразуем permissions из JSONB в массив строк
       const usersWithPermissions = (data || []).map((user: UserProfile) => ({
@@ -332,6 +345,7 @@ export default function ProfileSettings({
           : (typeof user.permissions === 'string' ? JSON.parse(user.permissions) : []),
       }));
 
+      console.log("loadUsers: Setting users:", usersWithPermissions.length);
       setUsers(usersWithPermissions);
     } catch (error) {
       console.error("Ошибка загрузки пользователей:", error);
@@ -339,14 +353,24 @@ export default function ProfileSettings({
     } finally {
       setLoadingUsers(false);
     }
-  }, [isSuperuser, isAdmin]);
+  }, [isSuperuser, isAdmin, userRole]);
 
   // Загружаем пользователей при открытии вкладки администрирования (для superuser и admin)
   useEffect(() => {
+    console.log("Administration tab effect:", { 
+      isOpen, 
+      isSuperuser, 
+      isAdmin, 
+      activeTab, 
+      userRole,
+      shouldLoad: isOpen && (isSuperuser || isAdmin) && activeTab === "administration"
+    });
+    
     if (isOpen && (isSuperuser || isAdmin) && activeTab === "administration") {
+      console.log("Loading users for administration tab");
       loadUsers();
     }
-  }, [isOpen, isSuperuser, isAdmin, activeTab, loadUsers]);
+  }, [isOpen, isSuperuser, isAdmin, activeTab, loadUsers, userRole]);
 
   // Редактирование роли и пермишнов пользователя
   const handleEditUserRole = (userProfile: UserProfile) => {
@@ -389,7 +413,7 @@ export default function ProfileSettings({
       setEditingUser(null);
       setEditPermissions([]);
       loadUsers();
-      
+
       // Если изменили свою роль, перезагружаем страницу
       if (editingUser.id === user?.id) {
         setTimeout(() => window.location.reload(), 1000);
@@ -405,9 +429,9 @@ export default function ProfileSettings({
     setEditRole("");
     setEditPermissions([]);
   };
-  
+
   const togglePermission = (permissionId: string) => {
-    setEditPermissions(prev => 
+    setEditPermissions(prev =>
       prev.includes(permissionId)
         ? prev.filter(p => p !== permissionId)
         : [...prev, permissionId]
@@ -851,7 +875,7 @@ export default function ProfileSettings({
                       🛡️ Управление пользователями
                     </h3>
                     <p className="text-space-text-muted text-sm mt-1">
-                      {isSuperuser 
+                      {isSuperuser
                         ? "⭐ Вы - суперпользователь с полными правами"
                         : "🛡️ Вы - администратор с расширенными правами"}
                     </p>
@@ -902,7 +926,7 @@ export default function ProfileSettings({
                         {users.map((userProfile) => {
                           const userPermissions = getUserPermissions(userProfile);
                           const isEditing = editingUser?.id === userProfile.id;
-                          
+
                           return (
                             <tr
                               key={userProfile.id}
@@ -936,8 +960,8 @@ export default function ProfileSettings({
                                       <SelectItem value="admin">
                                         🛡️ Администратор
                                       </SelectItem>
-                                      <SelectItem 
-                                        value="superuser" 
+                                      <SelectItem
+                                        value="superuser"
                                         disabled={editingUser?.id === user?.id ? false : editingUser?.role !== "superuser"}
                                       >
                                         ⭐ Суперпользователь
