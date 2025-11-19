@@ -346,8 +346,9 @@ export default function InventoryTabs({
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleHardwareSubmit(onHardwareSubmit)} className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto px-6 min-h-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-space-text font-semibold">
                   🔧 Название оборудования
@@ -475,18 +476,18 @@ export default function InventoryTabs({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-space-text font-semibold">
-                📝 Заметки
-              </label>
-              <Textarea
-                {...registerHardware("notes")}
-                placeholder="Введите дополнительные заметки..."
-                className="space-input w-full"
-                rows={3}
-              />
-            </div>
+                <div className="space-y-2">
+                  <label className="text-space-text font-semibold">
+                    📝 Заметки
+                  </label>
+                  <Textarea
+                    {...registerHardware("notes")}
+                    placeholder="Введите дополнительные заметки..."
+                    className="space-input w-full"
+                    rows={3}
+                  />
+                </div>
+              </div>
             </div>
             <DialogFooter className="flex gap-4 px-6 py-4 flex-shrink-0 border-t border-space-border bg-background">
               <Button
