@@ -136,6 +136,7 @@ export function useChatMessages() {
           object_id: objectId,
           content,
           sender: userEmail,
+          user_email: userEmail, // Для совместимости со старой структурой
         };
 
         if (fileUrl) {
