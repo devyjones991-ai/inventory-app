@@ -77,6 +77,7 @@ interface UserProfile {
   email: string;
   full_name: string | null;
   role: string;
+  permissions?: string[] | null;
   created_at: string;
   last_sign_in_at: string | null;
 }
@@ -102,6 +103,33 @@ export default function ProfileSettings({
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editRole, setEditRole] = useState<string>("");
+  const [editPermissions, setEditPermissions] = useState<string[]>([]);
+  
+  // Доступные пермишны (можно расширять)
+  const availablePermissions = [
+    { id: "manage_objects", label: "Управление объектами", description: "Создание, редактирование и удаление объектов" },
+    { id: "manage_users", label: "Управление пользователями", description: "Назначение ролей и прав другим пользователям" },
+    { id: "manage_tasks", label: "Управление задачами", description: "Создание, редактирование и удаление задач" },
+    { id: "manage_hardware", label: "Управление оборудованием", description: "Управление оборудованием и инвентарем" },
+    { id: "view_reports", label: "Просмотр отчетов", description: "Доступ к отчетам и аналитике" },
+    { id: "export_data", label: "Экспорт данных", description: "Экспорт данных в различные форматы" },
+    { id: "import_data", label: "Импорт данных", description: "Импорт данных из файлов" },
+  ];
+  
+  // Получить пермишны пользователя на основе роли (если не заданы явно)
+  const getUserPermissions = (userProfile: UserProfile): string[] => {
+    if (userProfile.permissions && userProfile.permissions.length > 0) {
+      return userProfile.permissions;
+    }
+    // Базовые пермишны на основе роли
+    if (userProfile.role === "superuser") {
+      return availablePermissions.map(p => p.id);
+    } else if (userProfile.role === "admin") {
+      return availablePermissions.map(p => p.id).filter(p => p !== "manage_users");
+    } else {
+      return ["manage_objects", "manage_tasks", "manage_hardware"];
+    }
+  };
 
   const personalForm = useForm({
     resolver: zodResolver(personalInfoSchema),
@@ -219,7 +247,15 @@ export default function ProfileSettings({
 
       if (error) throw error;
 
-      setUsers(data || []);
+      // Преобразуем permissions из JSONB в массив строк
+      const usersWithPermissions = (data || []).map((user: UserProfile) => ({
+        ...user,
+        permissions: Array.isArray(user.permissions) 
+          ? user.permissions 
+          : (typeof user.permissions === 'string' ? JSON.parse(user.permissions) : []),
+      }));
+
+      setUsers(usersWithPermissions);
     } catch (error) {
       console.error("Ошибка загрузки пользователей:", error);
       toast.error("Не удалось загрузить список пользователей");
@@ -235,10 +271,11 @@ export default function ProfileSettings({
     }
   }, [isOpen, isSuperuser, activeTab, loadUsers]);
 
-  // Редактирование роли пользователя
+  // Редактирование роли и пермишнов пользователя
   const handleEditUserRole = (userProfile: UserProfile) => {
     setEditingUser(userProfile);
     setEditRole(userProfile.role);
+    setEditPermissions(getUserPermissions(userProfile));
   };
 
   const handleSaveUserRole = async () => {
@@ -257,15 +294,23 @@ export default function ProfileSettings({
     }
 
     try {
+      // Обновляем роль и пермишны
+      const updateData: Record<string, unknown> = {
+        role: editRole,
+        updated_at: new Date().toISOString(),
+        permissions: editPermissions, // JSONB автоматически обработает массив
+      };
+
       const { error } = await supabase
         .from("profiles")
-        .update({ role: editRole, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq("id", editingUser.id);
 
       if (error) throw error;
 
-      toast.success("Роль пользователя обновлена");
+      toast.success("Роль и права пользователя обновлены");
       setEditingUser(null);
+      setEditPermissions([]);
       loadUsers();
       
       // Если изменили свою роль, перезагружаем страницу
@@ -273,14 +318,23 @@ export default function ProfileSettings({
         setTimeout(() => window.location.reload(), 1000);
       }
     } catch (error) {
-      console.error("Ошибка обновления роли:", error);
-      toast.error("Не удалось обновить роль пользователя");
+      console.error("Ошибка обновления роли и прав:", error);
+      toast.error("Не удалось обновить роль и права пользователя");
     }
   };
 
   const handleCancelEdit = () => {
     setEditingUser(null);
     setEditRole("");
+    setEditPermissions([]);
+  };
+  
+  const togglePermission = (permissionId: string) => {
+    setEditPermissions(prev => 
+      prev.includes(permissionId)
+        ? prev.filter(p => p !== permissionId)
+        : [...prev, permissionId]
+    );
   };
 
   if (!isOpen) return null;
@@ -757,108 +811,163 @@ export default function ProfileSettings({
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-h-[500px] overflow-y-auto">
-                    {users.map((userProfile) => (
-                      <div
-                        key={userProfile.id}
-                        className="space-card p-4 hover:space-active transition-all duration-300"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h4 className="text-space-text font-semibold text-lg">
-                                {userProfile.full_name || "Без имени"}
-                              </h4>
-                              <Badge
-                                variant={
-                                  userProfile.role === "superuser"
-                                    ? "destructive"
-                                    : userProfile.role === "admin"
-                                    ? "default"
-                                    : "secondary"
-                                }
-                                className="text-xs"
-                              >
-                                {userProfile.role === "superuser"
-                                  ? "⭐ Суперпользователь"
-                                  : userProfile.role === "admin"
-                                  ? "🛡️ Администратор"
-                                  : "👤 Пользователь"}
-                              </Badge>
-                            </div>
-                            <p className="text-space-text-muted text-sm mb-1">
-                              {userProfile.email}
-                            </p>
-                            <div className="flex gap-4 text-xs text-space-text-muted">
-                              <span>
-                                Создан:{" "}
-                                {new Date(
-                                  userProfile.created_at,
-                                ).toLocaleDateString("ru-RU")}
-                              </span>
-                              {userProfile.last_sign_in_at && (
-                                <span>
-                                  Последний вход:{" "}
-                                  {new Date(
-                                    userProfile.last_sign_in_at,
-                                  ).toLocaleDateString("ru-RU")}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            {editingUser?.id === userProfile.id ? (
-                              <div className="flex items-center gap-2">
-                                <Select
-                                  value={editRole}
-                                  onValueChange={setEditRole}
-                                >
-                                  <SelectTrigger className="w-40 space-select">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="user">
-                                      👤 Пользователь
-                                    </SelectItem>
-                                    <SelectItem value="admin">
-                                      🛡️ Администратор
-                                    </SelectItem>
-                                    <SelectItem value="superuser" disabled={editingUser?.id === user?.id ? false : editingUser?.role !== "superuser"}>
-                                      ⭐ Суперпользователь
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <Button
-                                  size="sm"
-                                  onClick={handleSaveUserRole}
-                                  className="space-button space-active"
-                                >
-                                  ✓
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={handleCancelEdit}
-                                  className="space-button"
-                                >
-                                  ✕
-                                </Button>
-                              </div>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditUserRole(userProfile)}
-                                className="space-button flex items-center gap-2"
-                              >
-                                <Edit className="w-4 h-4" />
-                                Изменить роль
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b border-space-border">
+                          <th className="text-left p-3 text-space-text font-semibold">👤 Ник</th>
+                          <th className="text-left p-3 text-space-text font-semibold">🛡️ Роль</th>
+                          <th className="text-left p-3 text-space-text font-semibold">🔐 Пермишны</th>
+                          <th className="text-right p-3 text-space-text font-semibold">⚙️ Действия</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map((userProfile) => {
+                          const userPermissions = getUserPermissions(userProfile);
+                          const isEditing = editingUser?.id === userProfile.id;
+                          
+                          return (
+                            <tr
+                              key={userProfile.id}
+                              className={`border-b border-space-border/50 hover:bg-space-bg-light/50 transition-colors ${
+                                isEditing ? "bg-space-bg-light" : ""
+                              }`}
+                            >
+                              <td className="p-3">
+                                <div>
+                                  <div className="text-space-text font-medium">
+                                    {userProfile.full_name || "Без имени"}
+                                  </div>
+                                  <div className="text-xs text-space-text-muted">
+                                    {userProfile.email}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                {isEditing ? (
+                                  <Select
+                                    value={editRole}
+                                    onValueChange={setEditRole}
+                                  >
+                                    <SelectTrigger className="w-40 space-select">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="user">
+                                        👤 Пользователь
+                                      </SelectItem>
+                                      <SelectItem value="admin">
+                                        🛡️ Администратор
+                                      </SelectItem>
+                                      <SelectItem 
+                                        value="superuser" 
+                                        disabled={editingUser?.id === user?.id ? false : editingUser?.role !== "superuser"}
+                                      >
+                                        ⭐ Суперпользователь
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                ) : (
+                                  <Badge
+                                    variant={
+                                      userProfile.role === "superuser"
+                                        ? "destructive"
+                                        : userProfile.role === "admin"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                    className="text-xs"
+                                  >
+                                    {userProfile.role === "superuser"
+                                      ? "⭐ Суперпользователь"
+                                      : userProfile.role === "admin"
+                                      ? "🛡️ Администратор"
+                                      : "👤 Пользователь"}
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="p-3">
+                                {isEditing ? (
+                                  <div className="space-y-2 max-w-md">
+                                    <div className="flex flex-wrap gap-2">
+                                      {availablePermissions.map((perm) => (
+                                        <label
+                                          key={perm.id}
+                                          className="flex items-center gap-2 p-2 space-card hover:space-active cursor-pointer rounded text-xs"
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={editPermissions.includes(perm.id)}
+                                            onChange={() => togglePermission(perm.id)}
+                                            className="rounded"
+                                          />
+                                          <span className="text-space-text">
+                                            {perm.label}
+                                          </span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1">
+                                    {userPermissions.length > 0 ? (
+                                      userPermissions.map((permId) => {
+                                        const perm = availablePermissions.find(p => p.id === permId);
+                                        return perm ? (
+                                          <Badge
+                                            key={permId}
+                                            variant="outline"
+                                            className="text-xs"
+                                            title={perm.description}
+                                          >
+                                            {perm.label}
+                                          </Badge>
+                                        ) : null;
+                                      })
+                                    ) : (
+                                      <span className="text-xs text-space-text-muted">
+                                        Нет прав
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-3 text-right">
+                                {isEditing ? (
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      onClick={handleSaveUserRole}
+                                      className="space-button space-active"
+                                    >
+                                      ✓ Сохранить
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={handleCancelEdit}
+                                      className="space-button"
+                                    >
+                                      ✕ Отмена
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditUserRole(userProfile)}
+                                    className="space-button flex items-center gap-2"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                    Редактировать
+                                  </Button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
