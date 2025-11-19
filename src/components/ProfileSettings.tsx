@@ -321,7 +321,7 @@ export default function ProfileSettings({
     } finally {
       setLoadingUsers(false);
     }
-  }, [isSuperuser]);
+  }, [isSuperuser, isAdmin]);
 
   // Загружаем пользователей при открытии вкладки администрирования (для superuser и admin)
   useEffect(() => {
