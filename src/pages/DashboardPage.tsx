@@ -211,8 +211,16 @@ export default function DashboardPage() {
   if (!selected) {
     if (isEmpty) {
       return (
-        <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
-          Нет объектов
+        <div className="flex w-full min-h-screen items-center justify-center bg-background">
+          <div className="text-center space-y-4">
+            <p className="text-gray-500 text-lg">Нет объектов</p>
+            <Button
+              onClick={openAddModal}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              ➕ Создать первый объект
+            </Button>
+          </div>
         </div>
       );
     }
