@@ -61,12 +61,11 @@ RUN echo 'server { \
 # Copy built application
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Create env.js if it doesn't exist (для runtime конфигурации)
-# Файл env.js должен быть в dist после сборки, но на всякий случай создаем пустой
-RUN if [ ! -f /usr/share/nginx/html/env.js ]; then \
-        echo "// Runtime environment overrides" > /usr/share/nginx/html/env.js && \
-        echo "window.__ENV = window.__ENV || {};" >> /usr/share/nginx/html/env.js; \
-    fi
+# Copy env.js from public if it exists (для runtime конфигурации)
+# Если env.js был создан скриптом setup-docker-production.sh, он будет скопирован
+COPY --from=builder /app/public/env.js /usr/share/nginx/html/env.js 2>/dev/null || \
+    (echo "// Runtime environment overrides" > /usr/share/nginx/html/env.js && \
+     echo "window.__ENV = window.__ENV || {};" >> /usr/share/nginx/html/env.js)
 
 # Set proper permissions
 RUN chown -R nginx:nginx /usr/share/nginx/html && \

@@ -121,6 +121,45 @@ if [ -d "$DEPLOY_DIR" ] && [ "$(ls -A $DEPLOY_DIR)" ]; then
     print_success "Backup created"
 fi
 
+# Create env.js with local Supabase configuration
+print_status "Creating env.js with local Supabase configuration..."
+if supabase status 2>/dev/null | grep -q "API URL"; then
+    API_URL=$(supabase status 2>/dev/null | grep "API URL" | awk '{print $3}')
+    ANON_KEY=$(supabase status 2>/dev/null | grep "anon key" | awk '{print $3}')
+    
+    # Get server IP or use localhost
+    SERVER_IP=$(hostname -I | awk '{print $1}' || echo "127.0.0.1")
+    
+    # Replace 127.0.0.1 with server IP if needed (for external access)
+    # For now, keep 127.0.0.1 since nginx will proxy
+    cat > dist/env.js << EOF
+// Runtime environment overrides for static hosting
+// Локальный Supabase конфигурация (автоматически настроено)
+window.__ENV = window.__ENV || {
+  VITE_SUPABASE_URL: "$API_URL",
+  VITE_SUPABASE_ANON_KEY: "$ANON_KEY",
+  VITE_API_BASE_URL: "$API_URL",
+};
+EOF
+    print_success "env.js created with local Supabase configuration"
+    echo "  API URL: $API_URL"
+else
+    print_warning "Supabase not running, using .env values for env.js"
+    if [ -f ".env" ]; then
+        source .env
+        cat > dist/env.js << EOF
+// Runtime environment overrides for static hosting
+window.__ENV = window.__ENV || {
+  VITE_SUPABASE_URL: "${VITE_SUPABASE_URL}",
+  VITE_SUPABASE_ANON_KEY: "${VITE_SUPABASE_ANON_KEY}",
+  VITE_API_BASE_URL: "${VITE_API_BASE_URL:-${VITE_SUPABASE_URL}}",
+};
+EOF
+    else
+        print_error "No .env file and Supabase not running. Cannot create env.js"
+    fi
+fi
+
 # Copy built files
 print_status "Copying built files..."
 sudo cp -r dist/* $DEPLOY_DIR/

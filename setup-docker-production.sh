@@ -15,27 +15,52 @@ sudo mkdir -p /var/log
 sudo touch /var/log/inventory-app-monitor.log
 sudo chown bag:bag /var/log/inventory-app-monitor.log
 
-# 3. Собрать Docker образ
+# 3. Создать env.js с локальным Supabase
+echo "Создание env.js с локальным Supabase..."
+if supabase status 2>/dev/null | grep -q "API URL"; then
+    ANON_KEY=$(supabase status 2>/dev/null | grep "anon key" | awk '{print $3}')
+    
+    # Используем домен через nginx proxy
+    cat > public/env.js << EOF
+// Runtime environment overrides for static hosting
+// Локальный Supabase через nginx proxy
+window.__ENV = window.__ENV || {
+  VITE_SUPABASE_URL: "http://multiminder.duckdns.org",
+  VITE_SUPABASE_ANON_KEY: "$ANON_KEY",
+  VITE_API_BASE_URL: "http://multiminder.duckdns.org",
+};
+EOF
+    echo "✓ env.js создан с локальным Supabase"
+    echo "  Используется домен: http://multiminder.duckdns.org"
+    echo "  Anon key: ${ANON_KEY:0:20}..."
+else
+    echo "⚠ Supabase не запущен!"
+    echo "  Запустите: supabase start"
+    echo "  Затем перезапустите этот скрипт"
+    exit 1
+fi
+
+# 4. Собрать Docker образ
 echo "Сборка Docker образа..."
 docker compose -f docker-compose.prod.yml build app
 
-# 4. Установить systemd сервисы
+# 5. Установить systemd сервисы
 echo "Установка systemd сервисов..."
 sudo cp inventory-app-production.service /etc/systemd/system/
 sudo cp inventory-app-monitor.service /etc/systemd/system/
 sudo systemctl daemon-reload
 
-# 5. Включить автозапуск
+# 6. Включить автозапуск
 sudo systemctl enable inventory-app-production.service
 sudo systemctl enable inventory-app-monitor.service
 
-# 6. Запустить сервисы
+# 7. Запустить сервисы
 echo "Запуск сервисов..."
 sudo systemctl start inventory-app-production.service
 sleep 5
 sudo systemctl start inventory-app-monitor.service
 
-# 7. Проверка статуса
+# 8. Проверка статуса
 echo ""
 echo "=== Статус сервисов ==="
 sudo systemctl status inventory-app-production.service --no-pager -l | head -10
@@ -43,7 +68,7 @@ echo ""
 sudo systemctl status inventory-app-monitor.service --no-pager -l | head -10
 echo ""
 
-# 8. Проверка контейнера
+# 9. Проверка контейнера
 echo "=== Проверка Docker контейнера ==="
 docker ps --filter "name=inventory-app-frontend"
 echo ""
