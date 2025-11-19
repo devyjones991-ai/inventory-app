@@ -1030,8 +1030,58 @@ export default function ProfileSettings({
                   </div>
                 )}
               </div>
-            </TabsContent>
-          )}
+            ) : (
+              <div className="space-card p-6 space-fade-in">
+                <div className="text-center py-12">
+                  <Shield className="w-16 h-16 text-space-text-muted mx-auto mb-4" />
+                  <h3 className="space-title text-xl mb-2">
+                    🛡️ Администрирование
+                  </h3>
+                  <p className="text-space-text-muted mb-4">
+                    Для доступа к функциям администрирования необходимы права администратора или суперпользователя.
+                  </p>
+                  <div className="space-y-4 mt-6">
+                    <div className="space-card p-4 text-left">
+                      <h4 className="text-space-text font-semibold mb-2">
+                        📊 Ваша информация
+                      </h4>
+                      <div className="space-y-2 text-sm text-space-text-muted">
+                        <p>
+                          <span className="font-medium">Роль:</span> {userRole === "user" ? "👤 Пользователь" : userRole || "Не определена"}
+                        </p>
+                        <p>
+                          <span className="font-medium">Email:</span> {user?.email || "Не указан"}
+                        </p>
+                        <p>
+                          <span className="font-medium">Имя:</span> {profile?.full_name || "Не указано"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-card p-4 text-left">
+                      <h4 className="text-space-text font-semibold mb-2">
+                        🔐 Ваши права
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {getUserPermissions({ role: userRole || "user", permissions: null } as UserProfile).map((permId) => {
+                          const perm = availablePermissions.find(p => p.id === permId);
+                          return perm ? (
+                            <Badge
+                              key={permId}
+                              variant="outline"
+                              className="text-xs"
+                              title={perm.description}
+                            >
+                              {perm.label}
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
