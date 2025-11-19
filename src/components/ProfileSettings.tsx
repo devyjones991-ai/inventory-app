@@ -224,9 +224,11 @@ export default function ProfileSettings({
     await requestPermission();
   };
 
-  // Проверка, является ли пользователь суперпользователем
+  // Проверка роли пользователя
   // Также проверяем напрямую из базы данных, если роль не загружена
   const [isSuperuser, setIsSuperuser] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   
   // Отладка и проверка роли
   useEffect(() => {
@@ -234,7 +236,7 @@ export default function ProfileSettings({
       console.log("ProfileSettings: role from context =", role, "user.id =", user.id);
       
       // Всегда проверяем роль из БД для надежности
-      const checkSuperuser = async () => {
+      const checkUserRole = async () => {
         try {
           const { data, error } = await supabase
             .from("profiles")
@@ -243,39 +245,57 @@ export default function ProfileSettings({
             .maybeSingle();
           
           if (error) {
-            console.error("Error checking superuser:", error);
+            console.error("Error checking user role:", error);
             setIsSuperuser(false);
+            setIsAdmin(false);
+            setUserRole(null);
             return;
           }
           
-          const userRole = data?.role || null;
-          const isSuper = userRole === "superuser";
-          console.log("ProfileSettings: role from DB =", userRole, "isSuper =", isSuper);
+          const dbRole = data?.role || null;
+          const isSuper = dbRole === "superuser";
+          const isAdm = dbRole === "admin" || isSuper;
+          
+          console.log("ProfileSettings: role from DB =", dbRole, "isSuper =", isSuper, "isAdmin =", isAdm);
+          
+          setUserRole(dbRole);
           setIsSuperuser(isSuper);
+          setIsAdmin(isAdm);
         } catch (err) {
-          console.error("Exception checking superuser:", err);
+          console.error("Exception checking user role:", err);
           setIsSuperuser(false);
+          setIsAdmin(false);
+          setUserRole(null);
         }
       };
       
       // Проверяем роль из контекста, но также проверяем в БД
       if (role === "superuser") {
         setIsSuperuser(true);
+        setIsAdmin(true);
+        setUserRole("superuser");
         // Дополнительно проверяем в БД для подтверждения
-        checkSuperuser();
+        checkUserRole();
+      } else if (role === "admin") {
+        setIsSuperuser(false);
+        setIsAdmin(true);
+        setUserRole("admin");
+        checkUserRole();
       } else {
-        // Если роль не superuser или не загружена, проверяем в БД
-        checkSuperuser();
+        // Если роль не определена, проверяем в БД
+        checkUserRole();
       }
     } else if (!isOpen) {
       // Сбрасываем при закрытии
       setIsSuperuser(false);
+      setIsAdmin(false);
+      setUserRole(null);
     }
   }, [isOpen, user, role]);
 
-  // Загрузка списка пользователей (только для superuser)
+  // Загрузка списка пользователей (для superuser и admin)
   const loadUsers = useCallback(async () => {
-    if (!isSuperuser) return;
+    if (!isSuperuser && !isAdmin) return;
 
     try {
       setLoadingUsers(true);
@@ -303,12 +323,12 @@ export default function ProfileSettings({
     }
   }, [isSuperuser]);
 
-  // Загружаем пользователей при открытии вкладки администрирования
+  // Загружаем пользователей при открытии вкладки администрирования (для superuser и admin)
   useEffect(() => {
-    if (isOpen && isSuperuser && activeTab === "administration") {
+    if (isOpen && (isSuperuser || isAdmin) && activeTab === "administration") {
       loadUsers();
     }
-  }, [isOpen, isSuperuser, activeTab, loadUsers]);
+  }, [isOpen, isSuperuser, isAdmin, activeTab, loadUsers]);
 
   // Редактирование роли и пермишнов пользователя
   const handleEditUserRole = (userProfile: UserProfile) => {
@@ -392,9 +412,7 @@ export default function ProfileSettings({
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="p-6">
           <TabsList
-            className={`grid w-full ${
-              isSuperuser ? "grid-cols-4" : "grid-cols-3"
-            } bg-space-bg-light p-1 rounded-lg border border-space-border`}
+            className="grid w-full grid-cols-4 bg-space-bg-light p-1 rounded-lg border border-space-border"
           >
             <TabsTrigger
               value="personal"
@@ -414,14 +432,12 @@ export default function ProfileSettings({
             >
               ⚙️ Настройки
             </TabsTrigger>
-            {isSuperuser && (
-              <TabsTrigger
-                value="administration"
-                className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
-              >
-                🛡️ Администрирование
-              </TabsTrigger>
-            )}
+            <TabsTrigger
+              value="administration"
+              className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+            >
+              🛡️ Администрирование
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="personal" className="space-y-6">
@@ -808,8 +824,8 @@ export default function ProfileSettings({
             </div>
           </TabsContent>
 
-          {isSuperuser && (
-            <TabsContent value="administration" className="space-y-6">
+          <TabsContent value="administration" className="space-y-6">
+            {isSuperuser || isAdmin ? (
               <div className="space-card p-6 space-fade-in">
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -817,20 +833,24 @@ export default function ProfileSettings({
                       🛡️ Управление пользователями
                     </h3>
                     <p className="text-space-text-muted text-sm mt-1">
-                      ⭐ Вы - суперпользователь с полными правами
+                      {isSuperuser 
+                        ? "⭐ Вы - суперпользователь с полными правами"
+                        : "🛡️ Вы - администратор с расширенными правами"}
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      onClose();
-                      navigate("/admin");
-                    }}
-                    className="space-button flex items-center gap-2"
-                  >
-                    <Shield className="w-4 h-4" />
-                    Полная панель администратора
-                  </Button>
+                  {isSuperuser && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        onClose();
+                        navigate("/admin");
+                      }}
+                      className="space-button flex items-center gap-2"
+                    >
+                      <Shield className="w-4 h-4" />
+                      Полная панель администратора
+                    </Button>
+                  )}
                 </div>
 
                 {loadingUsers ? (
