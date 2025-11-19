@@ -120,9 +120,10 @@ export function useTasks(objectId: string | null): UseTasksReturn {
           notes,
           object_id,
         } = data;
-        const status = inputStatus ?? "planned";
-        if (!TASK_STATUSES.includes(status)) {
-          throw new Error("Недопустимый статус задачи");
+        const status = inputStatus ?? "pending";
+        const validStatuses = TASK_STATUSES.map(s => s.value || s);
+        if (!validStatuses.includes(status)) {
+          throw new Error(`Недопустимый статус задачи: ${status}. Допустимые: ${validStatuses.join(", ")}`);
         }
         const taskDataBase = {
           title,
@@ -176,11 +177,21 @@ export function useTasks(objectId: string | null): UseTasksReturn {
           assignee_id,
           assignee,
           title,
-          status,
+          status: inputStatus,
           due_date,
           notes,
           object_id,
         } = data;
+        
+        // Валидация статуса
+        if (inputStatus) {
+          const validStatuses = TASK_STATUSES.map(s => s.value || s);
+          if (!validStatuses.includes(inputStatus)) {
+            throw new Error(`Недопустимый статус задачи: ${inputStatus}. Допустимые: ${validStatuses.join(", ")}`);
+          }
+        }
+        
+        const status = inputStatus;
         const taskDataBase = {
           title,
           status,

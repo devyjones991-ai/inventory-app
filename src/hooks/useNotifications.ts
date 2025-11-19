@@ -35,7 +35,7 @@ export function useNotifications() {
         .from("tasks")
         .select("*")
         .eq("assignee_id", user.id)
-        .eq("status", "planned")
+        .eq("status", "pending")
         .lt("due_date", new Date().toISOString());
 
       if (error) throw error;
@@ -59,7 +59,7 @@ export function useNotifications() {
           .from("tasks")
           .select("*")
           .eq("assignee_id", user.id)
-          .eq("status", "planned")
+          .eq("status", "pending")
           .gte("due_date", new Date().toISOString())
           .lte("due_date", futureDate.toISOString());
 
