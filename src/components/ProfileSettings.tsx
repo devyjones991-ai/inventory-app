@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Shield } from "lucide-react";
-import React, { useState } from "react";
+import { Shield, Users, Edit } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -9,10 +9,12 @@ import { z } from "zod";
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../hooks/useNotifications";
 import { useProfile } from "../hooks/useProfile";
+import { supabase } from "../supabaseClient";
 import { t } from "../i18n";
 import "../assets/space-theme.css";
 
 import FormError from "./FormError";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import "../assets/profile-modal-styles.css";
 import {
@@ -24,6 +26,13 @@ import {
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 // Схемы валидации для разных вкладок
@@ -63,6 +72,15 @@ const preferencesSchema = z.object({
   smsNotifications: z.boolean(),
 });
 
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+}
+
 interface ProfileSettingsProps {
   isOpen: boolean;
   onClose: () => void;
@@ -78,6 +96,12 @@ export default function ProfileSettings({
   const { profile, updateProfile } = useProfile();
   const { requestPermission, permission } = useNotifications();
   const navigate = useNavigate();
+
+  // Состояния для управления пользователями
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [editRole, setEditRole] = useState<string>("");
 
   const personalForm = useForm({
     resolver: zodResolver(personalInfoSchema),
@@ -172,6 +196,66 @@ export default function ProfileSettings({
     await requestPermission();
   };
 
+  // Загрузка списка пользователей
+  const loadUsers = useCallback(async () => {
+    if (role !== "admin") return;
+
+    try {
+      setLoadingUsers(true);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setUsers(data || []);
+    } catch (error) {
+      console.error("Ошибка загрузки пользователей:", error);
+      toast.error("Не удалось загрузить список пользователей");
+    } finally {
+      setLoadingUsers(false);
+    }
+  }, [role]);
+
+  // Загружаем пользователей при открытии вкладки администрирования
+  useEffect(() => {
+    if (isOpen && role === "admin" && activeTab === "administration") {
+      loadUsers();
+    }
+  }, [isOpen, role, activeTab, loadUsers]);
+
+  // Редактирование роли пользователя
+  const handleEditUserRole = (userProfile: UserProfile) => {
+    setEditingUser(userProfile);
+    setEditRole(userProfile.role);
+  };
+
+  const handleSaveUserRole = async () => {
+    if (!editingUser) return;
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ role: editRole })
+        .eq("id", editingUser.id);
+
+      if (error) throw error;
+
+      toast.success("Роль пользователя обновлена");
+      setEditingUser(null);
+      loadUsers();
+    } catch (error) {
+      console.error("Ошибка обновления роли:", error);
+      toast.error("Не удалось обновить роль пользователя");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUser(null);
+    setEditRole("");
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -187,7 +271,11 @@ export default function ProfileSettings({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="p-6">
-          <TabsList className="grid w-full grid-cols-3 bg-space-bg-light p-1 rounded-lg border border-space-border">
+          <TabsList
+            className={`grid w-full ${
+              role === "admin" ? "grid-cols-4" : "grid-cols-3"
+            } bg-space-bg-light p-1 rounded-lg border border-space-border`}
+          >
             <TabsTrigger
               value="personal"
               className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
@@ -206,6 +294,14 @@ export default function ProfileSettings({
             >
               ⚙️ Настройки
             </TabsTrigger>
+            {role === "admin" && (
+              <TabsTrigger
+                value="administration"
+                className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+              >
+                🛡️ Администрирование
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="personal" className="space-y-6">
@@ -591,34 +687,145 @@ export default function ProfileSettings({
               </form>
             </div>
           </TabsContent>
-        </Tabs>
 
-        {/* Ссылка на админку для администраторов */}
-        {role === "admin" && (
-          <div className="mt-6 pt-6 border-t border-space-border">
-            <div className="flex items-center justify-between p-4 space-card">
-              <div>
-                <h3 className="text-space-text font-semibold text-lg">
-                  🛡️ Администрирование
-                </h3>
-                <p className="text-space-text-muted">
-                  Управление пользователями системы
-                </p>
+          {role === "admin" && (
+            <TabsContent value="administration" className="space-y-6">
+              <div className="space-card p-6 space-fade-in">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="space-title text-xl">
+                    🛡️ Управление пользователями
+                  </h3>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onClose();
+                      navigate("/admin");
+                    }}
+                    className="space-button flex items-center gap-2"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Полная панель администратора
+                  </Button>
+                </div>
+
+                {loadingUsers ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-space-accent mx-auto"></div>
+                      <p className="mt-4 text-space-text-muted">
+                        Загрузка пользователей...
+                      </p>
+                    </div>
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="w-16 h-16 text-space-text-muted mx-auto mb-4" />
+                    <p className="text-space-text-muted">
+                      Пользователи не найдены
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                    {users.map((userProfile) => (
+                      <div
+                        key={userProfile.id}
+                        className="space-card p-4 hover:space-active transition-all duration-300"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h4 className="text-space-text font-semibold text-lg">
+                                {userProfile.full_name || "Без имени"}
+                              </h4>
+                              <Badge
+                                variant={
+                                  userProfile.role === "admin"
+                                    ? "destructive"
+                                    : "secondary"
+                                }
+                                className="text-xs"
+                              >
+                                {userProfile.role === "admin"
+                                  ? "Администратор"
+                                  : "Пользователь"}
+                              </Badge>
+                            </div>
+                            <p className="text-space-text-muted text-sm mb-1">
+                              {userProfile.email}
+                            </p>
+                            <div className="flex gap-4 text-xs text-space-text-muted">
+                              <span>
+                                Создан:{" "}
+                                {new Date(
+                                  userProfile.created_at,
+                                ).toLocaleDateString("ru-RU")}
+                              </span>
+                              {userProfile.last_sign_in_at && (
+                                <span>
+                                  Последний вход:{" "}
+                                  {new Date(
+                                    userProfile.last_sign_in_at,
+                                  ).toLocaleDateString("ru-RU")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            {editingUser?.id === userProfile.id ? (
+                              <div className="flex items-center gap-2">
+                                <Select
+                                  value={editRole}
+                                  onValueChange={setEditRole}
+                                >
+                                  <SelectTrigger className="w-40 space-select">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="user">
+                                      Пользователь
+                                    </SelectItem>
+                                    <SelectItem value="admin">
+                                      Администратор
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  size="sm"
+                                  onClick={handleSaveUserRole}
+                                  className="space-button space-active"
+                                >
+                                  ✓
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={handleCancelEdit}
+                                  className="space-button"
+                                >
+                                  ✕
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditUserRole(userProfile)}
+                                className="space-button flex items-center gap-2"
+                              >
+                                <Edit className="w-4 h-4" />
+                                Изменить роль
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onClose();
-                  navigate("/admin");
-                }}
-                className="space-button flex items-center gap-2"
-              >
-                <Shield className="w-4 h-4" />
-                🛡️ Панель администратора
-              </Button>
-            </div>
-          </div>
-        )}
+            </TabsContent>
+          )}
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
