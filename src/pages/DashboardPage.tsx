@@ -92,6 +92,11 @@ export default function DashboardPage() {
 
   const toggleSidebar = () => setIsSidebarOpen((prev: boolean) => !prev);
 
+  // Отладка: отслеживание изменений isObjectModalOpen
+  useEffect(() => {
+    console.log("isObjectModalOpen changed to:", isObjectModalOpen);
+  }, [isObjectModalOpen]);
+
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     if (isSidebarOpen) {
