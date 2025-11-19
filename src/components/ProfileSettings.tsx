@@ -238,21 +238,33 @@ export default function ProfileSettings({
       // Всегда проверяем роль из БД для надежности
       const checkUserRole = async () => {
         try {
+          console.log("ProfileSettings: Starting DB role check for user", user.id);
+          
+          if (!supabase) {
+            console.error("ProfileSettings: Supabase client not available");
+            return;
+          }
+          
           const { data, error } = await supabase
             .from("profiles")
             .select("role")
             .eq("id", user.id)
             .maybeSingle();
           
+          console.log("ProfileSettings: DB query result:", { data, error });
+          
           if (error) {
             console.error("Error checking user role:", error);
-            setIsSuperuser(false);
-            setIsAdmin(false);
-            setUserRole(null);
+            // Не сбрасываем роль из контекста, если запрос не удался
+            if (!role) {
+              setIsSuperuser(false);
+              setIsAdmin(false);
+              setUserRole(null);
+            }
             return;
           }
           
-          const dbRole = data?.role || null;
+          const dbRole = data?.role || role || "user"; // Используем роль из БД или контекста, или "user" по умолчанию
           const isSuper = dbRole === "superuser";
           const isAdm = dbRole === "admin" || isSuper;
           
@@ -263,26 +275,32 @@ export default function ProfileSettings({
           setIsAdmin(isAdm);
         } catch (err) {
           console.error("Exception checking user role:", err);
-          setIsSuperuser(false);
-          setIsAdmin(false);
-          setUserRole(null);
+          // Не сбрасываем роль из контекста при ошибке
+          if (!role) {
+            setIsSuperuser(false);
+            setIsAdmin(false);
+            setUserRole(null);
+          }
         }
       };
       
       // Проверяем роль из контекста, но также проверяем в БД
       if (role === "superuser") {
+        console.log("ProfileSettings: Setting superuser from context");
         setIsSuperuser(true);
         setIsAdmin(true);
         setUserRole("superuser");
         // Дополнительно проверяем в БД для подтверждения
         checkUserRole();
       } else if (role === "admin") {
+        console.log("ProfileSettings: Setting admin from context");
         setIsSuperuser(false);
         setIsAdmin(true);
         setUserRole("admin");
         checkUserRole();
       } else {
         // Если роль не определена, проверяем в БД
+        console.log("ProfileSettings: Role not in context, checking DB");
         checkUserRole();
       }
     } else if (!isOpen) {
