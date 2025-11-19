@@ -31,10 +31,11 @@ export function useNotifications() {
     if (!user) return [];
 
     try {
+      // Используем user_id для фильтрации (если есть) или assignee (email)
       const { data, error } = await supabase
         .from("tasks")
         .select("*")
-        .eq("assignee_id", user.id)
+        .or(`user_id.eq.${user.id},assignee.eq.${user.email}`)
         .eq("status", "pending")
         .lt("due_date", new Date().toISOString());
 
@@ -55,10 +56,11 @@ export function useNotifications() {
         const futureDate = new Date();
         futureDate.setDate(futureDate.getDate() + daysBefore);
 
+        // Используем user_id для фильтрации (если есть) или assignee (email)
         const { data, error } = await supabase
           .from("tasks")
           .select("*")
-          .eq("assignee_id", user.id)
+          .or(`user_id.eq.${user.id},assignee.eq.${user.email}`)
           .eq("status", "pending")
           .gte("due_date", new Date().toISOString())
           .lte("due_date", futureDate.toISOString());
