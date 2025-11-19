@@ -196,9 +196,12 @@ export default function ProfileSettings({
     await requestPermission();
   };
 
+  // Проверка, является ли пользователь суперпользователем или администратором
+  const isSuperuserOrAdmin = role === "superuser" || role === "admin";
+
   // Загрузка списка пользователей
   const loadUsers = useCallback(async () => {
-    if (role !== "admin") return;
+    if (!isSuperuserOrAdmin) return;
 
     try {
       setLoadingUsers(true);
@@ -220,10 +223,10 @@ export default function ProfileSettings({
 
   // Загружаем пользователей при открытии вкладки администрирования
   useEffect(() => {
-    if (isOpen && role === "admin" && activeTab === "administration") {
+    if (isOpen && isSuperuserOrAdmin && activeTab === "administration") {
       loadUsers();
     }
-  }, [isOpen, role, activeTab, loadUsers]);
+  }, [isOpen, isSuperuserOrAdmin, activeTab, loadUsers]);
 
   // Редактирование роли пользователя
   const handleEditUserRole = (userProfile: UserProfile) => {
@@ -273,7 +276,7 @@ export default function ProfileSettings({
         <Tabs value={activeTab} onValueChange={setActiveTab} className="p-6">
           <TabsList
             className={`grid w-full ${
-              role === "admin" ? "grid-cols-4" : "grid-cols-3"
+              isSuperuserOrAdmin ? "grid-cols-4" : "grid-cols-3"
             } bg-space-bg-light p-1 rounded-lg border border-space-border`}
           >
             <TabsTrigger
@@ -294,7 +297,7 @@ export default function ProfileSettings({
             >
               ⚙️ Настройки
             </TabsTrigger>
-            {role === "admin" && (
+            {isSuperuserOrAdmin && (
               <TabsTrigger
                 value="administration"
                 className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
@@ -688,13 +691,20 @@ export default function ProfileSettings({
             </div>
           </TabsContent>
 
-          {role === "admin" && (
+          {isSuperuserOrAdmin && (
             <TabsContent value="administration" className="space-y-6">
               <div className="space-card p-6 space-fade-in">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="space-title text-xl">
-                    🛡️ Управление пользователями
-                  </h3>
+                  <div>
+                    <h3 className="space-title text-xl">
+                      🛡️ Управление пользователями
+                    </h3>
+                    {role === "superuser" && (
+                      <p className="text-space-text-muted text-sm mt-1">
+                        ⭐ Вы - суперпользователь с полными правами
+                      </p>
+                    )}
+                  </div>
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -739,15 +749,19 @@ export default function ProfileSettings({
                               </h4>
                               <Badge
                                 variant={
-                                  userProfile.role === "admin"
+                                  userProfile.role === "superuser"
                                     ? "destructive"
+                                    : userProfile.role === "admin"
+                                    ? "default"
                                     : "secondary"
                                 }
                                 className="text-xs"
                               >
-                                {userProfile.role === "admin"
-                                  ? "Администратор"
-                                  : "Пользователь"}
+                                {userProfile.role === "superuser"
+                                  ? "⭐ Суперпользователь"
+                                  : userProfile.role === "admin"
+                                  ? "🛡️ Администратор"
+                                  : "👤 Пользователь"}
                               </Badge>
                             </div>
                             <p className="text-space-text-muted text-sm mb-1">
@@ -782,11 +796,16 @@ export default function ProfileSettings({
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="user">
-                                      Пользователь
+                                      👤 Пользователь
                                     </SelectItem>
                                     <SelectItem value="admin">
-                                      Администратор
+                                      🛡️ Администратор
                                     </SelectItem>
+                                    {role === "superuser" && (
+                                      <SelectItem value="superuser">
+                                        ⭐ Суперпользователь
+                                      </SelectItem>
+                                    )}
                                   </SelectContent>
                                 </Select>
                                 <Button
