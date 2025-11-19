@@ -196,12 +196,19 @@ export default function ProfileSettings({
     await requestPermission();
   };
 
-  // Проверка, является ли пользователь суперпользователем или администратором
-  const isSuperuserOrAdmin = role === "superuser" || role === "admin";
+  // Проверка, является ли пользователь суперпользователем
+  const isSuperuser = role === "superuser";
+  
+  // Отладка: логируем роль
+  useEffect(() => {
+    if (isOpen) {
+      console.log("ProfileSettings: role =", role, "isSuperuser =", isSuperuser);
+    }
+  }, [isOpen, role, isSuperuser]);
 
-  // Загрузка списка пользователей
+  // Загрузка списка пользователей (только для superuser)
   const loadUsers = useCallback(async () => {
-    if (!isSuperuserOrAdmin) return;
+    if (!isSuperuser) return;
 
     try {
       setLoadingUsers(true);
@@ -219,14 +226,14 @@ export default function ProfileSettings({
     } finally {
       setLoadingUsers(false);
     }
-  }, [isSuperuserOrAdmin]);
+  }, [isSuperuser]);
 
   // Загружаем пользователей при открытии вкладки администрирования
   useEffect(() => {
-    if (isOpen && isSuperuserOrAdmin && activeTab === "administration") {
+    if (isOpen && isSuperuser && activeTab === "administration") {
       loadUsers();
     }
-  }, [isOpen, isSuperuserOrAdmin, activeTab, loadUsers]);
+  }, [isOpen, isSuperuser, activeTab, loadUsers]);
 
   // Редактирование роли пользователя
   const handleEditUserRole = (userProfile: UserProfile) => {
@@ -237,10 +244,22 @@ export default function ProfileSettings({
   const handleSaveUserRole = async () => {
     if (!editingUser) return;
 
+    // Защита: нельзя изменить роль superuser (кроме самого себя)
+    if (editingUser.role === "superuser" && editingUser.id !== user?.id) {
+      toast.error("Нельзя изменить роль другого суперпользователя");
+      return;
+    }
+
+    // Защита: нельзя удалить superuser роль у самого себя
+    if (editingUser.id === user?.id && editRole !== "superuser") {
+      toast.error("Вы не можете изменить свою собственную роль superuser");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ role: editRole })
+        .update({ role: editRole, updated_at: new Date().toISOString() })
         .eq("id", editingUser.id);
 
       if (error) throw error;
@@ -248,6 +267,11 @@ export default function ProfileSettings({
       toast.success("Роль пользователя обновлена");
       setEditingUser(null);
       loadUsers();
+      
+      // Если изменили свою роль, перезагружаем страницу
+      if (editingUser.id === user?.id) {
+        setTimeout(() => window.location.reload(), 1000);
+      }
     } catch (error) {
       console.error("Ошибка обновления роли:", error);
       toast.error("Не удалось обновить роль пользователя");
@@ -276,7 +300,7 @@ export default function ProfileSettings({
         <Tabs value={activeTab} onValueChange={setActiveTab} className="p-6">
           <TabsList
             className={`grid w-full ${
-              isSuperuserOrAdmin ? "grid-cols-4" : "grid-cols-3"
+              isSuperuser ? "grid-cols-4" : "grid-cols-3"
             } bg-space-bg-light p-1 rounded-lg border border-space-border`}
           >
             <TabsTrigger
@@ -297,7 +321,7 @@ export default function ProfileSettings({
             >
               ⚙️ Настройки
             </TabsTrigger>
-            {isSuperuserOrAdmin && (
+            {isSuperuser && (
               <TabsTrigger
                 value="administration"
                 className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
@@ -691,7 +715,7 @@ export default function ProfileSettings({
             </div>
           </TabsContent>
 
-          {isSuperuserOrAdmin && (
+          {isSuperuser && (
             <TabsContent value="administration" className="space-y-6">
               <div className="space-card p-6 space-fade-in">
                 <div className="flex items-center justify-between mb-6">
@@ -699,11 +723,9 @@ export default function ProfileSettings({
                     <h3 className="space-title text-xl">
                       🛡️ Управление пользователями
                     </h3>
-                    {role === "superuser" && (
-                      <p className="text-space-text-muted text-sm mt-1">
-                        ⭐ Вы - суперпользователь с полными правами
-                      </p>
-                    )}
+                    <p className="text-space-text-muted text-sm mt-1">
+                      ⭐ Вы - суперпользователь с полными правами
+                    </p>
                   </div>
                   <Button
                     variant="outline"
@@ -801,11 +823,9 @@ export default function ProfileSettings({
                                     <SelectItem value="admin">
                                       🛡️ Администратор
                                     </SelectItem>
-                                    {role === "superuser" && (
-                                      <SelectItem value="superuser">
-                                        ⭐ Суперпользователь
-                                      </SelectItem>
-                                    )}
+                                    <SelectItem value="superuser" disabled={editingUser?.id === user?.id ? false : editingUser?.role !== "superuser"}>
+                                      ⭐ Суперпользователь
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <Button
