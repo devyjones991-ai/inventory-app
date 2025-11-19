@@ -9,16 +9,23 @@ cd ~/inventory-app
 echo "📥 Pulling latest changes..."
 git pull origin main
 
-# Setup environment variables
+# Setup environment variables (используем локальный Supabase)
 echo "🔧 Setting up environment variables..."
-cat > public/env.js << 'EOF'
+if supabase status 2>/dev/null | grep -q "API URL"; then
+    ANON_KEY=$(supabase status 2>/dev/null | grep "anon key" | awk '{print $3}')
+    cat > public/env.js << EOF
 // Runtime environment overrides for static hosting
-window.__ENV = {
-  VITE_SUPABASE_URL: "https://ldbdqkbstlhugikalpin.supabase.co",
-  VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkYmRxa2JzdGxodWdpa2FscGluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3NzA4OTIsImV4cCI6MjA2OTM0Njg5Mn0.V9V20mwbCzfWYXn2HZGyjWRhFiu6TW0uw_s-WiiipTg",
-  VITE_API_BASE_URL: "https://ldbdqkbstlhugikalpin.supabase.co/functions/v1"
+// Локальный Supabase через nginx proxy
+window.__ENV = window.__ENV || {
+  VITE_SUPABASE_URL: "http://multiminder.duckdns.org",
+  VITE_SUPABASE_ANON_KEY: "$ANON_KEY",
+  VITE_API_BASE_URL: "http://multiminder.duckdns.org",
 };
 EOF
+    echo "✓ env.js создан с локальным Supabase"
+else
+    echo "⚠ Supabase не запущен, используйте fix-env-js.sh для создания env.js"
+fi
 
 # Clean dist directory and fix permissions
 echo "🧹 Cleaning dist directory..."
