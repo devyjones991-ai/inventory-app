@@ -37,6 +37,7 @@ import { useDashboardModals } from "../hooks/useDashboardModals";
 import { useObjectList } from "../hooks/useObjectList";
 import { useObjectNotifications } from "../hooks/useObjectNotifications";
 import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
+import { Object } from "../types";
 import "../assets/space-theme.css";
 
 export default function DashboardPage() {
@@ -87,9 +88,9 @@ export default function DashboardPage() {
   const importInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
+  const toggleMenu = useCallback(() => setIsMenuOpen((prev: boolean) => !prev), []);
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  const toggleSidebar = () => setIsSidebarOpen((prev: boolean) => !prev);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -126,7 +127,7 @@ export default function DashboardPage() {
     };
   }, [isMenuOpen]);
 
-  const onSelect = (obj: object) => {
+  const onSelect = (obj: Object) => {
     handleSelect(obj);
     clearNotifications(obj.id);
     // sync URL: set obj and reset tab to desc
@@ -164,7 +165,7 @@ export default function DashboardPage() {
       objParam &&
       (!selected || String(selected.id) !== objParam)
     ) {
-      const found = objects.find((o) => String(o.id) === objParam);
+      const found = objects.find((o: Object) => String(o.id) === objParam);
       if (found) {
         // Use handleSelect directly to avoid resetting tab to "desc"
         handleSelect(found);
@@ -395,14 +396,14 @@ export default function DashboardPage() {
       )}
 
       <Dialog
-          open={isObjectModalOpen}
-          onOpenChange={(isOpen) => {
-            console.log("Dialog onOpenChange:", isOpen, "isObjectModalOpen:", isObjectModalOpen);
-            if (!isOpen) {
-              closeObjectModal();
-            }
-          }}
-        >
+        open={isObjectModalOpen}
+        onOpenChange={(isOpen: boolean) => {
+          console.log("Dialog onOpenChange:", isOpen, "isObjectModalOpen:", isObjectModalOpen);
+          if (!isOpen) {
+            closeObjectModal();
+          }
+        }}
+      >
           <DialogContent
             draggable
             className="w-full max-w-md space-modal space-fade-in"
@@ -433,7 +434,7 @@ export default function DashboardPage() {
                   className="w-full space-input"
                   placeholder="Введите название объекта..."
                   value={objectName}
-                  onChange={(e) => setObjectName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
                 />
               </div>
             </div>
@@ -453,31 +454,31 @@ export default function DashboardPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+      </Dialog>
 
+      <Suspense fallback={<Spinner />}>
+        <ConfirmModal
+          open={!!deleteCandidate}
+          title="Удалить объект?"
+          confirmLabel={
+            <>
+              <TrashIcon className="w-4 h-4" /> Удалить
+            </>
+          }
+          onConfirm={onConfirmDelete}
+          onCancel={() => setDeleteCandidate(null)}
+        />
+      </Suspense>
+
+      {isAccountModalOpen && (
         <Suspense fallback={<Spinner />}>
-          <ConfirmModal
-            open={!!deleteCandidate}
-            title="Удалить объект?"
-            confirmLabel={
-              <>
-                <TrashIcon className="w-4 h-4" /> Удалить
-              </>
-            }
-            onConfirm={onConfirmDelete}
-            onCancel={() => setDeleteCandidate(null)}
+          <AccountModal
+            user={user}
+            onClose={() => setIsAccountModalOpen(false)}
+            onUpdated={() => {}}
           />
         </Suspense>
-
-        {isAccountModalOpen && (
-          <Suspense fallback={<Spinner />}>
-            <AccountModal
-              user={user}
-              onClose={() => setIsAccountModalOpen(false)}
-              onUpdated={() => {}}
-            />
-          </Suspense>
-        )}
+      )}
     </>
   );
 }

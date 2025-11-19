@@ -17,6 +17,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP TRIGGER IF EXISTS on_object_created ON public.objects;
 CREATE TRIGGER on_object_created
   AFTER INSERT ON public.objects
-  FOR EACH ROW 
+  FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_object();
 
