@@ -30,6 +30,7 @@ MIGRATIONS=(
     "supabase/migrations/20250902000006_protect-superuser-profile.sql"
     "supabase/migrations/20250902000007_add-permissions-to-profiles.sql"
     "supabase/migrations/20250902000008_fix-task-status-constraint.sql"
+    "supabase/migrations/20250902000009_fix-profiles-view-policy.sql"
 )
 
 for migration in "${MIGRATIONS[@]}"; do
