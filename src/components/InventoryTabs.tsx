@@ -47,6 +47,8 @@ const hardwareSchema = z.object({
   cost: z.string().optional(),
   vendor: z.string().optional(),
   notes: z.string().optional(),
+  purchase_status: z.string().optional(),
+  install_status: z.string().optional(),
 });
 
 interface InventoryTabsProps {
@@ -89,6 +91,7 @@ export default function InventoryTabs({
     formState: { errors: hardwareErrors },
     reset: resetHardware,
     setValue: setHardwareValue,
+    watch: watchHardware,
   } = useForm({
     resolver: zodResolver(hardwareSchema),
   });
@@ -113,14 +116,18 @@ export default function InventoryTabs({
       setHardwareValue("cost", editingHardware.cost?.toString() || "");
       setHardwareValue("vendor", editingHardware.vendor || "");
       setHardwareValue("notes", editingHardware.notes || "");
+      setHardwareValue("purchase_status", editingHardware.purchase_status || "not_paid");
+      setHardwareValue("install_status", editingHardware.install_status || "not_installed");
     }
   }, [editingHardware, setHardwareValue]);
 
   const openAddHardwareModal = useCallback(() => {
     setEditingHardware(null);
     resetHardware();
+    setHardwareValue("purchase_status", "not_paid");
+    setHardwareValue("install_status", "not_installed");
     setIsHardwareModalOpen(true);
-  }, [resetHardware]);
+  }, [resetHardware, setHardwareValue]);
 
   const openEditHardwareModal = useCallback((hardware: Hardware) => {
     setEditingHardware(hardware);
@@ -160,6 +167,8 @@ export default function InventoryTabs({
         cost: data.cost ? parseFloat(data.cost) : undefined,
         vendor: data.vendor || undefined,
         notes: data.notes || undefined,
+        purchase_status: (data.purchase_status as "not_paid" | "paid") || "not_paid",
+        install_status: (data.install_status as "not_installed" | "installed") || "not_installed",
         object_id: selected.id,
         user_id: user.id,
         status: "active",
@@ -430,6 +439,40 @@ export default function InventoryTabs({
                   placeholder="Введите стоимость..."
                   className="space-input w-full"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-space-text font-semibold">
+                  💳 Статус покупки
+                </label>
+                <Select
+                  value={watchHardware("purchase_status") || editingHardware?.purchase_status || "not_paid"}
+                  onValueChange={(value) => setHardwareValue("purchase_status", value)}
+                >
+                  <SelectTrigger className="space-input w-full">
+                    <SelectValue placeholder="Выберите статус покупки" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not_paid">❌ Не оплачено</SelectItem>
+                    <SelectItem value="paid">✅ Оплачено</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-space-text font-semibold">
+                  🔧 Статус установки
+                </label>
+                <Select
+                  value={watchHardware("install_status") || editingHardware?.install_status || "not_installed"}
+                  onValueChange={(value) => setHardwareValue("install_status", value)}
+                >
+                  <SelectTrigger className="space-input w-full">
+                    <SelectValue placeholder="Выберите статус установки" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not_installed">❌ Не установлено</SelectItem>
+                    <SelectItem value="installed">✅ Установлено</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">
