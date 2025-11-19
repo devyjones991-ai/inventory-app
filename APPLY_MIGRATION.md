@@ -1,4 +1,4 @@
-# Применение миграции hardware (Windows)
+# Применение миграции hardware
 
 ## Проблема
 Ошибка: `Could not find the 'cost' column of 'hardware' in the schema cache`
@@ -6,6 +6,46 @@
 ## Решение: Применить миграцию
 
 Миграция уже создана: `supabase/migrations/20250902000009_add-hardware-fields.sql`
+
+---
+
+## Для Ubuntu сервера (без GUI) - РЕКОМЕНДУЕТСЯ
+
+### Способ 1: Автоматический скрипт
+
+```bash
+cd /path/to/inventory-app
+chmod +x apply-hardware-migration.sh
+./apply-hardware-migration.sh
+```
+
+Скрипт автоматически:
+- ✅ Проверит статус Supabase
+- ✅ Применит миграцию через Supabase CLI или psql
+- ✅ Проверит успешность применения
+
+### Способ 2: Через Supabase CLI
+
+```bash
+# Убедитесь, что Supabase запущен
+supabase status
+
+# Примените новую миграцию (сохранит данные)
+supabase db push
+
+# Или сбросьте БД и примените все миграции (удалит данные!)
+supabase db reset
+```
+
+### Способ 3: Через psql напрямую
+
+```bash
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/migrations/20250902000009_add-hardware-fields.sql
+```
+
+---
+
+## Для Windows (с GUI)
 
 ## Способ 1: Через Supabase Studio (РЕКОМЕНДУЕТСЯ)
 

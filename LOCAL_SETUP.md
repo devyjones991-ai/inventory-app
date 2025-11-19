@@ -116,12 +116,32 @@ supabase db reset
 
 После получения обновлений из репозитория (например, через `git pull`), новые миграции нужно применить к локальной БД:
 
+#### Для Ubuntu сервера (без GUI):
+
+```bash
+# Автоматический скрипт (рекомендуется)
+chmod +x apply-hardware-migration.sh
+./apply-hardware-migration.sh
+
+# Или вручную через Supabase CLI
+supabase db push  # Применить только новые миграции (сохраняет данные)
+# или
+supabase db reset  # Сбросить БД и применить все миграции (удалит данные!)
+
+# Или через psql напрямую
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/migrations/20250902000009_add-hardware-fields.sql
+```
+
+#### Для Windows (с GUI):
+
 ```bash
 # Вариант 1: Применить только новые миграции (рекомендуется, сохраняет данные)
 supabase db push
 
 # Вариант 2: Сбросить БД и применить все миграции заново (удалит все данные!)
 supabase db reset
+
+# Или через Supabase Studio: http://localhost:54323 → SQL Editor
 ```
 
 **Рекомендация:** Используйте `supabase db push` для применения новых миграций, чтобы не потерять существующие данные.
