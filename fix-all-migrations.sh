@@ -26,6 +26,7 @@ MIGRATIONS=(
     "supabase/migrations/20250902000002_fix-objects-rls-policies.sql"
     "supabase/migrations/20250902000003_add-superuser-role.sql"
     "supabase/migrations/20250902000004_fix-chat-messages-sender-column.sql"
+    "supabase/migrations/20250902000005_fix-tasks-hardware-rls-policies.sql"
 )
 
 for migration in "${MIGRATIONS[@]}"; do
