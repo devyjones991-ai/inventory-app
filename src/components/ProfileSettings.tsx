@@ -225,14 +225,46 @@ export default function ProfileSettings({
   };
 
   // Проверка, является ли пользователь суперпользователем
-  const isSuperuser = role === "superuser";
+  // Также проверяем напрямую из базы данных, если роль не загружена
+  const [isSuperuser, setIsSuperuser] = useState(false);
   
-  // Отладка: логируем роль
+  // Отладка и проверка роли
   useEffect(() => {
-    if (isOpen) {
-      console.log("ProfileSettings: role =", role, "isSuperuser =", isSuperuser);
+    if (isOpen && user) {
+      console.log("ProfileSettings: role from context =", role, "user.id =", user.id);
+      
+      // Если роль не загружена или не superuser, проверяем напрямую из БД
+      const checkSuperuser = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .maybeSingle();
+          
+          if (error) {
+            console.error("Error checking superuser:", error);
+            return;
+          }
+          
+          const userRole = data?.role || null;
+          const isSuper = userRole === "superuser";
+          console.log("ProfileSettings: role from DB =", userRole, "isSuper =", isSuper);
+          setIsSuperuser(isSuper);
+        } catch (err) {
+          console.error("Exception checking superuser:", err);
+        }
+      };
+      
+      // Используем роль из контекста, если она есть
+      if (role === "superuser") {
+        setIsSuperuser(true);
+      } else {
+        // Если роль не superuser или не загружена, проверяем в БД
+        checkSuperuser();
+      }
     }
-  }, [isOpen, role, isSuperuser]);
+  }, [isOpen, user, role]);
 
   // Загрузка списка пользователей (только для superuser)
   const loadUsers = useCallback(async () => {
