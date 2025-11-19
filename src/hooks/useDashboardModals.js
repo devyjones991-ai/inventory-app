@@ -8,9 +8,11 @@ export function useDashboardModals() {
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   const openAddModal = () => {
+    console.log("openAddModal called");
     setEditingObject(null);
     setObjectName("");
     setIsObjectModalOpen(true);
+    console.log("isObjectModalOpen should be true now");
   };
 
   const openEditModal = (obj) => {

@@ -208,30 +208,29 @@ export default function DashboardPage() {
     );
   }
 
-  // Рендерим модальное окно всегда, даже когда нет объектов
-  const emptyStateContent = !selected ? (
-    isEmpty ? (
-      <div className="flex w-full min-h-screen items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <p className="text-gray-500 text-lg">Нет объектов</p>
-          <Button
-            onClick={openAddModal}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            ➕ Создать первый объект
-          </Button>
-        </div>
-      </div>
-    ) : (
-      <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
-        Выберите объект...
-      </div>
-    )
-  ) : null;
-
   return (
     <>
-      {emptyStateContent || (
+      {!selected && isEmpty ? (
+        <div className="flex w-full min-h-screen items-center justify-center bg-background">
+          <div className="text-center space-y-4">
+            <p className="text-gray-500 text-lg">Нет объектов</p>
+            <Button
+              onClick={() => {
+                console.log("Button clicked, calling openAddModal");
+                openAddModal();
+                console.log("After openAddModal, isObjectModalOpen:", isObjectModalOpen);
+              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              ➕ Создать первый объект
+            </Button>
+          </div>
+        </div>
+      ) : !selected ? (
+        <div className="flex w-full min-h-screen items-center justify-center bg-background text-gray-500">
+          Выберите объект...
+        </div>
+      ) : (
         <div className="flex min-h-screen bg-background">
         <aside className="hidden md:flex flex-col w-72 bg-muted p-4 border-r shadow-lg overflow-y-auto">
           <Suspense fallback={<Spinner />}>
@@ -398,6 +397,7 @@ export default function DashboardPage() {
       <Dialog
           open={isObjectModalOpen}
           onOpenChange={(isOpen) => {
+            console.log("Dialog onOpenChange:", isOpen, "isObjectModalOpen:", isObjectModalOpen);
             if (!isOpen) {
               closeObjectModal();
             }
