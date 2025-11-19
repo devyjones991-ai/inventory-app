@@ -398,6 +398,7 @@ export default function DashboardPage() {
             </Suspense>
           </div>
         </div>
+        </div>
       )}
 
       <Dialog
