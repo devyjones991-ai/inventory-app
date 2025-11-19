@@ -1,9 +1,10 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState, useCallback, Suspense, lazy } from "react";
+import React, { useState, useCallback, useEffect, Suspense, lazy } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { useAuth } from "../hooks/useAuth";
 import { useHardware } from "../hooks/useHardware";
 import { useTasks } from "../hooks/useTasks";
 // import { t } from "../i18n";
@@ -55,6 +56,7 @@ interface InventoryTabsProps {
   tasksCount?: number;
   hardwareCount?: number;
   onTabChange?: (tab: string) => void;
+  onEdit?: (obj: Object) => void;
 }
 
 export default function InventoryTabs({
@@ -64,8 +66,10 @@ export default function InventoryTabs({
   tasksCount = 0,
   hardwareCount = 0,
   onTabChange,
+  onEdit,
 }: InventoryTabsProps) {
   const [activeTab, setActiveTab] = useState("desc");
+  const { user } = useAuth();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -73,7 +77,7 @@ export default function InventoryTabs({
   };
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
-  const { hardware, deleteHardware } = useHardware();
+  const { hardware, deleteHardware, createHardware, updateHardware, loadHardware } = useHardware();
 
   const { tasks, createTask, updateTask, deleteTask } = useTasks(
     selected?.id || "",
@@ -84,14 +88,39 @@ export default function InventoryTabs({
     handleSubmit: handleHardwareSubmit,
     formState: { errors: hardwareErrors },
     reset: resetHardware,
+    setValue: setHardwareValue,
   } = useForm({
     resolver: zodResolver(hardwareSchema),
   });
 
+  // Load hardware when selected object changes
+  useEffect(() => {
+    if (selected?.id) {
+      loadHardware(selected.id);
+    }
+  }, [selected?.id, loadHardware]);
+
+  // Populate form when editing hardware
+  useEffect(() => {
+    if (editingHardware) {
+      setHardwareValue("name", editingHardware.name);
+      setHardwareValue("type", editingHardware.type);
+      setHardwareValue("location", editingHardware.location || "");
+      setHardwareValue("model", editingHardware.model || "");
+      setHardwareValue("serial_number", editingHardware.serial_number || "");
+      setHardwareValue("purchase_date", editingHardware.purchase_date || "");
+      setHardwareValue("warranty_expiry", editingHardware.warranty_expiry || "");
+      setHardwareValue("cost", editingHardware.cost?.toString() || "");
+      setHardwareValue("vendor", editingHardware.vendor || "");
+      setHardwareValue("notes", editingHardware.notes || "");
+    }
+  }, [editingHardware, setHardwareValue]);
+
   const openAddHardwareModal = useCallback(() => {
     setEditingHardware(null);
+    resetHardware();
     setIsHardwareModalOpen(true);
-  }, []);
+  }, [resetHardware]);
 
   const openEditHardwareModal = useCallback((hardware: Hardware) => {
     setEditingHardware(hardware);
@@ -111,6 +140,44 @@ export default function InventoryTabs({
       }
     },
     [deleteHardware],
+  );
+
+  const onHardwareSubmit = useCallback(
+    async (data: z.infer<typeof hardwareSchema>) => {
+      if (!selected?.id || !user?.id) {
+        console.error("Selected object or user is missing");
+        return;
+      }
+
+      const hardwareData: Partial<Hardware> = {
+        name: data.name,
+        type: data.type,
+        location: data.location || undefined,
+        model: data.model || undefined,
+        serial_number: data.serial_number || undefined,
+        purchase_date: data.purchase_date || undefined,
+        warranty_expiry: data.warranty_expiry || undefined,
+        cost: data.cost ? parseFloat(data.cost) : undefined,
+        vendor: data.vendor || undefined,
+        notes: data.notes || undefined,
+        object_id: selected.id,
+        user_id: user.id,
+        status: "active",
+      };
+
+      if (editingHardware) {
+        const result = await updateHardware(editingHardware.id, hardwareData);
+        if (result.data) {
+          closeHardwareModal();
+        }
+      } else {
+        const result = await createHardware(hardwareData);
+        if (result.data) {
+          closeHardwareModal();
+        }
+      }
+    },
+    [selected, user, editingHardware, createHardware, updateHardware, closeHardwareModal],
   );
 
   return (
@@ -136,7 +203,9 @@ export default function InventoryTabs({
             <button
               className="space-sidebar-button"
               onClick={() => {
-                /* TODO: Добавить редактирование объекта */
+                if (selected && onEdit) {
+                  onEdit(selected);
+                }
               }}
               aria-label="Редактировать объект"
             >
@@ -267,7 +336,7 @@ export default function InventoryTabs({
                 : "🔧 Добавить оборудование"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleHardwareSubmit} className="space-y-6 p-6">
+          <form onSubmit={handleHardwareSubmit(onHardwareSubmit)} className="space-y-6 p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-space-text font-semibold">

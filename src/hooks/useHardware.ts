@@ -27,7 +27,7 @@ export function useHardware() {
         }
         const result = await supabase
           .from("hardware")
-          .select("id, name, location, purchase_status, install_status")
+          .select("*")
           .eq("object_id", objectId)
           .order("created_at");
         if (result.error) throw result.error;
