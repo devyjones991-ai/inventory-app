@@ -82,12 +82,12 @@ export function useObjectList() {
     fetchObjects();
   }, [fetchObjects]);
 
-  async function saveObject(name, editingObject) {
+  async function saveObject(name, description = "", editingObject) {
     if (!name.trim()) return false;
     if (editingObject) {
       const { data, error } = await supabase
         .from("objects")
-        .update({ name })
+        .update({ name, description: description || "" })
         .eq("id", editingObject.id)
         .select("id, name, description")
         .single();
@@ -105,7 +105,7 @@ export function useObjectList() {
     } else {
       const { data, error } = await supabase
         .from("objects")
-        .insert([{ name, description: "" }])
+        .insert([{ name, description: description || "" }])
         .select("id, name, description")
         .single();
       if (error) {

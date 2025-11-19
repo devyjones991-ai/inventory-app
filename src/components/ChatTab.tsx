@@ -61,15 +61,27 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
     }
   }, [active]);
 
+  // Автоскролл при получении новых сообщений (включая realtime)
   useLayoutEffect(() => {
-    if (active && messages.length > 0) {
+    if (active && messages.length > 0 && !isCollapsed) {
       // Небольшая задержка для рендера DOM
       const timer = setTimeout(() => {
         scrollToBottom();
-      }, 50);
+      }, 100);
       return () => clearTimeout(timer);
     }
-  }, [messages, active, scrollToBottom]);
+  }, [messages, active, isCollapsed, scrollToBottom]);
+
+  // Дополнительный автоскролл при активной вкладке (для realtime сообщений)
+  useEffect(() => {
+    if (active && !isCollapsed && messages.length > 0) {
+      // Задержка для реального времени обновлений
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, active, isCollapsed]);
 
   // Автоскролл к окну ввода при открытии чата
   useLayoutEffect(() => {

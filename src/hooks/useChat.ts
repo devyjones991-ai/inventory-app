@@ -253,7 +253,7 @@ export default function useChat({
     }
   }, [objectId, loadAllMessages]);
 
-  // Подписка на новые сообщения
+  // Подписка на новые сообщения в реальном времени
   useEffect(() => {
     if (
       !objectId ||
@@ -263,8 +263,15 @@ export default function useChat({
     )
       return;
 
+    console.log(`[Realtime] Subscribing to chat:${objectId}`);
+
     const channel = supabase
-      .channel(`chat:${objectId}`)
+      .channel(`chat:${objectId}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: "" },
+        },
+      })
       .on(
         "postgres_changes",
         {
@@ -275,30 +282,88 @@ export default function useChat({
         },
         (payload) => {
           const newMessage = payload.new as ChatMessage;
-          console.log("New message received:", newMessage);
+          console.log("[Realtime] New message received:", newMessage);
+          
           setMessages((prev) => {
             // Проверяем, нет ли уже такого сообщения (избегаем дублирования)
             const exists = prev.some((msg) => msg.id === newMessage.id);
             if (exists) {
-              console.log("Message already exists, skipping");
+              console.log("[Realtime] Message already exists, skipping");
               return prev;
             }
-            console.log("Adding new message to list");
-            // Добавляем новое сообщение в конец списка
-            return [...prev, newMessage];
+            
+            console.log("[Realtime] Adding new message to list");
+            
+            // Добавляем новое сообщение и сортируем по created_at для правильного порядка
+            const updated = [...prev, newMessage].sort((a, b) => {
+              const dateA = new Date(a.created_at).getTime();
+              const dateB = new Date(b.created_at).getTime();
+              return dateA - dateB;
+            });
+            
+            return updated;
           });
 
           // Принудительно обновляем hasMore для новых сообщений
           setHasMore(true);
         },
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chat_messages",
+          filter: `object_id=eq.${objectId}`,
+        },
+        (payload) => {
+          const updatedMessage = payload.new as ChatMessage;
+          console.log("[Realtime] Message updated:", updatedMessage);
+          
+          setMessages((prev) => {
+            return prev.map((msg) =>
+              msg.id === updatedMessage.id ? updatedMessage : msg
+            );
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "chat_messages",
+          filter: `object_id=eq.${objectId}`,
+        },
+        (payload) => {
+          const deletedId = payload.old.id;
+          console.log("[Realtime] Message deleted:", deletedId);
+          
+          setMessages((prev) => {
+            return prev.filter((msg) => msg.id !== deletedId);
+          });
+        },
+      )
+      .subscribe((status) => {
+        console.log(`[Realtime] Subscription status: ${status}`);
+        if (status === "SUBSCRIBED") {
+          console.log(`[Realtime] Successfully subscribed to chat:${objectId}`);
+        } else if (status === "CHANNEL_ERROR") {
+          console.error(`[Realtime] Channel error for chat:${objectId}`);
+        } else if (status === "TIMED_OUT") {
+          console.error(`[Realtime] Subscription timeout for chat:${objectId}`);
+        } else if (status === "CLOSED") {
+          console.log(`[Realtime] Channel closed for chat:${objectId}`);
+        }
+      });
 
     channelRef.current = channel;
 
     return () => {
+      console.log(`[Realtime] Unsubscribing from chat:${objectId}`);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
     };
   }, [objectId]);

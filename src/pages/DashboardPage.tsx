@@ -32,6 +32,7 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboardModals } from "../hooks/useDashboardModals";
 import { useObjectList } from "../hooks/useObjectList";
@@ -73,6 +74,8 @@ export default function DashboardPage() {
     isObjectModalOpen,
     objectName,
     setObjectName,
+    objectDescription,
+    setObjectDescription,
     editingObject,
     deleteCandidate,
     setDeleteCandidate,
@@ -179,7 +182,7 @@ export default function DashboardPage() {
   }, [searchParams, objects, selected, handleSelect]);
 
   const onSaveObject = async () => {
-    const ok = await saveObject(objectName, editingObject);
+    const ok = await saveObject(objectName, objectDescription, editingObject);
     if (ok) closeObjectModal();
   };
 
@@ -394,6 +397,7 @@ export default function DashboardPage() {
                 tasksCount={0}
                 hardwareCount={hardwareCount}
                 onTabChange={onTabChange}
+                onEdit={openEditModal}
               />
             </Suspense>
           </div>
@@ -441,6 +445,18 @@ export default function DashboardPage() {
                 placeholder="Введите название объекта..."
                 value={objectName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-space-text font-semibold">
+                📄 Описание объекта
+              </label>
+              <Textarea
+                className="w-full space-input"
+                placeholder="Введите описание объекта..."
+                value={objectDescription}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setObjectDescription(e.target.value)}
+                rows={4}
               />
             </div>
           </div>
