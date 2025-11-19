@@ -25,8 +25,8 @@ export default defineConfig(async ({ mode }) => {
     // Allow Vite React Refresh preamble and eval only in dev
     `script-src 'self'${isProd ? "" : " 'unsafe-inline' 'unsafe-eval'"}`,
     "style-src 'self' 'unsafe-inline'",
-    // Allow Vite HMR WS in dev and Supabase in both
-    `connect-src 'self' ${isProd ? "" : "ws: wss:"} https://*.supabase.co https://*.supabase.in`,
+    // Allow Vite HMR WS in dev and Supabase (both remote and local via nginx proxy)
+    `connect-src 'self' ${isProd ? "" : "ws: wss:"} https://*.supabase.co https://*.supabase.in http://multiminder.duckdns.org http://localhost:* http://127.0.0.1:*`,
     // Allow self/data and generic https fonts (dev-friendly)
     "font-src 'self' data: https:",
   ].join("; ");

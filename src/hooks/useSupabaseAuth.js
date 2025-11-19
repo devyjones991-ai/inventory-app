@@ -13,6 +13,13 @@ export function useSupabaseAuth() {
   const signUp = async (email, password, username) => {
     setError(null);
 
+    // Проверка, что Supabase настроен
+    if (!supabase) {
+      const error = new Error("Supabase не настроен. Проверьте переменные окружения.");
+      setError(error.message);
+      return { data: null, error };
+    }
+
     try {
       const { data: signUpData, error: signUpError } =
         await supabase.auth.signUp({
@@ -22,7 +29,14 @@ export function useSupabaseAuth() {
         });
 
       if (signUpError) {
-        setError(signUpError.message);
+        // Улучшенная обработка ошибок
+        let errorMessage = signUpError.message;
+        if (signUpError.message?.includes("Failed to fetch") || 
+            signUpError.message?.includes("NetworkError") ||
+            signUpError.message?.includes("ERR_NAME_NOT_RESOLVED")) {
+          errorMessage = "Не удалось подключиться к серверу. Проверьте настройки Supabase.";
+        }
+        setError(errorMessage);
       } else if (signUpData.user && signUpData.user.confirmed_at === null) {
         pushNotification(
           "Регистрация",
@@ -32,8 +46,15 @@ export function useSupabaseAuth() {
 
       return { data: signUpData, error: signUpError };
     } catch (err) {
-      setError(err.message);
-      return { data: null, error: err };
+      // Обработка сетевых ошибок
+      let errorMessage = err.message || "Произошла ошибка при регистрации";
+      if (err.message?.includes("Failed to fetch") || 
+          err.message?.includes("NetworkError") ||
+          err.message?.includes("ERR_NAME_NOT_RESOLVED")) {
+        errorMessage = "Не удалось подключиться к серверу. Проверьте настройки Supabase.";
+      }
+      setError(errorMessage);
+      return { data: null, error: { message: errorMessage, ...err } };
     }
   };
 
