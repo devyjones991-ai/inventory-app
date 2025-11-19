@@ -60,19 +60,44 @@ export function useSupabaseAuth() {
 
   const signIn = async (email, password) => {
     setError(null);
+    
+    if (!supabase) {
+      const error = new Error("Supabase не настроен. Проверьте переменные окружения.");
+      setError(error.message);
+      return { data: null, error };
+    }
+
     try {
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
           email,
           password,
         });
+      
       if (signInError) {
-        setError(signInError.message);
+        let errorMessage = signInError.message;
+        if (signInError.message?.includes("Failed to fetch") || 
+            signInError.message?.includes("NetworkError") ||
+            signInError.message?.includes("ERR_NAME_NOT_RESOLVED")) {
+          errorMessage = "Не удалось подключиться к серверу. Проверьте настройки Supabase.";
+        } else if (signInError.message?.includes("Invalid login credentials") ||
+                   signInError.message?.includes("Email not confirmed")) {
+          errorMessage = "Неверный email или пароль";
+        }
+        setError(errorMessage);
+        return { data, error: { ...signInError, message: errorMessage } };
       }
-      return { data, error: signInError };
+      
+      return { data, error: null };
     } catch (err) {
-      setError(err.message);
-      return { data: null, error: err };
+      let errorMessage = err.message || "Произошла ошибка при входе";
+      if (err.message?.includes("Failed to fetch") || 
+          err.message?.includes("NetworkError") ||
+          err.message?.includes("ERR_NAME_NOT_RESOLVED")) {
+        errorMessage = "Не удалось подключиться к серверу. Проверьте настройки Supabase.";
+      }
+      setError(errorMessage);
+      return { data: null, error: { message: errorMessage, ...err } };
     }
   };
 
