@@ -34,6 +34,20 @@ export function useObjectList() {
           setFetchError("Недостаточно прав");
           return;
         }
+        // Проверяем на ошибки RLS и рекурсии
+        const errorMessage = error.message || String(error);
+        if (errorMessage.includes('infinite recursion') || errorMessage.includes('recursion')) {
+          logger.error("Ошибка RLS рекурсии при загрузке объектов:", error);
+          toast.error("Ошибка доступа: проблема с политиками безопасности. Обратитесь к администратору.");
+          setFetchError("Ошибка доступа: проблема с политиками безопасности");
+          return;
+        }
+        if (errorMessage.includes('row-level security') || errorMessage.includes('RLS') || error.code === 'PGRST116') {
+          logger.error("Ошибка RLS при загрузке объектов:", error);
+          toast.error("Ошибка доступа: проблема с политиками безопасности");
+          setFetchError("Ошибка доступа: проблема с политиками безопасности");
+          return;
+        }
         logger.error("Ошибка загрузки объектов:", error);
         toast.error("Ошибка загрузки объектов: " + error.message);
         await handleSupabaseError(error, navigate, "Ошибка загрузки объектов");

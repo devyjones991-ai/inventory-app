@@ -568,24 +568,40 @@ export default function ProfileSettings({
       // Если пользователей нет, это нормально - просто пустой список
       if (usersWithPermissions.length === 0) {
         console.log("loadUsers: No users found (this is normal for new installations)");
+        // Не показываем ошибку, если список пустой - это нормально
+        setUsers([]);
+        return;
       }
     } catch (error: any) {
       console.error("Ошибка загрузки пользователей:", error);
       
       // Проверяем тип ошибки
       const errorMessage = error?.message || String(error);
+      const errorCode = error?.code || '';
       
       if (errorMessage.includes('infinite recursion') || errorMessage.includes('recursion')) {
         toast.error("Ошибка доступа: проблема с политиками безопасности. Обратитесь к администратору.");
         console.error("RLS recursion error detected. This is a database configuration issue.");
-      } else if (errorMessage.includes('permission denied') || errorMessage.includes('RLS')) {
-        toast.error("Недостаточно прав для просмотра списка пользователей");
+        // Не устанавливаем пустой список при рекурсии - это критическая ошибка
+        setUsers([]);
+      } else if (errorMessage.includes('permission denied') || errorMessage.includes('RLS') || errorCode === 'PGRST116') {
+        // Если нет прав, но пользователь superuser/admin, это проблема конфигурации
+        if (isSuperuser || isAdmin) {
+          toast.error("Ошибка доступа: проблема с политиками безопасности. Убедитесь, что миграция применена.");
+          console.error("RLS permission error for superuser/admin. Check database configuration.");
+        } else {
+          toast.error("Недостаточно прав для просмотра списка пользователей");
+        }
+        setUsers([]);
+      } else if (errorMessage.includes('Только superuser или admin')) {
+        // Пользователь не является superuser/admin, но пытается загрузить список
+        console.log("loadUsers: User is not superuser/admin, skipping silently");
+        setUsers([]);
+        return; // Не показываем ошибку, это нормальное поведение
       } else {
         toast.error(`Не удалось загрузить список пользователей: ${errorMessage}`);
+        setUsers([]);
       }
-      
-      // Устанавливаем пустой список при ошибке, чтобы показать "Пользователи не найдены"
-      setUsers([]);
     } finally {
       setLoadingUsers(false);
     }
