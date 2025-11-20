@@ -469,11 +469,31 @@ export default function ProfileSettings({
       console.log("loadUsers: Starting to fetch users from profiles table");
       console.log("loadUsers: Current user ID =", user?.id, "email =", user?.email);
 
-      // Пробуем загрузить всех пользователей
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, full_name, role, permissions, created_at, last_sign_in_at")
-        .order("created_at", { ascending: false });
+      // ВАЖНО: Используем RPC функцию вместо прямого SELECT, чтобы обойти проблемы с RLS
+      // Пробуем сначала через RPC функцию
+      let data = null;
+      let error = null;
+      
+      try {
+        console.log("loadUsers: Trying RPC function get_all_profiles()...");
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
+        if (!rpcError && rpcData) {
+          console.log("loadUsers: RPC function succeeded, got", rpcData.length, "users");
+          data = rpcData;
+        } else {
+          console.log("loadUsers: RPC function failed or not available, trying direct SELECT...");
+          throw rpcError || new Error("RPC function not available");
+        }
+      } catch (rpcErr) {
+        console.log("loadUsers: RPC function error, falling back to direct SELECT:", rpcErr);
+        // Fallback: пробуем прямой SELECT
+        const result = await supabase
+          .from("profiles")
+          .select("id, email, full_name, role, permissions, created_at, last_sign_in_at")
+          .order("created_at", { ascending: false });
+        data = result.data;
+        error = result.error;
+      }
 
       console.log("loadUsers: Query result:", { 
         data, 
@@ -488,40 +508,32 @@ export default function ProfileSettings({
       if (error) {
         console.error("loadUsers: Error fetching users:", error);
         
-        // Если ошибка RLS, пробуем через функцию
-        if (error.code === 'PGRST116' || error.message?.includes('RLS') || error.message?.includes('permission denied')) {
-          console.log("loadUsers: RLS error detected, trying alternative method...");
+        // Если ошибка рекурсии или RLS, пробуем через RPC функцию еще раз
+        if (error.message?.includes('infinite recursion') || 
+            error.message?.includes('recursion') ||
+            error.code === 'PGRST116' || 
+            error.message?.includes('RLS') || 
+            error.message?.includes('permission denied')) {
+          console.log("loadUsers: Recursion/RLS error detected, trying RPC function as last resort...");
           
-          // Пробуем загрузить через RPC функцию, если она есть
           try {
             const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
             if (!rpcError && rpcData) {
-              console.log("loadUsers: RPC function returned:", rpcData);
-              const usersWithPermissions = (rpcData || []).map((user: any) => {
-                let permissions: string[] = [];
-                if (user.permissions) {
-                  if (Array.isArray(user.permissions)) {
-                    permissions = user.permissions;
-                  } else if (typeof user.permissions === 'string') {
-                    try {
-                      permissions = JSON.parse(user.permissions);
-                    } catch {
-                      permissions = [];
-                    }
-                  }
-                }
-                return { ...user, permissions } as UserProfile;
-              });
-              setUsers(usersWithPermissions);
-              return;
+              console.log("loadUsers: RPC function succeeded on retry, got", rpcData.length, "users");
+              data = rpcData;
+              error = null; // Очищаем ошибку, так как RPC сработал
+            } else {
+              console.error("loadUsers: RPC function also failed:", rpcError);
+              throw rpcError || error;
             }
           } catch (rpcErr) {
-            console.log("loadUsers: RPC function not available");
+            console.error("loadUsers: RPC function failed:", rpcErr);
+            throw error; // Используем исходную ошибку
           }
+        } else {
+          // Другая ошибка
+          throw error;
         }
-        
-        toast.error(`Не удалось загрузить список пользователей: ${error.message || "Ошибка доступа"}`);
-        throw error;
       }
 
       // Преобразуем permissions из JSONB в массив строк
