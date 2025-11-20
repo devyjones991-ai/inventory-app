@@ -13,12 +13,15 @@ CREATE POLICY "Superuser can view all profiles" ON profiles
   FOR SELECT USING (public.is_superuser());
 
 -- Создаем функцию для проверки, является ли пользователь admin (без рекурсии)
+-- ВАЖНО: эта функция использует SECURITY DEFINER, поэтому она обходит RLS
+-- и не создает рекурсию при использовании в политиках
 CREATE OR REPLACE FUNCTION public.is_admin(user_id UUID DEFAULT auth.uid())
 RETURNS BOOLEAN AS $$
 DECLARE
   user_role TEXT;
 BEGIN
   -- Используем SECURITY DEFINER для обхода RLS
+  -- Это позволяет читать профиль без проверки политик, избегая рекурсии
   SELECT role INTO user_role
   FROM public.profiles
   WHERE id = user_id;
@@ -28,10 +31,11 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 -- Создаем политику для admin через функцию (без рекурсии)
+-- is_admin() использует SECURITY DEFINER, поэтому не создает рекурсию
 CREATE POLICY "Admins can view all profiles" ON profiles
   FOR SELECT USING (
-    public.is_superuser() -- Superuser может всё
-    OR public.is_admin() -- Admin может видеть все профили
+    public.is_superuser() -- Superuser может всё (тоже SECURITY DEFINER)
+    OR public.is_admin() -- Admin может видеть все профили (SECURITY DEFINER, нет рекурсии)
   );
 
 -- Альтернативный вариант: использовать функцию для проверки роли admin
