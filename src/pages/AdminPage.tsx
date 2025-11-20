@@ -36,6 +36,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/supabaseClient";
+import "../assets/space-theme.css";
 
 interface UserProfile {
   id: string;
@@ -248,38 +249,47 @@ const AdminPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen space-bg-gradient flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка пользователей...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-space-primary mx-auto"></div>
+          <p className="mt-4 text-space-text">Загрузка пользователей...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen space-bg-gradient py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Панель администратора
+        <div className="mb-8 space-fade-in">
+          <h1 className="space-title text-3xl font-bold mb-2">
+            🛡️ Панель администратора
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="text-space-text-muted">
             Управление пользователями и мониторинг системы
           </p>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="users" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-3 bg-space-bg-light p-1 rounded-lg border border-space-border">
+            <TabsTrigger 
+              value="users" 
+              className="flex items-center gap-2 data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+            >
               <Users className="w-4 h-4" />
               Пользователи
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="stats" 
+              className="flex items-center gap-2 data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+            >
               <BarChart3 className="w-4 h-4" />
               Статистика
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="activity" 
+              className="flex items-center gap-2 data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
+            >
               <Activity className="w-4 h-4" />
               Активность
             </TabsTrigger>
@@ -288,104 +298,104 @@ const AdminPage: React.FC = () => {
           <TabsContent value="users" className="space-y-6">
             {/* Статистические карточки */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
+              <Card className="space-card space-fade-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-space-text-muted">
                         Всего пользователей
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-space-text">
                         {stats.totalUsers}
                       </p>
                     </div>
-                    <Users className="w-8 h-8 text-blue-600" />
+                    <Users className="w-8 h-8 text-space-primary" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="space-card space-fade-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-space-text-muted">
                         Администраторы
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-space-text">
                         {stats.adminUsers}
                       </p>
                     </div>
-                    <Shield className="w-8 h-8 text-red-600" />
+                    <Shield className="w-8 h-8 text-space-accent" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="space-card space-fade-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-space-text-muted">
                         Активные (7 дней)
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-space-text">
                         {stats.activeUsers}
                       </p>
                     </div>
-                    <Activity className="w-8 h-8 text-green-600" />
+                    <Activity className="w-8 h-8 text-green-400" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="space-card space-fade-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-space-text-muted">
                         Новые сегодня
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-space-text">
                         {stats.newUsersToday}
                       </p>
                     </div>
-                    <Calendar className="w-8 h-8 text-purple-600" />
+                    <Calendar className="w-8 h-8 text-purple-400" />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Панель управления */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between space-card p-4 space-fade-in">
+              <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-space-text-muted w-4 h-4" />
                   <Input
                     placeholder="Поиск пользователей..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-64"
+                    className="pl-10 w-64 space-input"
                   />
                 </div>
 
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-48 space-select bg-space-bg-light border-space-border text-space-text">
                     <SelectValue placeholder="Фильтр по роли" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все роли</SelectItem>
-                    <SelectItem value="admin">Администраторы</SelectItem>
-                    <SelectItem value="user">Пользователи</SelectItem>
+                  <SelectContent className="bg-space-bg-light border-space-border">
+                    <SelectItem value="all" className="text-space-text hover:bg-space-active focus:bg-space-active">Все роли</SelectItem>
+                    <SelectItem value="admin" className="text-space-text hover:bg-space-active focus:bg-space-active">Администраторы</SelectItem>
+                    <SelectItem value="user" className="text-space-text hover:bg-space-active focus:bg-space-active">Пользователи</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-48 space-select bg-space-bg-light border-space-border text-space-text">
                     <SelectValue placeholder="Сортировка" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="created_at">Дата создания</SelectItem>
-                    <SelectItem value="full_name">Имя</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="last_sign_in_at">
+                  <SelectContent className="bg-space-bg-light border-space-border">
+                    <SelectItem value="created_at" className="text-space-text hover:bg-space-active focus:bg-space-active">Дата создания</SelectItem>
+                    <SelectItem value="full_name" className="text-space-text hover:bg-space-active focus:bg-space-active">Имя</SelectItem>
+                    <SelectItem value="email" className="text-space-text hover:bg-space-active focus:bg-space-active">Email</SelectItem>
+                    <SelectItem value="last_sign_in_at" className="text-space-text hover:bg-space-active focus:bg-space-active">
                       Последний вход
                     </SelectItem>
                   </SelectContent>
@@ -396,19 +406,20 @@ const AdminPage: React.FC = () => {
                   onClick={() =>
                     setSortOrder(sortOrder === "asc" ? "desc" : "asc")
                   }
+                  className="space-button"
                 >
                   {sortOrder === "asc" ? "↑" : "↓"}
                 </Button>
               </div>
 
-              <div className="flex gap-2">
-                <Button onClick={exportUsers} variant="outline">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button onClick={exportUsers} variant="outline" className="space-button">
                   <Download className="w-4 h-4 mr-2" />
                   Экспорт CSV
                 </Button>
                 <Button
                   onClick={handleCreateAdmin}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="space-button space-active"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Создать администратора
@@ -420,19 +431,19 @@ const AdminPage: React.FC = () => {
               {sortedUsers.map((user) => (
                 <Card
                   key={user.id}
-                  className="hover:shadow-md transition-shadow"
+                  className="space-card hover:shadow-md transition-shadow space-fade-in"
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-space-primary/20 rounded-full flex items-center justify-center border border-space-border">
+                          <User className="w-5 h-5 text-space-primary" />
                         </div>
                         <div>
-                          <CardTitle className="text-lg">
+                          <CardTitle className="text-lg text-space-text">
                             {user.full_name || "Без имени"}
                           </CardTitle>
-                          <CardDescription>{user.email}</CardDescription>
+                          <CardDescription className="text-space-text-muted">{user.email}</CardDescription>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -440,16 +451,24 @@ const AdminPage: React.FC = () => {
                           variant={
                             user.role === "admin" ? "destructive" : "secondary"
                           }
+                          className={
+                            user.role === "admin"
+                              ? "bg-red-500/20 text-red-300 border-red-500"
+                              : "bg-space-bg-light text-space-text border-space-border"
+                          }
                         >
                           {user.role === "admin"
-                            ? "Администратор"
-                            : "Пользователь"}
+                            ? "🛡️ Администратор"
+                            : user.role === "superuser"
+                            ? "⭐ Суперпользователь"
+                            : "👤 Пользователь"}
                         </Badge>
                         <div className="flex space-x-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditUser(user)}
+                            className="space-button"
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
@@ -458,7 +477,7 @@ const AdminPage: React.FC = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => handleDeleteUser(user.id)}
-                              className="text-red-600 hover:text-red-700"
+                              className="space-button bg-red-500/20 text-red-300 border-red-500 hover:bg-red-500/30"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -468,13 +487,13 @@ const AdminPage: React.FC = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div className="grid grid-cols-2 gap-4 text-sm text-space-text-muted">
                       <div>
-                        <span className="font-medium">Создан:</span>{" "}
+                        <span className="font-medium text-space-text">Создан:</span>{" "}
                         {new Date(user.created_at).toLocaleDateString()}
                       </div>
                       <div>
-                        <span className="font-medium">Последний вход:</span>{" "}
+                        <span className="font-medium text-space-text">Последний вход:</span>{" "}
                         {user.last_sign_in_at
                           ? new Date(user.last_sign_in_at).toLocaleDateString()
                           : "Никогда"}
@@ -485,9 +504,10 @@ const AdminPage: React.FC = () => {
               ))}
 
               {sortedUsers.length === 0 && (
-                <Card>
+                <Card className="space-card">
                   <CardContent className="p-8 text-center">
-                    <p className="text-gray-500">Пользователи не найдены</p>
+                    <Users className="w-16 h-16 text-space-text-muted mx-auto mb-4" />
+                    <p className="text-space-text-muted">Пользователи не найдены</p>
                   </CardContent>
                 </Card>
               )}
@@ -496,39 +516,39 @@ const AdminPage: React.FC = () => {
 
           <TabsContent value="stats" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
+              <Card className="space-card space-fade-in">
                 <CardHeader>
-                  <CardTitle>Распределение ролей</CardTitle>
+                  <CardTitle className="text-space-text">Распределение ролей</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span>Пользователи</span>
-                      <Badge variant="secondary">
+                      <span className="text-space-text">Пользователи</span>
+                      <Badge variant="secondary" className="bg-space-bg-light text-space-text border-space-border">
                         {stats.totalUsers - stats.adminUsers}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Администраторы</span>
-                      <Badge variant="destructive">{stats.adminUsers}</Badge>
+                      <span className="text-space-text">Администраторы</span>
+                      <Badge variant="destructive" className="bg-red-500/20 text-red-300 border-red-500">{stats.adminUsers}</Badge>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="space-card space-fade-in">
                 <CardHeader>
-                  <CardTitle>Активность пользователей</CardTitle>
+                  <CardTitle className="text-space-text">Активность пользователей</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span>Активные (7 дней)</span>
-                      <Badge variant="default">{stats.activeUsers}</Badge>
+                      <span className="text-space-text">Активные (7 дней)</span>
+                      <Badge variant="default" className="bg-space-primary/20 text-space-primary border-space-primary">{stats.activeUsers}</Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Новые сегодня</span>
-                      <Badge variant="outline">{stats.newUsersToday}</Badge>
+                      <span className="text-space-text">Новые сегодня</span>
+                      <Badge variant="outline" className="bg-space-bg-light text-space-text border-space-border">{stats.newUsersToday}</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -537,30 +557,30 @@ const AdminPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-6">
-            <Card>
+            <Card className="space-card space-fade-in">
               <CardHeader>
-                <CardTitle>Последние действия</CardTitle>
+                <CardTitle className="text-space-text">Последние действия</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {sortedUsers.slice(0, 10).map((user) => (
                     <div
                       key={user.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-center justify-between p-3 border border-space-border rounded-lg space-card hover:space-active transition-all"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-gray-600" />
+                        <div className="w-8 h-8 bg-space-primary/20 rounded-full flex items-center justify-center border border-space-border">
+                          <User className="w-4 h-4 text-space-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">
+                          <p className="font-medium text-space-text">
                             {user.full_name || "Без имени"}
                           </p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="text-sm text-space-text-muted">{user.email}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-space-text-muted">
                           {user.last_sign_in_at
                             ? `Вход: ${new Date(user.last_sign_in_at).toLocaleDateString()}`
                             : "Никогда не входил"}
@@ -576,52 +596,54 @@ const AdminPage: React.FC = () => {
 
         {/* Модальное окно редактирования */}
         {showEditModal && selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <Card className="w-96">
-              <CardHeader>
-                <CardTitle>Редактировать пользователя</CardTitle>
-                <CardDescription>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <Card className="w-96 space-modal space-fade-in">
+              <CardHeader className="space-modal-header">
+                <CardTitle className="text-white">Редактировать пользователя</CardTitle>
+                <CardDescription className="text-white/80">
                   Измените данные пользователя {selectedUser.email}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-6 bg-space-bg-card">
                 <div>
-                  <Label htmlFor="full_name">Полное имя</Label>
+                  <Label htmlFor="full_name" className="text-space-text font-semibold">Полное имя</Label>
                   <Input
                     id="full_name"
                     value={editForm.full_name}
                     onChange={(e) =>
                       setEditForm({ ...editForm, full_name: e.target.value })
                     }
+                    className="space-input mt-2"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="role">Роль</Label>
+                  <Label htmlFor="role" className="text-space-text font-semibold">Роль</Label>
                   <Select
                     value={editForm.role}
                     onValueChange={(value) =>
                       setEditForm({ ...editForm, role: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="space-select bg-space-bg-light border-space-border text-space-text mt-2">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">Пользователь</SelectItem>
-                      <SelectItem value="admin">Администратор</SelectItem>
+                    <SelectContent className="bg-space-bg-light border-space-border">
+                      <SelectItem value="user" className="text-space-text hover:bg-space-active focus:bg-space-active">👤 Пользователь</SelectItem>
+                      <SelectItem value="admin" className="text-space-text hover:bg-space-active focus:bg-space-active">🛡️ Администратор</SelectItem>
+                      <SelectItem value="superuser" className="text-space-text hover:bg-space-active focus:bg-space-active">⭐ Суперпользователь</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex space-x-2">
-                  <Button onClick={handleSaveUser} className="flex-1">
-                    Сохранить
+                <div className="flex space-x-2 pt-4">
+                  <Button onClick={handleSaveUser} className="flex-1 space-button space-active">
+                    💾 Сохранить
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setShowEditModal(false)}
-                    className="flex-1"
+                    className="flex-1 space-button"
                   >
-                    Отмена
+                    ❌ Отмена
                   </Button>
                 </div>
               </CardContent>
