@@ -467,16 +467,60 @@ export default function ProfileSettings({
     try {
       setLoadingUsers(true);
       console.log("loadUsers: Starting to fetch users from profiles table");
+      console.log("loadUsers: Current user ID =", user?.id, "email =", user?.email);
 
+      // Пробуем загрузить всех пользователей
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, email, full_name, role, permissions, created_at, last_sign_in_at")
         .order("created_at", { ascending: false });
 
-      console.log("loadUsers: Query result:", { data, error, count: data?.length });
+      console.log("loadUsers: Query result:", { 
+        data, 
+        error, 
+        count: data?.length,
+        errorCode: error?.code,
+        errorMessage: error?.message,
+        errorDetails: error?.details,
+        errorHint: error?.hint
+      });
 
       if (error) {
         console.error("loadUsers: Error fetching users:", error);
+        
+        // Если ошибка RLS, пробуем через функцию
+        if (error.code === 'PGRST116' || error.message?.includes('RLS') || error.message?.includes('permission denied')) {
+          console.log("loadUsers: RLS error detected, trying alternative method...");
+          
+          // Пробуем загрузить через RPC функцию, если она есть
+          try {
+            const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
+            if (!rpcError && rpcData) {
+              console.log("loadUsers: RPC function returned:", rpcData);
+              const usersWithPermissions = (rpcData || []).map((user: any) => {
+                let permissions: string[] = [];
+                if (user.permissions) {
+                  if (Array.isArray(user.permissions)) {
+                    permissions = user.permissions;
+                  } else if (typeof user.permissions === 'string') {
+                    try {
+                      permissions = JSON.parse(user.permissions);
+                    } catch {
+                      permissions = [];
+                    }
+                  }
+                }
+                return { ...user, permissions } as UserProfile;
+              });
+              setUsers(usersWithPermissions);
+              return;
+            }
+          } catch (rpcErr) {
+            console.log("loadUsers: RPC function not available");
+          }
+        }
+        
+        toast.error(`Не удалось загрузить список пользователей: ${error.message || "Ошибка доступа"}`);
         throw error;
       }
 
