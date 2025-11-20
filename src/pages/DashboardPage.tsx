@@ -55,6 +55,8 @@ export default function DashboardPage() {
     isEmpty,
     handleSelect,
     saveObject,
+    updateObjectName,
+    updateObjectDescription,
     deleteObject,
     importFromFile,
     exportToFile,
@@ -182,8 +184,15 @@ export default function DashboardPage() {
   }, [searchParams, objects, selected, handleSelect]);
 
   const onSaveObject = async () => {
-    const ok = await saveObject(objectName, objectDescription, editingObject);
-    if (ok) closeObjectModal();
+    if (editingObject) {
+      // При редактировании из сайдбара обновляем только название
+      const ok = await updateObjectName(editingObject.id, objectName);
+      if (ok) closeObjectModal();
+    } else {
+      // При создании нового объекта сохраняем название и описание
+      const ok = await saveObject(objectName, objectDescription, editingObject);
+      if (ok) closeObjectModal();
+    }
   };
 
   const onConfirmDelete = async () => {
@@ -398,6 +407,7 @@ export default function DashboardPage() {
                 hardwareCount={hardwareCount}
                 onTabChange={onTabChange}
                 onEdit={openEditModal}
+                onUpdateDescription={updateObjectDescription}
               />
             </Suspense>
           </div>
@@ -435,30 +445,49 @@ export default function DashboardPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 p-6">
-            <div className="space-y-2">
-              <label className="text-space-text font-semibold">
-                📦 Название объекта
-              </label>
-              <Input
-                type="text"
-                className="w-full space-input"
-                placeholder="Введите название объекта..."
-                value={objectName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-space-text font-semibold">
-                📄 Описание объекта
-              </label>
-              <Textarea
-                className="w-full space-input"
-                placeholder="Введите описание объекта..."
-                value={objectDescription}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setObjectDescription(e.target.value)}
-                rows={4}
-              />
-            </div>
+            {editingObject ? (
+              // При редактировании показываем только название (для сайдбара)
+              <div className="space-y-2">
+                <label className="text-space-text font-semibold">
+                  📦 Название объекта
+                </label>
+                <Input
+                  type="text"
+                  className="w-full space-input"
+                  placeholder="Введите название объекта..."
+                  value={objectName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
+                />
+              </div>
+            ) : (
+              // При создании показываем название и описание
+              <>
+                <div className="space-y-2">
+                  <label className="text-space-text font-semibold">
+                    📦 Название объекта
+                  </label>
+                  <Input
+                    type="text"
+                    className="w-full space-input"
+                    placeholder="Введите название объекта..."
+                    value={objectName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-space-text font-semibold">
+                    📄 Описание объекта
+                  </label>
+                  <Textarea
+                    className="w-full space-input"
+                    placeholder="Введите описание объекта..."
+                    value={objectDescription}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setObjectDescription(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter className="flex space-x-2 pt-6">
             <Button

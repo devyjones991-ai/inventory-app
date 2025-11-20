@@ -142,6 +142,54 @@ export function useObjectList() {
     }
   }
 
+  // Редактирование только названия объекта
+  async function updateObjectName(objectId, newName) {
+    if (!newName.trim()) {
+      toast.error("Название не может быть пустым");
+      return false;
+    }
+    const { data, error } = await supabase
+      .from("objects")
+      .update({ name: newName.trim() })
+      .eq("id", objectId)
+      .select("id, name, description")
+      .single();
+    if (error) {
+      if (error.status === 403) toast.error("Недостаточно прав");
+      else toast.error("Ошибка редактирования названия: " + error.message);
+      await handleSupabaseError(error, navigate, "Ошибка редактирования названия");
+      return false;
+    }
+    setObjects((prev) =>
+      prev.map((o) => (o.id === objectId ? data : o)),
+    );
+    if (selected?.id === objectId) setSelected(data);
+    toast.success("Название обновлено");
+    return true;
+  }
+
+  // Редактирование только описания объекта
+  async function updateObjectDescription(objectId, newDescription) {
+    const { data, error } = await supabase
+      .from("objects")
+      .update({ description: newDescription || "" })
+      .eq("id", objectId)
+      .select("id, name, description")
+      .single();
+    if (error) {
+      if (error.status === 403) toast.error("Недостаточно прав");
+      else toast.error("Ошибка редактирования описания: " + error.message);
+      await handleSupabaseError(error, navigate, "Ошибка редактирования описания");
+      return false;
+    }
+    setObjects((prev) =>
+      prev.map((o) => (o.id === objectId ? data : o)),
+    );
+    if (selected?.id === objectId) setSelected(data);
+    toast.success("Описание обновлено");
+    return true;
+  }
+
   async function deleteObject(id) {
     const { error } = await supabase.from("objects").delete().eq("id", id);
     if (error) {
@@ -234,6 +282,8 @@ export function useObjectList() {
     handleSelect,
     handleUpdateSelected,
     saveObject,
+    updateObjectName,
+    updateObjectDescription,
     deleteObject,
     importFromFile,
     exportToFile,

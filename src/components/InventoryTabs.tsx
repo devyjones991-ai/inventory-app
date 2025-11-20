@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState, useCallback, useEffect, Suspense, lazy } from "react";
 import { useForm } from "react-hook-form";
@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 import {
   Select,
   SelectContent,
@@ -59,6 +60,7 @@ interface InventoryTabsProps {
   hardwareCount?: number;
   onTabChange?: (tab: string) => void;
   onEdit?: (obj: Object) => void;
+  onUpdateDescription?: (objectId: string | number, description: string) => Promise<boolean>;
 }
 
 export default function InventoryTabs({
@@ -69,8 +71,11 @@ export default function InventoryTabs({
   hardwareCount = 0,
   onTabChange,
   onEdit,
+  onUpdateDescription,
 }: InventoryTabsProps) {
   const [activeTab, setActiveTab] = useState("desc");
+  const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+  const [editingDescription, setEditingDescription] = useState("");
   const { user } = useAuth();
 
   const handleTabChange = (tab: string) => {
@@ -212,11 +217,12 @@ export default function InventoryTabs({
             <button
               className="space-sidebar-button"
               onClick={() => {
-                if (selected && onEdit) {
-                  onEdit(selected);
+                if (selected) {
+                  setEditingDescription(selected.description || "");
+                  setIsDescriptionModalOpen(true);
                 }
               }}
-              aria-label="Редактировать объект"
+              aria-label="Редактировать описание"
             >
               ✏️
             </button>
@@ -504,6 +510,62 @@ export default function InventoryTabs({
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Модальное окно для редактирования описания */}
+      <Dialog open={isDescriptionModalOpen} onOpenChange={setIsDescriptionModalOpen}>
+        <DialogContent className="w-full max-w-md space-modal space-fade-in">
+          <Button
+            size="icon"
+            type="button"
+            className="absolute right-2 top-2 space-button"
+            onClick={() => setIsDescriptionModalOpen(false)}
+            aria-label="Закрыть"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </Button>
+          <DialogHeader className="space-modal-header">
+            <DialogTitle className="text-white text-xl font-bold">
+              ✏️ Редактировать описание
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-6">
+            <div className="space-y-2">
+              <label className="text-space-text font-semibold">
+                📄 Описание объекта
+              </label>
+              <Textarea
+                className="w-full space-input"
+                placeholder="Введите описание объекта..."
+                value={editingDescription}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingDescription(e.target.value)}
+                rows={6}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex space-x-2 pt-6">
+            <Button
+              onClick={async () => {
+                if (selected && onUpdateDescription) {
+                  const ok = await onUpdateDescription(selected.id, editingDescription);
+                  if (ok) {
+                    setIsDescriptionModalOpen(false);
+                  }
+                }
+              }}
+              className="space-button space-active"
+            >
+              💾 Сохранить
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setIsDescriptionModalOpen(false)}
+              className="space-button"
+            >
+              ❌ Отмена
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

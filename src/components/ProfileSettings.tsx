@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Shield, Users, Edit } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
@@ -695,6 +696,15 @@ export default function ProfileSettings({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl space-modal space-fade-in">
+        <Button
+          size="icon"
+          type="button"
+          className="absolute right-2 top-2 space-button z-10"
+          onClick={onClose}
+          aria-label="Закрыть"
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </Button>
         <DialogHeader className="space-modal-header">
           <DialogTitle className="text-white text-2xl font-bold">
             👤 Настройки профиля
@@ -1195,7 +1205,7 @@ export default function ProfileSettings({
                         onClose();
                         navigate("/admin");
                       }}
-                      className="space-button flex items-center gap-2"
+                      className="space-button flex items-center gap-2 bg-space-bg-light hover:space-active border-space-border text-space-text"
                     >
                       <Shield className="w-4 h-4" />
                       Полная панель администратора
@@ -1221,9 +1231,9 @@ export default function ProfileSettings({
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
+                    <table className="w-full border-collapse bg-space-bg-light rounded-lg">
                       <thead>
-                        <tr className="border-b border-space-border">
+                        <tr className="border-b border-space-border bg-space-bg">
                           <th className="text-left p-3 text-space-text font-semibold">👤 Ник</th>
                           <th className="text-left p-3 text-space-text font-semibold">🛡️ Роль</th>
                           <th className="text-left p-3 text-space-text font-semibold">🔐 Пермишны</th>
@@ -1255,23 +1265,24 @@ export default function ProfileSettings({
                               </td>
                               <td className="p-3">
                                 {isEditing ? (
-                                  <Select
+                                    <Select
                                     value={editRole}
                                     onValueChange={setEditRole}
                                   >
-                                    <SelectTrigger className="w-40 space-select">
+                                    <SelectTrigger className="w-40 space-select bg-space-bg-light border-space-border text-space-text">
                                       <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="user">
+                                    <SelectContent className="bg-space-bg-light border-space-border">
+                                      <SelectItem value="user" className="text-space-text hover:bg-space-active focus:bg-space-active">
                                         👤 Пользователь
                                       </SelectItem>
-                                      <SelectItem value="admin">
+                                      <SelectItem value="admin" className="text-space-text hover:bg-space-active focus:bg-space-active">
                                         🛡️ Администратор
                                       </SelectItem>
                                       <SelectItem
                                         value="superuser"
                                         disabled={editingUser?.id === user?.id ? false : editingUser?.role !== "superuser"}
+                                        className="text-space-text hover:bg-space-active focus:bg-space-active"
                                       >
                                         ⭐ Суперпользователь
                                       </SelectItem>
