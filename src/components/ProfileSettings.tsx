@@ -268,12 +268,28 @@ export default function ProfileSettings({
 
             if (roleError) {
               console.error("Error checking user role (second attempt):", roleError);
-              // Не сбрасываем роль из контекста, если запрос не удался
-              if (!role) {
-                setIsSuperuser(false);
-                setIsAdmin(false);
-                setUserRole(null);
-              }
+              // Используем роль из контекста как fallback
+              const fallbackRole = role || "user";
+              const isSuper = fallbackRole === "superuser";
+              const isAdm = fallbackRole === "admin" || isSuper;
+              
+              console.log("ProfileSettings: Using fallback role from context =", fallbackRole, "isSuper =", isSuper, "isAdmin =", isAdm);
+              
+              setUserRole(fallbackRole);
+              setIsSuperuser(isSuper);
+              setIsAdmin(isAdm);
+              
+              // Устанавливаем права по умолчанию для роли
+              const tempProfile: UserProfile = { 
+                id: user.id, 
+                email: user.email || "", 
+                full_name: null, 
+                role: fallbackRole, 
+                permissions: null,
+                created_at: "",
+                last_sign_in_at: null
+              };
+              setUserPermissions(getUserPermissions(tempProfile));
               return;
             }
 
@@ -286,6 +302,18 @@ export default function ProfileSettings({
             setUserRole(dbRole);
             setIsSuperuser(isSuper);
             setIsAdmin(isAdm);
+            
+            // Устанавливаем права по умолчанию для роли
+            const tempProfile: UserProfile = { 
+              id: user.id, 
+              email: user.email || "", 
+              full_name: null, 
+              role: dbRole, 
+              permissions: null,
+              created_at: "",
+              last_sign_in_at: null
+            };
+            setUserPermissions(getUserPermissions(tempProfile));
             return;
           }
 
@@ -330,12 +358,28 @@ export default function ProfileSettings({
           setUserPermissions(permissions);
         } catch (err) {
           console.error("Exception checking user role:", err);
-          // Не сбрасываем роль из контекста при ошибке
-          if (!role) {
-            setIsSuperuser(false);
-            setIsAdmin(false);
-            setUserRole(null);
-          }
+          // Используем роль из контекста как fallback при любой ошибке
+          const fallbackRole = role || "user";
+          const isSuper = fallbackRole === "superuser";
+          const isAdm = fallbackRole === "admin" || isSuper;
+          
+          console.log("ProfileSettings: Exception occurred, using fallback role =", fallbackRole);
+          
+          setUserRole(fallbackRole);
+          setIsSuperuser(isSuper);
+          setIsAdmin(isAdm);
+          
+          // Устанавливаем права по умолчанию для роли
+          const tempProfile: UserProfile = { 
+            id: user.id, 
+            email: user.email || "", 
+            full_name: null, 
+            role: fallbackRole, 
+            permissions: null,
+            created_at: "",
+            last_sign_in_at: null
+          };
+          setUserPermissions(getUserPermissions(tempProfile));
         }
       };
 
@@ -364,6 +408,10 @@ export default function ProfileSettings({
       } else {
         // Если роль не определена, проверяем в БД
         console.log("ProfileSettings: Role not in context, checking DB");
+        // Устанавливаем "user" по умолчанию, пока загружается из БД
+        setUserRole("user");
+        setIsSuperuser(false);
+        setIsAdmin(false);
         checkUserRole();
       }
     } else if (!isOpen) {
