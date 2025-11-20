@@ -129,6 +129,30 @@ export default function useChat({
       )
         return;
 
+      // Создаем временное оптимистичное сообщение
+      const tempId = `temp-${Date.now()}-${Math.random()}`;
+      const optimisticMessage: ChatMessage = {
+        id: tempId,
+        object_id: objectId,
+        content,
+        sender: userEmail,
+        user_email: userEmail,
+        file_url: file ? URL.createObjectURL(file) : undefined,
+        file_name: file?.name,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Добавляем оптимистичное сообщение сразу
+      setMessages((prev) => {
+        const updated = [...prev, optimisticMessage].sort((a, b) => {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return dateA - dateB;
+        });
+        return updated;
+      });
+
       try {
         setSending(true);
         setError(null);
@@ -139,9 +163,32 @@ export default function useChat({
           userEmail,
           file,
         );
+        
         if (result.error) {
+          // Удаляем оптимистичное сообщение при ошибке
+          setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
           setError(result.error.message || "Ошибка отправки сообщения");
           return;
+        }
+
+        // Заменяем оптимистичное сообщение на реальное (если realtime не успел)
+        if (result.data) {
+          setMessages((prev) => {
+            // Удаляем временное сообщение
+            const withoutTemp = prev.filter((msg) => msg.id !== tempId);
+            // Проверяем, нет ли уже реального сообщения (от realtime)
+            const exists = withoutTemp.some((msg) => msg.id === result.data?.id);
+            if (exists) {
+              return withoutTemp;
+            }
+            // Добавляем реальное сообщение
+            const updated = [...withoutTemp, result.data].sort((a, b) => {
+              const dateA = new Date(a.created_at).getTime();
+              const dateB = new Date(b.created_at).getTime();
+              return dateA - dateB;
+            });
+            return updated;
+          });
         }
 
         // Очищаем форму после успешной отправки
@@ -149,6 +196,8 @@ export default function useChat({
         setFile(null);
         setFilePreview(null);
       } catch (err) {
+        // Удаляем оптимистичное сообщение при ошибке
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
         const errorMessage =
           err instanceof Error ? err.message : "Ошибка отправки";
         setError(errorMessage);
@@ -285,17 +334,29 @@ export default function useChat({
           console.log("[Realtime] New message received:", newMessage);
           
           setMessages((prev) => {
+            // Удаляем временные сообщения с таким же контентом (оптимистичные)
+            const withoutTemp = prev.filter((msg) => {
+              // Удаляем временные сообщения от того же пользователя с таким же контентом
+              if (msg.id.startsWith("temp-") && 
+                  msg.sender === newMessage.sender && 
+                  msg.content === newMessage.content) {
+                console.log("[Realtime] Removing optimistic message:", msg.id);
+                return false;
+              }
+              return true;
+            });
+            
             // Проверяем, нет ли уже такого сообщения (избегаем дублирования)
-            const exists = prev.some((msg) => msg.id === newMessage.id);
+            const exists = withoutTemp.some((msg) => msg.id === newMessage.id);
             if (exists) {
               console.log("[Realtime] Message already exists, skipping");
-              return prev;
+              return withoutTemp;
             }
             
             console.log("[Realtime] Adding new message to list");
             
             // Добавляем новое сообщение и сортируем по created_at для правильного порядка
-            const updated = [...prev, newMessage].sort((a, b) => {
+            const updated = [...withoutTemp, newMessage].sort((a, b) => {
               const dateA = new Date(a.created_at).getTime();
               const dateB = new Date(b.created_at).getTime();
               return dateA - dateB;

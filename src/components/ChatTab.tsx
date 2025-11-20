@@ -67,7 +67,7 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
       // Небольшая задержка для рендера DOM
       const timer = setTimeout(() => {
         scrollToBottom();
-      }, 100);
+      }, 50);
       return () => clearTimeout(timer);
     }
   }, [messages, active, isCollapsed, scrollToBottom]);
@@ -75,10 +75,10 @@ function ChatTab({ selected = null, userEmail, active = false }: ChatTabProps) {
   // Дополнительный автоскролл при активной вкладке (для realtime сообщений)
   useEffect(() => {
     if (active && !isCollapsed && messages.length > 0) {
-      // Задержка для реального времени обновлений
+      // Более быстрая реакция на realtime обновления
       const timer = setTimeout(() => {
         scrollToBottom();
-      }, 200);
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [messages.length, active, isCollapsed]);
