@@ -11,8 +11,10 @@ import {
   Activity,
   Users,
   Calendar,
+  ArrowLeft,
 } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +51,7 @@ interface UserProfile {
 
 const AdminPage: React.FC = () => {
   const { role: _role } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -262,6 +265,16 @@ const AdminPage: React.FC = () => {
     <div className="min-h-screen space-bg-gradient py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 space-fade-in">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              onClick={() => navigate(-1)}
+              variant="outline"
+              className="space-button flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Назад
+            </Button>
+          </div>
           <h1 className="space-title text-3xl font-bold mb-2">
             🛡️ Панель администратора
           </h1>
