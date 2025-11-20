@@ -257,6 +257,37 @@ export default function ProfileSettings({
 
           if (profileError) {
             console.error("Error checking user profile:", profileError);
+            console.log("ProfileSettings: profileError details:", {
+              message: profileError.message,
+              code: profileError.code,
+              details: profileError.details,
+              hint: profileError.hint
+            });
+            
+            // Если ошибка RLS или 500, используем роль из контекста
+            if (profileError.code === 'PGRST116' || profileError.message?.includes('500') || profileError.message?.includes('RLS')) {
+              console.log("ProfileSettings: RLS or 500 error, using role from context:", role);
+              const fallbackRole = role || "user";
+              const isSuper = fallbackRole === "superuser";
+              const isAdm = fallbackRole === "admin" || isSuper;
+              
+              setUserRole(fallbackRole);
+              setIsSuperuser(isSuper);
+              setIsAdmin(isAdm);
+              
+              const tempProfile: UserProfile = { 
+                id: user.id, 
+                email: user.email || "", 
+                full_name: null, 
+                role: fallbackRole, 
+                permissions: null,
+                created_at: "",
+                last_sign_in_at: null
+              };
+              setUserPermissions(getUserPermissions(tempProfile));
+              return;
+            }
+            
             // Если ошибка RLS, попробуем запросить только роль через другой способ
             const { data: roleData, error: roleError } = await supabase
               .from("profiles")
