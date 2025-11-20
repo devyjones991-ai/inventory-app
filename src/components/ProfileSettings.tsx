@@ -394,12 +394,30 @@ export default function ProfileSettings({
       }
 
       // Преобразуем permissions из JSONB в массив строк
-      const usersWithPermissions = (data || []).map((user: UserProfile) => ({
-        ...user,
-        permissions: Array.isArray(user.permissions)
-          ? user.permissions
-          : (typeof user.permissions === 'string' ? JSON.parse(user.permissions) : []),
-      }));
+      const usersWithPermissions = (data || []).map((user: any) => {
+        let permissions: string[] = [];
+        
+        if (user.permissions) {
+          if (Array.isArray(user.permissions)) {
+            permissions = user.permissions;
+          } else if (typeof user.permissions === 'string') {
+            try {
+              const parsed = JSON.parse(user.permissions);
+              permissions = Array.isArray(parsed) ? parsed : [];
+            } catch {
+              permissions = [];
+            }
+          } else if (user.permissions && typeof user.permissions === 'object') {
+            // Если это объект JSONB, попробуем извлечь массив
+            permissions = Object.values(user.permissions) as string[];
+          }
+        }
+        
+        return {
+          ...user,
+          permissions: permissions,
+        } as UserProfile;
+      });
 
       console.log("loadUsers: Setting users:", usersWithPermissions.length);
       setUsers(usersWithPermissions);
@@ -1036,7 +1054,8 @@ export default function ProfileSettings({
                       </thead>
                       <tbody>
                         {users.map((userProfile) => {
-                          const userPermissions = getUserPermissions(userProfile);
+                          // Получаем права для этого пользователя
+                          const currentUserPermissions = getUserPermissions(userProfile);
                           const isEditing = editingUser?.id === userProfile.id;
 
                           return (
@@ -1123,8 +1142,8 @@ export default function ProfileSettings({
                                   </div>
                                 ) : (
                                   <div className="flex flex-wrap gap-1">
-                                    {userPermissions.length > 0 ? (
-                                      userPermissions.map((permId) => {
+                                    {currentUserPermissions.length > 0 ? (
+                                      currentUserPermissions.map((permId) => {
                                         const perm = availablePermissions.find(p => p.id === permId);
                                         return perm ? (
                                           <Badge
