@@ -353,6 +353,14 @@ export default function ProfileSettings({
         setIsAdmin(true);
         setUserRole("admin");
         checkUserRole();
+      } else if (role) {
+        // Если роль есть в контексте, но не superuser/admin, устанавливаем её
+        console.log("ProfileSettings: Setting role from context:", role);
+        setUserRole(role);
+        setIsSuperuser(role === "superuser");
+        setIsAdmin(role === "admin" || role === "superuser");
+        // Дополнительно проверяем в БД
+        checkUserRole();
       } else {
         // Если роль не определена, проверяем в БД
         console.log("ProfileSettings: Role not in context, checking DB");
@@ -1220,7 +1228,34 @@ export default function ProfileSettings({
                       </h4>
                       <div className="space-y-2 text-sm text-space-text-muted">
                         <p>
-                          <span className="font-medium">Роль:</span> {userRole === "user" ? "👤 Пользователь" : userRole || "Не определена"}
+                          <span className="font-medium">Роль:</span>{" "}
+                          {userRole === "superuser" ? (
+                            <Badge variant="outline" className="ml-2 bg-yellow-500/20 text-yellow-300 border-yellow-500">
+                              ⭐ Суперпользователь
+                            </Badge>
+                          ) : userRole === "admin" ? (
+                            <Badge variant="outline" className="ml-2 bg-blue-500/20 text-blue-300 border-blue-500">
+                              🛡️ Администратор
+                            </Badge>
+                          ) : userRole === "user" ? (
+                            <Badge variant="outline" className="ml-2">
+                              👤 Пользователь
+                            </Badge>
+                          ) : role === "superuser" ? (
+                            <Badge variant="outline" className="ml-2 bg-yellow-500/20 text-yellow-300 border-yellow-500">
+                              ⭐ Суперпользователь
+                            </Badge>
+                          ) : role === "admin" ? (
+                            <Badge variant="outline" className="ml-2 bg-blue-500/20 text-blue-300 border-blue-500">
+                              🛡️ Администратор
+                            </Badge>
+                          ) : role ? (
+                            <Badge variant="outline" className="ml-2">
+                              👤 {role}
+                            </Badge>
+                          ) : (
+                            <span className="text-yellow-500">⏳ Загрузка...</span>
+                          )}
                         </p>
                         <p>
                           <span className="font-medium">Email:</span> {user?.email || "Не указан"}
