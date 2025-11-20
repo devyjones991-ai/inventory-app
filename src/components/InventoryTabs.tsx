@@ -476,6 +476,7 @@ export default function InventoryTabs({
                   </SelectContent>
                 </Select>
               </div>
+                </div>
                 <div className="space-y-2">
                   <label className="text-space-text font-semibold">
                     📝 Заметки
