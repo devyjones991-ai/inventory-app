@@ -11,12 +11,14 @@ RETURNS TABLE (
   created_at TIMESTAMPTZ,
   last_sign_in_at TIMESTAMPTZ
 ) AS $$
+DECLARE
+  user_role TEXT;
 BEGIN
+  -- Проверяем роль через кэшированную функцию (без рекурсии)
+  user_role := public.get_user_role_cached(auth.uid());
+  
   -- Проверяем, что текущий пользователь - superuser или admin
-  IF NOT (public.is_superuser() OR EXISTS (
-    SELECT 1 FROM public.profiles 
-    WHERE id = auth.uid() AND role = 'admin'
-  )) THEN
+  IF NOT (user_role IN ('superuser', 'admin')) THEN
     RAISE EXCEPTION 'Только superuser или admin может просматривать все профили';
   END IF;
 

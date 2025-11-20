@@ -11,13 +11,16 @@ DROP POLICY IF EXISTS "Superuser can manage all profiles" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 
 -- 2. Создаем функцию для получения роли (использует SECURITY DEFINER для обхода RLS)
--- Эта функция НЕ будет вызывать рекурсию, так как она обходит RLS
+-- ВАЖНО: Эта функция использует SECURITY DEFINER, который полностью обходит RLS
+-- и не вызывает рекурсию, даже если используется в политиках
 CREATE OR REPLACE FUNCTION public.get_user_role_cached(user_id UUID DEFAULT auth.uid())
 RETURNS TEXT AS $$
 DECLARE
   user_role TEXT;
 BEGIN
-  -- SECURITY DEFINER позволяет обойти RLS и не создает рекурсию
+  -- SECURITY DEFINER позволяет обойти RLS полностью
+  -- Это означает, что политики НЕ проверяются при выполнении этой функции
+  -- Поэтому нет рекурсии
   SELECT role INTO user_role
   FROM public.profiles
   WHERE id = user_id;
@@ -25,6 +28,8 @@ BEGIN
   RETURN COALESCE(user_role, 'user');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Убеждаемся, что функция существует до использования в других функциях
 
 -- 3. Обновляем is_superuser() чтобы использовать кэшированную функцию
 CREATE OR REPLACE FUNCTION public.is_superuser(user_id UUID DEFAULT auth.uid())
