@@ -76,18 +76,44 @@ const AdminPage: React.FC = () => {
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      
+      // Используем RPC функцию для обхода RLS политик
+      let data = null;
+      let error = null;
+      
+      try {
+        console.log("AdminPage: Trying RPC function get_all_profiles()...");
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_profiles');
+        if (!rpcError && rpcData) {
+          console.log("AdminPage: RPC function succeeded, got", rpcData.length, "users");
+          data = rpcData;
+        } else {
+          console.log("AdminPage: RPC function failed, trying direct SELECT...");
+          throw rpcError || new Error("RPC function not available");
+        }
+      } catch (rpcErr) {
+        console.log("AdminPage: RPC function error, falling back to direct SELECT:", rpcErr);
+        // Fallback: пробуем прямой SELECT
+        const result = await supabase
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false });
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
 
       setUsers(data || []);
       calculateStats(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Ошибка загрузки пользователей:", error);
-      toast.error("Не удалось загрузить список пользователей");
+      const errorMessage = error?.message || String(error);
+      if (errorMessage.includes('Только superuser или admin')) {
+        toast.error("Недостаточно прав для просмотра списка пользователей");
+      } else {
+        toast.error(`Не удалось загрузить список пользователей: ${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -285,22 +311,22 @@ const AdminPage: React.FC = () => {
 
         <Tabs defaultValue="users" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-space-bg-light p-1 rounded-lg border border-space-border">
-            <TabsTrigger 
-              value="users" 
+            <TabsTrigger
+              value="users"
               className="flex items-center gap-2 data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
             >
               <Users className="w-4 h-4" />
               Пользователи
             </TabsTrigger>
-            <TabsTrigger 
-              value="stats" 
+            <TabsTrigger
+              value="stats"
               className="flex items-center gap-2 data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
             >
               <BarChart3 className="w-4 h-4" />
               Статистика
             </TabsTrigger>
-            <TabsTrigger 
-              value="activity" 
+            <TabsTrigger
+              value="activity"
               className="flex items-center gap-2 data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300"
             >
               <Activity className="w-4 h-4" />
