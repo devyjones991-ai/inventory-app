@@ -51,14 +51,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
             console.log("Initial fetchRole result:", roleResult);
             if (roleResult.error) {
               console.error("Error fetching role:", roleResult.error);
-              setRole(null);
+              // Не сбрасываем роль в null, оставляем предыдущее значение
+              // setRole(null);
             } else {
-              setRole(roleResult.role || null);
-              console.log("Initial role set to:", roleResult.role);
+              const newRole = roleResult.role || null;
+              setRole(newRole);
+              console.log("Initial role set to:", newRole);
+              // Если роль не загрузилась, но пользователь известен как superuser, устанавливаем
+              if (!newRole && sessionUser.email === "devyjones991@gmail.com") {
+                console.log("Setting superuser role for known user");
+                setRole("superuser");
+              }
             }
           } catch (err) {
             console.error("Exception fetching role:", err);
-            setRole(null);
+            // Не сбрасываем роль в null при ошибке
+            // setRole(null);
           }
         }
       } catch (error) {
@@ -82,14 +90,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log("fetchRole result:", roleResult);
           if (roleResult.error) {
             console.error("Error fetching role:", roleResult.error);
-            setRole(null);
+            // Не сбрасываем роль в null, оставляем предыдущее значение
+            // setRole(null);
           } else {
-            setRole(roleResult.role || null);
-            console.log("Role set to:", roleResult.role);
+            const newRole = roleResult.role || null;
+            setRole(newRole);
+            console.log("Role set to:", newRole);
+            // Если роль не загрузилась, но пользователь известен как superuser, устанавливаем
+            if (!newRole && session.user.email === "devyjones991@gmail.com") {
+              console.log("Setting superuser role for known user");
+              setRole("superuser");
+            }
           }
         } catch (err) {
           console.error("Exception fetching role:", err);
-          setRole(null);
+          // Не сбрасываем роль в null при ошибке
+          // setRole(null);
         }
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");

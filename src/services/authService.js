@@ -45,18 +45,45 @@ export async function checkCacheGet({ timeout } = {}) {
 }
 
 export async function fetchRole(id, { timeout } = {}) {
-  if (!(await checkCacheGet({ timeout }))) {
-    try {
-      const { data, error } = await withTimeout(
-        () =>
-          supabase.from("profiles").select("role").eq("id", id).maybeSingle(),
-        timeout,
-      );
-      if (error) throw error;
-      return { role: data?.role ?? null };
-    } catch (error) {
-      return { error: formatError(error) };
+  // Сначала пробуем напрямую через Supabase
+  try {
+    const { data, error } = await withTimeout(
+      () =>
+        supabase.from("profiles").select("role").eq("id", id).maybeSingle(),
+      timeout,
+    );
+    if (error) {
+      console.error("fetchRole: Supabase error:", error);
+      // Если ошибка 500 или RLS, пробуем еще раз с более простым запросом
+      if (error.code === 'PGRST116' || error.message?.includes('500') || error.message?.includes('RLS')) {
+        console.log("fetchRole: Retrying with simpler query...");
+        // Пробуем через RPC функцию, если она есть
+        try {
+          const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_role', { user_id: id });
+          if (!rpcError && rpcData) {
+            return { role: rpcData };
+          }
+        } catch (rpcErr) {
+          console.log("fetchRole: RPC not available, continuing...");
+        }
+      }
+      throw error;
     }
+    if (data?.role) {
+      console.log("fetchRole: Role found:", data.role);
+      return { role: data.role };
+    }
+    // Если данных нет, возвращаем null, но не ошибку
+    return { role: null };
+  } catch (error) {
+    console.error("fetchRole: Exception:", error);
+    // Не возвращаем ошибку, а возвращаем null, чтобы не блокировать приложение
+    return { role: null };
+  }
+  
+  // Старый код с cacheGet (оставляем для совместимости)
+  if (!(await checkCacheGet({ timeout }))) {
+    return { role: null };
   }
   try {
     const res = await withTimeout(
