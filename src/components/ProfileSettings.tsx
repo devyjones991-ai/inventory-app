@@ -552,9 +552,28 @@ export default function ProfileSettings({
 
       console.log("loadUsers: Setting users:", usersWithPermissions.length);
       setUsers(usersWithPermissions);
-    } catch (error) {
+      
+      // Если пользователей нет, это нормально - просто пустой список
+      if (usersWithPermissions.length === 0) {
+        console.log("loadUsers: No users found (this is normal for new installations)");
+      }
+    } catch (error: any) {
       console.error("Ошибка загрузки пользователей:", error);
-      toast.error("Не удалось загрузить список пользователей");
+      
+      // Проверяем тип ошибки
+      const errorMessage = error?.message || String(error);
+      
+      if (errorMessage.includes('infinite recursion') || errorMessage.includes('recursion')) {
+        toast.error("Ошибка доступа: проблема с политиками безопасности. Обратитесь к администратору.");
+        console.error("RLS recursion error detected. This is a database configuration issue.");
+      } else if (errorMessage.includes('permission denied') || errorMessage.includes('RLS')) {
+        toast.error("Недостаточно прав для просмотра списка пользователей");
+      } else {
+        toast.error(`Не удалось загрузить список пользователей: ${errorMessage}`);
+      }
+      
+      // Устанавливаем пустой список при ошибке, чтобы показать "Пользователи не найдены"
+      setUsers([]);
     } finally {
       setLoadingUsers(false);
     }
