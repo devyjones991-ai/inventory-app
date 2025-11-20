@@ -229,31 +229,32 @@ export default function ProfileSettings({
   const [isSuperuser, setIsSuperuser] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
 
   // Отладка и проверка роли
   useEffect(() => {
     if (isOpen && user) {
       console.log("ProfileSettings: Modal opened, role from context =", role, "user.id =", user.id, "user.email =", user.email);
-      
+
       // Всегда проверяем роль из БД для надежности
       const checkUserRole = async () => {
         try {
           console.log("ProfileSettings: Starting DB role check for user", user.id);
-          
+
           if (!supabase) {
             console.error("ProfileSettings: Supabase client not available");
             return;
           }
-          
+
           // Сначала проверяем, можем ли мы вообще читать профиль
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
-            .select("id, email, role")
+            .select("id, email, role, permissions")
             .eq("id", user.id)
             .maybeSingle();
-          
+
           console.log("ProfileSettings: Full profile query result:", { profileData, profileError });
-          
+
           if (profileError) {
             console.error("Error checking user profile:", profileError);
             // Если ошибка RLS, попробуем запросить только роль через другой способ
@@ -262,9 +263,9 @@ export default function ProfileSettings({
               .select("role")
               .eq("id", user.id)
               .maybeSingle();
-            
+
             console.log("ProfileSettings: Role-only query result:", { roleData, roleError });
-            
+
             if (roleError) {
               console.error("Error checking user role (second attempt):", roleError);
               // Не сбрасываем роль из контекста, если запрос не удался
@@ -275,29 +276,58 @@ export default function ProfileSettings({
               }
               return;
             }
-            
+
             const dbRole = roleData?.role || role || "user";
             const isSuper = dbRole === "superuser";
             const isAdm = dbRole === "admin" || isSuper;
-            
+
             console.log("ProfileSettings: role from DB (second attempt) =", dbRole, "isSuper =", isSuper, "isAdmin =", isAdm);
-            
+
             setUserRole(dbRole);
             setIsSuperuser(isSuper);
             setIsAdmin(isAdm);
             return;
           }
-          
+
           const dbRole = profileData?.role || role || "user"; // Используем роль из БД или контекста, или "user" по умолчанию
           const isSuper = dbRole === "superuser";
           const isAdm = dbRole === "admin" || isSuper;
-          
+
+          // Загружаем permissions из профиля
+          let permissions: string[] = [];
+          if (profileData?.permissions) {
+            if (Array.isArray(profileData.permissions)) {
+              permissions = profileData.permissions;
+            } else if (typeof profileData.permissions === 'string') {
+              try {
+                permissions = JSON.parse(profileData.permissions);
+              } catch {
+                permissions = [];
+              }
+            }
+          }
+          // Если permissions пустые, используем права по умолчанию для роли
+          if (permissions.length === 0) {
+            const tempProfile: UserProfile = { 
+              id: user.id, 
+              email: user.email || "", 
+              full_name: null, 
+              role: dbRole, 
+              permissions: null,
+              created_at: "",
+              last_sign_in_at: null
+            };
+            permissions = getUserPermissions(tempProfile);
+          }
+
           console.log("ProfileSettings: role from DB =", dbRole, "isSuper =", isSuper, "isAdmin =", isAdm);
           console.log("ProfileSettings: Full profile data =", profileData);
-          
+          console.log("ProfileSettings: User permissions =", permissions);
+
           setUserRole(dbRole);
           setIsSuperuser(isSuper);
           setIsAdmin(isAdm);
+          setUserPermissions(permissions);
         } catch (err) {
           console.error("Exception checking user role:", err);
           // Не сбрасываем роль из контекста при ошибке
@@ -308,7 +338,7 @@ export default function ProfileSettings({
           }
         }
       };
-      
+
       // Проверяем роль из контекста, но также проверяем в БД
       if (role === "superuser") {
         console.log("ProfileSettings: Setting superuser from context");
@@ -340,7 +370,7 @@ export default function ProfileSettings({
   // Загрузка списка пользователей (для superuser и admin)
   const loadUsers = useCallback(async () => {
     console.log("loadUsers called: isSuperuser =", isSuperuser, "isAdmin =", isAdmin, "userRole =", userRole);
-    
+
     // Проверяем роль еще раз перед загрузкой
     if (!isSuperuser && !isAdmin) {
       console.log("loadUsers: User is not superuser or admin, skipping");
@@ -350,7 +380,7 @@ export default function ProfileSettings({
     try {
       setLoadingUsers(true);
       console.log("loadUsers: Starting to fetch users from profiles table");
-      
+
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -366,8 +396,8 @@ export default function ProfileSettings({
       // Преобразуем permissions из JSONB в массив строк
       const usersWithPermissions = (data || []).map((user: UserProfile) => ({
         ...user,
-        permissions: Array.isArray(user.permissions) 
-          ? user.permissions 
+        permissions: Array.isArray(user.permissions)
+          ? user.permissions
           : (typeof user.permissions === 'string' ? JSON.parse(user.permissions) : []),
       }));
 
@@ -383,15 +413,15 @@ export default function ProfileSettings({
 
   // Загружаем пользователей при открытии вкладки администрирования (для superuser и admin)
   useEffect(() => {
-    console.log("Administration tab effect:", { 
-      isOpen, 
-      isSuperuser, 
-      isAdmin, 
-      activeTab, 
+    console.log("Administration tab effect:", {
+      isOpen,
+      isSuperuser,
+      isAdmin,
+      activeTab,
       userRole,
       shouldLoad: isOpen && (isSuperuser || isAdmin) && activeTab === "administration"
     });
-    
+
     if (isOpen && (isSuperuser || isAdmin) && activeTab === "administration") {
       console.log("Loading users for administration tab");
       loadUsers();
@@ -509,6 +539,62 @@ export default function ProfileSettings({
           </TabsList>
 
           <TabsContent value="personal" className="space-y-6">
+            {/* Информация о роли и правах */}
+            <div className="space-card p-6 space-fade-in">
+              <h4 className="text-space-text font-semibold mb-4">
+                🛡️ Ваша роль и права
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-space-text-muted">
+                    <span className="font-medium text-space-text">Роль:</span>{" "}
+                    {userRole === "superuser" ? (
+                      <Badge variant="outline" className="ml-2 bg-yellow-500/20 text-yellow-300 border-yellow-500">
+                        ⭐ Суперпользователь
+                      </Badge>
+                    ) : userRole === "admin" ? (
+                      <Badge variant="outline" className="ml-2 bg-blue-500/20 text-blue-300 border-blue-500">
+                        🛡️ Администратор
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="ml-2">
+                        👤 Пользователь
+                      </Badge>
+                    )}
+                  </p>
+                  <p className="text-sm text-space-text-muted">
+                    <span className="font-medium text-space-text">Email:</span> {user?.email || "Не указан"}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-space-text-muted mb-2">
+                    <span className="font-medium text-space-text">Ваши права:</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {userPermissions.length > 0 ? (
+                      userPermissions.map((permId) => {
+                        const perm = availablePermissions.find(p => p.id === permId);
+                        return perm ? (
+                          <Badge
+                            key={permId}
+                            variant="outline"
+                            className="text-xs"
+                            title={perm.description}
+                          >
+                            {perm.label}
+                          </Badge>
+                        ) : null;
+                      })
+                    ) : (
+                      <span className="text-xs text-space-text-muted">
+                        Нет специальных прав
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="space-card p-6 space-fade-in">
               <h3 className="space-title text-xl mb-6">👤 Личная информация</h3>
               <form
