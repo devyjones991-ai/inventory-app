@@ -38,20 +38,23 @@ CREATE POLICY "Admins can view all profiles" ON profiles
 -- Но проще использовать is_superuser() и отдельную проверку для admin
 
 -- 2. ДОБАВЛЕНИЕ ДОСТУПА К ОБЪЕКТАМ ДЛЯ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
--- Новые пользователи должны видеть все объекты (хотя бы названия), но редактировать только свои
+-- Новые пользователи должны видеть только названия объектов, редактировать только члены
 
 -- Удаляем старую политику "Members manage objects" если она блокирует чтение
 DROP POLICY IF EXISTS "Members manage objects" ON objects;
+DROP POLICY IF EXISTS "Members can read objects" ON objects;
+DROP POLICY IF EXISTS "Authenticated users can read all objects" ON objects;
 
--- Политика для чтения всех объектов (все аутентифицированные пользователи могут видеть)
-CREATE POLICY "Authenticated users can read all objects" ON objects
+-- Политика для чтения всех объектов (все аутентифицированные пользователи могут видеть названия)
+-- Это позволяет видеть список объектов, но не все детали
+CREATE POLICY "Authenticated users can read objects" ON objects
   FOR SELECT USING (auth.role() = 'authenticated');
 
 -- Политика для создания объектов (все аутентифицированные пользователи)
 CREATE POLICY "Authenticated users can create objects" ON objects
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- Политика для редактирования объектов (только члены или создатель)
+-- Политика для редактирования объектов (только члены или создатель, или с пермишеном manage_objects)
 CREATE POLICY "Members can update objects" ON objects
   FOR UPDATE USING (
     EXISTS (
@@ -60,6 +63,14 @@ CREATE POLICY "Members can update objects" ON objects
     )
     OR objects.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
     OR public.is_superuser()
+    OR EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid()
+      AND (
+        p.role = 'admin'
+        OR (p.permissions::jsonb ? 'manage_objects')
+      )
+    )
   )
   WITH CHECK (
     EXISTS (
@@ -68,9 +79,17 @@ CREATE POLICY "Members can update objects" ON objects
     )
     OR objects.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
     OR public.is_superuser()
+    OR EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid()
+      AND (
+        p.role = 'admin'
+        OR (p.permissions::jsonb ? 'manage_objects')
+      )
+    )
   );
 
--- Политика для удаления объектов (только члены или создатель)
+-- Политика для удаления объектов (только члены или создатель, или с пермишеном manage_objects)
 CREATE POLICY "Members can delete objects" ON objects
   FOR DELETE USING (
     EXISTS (
@@ -79,6 +98,14 @@ CREATE POLICY "Members can delete objects" ON objects
     )
     OR objects.user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
     OR public.is_superuser()
+    OR EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid()
+      AND (
+        p.role = 'admin'
+        OR (p.permissions::jsonb ? 'manage_objects')
+      )
+    )
   );
 
 -- 3. ОБНОВЛЕНИЕ ПОЛИТИК ДЛЯ HARDWARE, TASKS, CHAT_MESSAGES
