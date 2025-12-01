@@ -26,7 +26,6 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
 import {
   Select,
   SelectContent,
@@ -35,7 +34,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-
+import { Textarea } from "./ui/textarea";
 
 const hardwareSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
@@ -60,7 +59,10 @@ interface InventoryTabsProps {
   hardwareCount?: number;
   onTabChange?: (tab: string) => void;
   onEdit?: (obj: Object) => void;
-  onUpdateDescription?: (objectId: string | number, description: string) => Promise<boolean>;
+  onUpdateDescription?: (
+    objectId: string | number,
+    description: string,
+  ) => Promise<boolean>;
 }
 
 export default function InventoryTabs({
@@ -70,7 +72,7 @@ export default function InventoryTabs({
   tasksCount = 0,
   hardwareCount = 0,
   onTabChange,
-  onEdit,
+  onTabChange,
   onUpdateDescription,
 }: InventoryTabsProps) {
   const [activeTab, setActiveTab] = useState("desc");
@@ -85,7 +87,13 @@ export default function InventoryTabs({
 
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
-  const { hardware, deleteHardware, createHardware, updateHardware, loadHardware } = useHardware();
+  const {
+    hardware,
+    deleteHardware,
+    createHardware,
+    updateHardware,
+    loadHardware,
+  } = useHardware();
 
   const { tasks, createTask, updateTask, deleteTask } = useTasks(
     selected?.id || "",
@@ -118,12 +126,21 @@ export default function InventoryTabs({
       setHardwareValue("model", editingHardware.model || "");
       setHardwareValue("serial_number", editingHardware.serial_number || "");
       setHardwareValue("purchase_date", editingHardware.purchase_date || "");
-      setHardwareValue("warranty_expiry", editingHardware.warranty_expiry || "");
+      setHardwareValue(
+        "warranty_expiry",
+        editingHardware.warranty_expiry || "",
+      );
       setHardwareValue("cost", editingHardware.cost?.toString() || "");
       setHardwareValue("vendor", editingHardware.vendor || "");
       setHardwareValue("notes", editingHardware.notes || "");
-      setHardwareValue("purchase_status", editingHardware.purchase_status || "not_paid");
-      setHardwareValue("install_status", editingHardware.install_status || "not_installed");
+      setHardwareValue(
+        "purchase_status",
+        editingHardware.purchase_status || "not_paid",
+      );
+      setHardwareValue(
+        "install_status",
+        editingHardware.install_status || "not_installed",
+      );
     }
   }, [editingHardware, setHardwareValue]);
 
@@ -173,8 +190,11 @@ export default function InventoryTabs({
         cost: data.cost ? parseFloat(data.cost) : undefined,
         vendor: data.vendor || undefined,
         notes: data.notes || undefined,
-        purchase_status: (data.purchase_status as "not_paid" | "paid") || "not_paid",
-        install_status: (data.install_status as "not_installed" | "installed") || "not_installed",
+        purchase_status:
+          (data.purchase_status as "not_paid" | "paid") || "not_paid",
+        install_status:
+          (data.install_status as "not_installed" | "installed") ||
+          "not_installed",
         object_id: selected.id,
         user_id: user.id,
         status: "active",
@@ -192,8 +212,23 @@ export default function InventoryTabs({
         }
       }
     },
-    [selected, user, editingHardware, createHardware, updateHardware, closeHardwareModal],
+    [
+      selected,
+      user,
+      editingHardware,
+      createHardware,
+      updateHardware,
+      closeHardwareModal,
+    ],
   );
+
+  const [isViewHardwareModalOpen, setIsViewHardwareModalOpen] = useState(false);
+  const [viewingHardware, setViewingHardware] = useState<Hardware | null>(null);
+
+  const openViewHardwareModal = useCallback((hardware: Hardware) => {
+    setViewingHardware(hardware);
+    setIsViewHardwareModalOpen(true);
+  }, []);
 
   if (!selected) return null;
 
@@ -312,6 +347,7 @@ export default function InventoryTabs({
                   item={item}
                   onEdit={() => openEditHardwareModal(item)}
                   onDelete={() => handleDeleteHardware(item.id)}
+                  onView={() => openViewHardwareModal(item)}
                   user={null}
                 />
               ))}
@@ -354,137 +390,156 @@ export default function InventoryTabs({
                 : "🔧 Добавить оборудование"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleHardwareSubmit(onHardwareSubmit)} className="flex flex-col flex-1 min-h-0">
+          <form
+            onSubmit={handleHardwareSubmit(onHardwareSubmit)}
+            className="flex flex-col flex-1 min-h-0"
+          >
             <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  🔧 Название оборудования
-                </label>
-                <Input
-                  {...registerHardware("name")}
-                  placeholder="Введите название оборудования..."
-                  className="space-input w-full"
-                />
-                <FormError message={hardwareErrors.name?.message} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  📋 Тип оборудования
-                </label>
-                <Input
-                  {...registerHardware("type")}
-                  placeholder="Введите тип оборудования..."
-                  className="space-input w-full"
-                />
-                <FormError message={hardwareErrors.type?.message} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  📍 Местоположение
-                </label>
-                <Input
-                  {...registerHardware("location")}
-                  placeholder="Введите местоположение..."
-                  className="space-input w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  🏷️ Модель
-                </label>
-                <Input
-                  {...registerHardware("model")}
-                  placeholder="Введите модель..."
-                  className="space-input w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  🔢 Серийный номер
-                </label>
-                <Input
-                  {...registerHardware("serial_number")}
-                  placeholder="Введите серийный номер..."
-                  className="space-input w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  🏢 Поставщик
-                </label>
-                <Input
-                  {...registerHardware("vendor")}
-                  placeholder="Введите поставщика..."
-                  className="space-input w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  📅 Дата покупки
-                </label>
-                <Input
-                  {...registerHardware("purchase_date")}
-                  type="date"
-                  className="space-input w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  ⏰ Окончание гарантии
-                </label>
-                <Input
-                  {...registerHardware("warranty_expiry")}
-                  type="date"
-                  className="space-input w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  💰 Стоимость
-                </label>
-                <Input
-                  {...registerHardware("cost")}
-                  type="number"
-                  placeholder="Введите стоимость..."
-                  className="space-input w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  💳 Статус покупки
-                </label>
-                <Select
-                  value={watchHardware("purchase_status") || editingHardware?.purchase_status || "not_paid"}
-                  onValueChange={(value) => setHardwareValue("purchase_status", value)}
-                >
-                  <SelectTrigger className="space-input w-full">
-                    <SelectValue placeholder="Выберите статус покупки" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="not_paid">❌ Не оплачено</SelectItem>
-                    <SelectItem value="paid">✅ Оплачено</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-space-text font-semibold">
-                  🔧 Статус установки
-                </label>
-                <Select
-                  value={watchHardware("install_status") || editingHardware?.install_status || "not_installed"}
-                  onValueChange={(value) => setHardwareValue("install_status", value)}
-                >
-                  <SelectTrigger className="space-input w-full">
-                    <SelectValue placeholder="Выберите статус установки" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="not_installed">❌ Не установлено</SelectItem>
-                    <SelectItem value="installed">✅ Установлено</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      🔧 Название оборудования
+                    </label>
+                    <Input
+                      {...registerHardware("name")}
+                      placeholder="Введите название оборудования..."
+                      className="space-input w-full"
+                    />
+                    <FormError message={hardwareErrors.name?.message} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      📋 Тип оборудования
+                    </label>
+                    <Input
+                      {...registerHardware("type")}
+                      placeholder="Введите тип оборудования..."
+                      className="space-input w-full"
+                    />
+                    <FormError message={hardwareErrors.type?.message} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      📍 Местоположение
+                    </label>
+                    <Input
+                      {...registerHardware("location")}
+                      placeholder="Введите местоположение..."
+                      className="space-input w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      🏷️ Модель
+                    </label>
+                    <Input
+                      {...registerHardware("model")}
+                      placeholder="Введите модель..."
+                      className="space-input w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      🔢 Серийный номер
+                    </label>
+                    <Input
+                      {...registerHardware("serial_number")}
+                      placeholder="Введите серийный номер..."
+                      className="space-input w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      🏢 Поставщик
+                    </label>
+                    <Input
+                      {...registerHardware("vendor")}
+                      placeholder="Введите поставщика..."
+                      className="space-input w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      📅 Дата покупки
+                    </label>
+                    <Input
+                      {...registerHardware("purchase_date")}
+                      type="date"
+                      className="space-input w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      ⏰ Окончание гарантии
+                    </label>
+                    <Input
+                      {...registerHardware("warranty_expiry")}
+                      type="date"
+                      className="space-input w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      💰 Стоимость
+                    </label>
+                    <Input
+                      {...registerHardware("cost")}
+                      type="number"
+                      placeholder="Введите стоимость..."
+                      className="space-input w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      💳 Статус покупки
+                    </label>
+                    <Select
+                      value={
+                        watchHardware("purchase_status") ||
+                        editingHardware?.purchase_status ||
+                        "not_paid"
+                      }
+                      onValueChange={(value) =>
+                        setHardwareValue("purchase_status", value)
+                      }
+                    >
+                      <SelectTrigger className="space-input w-full">
+                        <SelectValue placeholder="Выберите статус покупки" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not_paid">❌ Не оплачено</SelectItem>
+                        <SelectItem value="paid">✅ Оплачено</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-space-text font-semibold">
+                      🔧 Статус установки
+                    </label>
+                    <Select
+                      value={
+                        watchHardware("install_status") ||
+                        editingHardware?.install_status ||
+                        "not_installed"
+                      }
+                      onValueChange={(value) =>
+                        setHardwareValue("install_status", value)
+                      }
+                    >
+                      <SelectTrigger className="space-input w-full">
+                        <SelectValue placeholder="Выберите статус установки" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not_installed">
+                          ❌ Не установлено
+                        </SelectItem>
+                        <SelectItem value="installed">
+                          ✅ Установлено
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-space-text font-semibold">
@@ -516,8 +571,149 @@ export default function InventoryTabs({
         </DialogContent>
       </Dialog>
 
+      {/* View Hardware Modal */}
+      <Dialog
+        open={isViewHardwareModalOpen}
+        onOpenChange={setIsViewHardwareModalOpen}
+      >
+        <DialogContent className="max-w-md space-modal space-fade-in">
+          <DialogHeader className="space-modal-header">
+            <DialogTitle className="text-white text-xl font-bold">
+              🔧 Детали оборудования
+            </DialogTitle>
+          </DialogHeader>
+          {viewingHardware && (
+            <div className="space-y-4 p-6 overflow-y-auto max-h-[70vh]">
+              <div className="space-y-2">
+                <label className="text-space-text-muted text-sm font-semibold uppercase">
+                  Название
+                </label>
+                <div className="text-space-text text-lg font-bold break-words">
+                  {viewingHardware.name}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Тип
+                  </label>
+                  <div className="text-space-text break-words">
+                    {viewingHardware.type}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Модель
+                  </label>
+                  <div className="text-space-text break-words">
+                    {viewingHardware.model || "-"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Серийный номер
+                  </label>
+                  <div className="text-space-text break-all">
+                    {viewingHardware.serial_number || "-"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Местоположение
+                  </label>
+                  <div className="text-space-text break-words">
+                    {viewingHardware.location || "-"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Поставщик
+                  </label>
+                  <div className="text-space-text break-words">
+                    {viewingHardware.vendor || "-"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Стоимость
+                  </label>
+                  <div className="text-space-text">
+                    {viewingHardware.cost ? `${viewingHardware.cost} ₽` : "-"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Дата покупки
+                  </label>
+                  <div className="text-space-text">
+                    {viewingHardware.purchase_date || "-"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Гарантия до
+                  </label>
+                  <div className="text-space-text">
+                    {viewingHardware.warranty_expiry || "-"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-space-border">
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Статус покупки
+                  </label>
+                  <div
+                    className={`text-sm font-medium ${viewingHardware.purchase_status === "paid" ? "text-green-400" : "text-red-400"}`}
+                  >
+                    {viewingHardware.purchase_status === "paid"
+                      ? "✅ Оплачено"
+                      : "❌ Не оплачено"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Статус установки
+                  </label>
+                  <div
+                    className={`text-sm font-medium ${viewingHardware.install_status === "installed" ? "text-blue-400" : "text-yellow-400"}`}
+                  >
+                    {viewingHardware.install_status === "installed"
+                      ? "✅ Установлено"
+                      : "❌ Не установлено"}
+                  </div>
+                </div>
+              </div>
+
+              {viewingHardware.notes && (
+                <div className="space-y-1 pt-2 border-t border-space-border">
+                  <label className="text-space-text-muted text-sm font-semibold uppercase">
+                    Заметки
+                  </label>
+                  <div className="text-space-text whitespace-pre-wrap break-words">
+                    {viewingHardware.notes}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter className="p-6 pt-0">
+            <Button
+              onClick={() => setIsViewHardwareModalOpen(false)}
+              className="space-button w-full"
+            >
+              Закрыть
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Модальное окно для редактирования описания */}
-      <Dialog open={isDescriptionModalOpen} onOpenChange={setIsDescriptionModalOpen}>
+      <Dialog
+        open={isDescriptionModalOpen}
+        onOpenChange={setIsDescriptionModalOpen}
+      >
         <DialogContent className="w-full max-w-md space-modal space-fade-in">
           <Button
             size="icon"
@@ -542,7 +738,9 @@ export default function InventoryTabs({
                 className="w-full space-input"
                 placeholder="Введите описание объекта..."
                 value={editingDescription}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingDescription(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setEditingDescription(e.target.value)
+                }
                 rows={6}
               />
             </div>
@@ -551,7 +749,10 @@ export default function InventoryTabs({
             <Button
               onClick={async () => {
                 if (selected && onUpdateDescription) {
-                  const ok = await onUpdateDescription(selected.id, editingDescription);
+                  const ok = await onUpdateDescription(
+                    selected.id,
+                    editingDescription,
+                  );
                   if (ok) {
                     setIsDescriptionModalOpen(false);
                   }
