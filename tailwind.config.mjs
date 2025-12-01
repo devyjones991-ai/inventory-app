@@ -43,6 +43,9 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "space-bg": "#0f0f23",
+        "space-card-bg": "rgba(22, 33, 62, 0.8)",
+        "space-border": "rgba(99, 102, 241, 0.3)",
       },
       borderRadius: {
         lg: "var(--radius)",

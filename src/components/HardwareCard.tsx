@@ -36,18 +36,18 @@ export default function HardwareCard({
         <CardTitle>{item.name}</CardTitle>
         <div className="text-sm text-foreground/70">{item.location}</div>
       </CardHeader>
-      <CardContent className="flex justify-between items-center">
-        <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 text-sm max-sm:text-xs">
-          <span>
+      <CardContent className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row gap-2 text-sm max-sm:text-xs w-full sm:w-auto">
+          <span className="whitespace-nowrap">
             {t("hardware.statusPurchasePrefix")}{" "}
             {t(`hardware.statusPurchase.${purchaseKey}`)}
           </span>
-          <span>
+          <span className="whitespace-nowrap">
             {t("hardware.statusInstallPrefix")}{" "}
             {t(`hardware.statusInstall.${installKey}`)}
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 self-end sm:self-auto">
           <Button
             variant="ghost"
             size="sm"
