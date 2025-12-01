@@ -66,9 +66,16 @@ export default function DashboardPage() {
     fetchError: string | null;
     isEmpty: boolean;
     handleSelect: (obj: ObjectType) => void;
-    saveObject: (name: string, description: string, obj: ObjectType | null) => Promise<boolean>;
+    saveObject: (
+      name: string,
+      description: string,
+      obj: ObjectType | null,
+    ) => Promise<boolean>;
     updateObjectName: (id: string | number, name: string) => Promise<boolean>;
-    updateObjectDescription: (id: string | number, description: string) => Promise<boolean>;
+    updateObjectDescription: (
+      id: string | number,
+      description: string,
+    ) => Promise<boolean>;
     deleteObject: (id: string) => Promise<boolean>;
     importFromFile: (file: File) => Promise<void>;
     exportToFile: () => Promise<void>;
@@ -119,7 +126,10 @@ export default function DashboardPage() {
   const importInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const toggleMenu = useCallback(() => setIsMenuOpen((prev: boolean) => !prev), []);
+  const toggleMenu = useCallback(
+    () => setIsMenuOpen((prev: boolean) => !prev),
+    [],
+  );
 
   const toggleSidebar = () => setIsSidebarOpen((prev: boolean) => !prev);
 
@@ -266,7 +276,10 @@ export default function DashboardPage() {
               onClick={() => {
                 console.log("Button clicked, calling openAddModal");
                 openAddModal();
-                console.log("After openAddModal, isObjectModalOpen:", isObjectModalOpen);
+                console.log(
+                  "After openAddModal, isObjectModalOpen:",
+                  isObjectModalOpen,
+                );
               }}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
@@ -280,183 +293,191 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="flex min-h-screen bg-background">
-        <aside className="hidden md:flex flex-col w-72 bg-muted p-4 border-r shadow-lg overflow-y-auto">
-          <Suspense fallback={<Spinner />}>
-            <InventorySidebar
-              objects={objects}
-              selected={selected}
-              onSelect={onSelect}
-              onEdit={openEditModal}
-              onDelete={setDeleteCandidate}
-              notifications={chatUnread}
-              currentUserEmail={user?.email}
-            />
-          </Suspense>
-        </aside>
-        {isSidebarOpen && (
-          <div
-            className="fixed inset-0 z-10 flex"
-            aria-modal="true"
-            role="dialog"
-          >
-            <div
-              className="fixed inset-0 bg-black animate-in fade-in-0"
-              onClick={toggleSidebar}
-            />
-            <aside className="relative z-20 w-72 max-w-[85vw] bg-background p-4 shadow-lg overflow-y-auto transform duration-200 ease-out animate-in slide-in-from-left">
-              <Button
-                size="icon"
-                type="button"
-                className="absolute right-2 top-2 bg-background/90"
-                onClick={toggleSidebar}
-                aria-label="Close"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </Button>
-              <Suspense fallback={<Spinner />}>
-                <InventorySidebar
-                  objects={objects}
-                  selected={selected}
-                  onSelect={onSelect}
-                  onEdit={openEditModal}
-                  onDelete={setDeleteCandidate}
-                  notifications={chatUnread}
-                  currentUserEmail={user?.email}
-                />
-              </Suspense>
-            </aside>
-          </div>
-        )}
-
-        <div className="flex-1 flex flex-col">
-          <header className="flex flex-row items-center justify-between gap-2 p-2 sm:p-3 md:p-4 border-b bg-background">
-            <div className="flex items-center gap-2 sm:gap-3 md:gap-4 overflow-x-auto overflow-y-visible whitespace-nowrap">
-              <button
-                className="md:hidden p-1.5 sm:p-2 text-blue-600 dark:text-blue-400"
-                onClick={toggleSidebar}
-                type="button"
-                aria-label="Открыть"
-              >
-                <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-              {isSuperUser && (
-                <Button
-                  variant="success"
-                  size="sm"
-                  className="flex items-center gap-1 px-1.5 sm:px-2 text-xs sm:text-sm h-7 sm:h-8"
-                  onClick={addHandler}
-                  type="button"
-                >
-                  <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Добавить</span>
-                </Button>
-              )}
-              {isSuperUser && (
-                <div className="hidden md:flex gap-2">
-                  <Button
-                    variant="warning"
-                    onClick={() => importInputRef.current?.click()}
-                    type="button"
-                  >
-                    Импорт
-                  </Button>
-                  <Button variant="info" onClick={exportToFile} type="button">
-                    Экспорт
-                  </Button>
-                </div>
-              )}
-              {isSuperUser && (
-                <div className="relative md:hidden" ref={menuRef}>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="p-2"
-                    onClick={toggleMenu}
-                    aria-label="More"
-                    aria-haspopup="true"
-                    aria-expanded={isMenuOpen}
-                    type="button"
-                  >
-                    <EllipsisVerticalIcon className="w-5 h-5" />
-                  </Button>
-                  {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-36 z-50 rounded-md border bg-background shadow-lg ring-1 ring-border">
-                      <button
-                        type="button"
-                        className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          importInputRef.current?.click();
-                        }}
-                      >
-                        Импорт
-                      </button>
-                      <button
-                        type="button"
-                        className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          exportToFile();
-                        }}
-                      >
-                        Экспорт
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-              <Input
-                type="file"
-                accept=".csv"
-                ref={importInputRef}
-                className="hidden"
-                onChange={handleImport}
-              />
-            </div>
-            <div className="flex items-center gap-3 md:gap-4">
-              <Suspense fallback={<div className="w-8 h-8" />}>
-                <NotificationCenter />
-              </Suspense>
-              <Button
-                className="p-2 text-sm md:text-base"
-                onClick={() => setIsAccountModalOpen(true)}
-                type="button"
-              >
-                {user.user_metadata?.username || "Аккаунт"}
-              </Button>
-              <Button
-                variant="destructive"
-                className="p-2 text-sm md:text-base"
-                onClick={signOut}
-                type="button"
-              >
-                Выйти
-              </Button>
-            </div>
-          </header>
-
-          <div className="flex-1 overflow-auto p-2 sm:p-4">
+          <aside className="hidden md:flex flex-col w-72 bg-muted p-4 border-r shadow-lg overflow-y-auto">
             <Suspense fallback={<Spinner />}>
-              <InventoryTabs
+              <InventorySidebar
+                objects={objects}
                 selected={selected}
-                userEmail={user?.email || ""}
-                chatCount={chatCount}
-                tasksCount={0}
-                hardwareCount={hardwareCount}
-                onTabChange={onTabChange}
+                onSelect={onSelect}
                 onEdit={openEditModal}
-                onUpdateDescription={updateObjectDescription}
+                onDelete={setDeleteCandidate}
+                notifications={chatUnread}
+                currentUserEmail={user?.email}
               />
             </Suspense>
+          </aside>
+          {isSidebarOpen && (
+            <div
+              className="fixed inset-0 z-10 flex"
+              aria-modal="true"
+              role="dialog"
+            >
+              <div
+                className="fixed inset-0 bg-black animate-in fade-in-0"
+                onClick={toggleSidebar}
+              />
+              <aside className="relative z-20 w-72 max-w-[85vw] bg-background p-4 shadow-lg overflow-y-auto transform duration-200 ease-out animate-in slide-in-from-left">
+                <Button
+                  size="icon"
+                  type="button"
+                  className="absolute right-2 top-2 bg-background/90"
+                  onClick={toggleSidebar}
+                  aria-label="Close"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </Button>
+                <Suspense fallback={<Spinner />}>
+                  <InventorySidebar
+                    objects={objects}
+                    selected={selected}
+                    onSelect={onSelect}
+                    onEdit={openEditModal}
+                    onDelete={setDeleteCandidate}
+                    notifications={chatUnread}
+                    currentUserEmail={user?.email}
+                  />
+                </Suspense>
+              </aside>
+            </div>
+          )}
+
+          <div className="flex-1 flex flex-col">
+            <header className="flex flex-row items-center justify-between gap-2 p-2 sm:p-3 md:p-4 border-b bg-background">
+              <div className="flex items-center gap-2 sm:gap-3 md:gap-4 overflow-x-auto overflow-y-visible whitespace-nowrap">
+                <button
+                  className="md:hidden p-1.5 sm:p-2 text-blue-600 dark:text-blue-400"
+                  onClick={toggleSidebar}
+                  type="button"
+                  aria-label="Открыть"
+                >
+                  <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+                {isSuperUser && (
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="flex items-center gap-1 px-1.5 sm:px-2 text-xs sm:text-sm h-7 sm:h-8"
+                    onClick={addHandler}
+                    type="button"
+                  >
+                    <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Добавить</span>
+                  </Button>
+                )}
+                {isSuperUser && (
+                  <div className="hidden md:flex gap-2">
+                    <Button
+                      variant="warning"
+                      onClick={() => importInputRef.current?.click()}
+                      type="button"
+                    >
+                      Импорт
+                    </Button>
+                    <Button variant="info" onClick={exportToFile} type="button">
+                      Экспорт
+                    </Button>
+                  </div>
+                )}
+                {isSuperUser && (
+                  <div className="relative md:hidden" ref={menuRef}>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="p-2"
+                      onClick={toggleMenu}
+                      aria-label="More"
+                      aria-haspopup="true"
+                      aria-expanded={isMenuOpen}
+                      type="button"
+                    >
+                      <EllipsisVerticalIcon className="w-5 h-5" />
+                    </Button>
+                    {isMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-36 z-50 rounded-md border bg-background shadow-lg ring-1 ring-border">
+                        <button
+                          type="button"
+                          className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            importInputRef.current?.click();
+                          }}
+                        >
+                          Импорт
+                        </button>
+                        <button
+                          type="button"
+                          className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            exportToFile();
+                          }}
+                        >
+                          Экспорт
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <Input
+                  type="file"
+                  accept=".csv"
+                  ref={importInputRef}
+                  className="hidden"
+                  onChange={handleImport}
+                />
+              </div>
+              <div className="flex items-center gap-3 md:gap-4">
+                <Suspense fallback={<div className="w-8 h-8" />}>
+                  <NotificationCenter />
+                </Suspense>
+                <Button
+                  className="p-2 text-sm md:text-base"
+                  onClick={() => setIsAccountModalOpen(true)}
+                  type="button"
+                >
+                  {user.user_metadata?.username || "Аккаунт"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="p-2 text-sm md:text-base"
+                  onClick={signOut}
+                  type="button"
+                >
+                  Выйти
+                </Button>
+              </div>
+            </header>
+
+            <div className="flex-1 overflow-auto p-2 sm:p-4">
+              <Suspense fallback={<Spinner />}>
+                <InventoryTabs
+                  selected={selected}
+                  userEmail={user?.email || ""}
+                  chatCount={chatCount}
+                  tasksCount={0}
+                  hardwareCount={hardwareCount}
+                  onTabChange={onTabChange}
+                  onEdit={openEditModal}
+                  onUpdateDescription={updateObjectDescription}
+                />
+              </Suspense>
+            </div>
+            <footer className="p-2 text-center text-xs text-gray-400 border-t bg-background">
+              v0.1.1 ({new Date().toLocaleDateString()})
+            </footer>
           </div>
-        </div>
         </div>
       )}
 
       <Dialog
         open={isObjectModalOpen}
         onOpenChange={(isOpen: boolean) => {
-          console.log("Dialog onOpenChange:", isOpen, "isObjectModalOpen:", isObjectModalOpen);
+          console.log(
+            "Dialog onOpenChange:",
+            isOpen,
+            "isObjectModalOpen:",
+            isObjectModalOpen,
+          );
           if (!isOpen) {
             closeObjectModal();
           }
@@ -477,9 +498,7 @@ export default function DashboardPage() {
           </Button>
           <DialogHeader data-dialog-handle className="space-modal-header">
             <DialogTitle className="text-white text-xl font-bold">
-              {editingObject
-                ? "✏️ Редактировать объект"
-                : "➕ Добавить объект"}
+              {editingObject ? "✏️ Редактировать объект" : "➕ Добавить объект"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 p-6">
@@ -494,7 +513,9 @@ export default function DashboardPage() {
                   className="w-full space-input"
                   placeholder="Введите название объекта..."
                   value={objectName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setObjectName(e.target.value)
+                  }
                 />
               </div>
             ) : (
@@ -509,7 +530,9 @@ export default function DashboardPage() {
                     className="w-full space-input"
                     placeholder="Введите название объекта..."
                     value={objectName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjectName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setObjectName(e.target.value)
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -520,7 +543,9 @@ export default function DashboardPage() {
                     className="w-full space-input"
                     placeholder="Введите описание объекта..."
                     value={objectDescription}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setObjectDescription(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setObjectDescription(e.target.value)
+                    }
                     rows={4}
                   />
                 </div>
