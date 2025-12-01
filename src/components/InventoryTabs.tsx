@@ -72,7 +72,6 @@ export default function InventoryTabs({
   tasksCount = 0,
   hardwareCount = 0,
   onTabChange,
-  onTabChange,
   onUpdateDescription,
 }: InventoryTabsProps) {
   const [activeTab, setActiveTab] = useState("desc");
