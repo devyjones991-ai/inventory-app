@@ -264,7 +264,8 @@ export default function DashboardPage() {
     );
   }
 
-  const isSuperUser = user?.email === "devyjones991@gmail.com";
+  // Permission check removed - relying on RLS
+  const isSuperUser = true; // user?.email === "devyjones991@gmail.com";
 
   return (
     <>

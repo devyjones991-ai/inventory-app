@@ -6,6 +6,7 @@ import { supabase } from "../supabaseClient";
 import { exportInventory, importInventory } from "../utils/exportImport";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
 import logger from "../utils/logger";
+
 import { useAuth } from "./useAuth";
 
 const SELECTED_OBJECT_KEY = "selectedObjectId";
@@ -38,13 +39,22 @@ export function useObjectList() {
         }
         // Проверяем на ошибки RLS и рекурсии
         const errorMessage = error.message || String(error);
-        if (errorMessage.includes('infinite recursion') || errorMessage.includes('recursion')) {
+        if (
+          errorMessage.includes("infinite recursion") ||
+          errorMessage.includes("recursion")
+        ) {
           logger.error("Ошибка RLS рекурсии при загрузке объектов:", error);
-          toast.error("Ошибка доступа: проблема с политиками безопасности. Обратитесь к администратору.");
+          toast.error(
+            "Ошибка доступа: проблема с политиками безопасности. Обратитесь к администратору.",
+          );
           setFetchError("Ошибка доступа: проблема с политиками безопасности");
           return;
         }
-        if (errorMessage.includes('row-level security') || errorMessage.includes('RLS') || error.code === 'PGRST116') {
+        if (
+          errorMessage.includes("row-level security") ||
+          errorMessage.includes("RLS") ||
+          error.code === "PGRST116"
+        ) {
           logger.error("Ошибка RLS при загрузке объектов:", error);
           toast.error("Ошибка доступа: проблема с политиками безопасности");
           setFetchError("Ошибка доступа: проблема с политиками безопасности");
@@ -112,8 +122,13 @@ export function useObjectList() {
         .select("id, name, description")
         .single();
       if (error) {
-        if (error.status === 403) toast.error("Недостаточно прав");
-        else toast.error("Ошибка редактирования: " + error.message);
+        if (error.code === "PGRST116") {
+          toast.error("Нет прав на редактирование этого объекта");
+        } else if (error.status === 403) {
+          toast.error("Недостаточно прав");
+        } else {
+          toast.error("Ошибка редактирования: " + error.message);
+        }
         await handleSupabaseError(error, navigate, "Ошибка редактирования");
         return false;
       }
@@ -161,14 +176,21 @@ export function useObjectList() {
       .select("id, name, description")
       .single();
     if (error) {
-      if (error.status === 403) toast.error("Недостаточно прав");
-      else toast.error("Ошибка редактирования названия: " + error.message);
-      await handleSupabaseError(error, navigate, "Ошибка редактирования названия");
+      if (error.code === "PGRST116") {
+        toast.error("Нет прав на редактирование этого объекта");
+      } else if (error.status === 403) {
+        toast.error("Недостаточно прав");
+      } else {
+        toast.error("Ошибка редактирования названия: " + error.message);
+      }
+      await handleSupabaseError(
+        error,
+        navigate,
+        "Ошибка редактирования названия",
+      );
       return false;
     }
-    setObjects((prev) =>
-      prev.map((o) => (o.id === objectId ? data : o)),
-    );
+    setObjects((prev) => prev.map((o) => (o.id === objectId ? data : o)));
     if (selected?.id === objectId) setSelected(data);
     toast.success("Название обновлено");
     return true;
@@ -183,24 +205,33 @@ export function useObjectList() {
       .select("id, name, description")
       .single();
     if (error) {
-      if (error.status === 403) toast.error("Недостаточно прав");
-      else toast.error("Ошибка редактирования описания: " + error.message);
-      await handleSupabaseError(error, navigate, "Ошибка редактирования описания");
+      if (error.code === "PGRST116") {
+        toast.error("Нет прав на редактирование этого объекта");
+      } else if (error.status === 403) {
+        toast.error("Недостаточно прав");
+      } else {
+        toast.error("Ошибка редактирования описания: " + error.message);
+      }
+      await handleSupabaseError(
+        error,
+        navigate,
+        "Ошибка редактирования описания",
+      );
       return false;
     }
-    setObjects((prev) =>
-      prev.map((o) => (o.id === objectId ? data : o)),
-    );
+    setObjects((prev) => prev.map((o) => (o.id === objectId ? data : o)));
     if (selected?.id === objectId) setSelected(data);
     toast.success("Описание обновлено");
     return true;
   }
 
   async function deleteObject(id) {
-    if (user?.email !== "devyjones991@gmail.com") {
-      toast.error("Только администратор может удалять данные");
-      return false;
-    }
+    // Permission check removed - relying on RLS
+    // if (user?.email !== "devyjones991@gmail.com") {
+    //   toast.error("У вас нет прав на удаление объектов");
+    //   return;
+    // }false;
+    // }
 
     const { error } = await supabase.from("objects").delete().eq("id", id);
     if (error) {

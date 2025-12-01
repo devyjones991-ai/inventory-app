@@ -17,7 +17,6 @@ interface InventorySidebarProps {
   onEdit: (object: Object) => void;
   onDelete: (objectId: string) => void;
   notifications?: Record<string, number>;
-  currentUserEmail?: string;
 }
 
 function InventorySidebar({
@@ -27,7 +26,6 @@ function InventorySidebar({
   onEdit,
   onDelete,
   notifications = {},
-  currentUserEmail,
 }: InventorySidebarProps) {
   const items = useMemo(
     () =>
@@ -40,7 +38,8 @@ function InventorySidebar({
     [objects, onSelect, onEdit, onDelete],
   );
 
-  const isSuperUser = currentUserEmail === "devyjones991@gmail.com";
+  // Permission check removed - relying on RLS
+  const isSuperUser = true; // currentUserEmail === "devyjones991@gmail.com";
 
   return (
     <nav className="flex flex-col space-y-3 p-4">
