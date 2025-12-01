@@ -50,7 +50,7 @@ interface UserProfile {
 }
 
 const AdminPage: React.FC = () => {
-  const { role: _role } = useAuth();
+  const { user, role: _role } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);

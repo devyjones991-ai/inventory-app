@@ -17,6 +17,7 @@ interface InventorySidebarProps {
   onEdit: (object: Object) => void;
   onDelete: (objectId: string) => void;
   notifications?: Record<string, number>;
+  currentUserEmail?: string;
 }
 
 function InventorySidebar({
@@ -26,6 +27,7 @@ function InventorySidebar({
   onEdit,
   onDelete,
   notifications = {},
+  currentUserEmail,
 }: InventorySidebarProps) {
   const items = useMemo(
     () =>
@@ -37,6 +39,8 @@ function InventorySidebar({
       })),
     [objects, onSelect, onEdit, onDelete],
   );
+
+  const isSuperUser = currentUserEmail === "devyjones991@gmail.com";
 
   return (
     <nav className="flex flex-col space-y-3 p-4">
@@ -60,28 +64,30 @@ function InventorySidebar({
               )}
             </div>
             <div className="flex items-center justify-end">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    o.edit();
-                  }}
-                  className="space-sidebar-button"
-                  aria-label="Редактировать объект"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    o.remove();
-                  }}
-                  className="space-sidebar-button danger"
-                  aria-label="Удалить объект"
-                >
-                  🗑️
-                </button>
-              </div>
+              {isSuperUser && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      o.edit();
+                    }}
+                    className="space-sidebar-button"
+                    aria-label="Редактировать объект"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      o.remove();
+                    }}
+                    className="space-sidebar-button danger"
+                    aria-label="Удалить объект"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

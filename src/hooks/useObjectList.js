@@ -6,11 +6,13 @@ import { supabase } from "../supabaseClient";
 import { exportInventory, importInventory } from "../utils/exportImport";
 import { handleSupabaseError } from "../utils/handleSupabaseError";
 import logger from "../utils/logger";
+import { useAuth } from "./useAuth";
 
 const SELECTED_OBJECT_KEY = "selectedObjectId";
 
 export function useObjectList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [objects, setObjects] = useState([]);
   const [selected, setSelected] = useState(null);
   const [fetchError, setFetchError] = useState(null);
@@ -97,6 +99,10 @@ export function useObjectList() {
   }, [fetchObjects]);
 
   async function saveObject(name, description = "", editingObject) {
+    if (user?.email !== "devyjones991@gmail.com") {
+      toast.error("Только администратор может изменять данные");
+      return false;
+    }
     if (!name.trim()) return false;
     if (editingObject) {
       const { data, error } = await supabase
@@ -191,6 +197,11 @@ export function useObjectList() {
   }
 
   async function deleteObject(id) {
+    if (user?.email !== "devyjones991@gmail.com") {
+      toast.error("Только администратор может удалять данные");
+      return false;
+    }
+
     const { error } = await supabase.from("objects").delete().eq("id", id);
     if (error) {
       if (error.status === 403) toast.error("Недостаточно прав");

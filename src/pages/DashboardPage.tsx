@@ -60,7 +60,19 @@ export default function DashboardPage() {
     deleteObject,
     importFromFile,
     exportToFile,
-  } = useObjectList();
+  } = useObjectList() as {
+    objects: ObjectType[];
+    selected: ObjectType | null;
+    fetchError: string | null;
+    isEmpty: boolean;
+    handleSelect: (obj: ObjectType) => void;
+    saveObject: (name: string, description: string, obj: ObjectType | null) => Promise<boolean>;
+    updateObjectName: (id: string | number, name: string) => Promise<boolean>;
+    updateObjectDescription: (id: string | number, description: string) => Promise<boolean>;
+    deleteObject: (id: string) => Promise<boolean>;
+    importFromFile: (file: File) => Promise<void>;
+    exportToFile: () => Promise<void>;
+  };
 
   const allowedTabs = ["desc", "hw", "tasks", "chat"];
   const tabParam = searchParams.get("tab");
@@ -86,7 +98,21 @@ export default function DashboardPage() {
     openAddModal,
     openEditModal,
     closeObjectModal,
-  } = useDashboardModals();
+  } = useDashboardModals() as {
+    isObjectModalOpen: boolean;
+    objectName: string;
+    setObjectName: (name: string) => void;
+    objectDescription: string;
+    setObjectDescription: (desc: string) => void;
+    editingObject: ObjectType | null;
+    deleteCandidate: string | null;
+    setDeleteCandidate: (id: string | null) => void;
+    isAccountModalOpen: boolean;
+    setIsAccountModalOpen: (isOpen: boolean) => void;
+    openAddModal: () => void;
+    openEditModal: (obj: ObjectType) => void;
+    closeObjectModal: () => void;
+  };
 
   const [addHandler] = useState(() => openAddModal);
 
@@ -196,8 +222,10 @@ export default function DashboardPage() {
   };
 
   const onConfirmDelete = async () => {
-    const ok = await deleteObject(deleteCandidate);
-    if (ok) setDeleteCandidate(null);
+    if (deleteCandidate) {
+      const ok = await deleteObject(deleteCandidate);
+      if (ok) setDeleteCandidate(null);
+    }
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,6 +253,8 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const isSuperUser = user?.email === "devyjones991@gmail.com";
 
   return (
     <>
@@ -259,6 +289,7 @@ export default function DashboardPage() {
               onEdit={openEditModal}
               onDelete={setDeleteCandidate}
               notifications={chatUnread}
+              currentUserEmail={user?.email}
             />
           </Suspense>
         </aside>
@@ -290,6 +321,7 @@ export default function DashboardPage() {
                   onEdit={openEditModal}
                   onDelete={setDeleteCandidate}
                   notifications={chatUnread}
+                  currentUserEmail={user?.email}
                 />
               </Suspense>
             </aside>
@@ -307,66 +339,72 @@ export default function DashboardPage() {
               >
                 <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
-              <Button
-                variant="success"
-                size="xs"
-                className="flex items-center gap-1 px-1.5 sm:px-2 text-xs sm:text-sm h-7 sm:h-8"
-                onClick={addHandler}
-                type="button"
-              >
-                <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Добавить</span>
-              </Button>
-              <div className="hidden md:flex gap-2">
+              {isSuperUser && (
                 <Button
-                  variant="warning"
-                  onClick={() => importInputRef.current?.click()}
+                  variant="success"
+                  size="sm"
+                  className="flex items-center gap-1 px-1.5 sm:px-2 text-xs sm:text-sm h-7 sm:h-8"
+                  onClick={addHandler}
                   type="button"
                 >
-                  Импорт
+                  <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Добавить</span>
                 </Button>
-                <Button variant="info" onClick={exportToFile} type="button">
-                  Экспорт
-                </Button>
-              </div>
-              <div className="relative md:hidden" ref={menuRef}>
-                <Button
-                  variant="outline"
-                  size="iconSm"
-                  className="p-2"
-                  onClick={toggleMenu}
-                  aria-label="More"
-                  aria-haspopup="true"
-                  aria-expanded={isMenuOpen}
-                  type="button"
-                >
-                  <EllipsisVerticalIcon className="w-5 h-5" />
-                </Button>
-                {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-36 z-50 rounded-md border bg-background shadow-lg ring-1 ring-border">
-                    <button
-                      type="button"
-                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        importInputRef.current?.click();
-                      }}
-                    >
-                      Импорт
-                    </button>
-                    <button
-                      type="button"
-                      className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        exportToFile();
-                      }}
-                    >
-                      Экспорт
-                    </button>
-                  </div>
-                )}
-              </div>
+              )}
+              {isSuperUser && (
+                <div className="hidden md:flex gap-2">
+                  <Button
+                    variant="warning"
+                    onClick={() => importInputRef.current?.click()}
+                    type="button"
+                  >
+                    Импорт
+                  </Button>
+                  <Button variant="info" onClick={exportToFile} type="button">
+                    Экспорт
+                  </Button>
+                </div>
+              )}
+              {isSuperUser && (
+                <div className="relative md:hidden" ref={menuRef}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="p-2"
+                    onClick={toggleMenu}
+                    aria-label="More"
+                    aria-haspopup="true"
+                    aria-expanded={isMenuOpen}
+                    type="button"
+                  >
+                    <EllipsisVerticalIcon className="w-5 h-5" />
+                  </Button>
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-36 z-50 rounded-md border bg-background shadow-lg ring-1 ring-border">
+                      <button
+                        type="button"
+                        className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          importInputRef.current?.click();
+                        }}
+                      >
+                        Импорт
+                      </button>
+                      <button
+                        type="button"
+                        className="block w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          exportToFile();
+                        }}
+                      >
+                        Экспорт
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
               <Input
                 type="file"
                 accept=".csv"

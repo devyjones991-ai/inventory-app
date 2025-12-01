@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Textarea } from "./ui/textarea";
+
 
 const hardwareSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
@@ -82,6 +82,7 @@ export default function InventoryTabs({
     setActiveTab(tab);
     onTabChange?.(tab);
   };
+
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
   const { hardware, deleteHardware, createHardware, updateHardware, loadHardware } = useHardware();
@@ -194,6 +195,8 @@ export default function InventoryTabs({
     [selected, user, editingHardware, createHardware, updateHardware, closeHardwareModal],
   );
 
+  if (!selected) return null;
+
   return (
     <div className="space-y-6 space-bg-gradient p-6 rounded-xl">
       {/* Блок описания объекта - всегда видим */}
@@ -240,7 +243,7 @@ export default function InventoryTabs({
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-3 bg-space-bg-light p-1 rounded-lg border border-space-border">
+        <TabsList className="flex flex-col sm:grid sm:grid-cols-3 w-full bg-space-bg-light p-1 rounded-lg border border-space-border h-auto gap-2 sm:gap-0">
           <TabsTrigger
             value="hw"
             className="data-[state=active]:space-active data-[state=active]:text-white transition-all duration-300 relative"
