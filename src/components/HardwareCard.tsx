@@ -1,7 +1,7 @@
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { useTranslation } from "react-i18next";
 
+import { t } from "../i18n";
 import { Hardware, User } from "../types";
 
 import { Button } from "./ui/button";
@@ -20,8 +20,6 @@ export default function HardwareCard({
   onDelete,
   onView,
 }: HardwareCardProps) {
-  const { t } = useTranslation();
-
   const purchaseKey = item.purchase_status === "paid" ? "paid" : "not_paid";
   const installKey =
     item.install_status === "installed" ? "installed" : "not_installed";

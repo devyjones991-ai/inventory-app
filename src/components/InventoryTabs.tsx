@@ -347,7 +347,6 @@ export default function InventoryTabs({
                   onEdit={() => openEditHardwareModal(item)}
                   onDelete={() => handleDeleteHardware(item.id)}
                   onView={() => openViewHardwareModal(item)}
-                  user={null}
                 />
               ))}
             </div>
