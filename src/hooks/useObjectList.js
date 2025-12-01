@@ -140,7 +140,9 @@ export function useObjectList() {
     } else {
       const { data, error } = await supabase
         .from("objects")
-        .insert([{ name, description: description || "" }])
+        .insert([
+          { name, description: description || "", user_email: user.email },
+        ])
         .select("id, name, description")
         .single();
       if (error) {
