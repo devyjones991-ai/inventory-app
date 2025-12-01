@@ -427,6 +427,11 @@ export default function DashboardPage() {
                 />
               </div>
               <div className="flex items-center gap-3 md:gap-4">
+                <img
+                  src="/logo.png"
+                  alt="Logo"
+                  className="w-8 h-8 rounded-full"
+                />
                 <Suspense fallback={<div className="w-8 h-8" />}>
                   <NotificationCenter />
                 </Suspense>

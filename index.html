@@ -4,15 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Supabase URL will be loaded from env.js -->
+    <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="modulepreload" href="/src/pages/DashboardPage.jsx" />
     <title>Multiminder</title>
     <script>
       // Предотвращаем FOUC - устанавливаем тему до загрузки CSS
-      (function() {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-        document.documentElement.setAttribute('data-theme', shouldBeDark ? 'dark' : 'light');
+      (function () {
+        const savedTheme = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        const shouldBeDark =
+          savedTheme === "dark" || (!savedTheme && prefersDark);
+        document.documentElement.setAttribute(
+          "data-theme",
+          shouldBeDark ? "dark" : "light",
+        );
       })();
     </script>
   </head>
